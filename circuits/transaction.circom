@@ -1,147 +1,209 @@
 // SPDX-License-Identifier: ISC
 
-include "./merkleTree.circom"
-include "./treeUpdater.circom"
-include "./utils.circom"
+include "./templates/limitChecker.circom";
+include "./templates/noteHasher.circom";
+include "./templates/noteInclusionProver.circom";
+include "./templates/nullifierHasher.circom";
+include "./templates/publicInputHasher.circom";
+include "./templates/publicTokenChecker.circom";
+include "../node_modules/circomlib/circuits/babyjub.circom";
 
-/*
-Utxo structure:
-{
-    amount,
-    blinding, // random number
-    pubkey,
-}
+// spendPubKey := BabyPubKey(spendPrivKey)
+// Leaf := Poseidon(spendPubKey.Ax, spendPubKey.Ay, amount, token, createTime)
+// Nullifier := Poseidon(spendPrivKey, leafId)
+// TODO: account for "token weight"
 
-commitment = hash(amount, blinding, pubKey)
-nullifier = hash(commitment, privKey, merklePath)
-*/
+template Transaction(nUtxoIn, nUtxoOut, nRwdUtxoOut, MerkleTreeDepth) {
+    assert(nUtxoIn <= 16);
+    assert(nUtxoOut + nRwdUtxoOut <= 16);
+    assert(nRwdUtxoOut > 0);
 
-// field_size = ethers.BigNumber.from("21888242871839275222246405745257275088548364400416034343698204186575808495617")
-// zero = ethers.BigNumber.from(ethers.utils.id("panther")).mod(field_size)
-//
-// const { poseidon } = require('circomlib')
-// zeroLeaf = ethers.BigNumber.from(poseidon([zero, zero])).toString()
+    signal input publicInputsHash; // single explicitly public
+
+    signal private input publicToken; // public; `token` for a deposit/withdraw, zero otherwise
+    signal private input extAmountIn; // public; non-zero for a deposit
+    signal private input extAmountOut; // public; non-zero for a withdrawal
+    signal private input token;
+    signal private input rewardToken; // public
+    signal private input forTxReward; // public
+    signal private input forUtxoReward; // public
+    signal private input forDepositReward; // public
+    signal private input extraInputsHash; // public
+
+    // input `token` UTXOs (i.e. notes being spent)
+    signal private input spendTime; // public
+    // all UTXOs are token UTXOs (no reward points UTXOs)
+    signal private input amountsIn[nUtxoIn];
+    signal private input spendPrivKeys[nUtxoIn];
+    signal private input leafIds[nUtxoIn];
+    signal private input merkleRoots[nUtxoIn]; // public
+    signal private input nullifiers[nUtxoIn]; // public
+    signal private input pathIndices[nUtxoIn];
+    signal private input pathElements[nUtxoIn][MerkleTreeDepth];
+    signal private input createTimes[nUtxoIn];
+
+    // output `token` UTXOs (i.e. notes being created)
+    signal private input createTime; // public; both for `token` and `rewardToken` notes
+    signal private input amountsOut[nUtxoOut];
+    signal private input spendPubKeys[nUtxoOut][2];
+    signal private input commitmentsOut[nUtxoOut]; // public
+
+    // output `rewardToken` UTXOs (i.e. notes being created)
+    signal private input rAmountsOut[nRwdUtxoOut];
+    signal private input rSpendPubKeys[nRwdUtxoOut][2];
+    signal private input rCommitmentsOut[nRwdUtxoOut]; // public
 
 
-// Universal JoinSplit transaction with nIns inputs and 2 outputs
-template Transaction(levels, nIns, nOuts, zeroLeaf) {
-    signal input root;
-    signal input newRoot;
-    // external amount used for deposits and withdrawals
-    // correct extAmount range is enforced on the smart contract
-    signal input extAmount;
-    signal input fee;
-    signal input extDataHash;
+    /* Total amounts bellow can not overflow since:
+      - capped `nUtxoIn`, `nUtxoOut` and `nRwdUtxoOut` limit number of additions
+      - `LimitChecker` caps output UTXO amounts and, indirectly, input amounts
+      - smart contract caps `extAmountIn` and `extAmountOut` */
 
-    // data for transaction inputs
-    signal         input inputNullifier[nIns];
-    signal private input inAmount[nIns];
-    signal private input inBlinding[nIns];
-    signal private input inPrivateKey[nIns];
-    signal private input inPathIndices[nIns];
-    signal private input inPathElements[nIns][levels];
+    // 1. Verify "public" input signals
 
-    // data for transaction outputs
-    signal         input outputCommitment[nOuts];
-    signal private input outAmount[nOuts];
-    signal private input outBlinding[nOuts];
-    signal private input outPubkey[nOuts];
-    signal         input outPathIndices;
-    signal private input outPathElements[levels - 1];
+    component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut, nRwdUtxoOut);
 
-    component inKeypair[nIns];
-    component inUtxoHasher[nIns];
-    component nullifierHasher[nIns];
-    component inAmountCheck[nIns];
-    component tree[nIns];
-    component checkRoot[nIns];
-    var sumIns = 0;
+    publicInputHasher.publicToken <== publicToken;
+    publicInputHasher.extAmountIn <== extAmountIn;
+    publicInputHasher.extAmountOut <== extAmountOut;
+    publicInputHasher.rewardToken <== rewardToken;
+    publicInputHasher.forTxReward <== forTxReward;
+    publicInputHasher.forUtxoReward <== forUtxoReward;
+    publicInputHasher.forDepositReward <== forDepositReward;
+    publicInputHasher.extraInputsHash <== extraInputsHash;
+    publicInputHasher.spendTime <== spendTime;
+    publicInputHasher.createTime <== createTime;
+    for (var i=0; i<nUtxoIn; i++)
+        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
+    for (var i=0; i<nUtxoOut; i++)
+        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
+    for (var i=0; i<nRwdUtxoOut; i++)
+        publicInputHasher.rCommitmentsOut[i] <== rCommitmentsOut[i];
 
-    // verify correctness of transaction inputs
-    for (var tx = 0; tx < nIns; tx++) {
-        inKeypair[tx] = Keypair();
-        inKeypair[tx].privateKey <== inPrivateKey[tx];
+    publicInputHasher.out === publicInputsHash;
 
-        inUtxoHasher[tx] = TransactionHasher();
-        inUtxoHasher[tx].amount <== inAmount[tx];
-        inUtxoHasher[tx].blinding <== inBlinding[tx];
-        inUtxoHasher[tx].publicKey <== inKeypair[tx].publicKey;
 
-        nullifierHasher[tx] = NullifierHasher();
-        nullifierHasher[tx].commitment <== inUtxoHasher[tx].commitment;
-        nullifierHasher[tx].merklePath <== inPathIndices[tx];
-        nullifierHasher[tx].privateKey <== inPrivateKey[tx];
-        nullifierHasher[tx].nullifier === inputNullifier[tx];
+    // 2. Verify input notes, compute total amount (in `token`) of spent UTXOs, ..
+    // .. and compute total amount (in `rewardToken`) of applicable rewards
 
-        tree[tx] = MerkleTree(levels);
-        tree[tx].leaf <== inUtxoHasher[tx].commitment;
-        tree[tx].pathIndices <== inPathIndices[tx];
-        for (var i = 0; i < levels; i++) {
-            tree[tx].pathElements[i] <== inPathElements[tx][i];
-        }
+    component nullifierHashers[nUtxoIn];
+    component pubKeys[nUtxoIn];
+    component inputNoteHashers[nUtxoIn];
+    component inclusionProvers[nUtxoIn];
 
-        // check merkle proof only if amount is non-zero
-        checkRoot[tx] = ForceEqualIfEnabled();
-        checkRoot[tx].in[0] <== root;
-        checkRoot[tx].in[1] <== tree[tx].root;
-        checkRoot[tx].enabled <== inAmount[tx];
+    var totalAmountIn = extAmountIn; // in `token`
+    // TODO: check (and add comment) if (why) rewardsExpected can't overflow
+    var rewardsExpected = forTxReward + forDepositReward * extAmountIn; // in `rewardToken`
 
-        // Check that amount fits into 248 bits to prevent overflow
-        inAmountCheck[tx] = Num2Bits(248);
-        inAmountCheck[tx].in <== inAmount[tx];
+    for(var i=0; i<nUtxoIn; i++){
 
-        sumIns += inAmount[tx];
+        // verify nullifier
+        nullifierHashers[i] = NullifierHasher();
+        nullifierHashers[i].spendPrivKey <== spendPrivKeys[i];
+        nullifierHashers[i].leafId <== leafIds[i];
+        nullifierHashers[i].out === nullifiers[i];
+
+        // derive spending pubkey
+        pubKeys[i] = BabyPbk();
+        pubKeys[i].in <== spendPrivKeys[i]
+
+        // compute commitment
+        inputNoteHashers[i] = NoteHasher();
+        inputNoteHashers[i].spendPbkX <== pubKeys[i].Ax; // to act as a blinding factor ..
+        inputNoteHashers[i].spendPbkY <== pubKeys[i].Ay; // .. it shall be unique per UTXO
+        inputNoteHashers[i].amount <== amountsIn[i];
+        inputNoteHashers[i].token <== token;
+        inputNoteHashers[i].createTime <== createTimes[i];
+
+        // verify Merkle proof with non-zero amounts
+        inclusionProvers[i] = NoteInclusionProver(MerkleTreeDepth);
+        inclusionProvers[i].leaf <== inputNoteHashers[i].out;
+        inclusionProvers[i].pathIndices <== pathIndices[i];
+        for(var j=0; j< MerkleTreeDepth; j++)
+            inclusionProvers[i].pathElements[j] <== pathElements[i][j];
+        inclusionProvers[i].root <== merkleRoots[i];
+        inclusionProvers[i].utxoAmount <== amountsIn[i];
+        inclusionProvers[i].out === 1;
+
+        // accumulate total
+        totalAmountIn += amountsIn[i];
+
+        // FIXME: make `ageFactor` be zero if `createTimes[i] > spendTime`
+        var ageFactor = forUtxoReward * (spendTime - createTimes[i]);
+        rewardsExpected += amountsIn[i] * ageFactor;
     }
 
-    component outUtxoHasher[nOuts];
-    component outAmountCheck[nOuts];
-    var sumOuts = 0;
 
-    // verify correctness of transaction outputs
-    for (var tx = 0; tx < nOuts; tx++) {
-        outUtxoHasher[tx] = TransactionHasher();
-        outUtxoHasher[tx].amount <== outAmount[tx];
-        outUtxoHasher[tx].blinding <== outBlinding[tx];
-        outUtxoHasher[tx].publicKey <== outPubkey[tx];
-        outUtxoHasher[tx].commitment === outputCommitment[tx];
+    // 3. Verify output `token` notes, ..
+    // .. and compute total amount (in `token`) of created UTXOs
 
-        // Check that amount fits into 248 bits to prevent overflow
-        outAmountCheck[tx] = Num2Bits(248);
-        outAmountCheck[tx].in <== outAmount[tx];
+    component limitCheckers[nUtxoOut];
+    component outputNoteHashers[nUtxoOut];
 
-        sumOuts += outAmount[tx];
+    var totalAmountOut = extAmountOut; // in `token`
+
+    for(var i=0; i<nUtxoOut; i++){
+        // verify amount is within limit
+        limitCheckers[i] = LimitChecker();
+        limitCheckers[i].value <== amountsOut[i];
+        limitCheckers[i].out === 1;
+
+        // verify commitment
+        outputNoteHashers[i] = NoteHasher();
+        outputNoteHashers[i].spendPbkX <== spendPubKeys[i][0];
+        outputNoteHashers[i].spendPbkY <== spendPubKeys[i][1];
+        outputNoteHashers[i].amount <== amountsOut[i];
+        outputNoteHashers[i].token <== token;
+        outputNoteHashers[i].createTime <== createTime;
+        outputNoteHashers[i].out === commitmentsOut[i];
+
+        // accumulate total
+        totalAmountOut += amountsOut[i];
     }
 
-    // Check that fee fits into 248 bits to prevent overflow
-    component feeCheck = Num2Bits(248);
-    feeCheck.in <== fee;
 
-    // check that there are no same nullifiers among all inputs
-    component sameNullifiers[nIns * (nIns - 1) / 2];
-    var index = 0;
-    for (var i = 0; i < nIns - 1; i++) {
-      for (var j = i + 1; j < nIns; j++) {
-          sameNullifiers[index] = IsEqual();
-          sameNullifiers[index].in[0] <== inputNullifier[i];
-          sameNullifiers[index].in[1] <== inputNullifier[j];
-          sameNullifiers[index].out === 0;
-          index++;
-      }
+    // 4. Check if input and output UTXO amounts (in `token`) equal
+    totalAmountOut === totalAmountIn;
+
+
+    // 5. Verify output `rewardToken` notes, and ..
+    // .. compute total amount in `rewardToken` of created UTXOs
+
+    component rLimitCheckers[nRwdUtxoOut];
+    component rOutputNoteHashers[nRwdUtxoOut];
+
+    var totalRewardsOut = 0; // in `rewardToken`
+
+    for(var i=0; i<nRwdUtxoOut; i++){
+        // verify amount is within limit
+        rLimitCheckers[i] = LimitChecker();
+        rLimitCheckers[i].value <== rAmountsOut[i];
+        rLimitCheckers[i].out === 1;
+
+        // verify commitment
+        rOutputNoteHashers[i] = NoteHasher();
+        rOutputNoteHashers[i].spendPbkX <== rSpendPubKeys[i][0];
+        rOutputNoteHashers[i].spendPbkY <== rSpendPubKeys[i][1];
+        rOutputNoteHashers[i].amount <== rAmountsOut[i];
+        rOutputNoteHashers[i].token <== rewardToken;
+        rOutputNoteHashers[i].createTime <== createTime;
+        rOutputNoteHashers[i].out === rCommitmentsOut[i];
+
+        // accumulate total
+        totalRewardsOut += rAmountsOut[i];
     }
 
-    // verify amount invariant
-    sumIns + extAmount === sumOuts + fee;
 
-    // Check merkle tree update with inserted transaction outputs
-    var zeroLeaf = 56147754614444737945816506831976242312714539065959207774399508025380987010;
-    component treeUpdater = TreeUpdater(levels, zeroLeaf);
-    treeUpdater.oldRoot <== root;
-    treeUpdater.newRoot <== newRoot;
-    for (var i = 0; i < nOuts; i++) {
-      treeUpdater.leaf[i] <== outputCommitment[i];
-    }
-    treeUpdater.pathIndices <== outPathIndices;
-    for (var i = 0; i < levels - 1; i++) {
-        treeUpdater.pathElements[i] <== outPathElements[i];
-    }
+    // 6. Check total amount of `rewardToken` UTXOs
+    signal rewards; // intermediate signal
+    rewards <-- rewardsExpected;
+    rewards === totalRewardsOut;
+
+
+    // 7. Check `publicToken`
+    component publicTokenChecker = PublicTokenChecker();
+    publicTokenChecker.publicToken <== publicToken;
+    publicTokenChecker.token <== token;
+    publicTokenChecker.extAmounts <== extAmountIn + extAmountOut;
+    publicTokenChecker.out === 1;
 }
