@@ -16,6 +16,13 @@ commitment = hash(amount, blinding, pubKey)
 nullifier = hash(commitment, privKey, merklePath)
 */
 
+// field_size = ethers.BigNumber.from("21888242871839275222246405745257275088548364400416034343698204186575808495617")
+// zero = ethers.BigNumber.from(ethers.utils.id("panther")).mod(field_size)
+//
+// const { poseidon } = require('circomlib')
+// zeroLeaf = ethers.BigNumber.from(poseidon([zero, zero])).toString()
+
+
 // Universal JoinSplit transaction with nIns inputs and 2 outputs
 template Transaction(levels, nIns, nOuts, zeroLeaf) {
     signal input root;
@@ -126,6 +133,7 @@ template Transaction(levels, nIns, nOuts, zeroLeaf) {
     sumIns + extAmount === sumOuts + fee;
 
     // Check merkle tree update with inserted transaction outputs
+    var zeroLeaf = 56147754614444737945816506831976242312714539065959207774399508025380987010;
     component treeUpdater = TreeUpdater(levels, zeroLeaf);
     treeUpdater.oldRoot <== root;
     treeUpdater.newRoot <== newRoot;
