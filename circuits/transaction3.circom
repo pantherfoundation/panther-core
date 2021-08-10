@@ -2,4 +2,4 @@
 
 include "./transaction.circom"
 
-component main = Transaction(5, 2, 2);
+component main = Transaction(5, 3, 3);
