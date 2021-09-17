@@ -5,8 +5,6 @@ import * as fs from 'fs'
 import * as childProcess from 'child_process'
 const ff = require('ffjavascript')
 const stringifyBigInts = ff.utils.stringifyBigInts
-const PORT = 9000
-const HOST = 'http://localhost:' + PORT
 
 import {
     genWitness,
@@ -22,8 +20,8 @@ describe('Witness generation', () => {
             expectedHash: BigInt('0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a'),
         })
 
-        const witness = await genWitness(circuit, inputs, HOST)
-        const expectedOut = BigInt(await getSignalByName(circuit, witness, 'main.out', HOST)).toString(16)
+        const witness = await genWitness(circuit, inputs)
+        const expectedOut = BigInt(await getSignalByName(circuit, witness, 'main.out')).toString(16)
         expect(expectedOut).toEqual('115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a')
     })
 
@@ -36,7 +34,7 @@ describe('Witness generation', () => {
         })
 
         try {
-            const witness = await genWitness(circuit, inputs, HOST)
+            const witness = await genWitness(circuit, inputs)
         } catch {
             expect(true).toBeTruthy()
         }
@@ -50,7 +48,7 @@ describe('Witness generation', () => {
         })
 
         try {
-            const witness = await genWitness(circuit, inputs, HOST)
+            const witness = await genWitness(circuit, inputs)
         } catch {
             expect(true).toBeTruthy()
         }
