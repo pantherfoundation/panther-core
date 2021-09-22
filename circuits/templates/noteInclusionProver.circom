@@ -52,7 +52,7 @@ template NoteInclusionProver(n_levels) {
     signal input pathElements[n_levels];
     signal input utxoAmount;
 
-	signal output out; // 1 if included or `utxoAmount == 0`
+    signal output out; // 1 if included or `utxoAmount == 0`
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProof(n_levels);
@@ -70,5 +70,5 @@ template NoteInclusionProver(n_levels) {
     isEqual.in[0] <== root;
     isEqual.in[1] <== proof.root;
 
-	out <== isEqual.out * (1 - isZeroUtxo.out);
+    out <== isEqual.out * (1 - isZeroUtxo.out);
 }

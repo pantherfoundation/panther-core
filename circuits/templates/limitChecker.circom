@@ -4,7 +4,7 @@
 template LimitChecker() {
     signal input value;
 
-	signal out; // 1 if `value < 2**n_bits`
+    signal out; // 1 if `value < 2**n_bits`
 
     var n_bits = 120;
 
