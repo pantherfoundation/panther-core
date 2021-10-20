@@ -1,4 +1,5 @@
 //SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
@@ -15,11 +16,10 @@ template PublicTokenChecker() {
     component isZero = IsZero();
     isZero.in <== extAmounts;
 
-    var expected = token * (1 - isZero.out);
-
-    component isEqual = IsEqual();
+    component isEqual = ForceEqualIfEnabled();
     isEqual.in[0] <== publicToken;
-    isEqual.in[1] <== expected;
+    isEqual.in[1] <== token;
+    isEqual.enabled <== 1-iSZero.out;
 
     out <== isEqual.out;
 }

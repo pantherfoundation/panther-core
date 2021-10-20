@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: ISC
+//SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
 
-include "./templates/limitChecker.circom";
+include "./templates/elgamalEncryption.circom";
 include "./templates/noteHasher.circom";
 include "./templates/noteInclusionProver.circom";
 include "./templates/nullifierHasher.circom";
@@ -9,49 +10,60 @@ include "./templates/publicTokenChecker.circom";
 include "../node_modules/circomlib/circuits/babyjub.circom";
 
 // spendPubKey := BabyPubKey(spendPrivKey)
-// Leaf := Poseidon(spendPubKey.Ax, spendPubKey.Ay, amount, token, createTime)
+// Leaf := Poseidon(spendPubKey.Ax, amount, token, createTime)
 // Nullifier := Poseidon(spendPrivKey, leafId)
-// TODO: account for "token weight"
+// tokenWeightLeaf := addr||weight  160 + 12, Merkle tree of depth 7
 
-template Transaction(nUtxoIn, nUtxoOut, nRwdUtxoOut, MerkleTreeDepth) {
-    assert(nUtxoIn <= 16);
-    assert(nUtxoOut + nRwdUtxoOut <= 16);
-    assert(nRwdUtxoOut > 0);
+template Transaction(nUtxoIn, nUtxoOut, MerkleTreeDepth) {
 
     signal input publicInputsHash; // single explicitly public
 
-    signal private input publicToken; // public; `token` for a deposit/withdraw, zero otherwise
-    signal private input extAmountIn; // public; non-zero for a deposit
-    signal private input extAmountOut; // public; non-zero for a withdrawal
-    signal private input token;
-    signal private input rewardToken; // public
-    signal private input forTxReward; // public
-    signal private input forUtxoReward; // public
-    signal private input forDepositReward; // public
-    signal private input extraInputsHash; // public
+    signal input publicToken; // public; `token` for a deposit/withdraw, zero otherwise
+    signal input extAmountIn; // public; non-zero for a deposit
+    signal input extAmountOut; // public; non-zero for a withdrawal
+    signal input token;
+    signal input rewardToken; // public
+    signal input forTxReward; // public
+    signal input forUtxoReward; // public
+    signal input forDepositReward; // public
+    signal input forBaseReward; // public base relayer reward
+    signal input extraInputsHash; // public
 
     // input `token` UTXOs (i.e. notes being spent)
-    signal private input spendTime; // public
-    // all UTXOs are token UTXOs (no reward points UTXOs)
-    signal private input amountsIn[nUtxoIn];
-    signal private input spendPrivKeys[nUtxoIn];
-    signal private input leafIds[nUtxoIn];
-    signal private input merkleRoots[nUtxoIn]; // public
-    signal private input nullifiers[nUtxoIn]; // public
-    signal private input pathIndices[nUtxoIn];
-    signal private input pathElements[nUtxoIn][MerkleTreeDepth];
-    signal private input createTimes[nUtxoIn];
+    signal input spendTime; // public
+    // token UTXOs
+    signal input amountsIn[nUtxoIn];
+    signal input spendPrivKeys[nUtxoIn];
+    signal input leafIds[nUtxoIn];
+    signal input merkleRoots[nUtxoIn]; // public
+    signal input nullifiers[nUtxoIn]; // public
+    signal input pathIndices[nUtxoIn];
+    signal input pathElements[nUtxoIn][MerkleTreeDepth];
+    signal input createTimes[nUtxoIn];
 
-    // output `token` UTXOs (i.e. notes being created)
-    signal private input createTime; // public; both for `token` and `rewardToken` notes
-    signal private input amountsOut[nUtxoOut];
-    signal private input spendPubKeys[nUtxoOut][2];
-    signal private input commitmentsOut[nUtxoOut]; // public
+    // input user reward UTXO
+    signal input rAmountIn;
+    signal input rSpendPrivKey;
+    signal input rCommitmentIn; // public
+    signal input rMerkleRoot;
+    signal input rNullifier;
+    signal input rPathIndices;
+    signal input rPathElements[MerkleTreeDepth];
 
-    // output `rewardToken` UTXOs (i.e. notes being created)
-    signal private input rAmountsOut[nRwdUtxoOut];
-    signal private input rSpendPubKeys[nRwdUtxoOut][2];
-    signal private input rCommitmentsOut[nRwdUtxoOut]; // public
+
+    // output token UTXOs
+    signal input createTime; // public; both for `token` and `rewardToken` notes
+    signal input amountsOut[nUtxoOut];
+    signal input spendPubKeys[nUtxoOut]; // x coordinates
+    signal input commitmentsOut[nUtxoOut]; // public 
+
+    // output user reward UTXO
+    signal input rAmountOut;
+    signal input rSpendPubKey; // x coordinate
+    signal input rCommitmentsOut; // public
+
+    // output relayer reward ciphertext
+    signal input relayerRewardCipherText[4]; // public [c1, c2]
 
 
     /* Total amounts bellow can not overflow since:
@@ -59,28 +71,28 @@ template Transaction(nUtxoIn, nUtxoOut, nRwdUtxoOut, MerkleTreeDepth) {
       - `LimitChecker` caps output UTXO amounts and, indirectly, input amounts
       - smart contract caps `extAmountIn` and `extAmountOut` */
 
-    // 1. Verify "public" input signals
+    // // 1. Verify "public" input signals
 
-    component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut, nRwdUtxoOut);
+    // component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
 
-    publicInputHasher.publicToken <== publicToken;
-    publicInputHasher.extAmountIn <== extAmountIn;
-    publicInputHasher.extAmountOut <== extAmountOut;
-    publicInputHasher.rewardToken <== rewardToken;
-    publicInputHasher.forTxReward <== forTxReward;
-    publicInputHasher.forUtxoReward <== forUtxoReward;
-    publicInputHasher.forDepositReward <== forDepositReward;
-    publicInputHasher.extraInputsHash <== extraInputsHash;
-    publicInputHasher.spendTime <== spendTime;
-    publicInputHasher.createTime <== createTime;
-    for (var i=0; i<nUtxoIn; i++)
-        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
-    for (var i=0; i<nUtxoOut; i++)
-        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
-    for (var i=0; i<nRwdUtxoOut; i++)
-        publicInputHasher.rCommitmentsOut[i] <== rCommitmentsOut[i];
+    // publicInputHasher.publicToken <== publicToken;
+    // publicInputHasher.extAmountIn <== extAmountIn;
+    // publicInputHasher.extAmountOut <== extAmountOut;
+    // publicInputHasher.rewardToken <== rewardToken;
+    // publicInputHasher.forTxReward <== forTxReward;
+    // publicInputHasher.forUtxoReward <== forUtxoReward;
+    // publicInputHasher.forDepositReward <== forDepositReward;
+    // publicInputHasher.extraInputsHash <== extraInputsHash;
+    // publicInputHasher.spendTime <== spendTime;
+    // publicInputHasher.createTime <== createTime;
+    // for (var i=0; i<nUtxoIn; i++)
+    //     publicInputHasher.merkleRoots[i] <== merkleRoots[i];
+    // for (var i=0; i<nUtxoOut; i++)
+    //     publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
+    // for (var i=0; i<nRwdUtxoOut; i++)
+    //     publicInputHasher.rCommitmentsOut[i] <== rCommitmentsOut[i];
 
-    publicInputHasher.out === publicInputsHash;
+    // publicInputHasher.out === publicInputsHash;
 
 
     // 2. Verify input notes, compute total amount (in `token`) of spent UTXOs, ..

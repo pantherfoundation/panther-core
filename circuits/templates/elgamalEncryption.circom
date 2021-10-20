@@ -1,3 +1,6 @@
+//SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
+
 include "../../node_modules/circomlib/circuits/babyjub.circom"
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";

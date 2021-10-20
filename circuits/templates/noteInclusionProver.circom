@@ -1,4 +1,5 @@
 //SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
 
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
@@ -66,9 +67,10 @@ template NoteInclusionProver(n_levels) {
     isZeroUtxo.in <== utxoAmount;
 
     // verify computed root against provided one if UTXO is non-zero
-    component isEqual = IsEqual();
+    component isEqual = ForceEqualIfEnabled();
     isEqual.in[0] <== root;
     isEqual.in[1] <== proof.root;
+    isEqual.enabled <== 1-isZeroUtxo.out;
 
-    out <== isEqual.out * (1 - isZeroUtxo.out);
+    out <== isEqual.out;
 }

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: ISC
+//SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
 
 include "../../node_modules/circomlib/circuits/sha256/sha256.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
@@ -35,7 +36,7 @@ template PublicInputHasher(nUtxoIn, nUtxoOut, nRwdUtxoOut) {
     signal input rewardToken;
     signal input forTxReward;
     signal input forUtxoReward;
-    signal input forDepositReward;
+    signal input forDepositReward; //forBaseReward
     signal input extraInputsHash;
     signal input spendTime;
     signal input merkleRoots[nUtxoIn];
