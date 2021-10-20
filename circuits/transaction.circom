@@ -14,21 +14,29 @@ include "../node_modules/circomlib/circuits/babyjub.circom";
 // Nullifier := Poseidon(spendPrivKey, leafId)
 // tokenWeightLeaf := addr||weight  160 + 12, Merkle tree of depth 7
 
-template Transaction(nUtxoIn, nUtxoOut, MerkleTreeDepth) {
+template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDepth) {
 
     signal input publicInputsHash; // single explicitly public
+
+    signal input extraInputsHash; // public
 
     signal input publicToken; // public; `token` for a deposit/withdraw, zero otherwise
     signal input extAmountIn; // public; non-zero for a deposit
     signal input extAmountOut; // public; non-zero for a withdrawal
+
+    // token
     signal input token;
-    signal input rewardToken; // public
+    signal input tokenWeight[12];
+    signal input tokenMerkleRoot;    
+    signal input tokenPathIndices;
+    signal input tokenPathElements[WeightMerkleTreeDepth]
+
+    // reward points
     signal input forTxReward; // public
     signal input forUtxoReward; // public
     signal input forDepositReward; // public
     signal input forBaseReward; // public base relayer reward
-    signal input extraInputsHash; // public
-
+    
     // input `token` UTXOs (i.e. notes being spent)
     signal input spendTime; // public
     // token UTXOs
@@ -38,7 +46,7 @@ template Transaction(nUtxoIn, nUtxoOut, MerkleTreeDepth) {
     signal input merkleRoots[nUtxoIn]; // public
     signal input nullifiers[nUtxoIn]; // public
     signal input pathIndices[nUtxoIn];
-    signal input pathElements[nUtxoIn][MerkleTreeDepth];
+    signal input pathElements[nUtxoIn][UtxoMerkleTreeDepth];
     signal input createTimes[nUtxoIn];
 
     // input user reward UTXO
@@ -48,7 +56,7 @@ template Transaction(nUtxoIn, nUtxoOut, MerkleTreeDepth) {
     signal input rMerkleRoot;
     signal input rNullifier;
     signal input rPathIndices;
-    signal input rPathElements[MerkleTreeDepth];
+    signal input rPathElements[UtxoMerkleTreeDepth];
 
 
     // output token UTXOs
@@ -128,10 +136,10 @@ template Transaction(nUtxoIn, nUtxoOut, MerkleTreeDepth) {
         inputNoteHashers[i].createTime <== createTimes[i];
 
         // verify Merkle proof with non-zero amounts
-        inclusionProvers[i] = NoteInclusionProver(MerkleTreeDepth);
+        inclusionProvers[i] = NoteInclusionProver(UtxoMerkleTreeDepth);
         inclusionProvers[i].leaf <== inputNoteHashers[i].out;
         inclusionProvers[i].pathIndices <== pathIndices[i];
-        for(var j=0; j< MerkleTreeDepth; j++)
+        for(var j=0; j< UtxoMerkleTreeDepth; j++)
             inclusionProvers[i].pathElements[j] <== pathElements[i][j];
         inclusionProvers[i].root <== merkleRoots[i];
         inclusionProvers[i].utxoAmount <== amountsIn[i];
