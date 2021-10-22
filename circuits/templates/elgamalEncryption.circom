@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "../../node_modules/circomlib/circuits/babyjub.circom"
+include "../../node_modules/circomlib/circuits/babyjub.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
@@ -38,5 +38,3 @@ template ElGamalEncryption() {
     c2[0] <== drv_mGrY.xout;
     c2[1] <== drv_mGrY.yout;
 }
-
-component main = ElGamalEncryption();

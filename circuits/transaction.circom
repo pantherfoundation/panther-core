@@ -29,14 +29,15 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     signal input tokenWeight[12];
     signal input tokenMerkleRoot;    
     signal input tokenPathIndices;
-    signal input tokenPathElements[WeightMerkleTreeDepth]
+    signal input tokenPathElements[WeightMerkleTreeDepth];
 
     // reward points
     signal input forTxReward; // public
     signal input forUtxoReward; // public
     signal input forDepositReward; // public
     signal input forBaseReward; // public base relayer reward
-    
+    signal input relayerTips;
+
     // input `token` UTXOs (i.e. notes being spent)
     signal input spendTime; // public
     // token UTXOs
@@ -47,7 +48,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     signal input nullifiers[nUtxoIn]; // public
     signal input pathIndices[nUtxoIn];
     signal input pathElements[nUtxoIn][UtxoMerkleTreeDepth];
-    signal input createTimes[nUtxoIn];
+    signal input createTime[nUtxoIn];
 
     // input user reward UTXO
     signal input rAmountIn;
@@ -112,8 +113,6 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     component inclusionProvers[nUtxoIn];
 
     var totalAmountIn = extAmountIn; // in `token`
-    // TODO: check (and add comment) if (why) rewardsExpected can't overflow
-    var rewardsExpected = forTxReward + forDepositReward * extAmountIn; // in `rewardToken`
 
     for(var i=0; i<nUtxoIn; i++){
 
@@ -125,12 +124,11 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
         // derive spending pubkey
         pubKeys[i] = BabyPbk();
-        pubKeys[i].in <== spendPrivKeys[i]
+        pubKeys[i].in <== spendPrivKeys[i];
 
         // compute commitment
         inputNoteHashers[i] = NoteHasher();
-        inputNoteHashers[i].spendPbkX <== pubKeys[i].Ax; // to act as a blinding factor ..
-        inputNoteHashers[i].spendPbkY <== pubKeys[i].Ay; // .. it shall be unique per UTXO
+        inputNoteHashers[i].spendPkX <== pubKeys[i].Ax; // to act as a blinding factor ..
         inputNoteHashers[i].amount <== amountsIn[i];
         inputNoteHashers[i].token <== token;
         inputNoteHashers[i].createTime <== createTimes[i];
@@ -227,3 +225,4 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     publicTokenChecker.extAmounts <== extAmountIn + extAmountOut;
     publicTokenChecker.out === 1;
 }
+component main = Transaction(3,3,16,7);

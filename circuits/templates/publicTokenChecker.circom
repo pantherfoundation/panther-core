@@ -19,7 +19,7 @@ template PublicTokenChecker() {
     component isEqual = ForceEqualIfEnabled();
     isEqual.in[0] <== publicToken;
     isEqual.in[1] <== token;
-    isEqual.enabled <== 1-iSZero.out;
+    isEqual.enabled <== 1-isZero.out;
 
     out <== isEqual.out;
 }
