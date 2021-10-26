@@ -17,27 +17,34 @@ template Rewards(nUtxoIn) {
     signal output userRewards;
     signal output relayerRewards;
 
-    signal c1c3;
-    c1c3 <== forTxReward + forBaseReward;
+    /*
+    R= forTxReward + forBaseReward + (forUtxoReward * sum[over i](UTXO_period_i * UTXO_amount_i) + forDepositReward * deposit_amount) * asset_weight;
+    S1 = forTxReward + forBaseReward;
+    S2 = forDepositReward * deposit_amount
+    S3 = sum[over i](UTXO_period_i * UTXO_amount_i)
+    S4 = forUtxoReward * S3
+    S5 = (S4 + S2)*assetWeight
+    R = S1 + S5
+    */
+
+    signal S1;
+    signal S2;
+    signal S3;
+    signal S4;
+    signal S5;
+    signal R;
+    S1 <== forTxReward + forBaseReward;
+    S2 <== forDepositReward * extAmountIn;
     signal sum[nUtxoIn];
     sum[0] <== (spendTime - createTimes[0]) * amountsIn[0];
     for(var i=1; i<nUtxoIn; i++) {
         sum[i] <== sum[i-1] + (spendTime - createTimes[i]) * amountsIn[i];
     }
-    signal c2sum; 
-    c2sum <== sum[nUtxoIn-1] * forUtxoReward;
-    signal c2sumWeight;
-    c2sumWeight <== c2sum * assetWeight;
-    signal c1Weight;
-    c1Weight <== c1c3 + c2sumWeight;
-    signal c4Deposit;
-    c4Deposit <== forDepositReward* extAmountIn;
-    signal c4Weight;
-    c4Weight <== c4Deposit * assetWeight;
-    signal R;
-    R <== c1Weight + c4Weight;
-
-    userRewards <== R - relayerTips;
+    S3 <== sum[nUtxoIn-1];
+    S4 <== forUtxoReward*S3;
+    S5 <== (S4 + S2) * assetWeight;
+    R <== S1 + S5;
     relayerRewards <== forBaseReward + relayerTips; 
+    userRewards <== R - relayerRewards;
+    
 }
-component main = Rewards(2);
