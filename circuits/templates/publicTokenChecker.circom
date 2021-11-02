@@ -10,8 +10,6 @@ template PublicTokenChecker() {
     signal input extAmounts;
 
     // `publicToken` must be zero if `extAmounts == 0`, or `token` otherwise
-    signal output out; // 1 if the condition is true
-
 
     component isZero = IsZero();
     isZero.in <== extAmounts;
@@ -20,6 +18,4 @@ template PublicTokenChecker() {
     isEqual.in[0] <== publicToken;
     isEqual.in[1] <== token;
     isEqual.enabled <== 1-isZero.out;
-
-    out <== isEqual.out;
 }

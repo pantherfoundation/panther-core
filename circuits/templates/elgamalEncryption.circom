@@ -14,8 +14,8 @@ template ElGamalEncryption() {
 
     component drv_rG = BabyPbk();
     drv_rG.in <== r;
-    drv_rG.Ax === c1[0];
-    drv_rG.Ay === c1[1];
+    c1[0] <== drv_rG.Ax;
+    c1[1] <== drv_rG.Ay;
 
     component drv_mG = BabyPbk();
     drv_mG.in <== m;

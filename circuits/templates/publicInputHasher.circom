@@ -29,54 +29,54 @@ template SignalsHasher(nSignals) {
 }
 
 
-template PublicInputHasher(nUtxoIn, nUtxoOut, nRwdUtxoOut) {
+template PublicInputHasher(nUtxoIn, nUtxoOut) {
+    signal input extraInputsHash;
     signal input publicToken;
     signal input extAmountIn;
     signal input extAmountOut;
-    signal input rewardToken;
+    signal input tokenMerkleRoot;
     signal input forTxReward;
     signal input forUtxoReward;
-    signal input forDepositReward; //forBaseReward
-    signal input extraInputsHash;
+    signal input forDepositReward;
     signal input spendTime;
+    signal input rMerkleRoot;
+    signal input rNullifier;
+    signal input createTime;
+    signal input relayerRewardCipherText[4];
     signal input merkleRoots[nUtxoIn];
     signal input nullifiers[nUtxoIn];
-    signal input createTime;
     signal input commitmentsOut[nUtxoOut];
-    signal input rCommitmentsOut[nRwdUtxoOut];
 
     signal output out;
 
 
-    var nSignals = 10 + 2*nUtxoIn + nUtxoOut + nRwdUtxoOut;
+    var nSignals = 16 + 2*nUtxoIn + nUtxoOut;
     component hasher = SignalsHasher(nSignals);
 
-    hasher.in[0] <== publicToken;
-    hasher.in[1] <== extAmountIn;
-    hasher.in[2] <== extAmountOut;
-    hasher.in[3] <== rewardToken;
-    hasher.in[4] <== forTxReward;
-    hasher.in[5] <== forUtxoReward;
-    hasher.in[6] <== forDepositReward;
-    hasher.in[7] <== extraInputsHash;
+    hasher.in[0] <== extraInputsHash;
+    hasher.in[1] <== publicToken;
+    hasher.in[2] <== extAmountIn;
+    hasher.in[3] <== extAmountOut;
+    hasher.in[4] <== tokenMerkleRoot;
+    hasher.in[5] <== forTxReward;
+    hasher.in[6] <== forUtxoReward;
+    hasher.in[7] <== forDepositReward;
     hasher.in[8] <== spendTime;
-    hasher.in[9] <== createTime;
+    hasher.in[9] <== rMerkleRoot;
+    hasher.in[10] <== rNullifier;
+    hasher.in[11] <== createTime;
+    var shift = 12; 
+    for(var i=0; i< 4; i++)
+        hasher.in[shift + i] <== relayerRewardCipherText[i];
 
-    var shift = 10;
+    shift += 4;
     for(var i=0; i<nUtxoIn; i++) {
         hasher.in[shift+i] <== merkleRoots[i];
         hasher.in[shift+nUtxoIn+i] <== nullifiers[i];
     }
-
     shift += 2*nUtxoIn;
-    for(var i=0; i<nUtxoOut; i++) {
+    for(var i=0; i<nUtxoOut; i++)
         hasher.in[shift+i] <== commitmentsOut[i];
-    }
-
-    shift += nUtxoOut;
-    for(var i=0; i<nRwdUtxoOut; i++) {
-        hasher.in[shift+i] <== rCommitmentsOut[i];
-    }
-
+    
     out <== hasher.out;
 }
