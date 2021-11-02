@@ -7,7 +7,7 @@ include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
 template ElGamalEncryption() {
     signal input r; // randomness
-    signal input m; // reward points 
+    signal input m; // reward units
     signal input Y[2]; // relayer's public key
     signal output c1[2];
     signal output c2[2];
@@ -26,7 +26,7 @@ template ElGamalEncryption() {
     component drv_rY = EscalarMulAny(253);
     drv_rY.p[0] <== Y[0];
     drv_rY.p[1] <== Y[1];
-    for (var i = 0; i < 253; i++) 
+    for (var i = 0; i < 253; i++)
       drv_rY.e[i] <== n2b.out[i];
 
     component drv_mGrY = BabyAdd();

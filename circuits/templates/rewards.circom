@@ -3,20 +3,23 @@ pragma circom 2.0.0;
 
 template Rewards(nUtxoIn) {
     signal input extAmountIn;
-    signal input forTxReward; 
-    signal input forUtxoReward; 
-    signal input forDepositReward; 
-    signal input relayerTips;
+    signal input forTxReward;
+    signal input forUtxoReward;
+    signal input forDepositReward;
+    signal input rAmountTips;
     signal input amountsIn[nUtxoIn];
     signal input createTimes[nUtxoIn];
 
     signal input spendTime;
     signal input assetWeight;
 
-    signal output userRewards;
+    signal output rAmount;
 
     /*
-    R= forTxReward + (forUtxoReward * sum[over i](UTXO_period_i * UTXO_amount_i) + forDepositReward * deposit_amount) * asset_weight;
+    R= \
+       forTxReward \
+       + (forUtxoReward * sum[over i](UTXO_period_i * UTXO_amount_i) \
+       + forDepositReward * deposit_amount) * asset_weight;
     S1 = forTxReward
     S2 = forDepositReward * deposit_amount
     S3 = sum[over i](UTXO_period_i * UTXO_amount_i)
@@ -42,5 +45,6 @@ template Rewards(nUtxoIn) {
     S4 <== forUtxoReward*S3;
     S5 <== (S4 + S2) * assetWeight;
     R <== S1 + S5;
-    userRewards <== R - relayerTips;
+    // TODO: analyze if overflow handling needs
+    rAmount <== R - rAmountTips;
 }
