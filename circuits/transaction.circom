@@ -69,7 +69,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // output 'reward UTXO'
     signal input rAmountOut; // in reward units
-    // TODO: analyze if a new reward SpedKey required
+    signal inpur rPubKeyOut[2];
     signal input rCommitmentOut; // public
 
     // output 'relayer reward'
@@ -221,10 +221,10 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // commitment
     component rewardInHasher = RNoteHasher();
-    component rSpendPubKeys = BabyPbk();
-    rSpendPubKeys.in <== rSpendPrivKey;
-    rewardInHasher.spendPk[0] <== rSpendPubKeys.Ax;
-    rewardInHasher.spendPk[1] <== rSpendPubKeys.Ay;
+    component rPubKeyIn = BabyPbk();
+    rPubKeyIn.in <== rSpendPrivKey;
+    rewardInHasher.spendPk[0] <== rPubKeyIn.Ax;
+    rewardInHasher.spendPk[1] <== rPubKeyIn.Ay;
     rewardInHasher.amount <== rAmountIn;
     rewardInHasher.out === rCommitmentIn;
 
@@ -241,8 +241,8 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // commitment
     component rewardOutHasher = Poseidon(3);
-    rewardOutHasher.inputs[0] <== rSpendPubKeys.Ax;
-    rewardOutHasher.inputs[1] <== rSpendPubKeys.Ay;
+    rewardOutHasher.inputs[0] <== rPubKeyOut[0];
+    rewardOutHasher.inputs[1] <== rPubKeyOut[1]
     rewardOutHasher.inputs[2] <== rAmountOut;
     rewardOutHasher.out === rCommitmentOut;
 
