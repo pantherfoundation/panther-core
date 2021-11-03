@@ -16,10 +16,9 @@ template Rewards(nUtxoIn) {
     signal output rAmount;
 
     /*
-    R= \
-       forTxReward \
-       + (forUtxoReward * sum[over i](UTXO_period_i * UTXO_amount_i) \
-       + forDepositReward * deposit_amount) * asset_weight;
+    R = forTxReward + (
+      forUtxoReward * sum[over i](UTXO_period_i * UTXO_amount_i) + forDepositReward * deposit_amount
+    ) * asset_weight
     S1 = forTxReward
     S2 = forDepositReward * deposit_amount
     S3 = sum[over i](UTXO_period_i * UTXO_amount_i)

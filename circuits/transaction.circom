@@ -69,7 +69,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // output 'reward UTXO'
     signal input rAmountOut; // in reward units
-    // TODO: analize if a new reward SpedKey required
+    // TODO: analyze if a new reward SpedKey required
     signal input rCommitmentOut; // public
 
     // output 'relayer reward'
