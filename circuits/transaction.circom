@@ -12,6 +12,7 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
 include "../node_modules/circomlib/circuits/babyjub.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
+// leafID := treeNumber << MerkleDepth | leafPosition, width of treeNumber is 8 bits
 // spendPubKey := BabyPubKey(spendPrivKey)
 // Leaf := Poseidon(spendPubKey, amount, token, createTime)
 // Nullifier := Poseidon(spendPrivKey, leafId)
@@ -30,7 +31,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     // token
     signal input token; // first 12-bits for weight, then 20-bits for address
     signal input tokenMerkleRoot; // public
-    signal input tokenPathIndices;
+    signal input tokenPathIndices[WeightMerkleTreeDepth];
     signal input tokenPathElements[WeightMerkleTreeDepth+1]; // extra slot for the third leave
 
     // reward computation params
@@ -69,7 +70,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // output 'reward UTXO'
     signal input rAmountOut; // in reward units
-    signal inpur rPubKeyOut[2];
+    signal input rPubKeyOut[2];
     signal input rCommitmentOut; // public
 
     // output 'relayer reward'
@@ -86,39 +87,16 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
       - `LimitChecker` caps output UTXO amounts and, indirectly, input amounts
       - smart contract caps `extAmountIn` and `extAmountOut` */
 
-    // 1. Verify "public" input signals
+    
 
-    // TODO: tightly pack "public" input signals to optimize hashing
-    component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
-    publicInputHasher.extraInputsHash <== extraInputsHash;
-    publicInputHasher.publicToken <== publicToken;
-    publicInputHasher.extAmountIn <== extAmountIn;
-    publicInputHasher.extAmountOut <== extAmountOut;
-    publicInputHasher.tokenMerkleRoot <== tokenMerkleRoot;
-    publicInputHasher.forTxReward <== forTxReward;
-    publicInputHasher.forUtxoReward <== forUtxoReward;
-    publicInputHasher.forDepositReward <== forDepositReward;
-    publicInputHasher.spendTime <== spendTime;
-    publicInputHasher.rMerkleRoot <== rMerkleRoot;
-    publicInputHasher.rNullifier <== rNullifier;
-    publicInputHasher.createTime <== createTime;
-    for (var i=0; i<4; i++)
-        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i];
-    for (var i=0; i<nUtxoIn; i++) {
-        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
-        publicInputHasher.nullifiers[i] <== nullifiers[i];
-    }
-    for (var i=0; i<nUtxoOut; i++)
-        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
-
-    publicInputHasher.out === publicInputsHash;
-
-    // 2. Verify notes and compute total amount of input 'token UTXOs'
+    // 1. Verify notes and compute total amount of input 'token UTXOs'
     // .. and prepare computation of rewards
 
     component nullifierHashers[nUtxoIn];
     component pubKeys[nUtxoIn];
     component inputNoteHashers[nUtxoIn];
+    component leafIdsDecompose[nUtxoIn];
+    component treeNumbers[nUtxoIn];
     component inclusionProvers[nUtxoIn];
     component rewards = Rewards(nUtxoIn);
 
@@ -148,9 +126,11 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     // verify Merkle proof for token weight
     component merkleWeightInclusionProof = MerkleTreeInclusionProof(WeightMerkleTreeDepth);
     merkleWeightInclusionProof.leaf <== token;
-    merkleWeightInclusionProof.pathIndices <== tokenPathIndices;
-    for(var i=0; i<=WeightMerkleTreeDepth; i++)
+    for(var i=0; i<WeightMerkleTreeDepth; i++) {
         merkleWeightInclusionProof.pathElements[i] <== tokenPathElements[i];
+        merkleWeightInclusionProof.pathIndices[i] <== tokenPathIndices[i];
+    }
+    merkleWeightInclusionProof.pathElements[WeightMerkleTreeDepth] <== tokenPathElements[WeightMerkleTreeDepth];
     merkleWeightInclusionProof.root === tokenMerkleRoot;
 
     var totalAmountIn = extAmountIn; // in token units
@@ -175,12 +155,21 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
         inputNoteHashers[i].token <== tokenAddress;
         inputNoteHashers[i].createTime <== createTimes[i];
 
+        // decompose leafID
+        leafIdsDecompose[i] = Num2Bits_strict();
+        leafIdsDecompose[i].in <== leafIds[i];
+        treeNumbers[i] = Bits2Num(8); // up to 2**8 trees
+        for(var j=0; j<8; j++) 
+            treeNumbers[i].in[j] <== leafIdsDecompose[i].out[j+UtxoMerkleTreeDepth];
+
         // verify Merkle proof with non-zero amounts
         inclusionProvers[i] = NoteInclusionProver(UtxoMerkleTreeDepth);
         inclusionProvers[i].leaf <== inputNoteHashers[i].out;
-        inclusionProvers[i].pathIndices <== pathIndices[i];
-        for(var j=0; j<= UtxoMerkleTreeDepth; j++)
+        for(var j=0; j< UtxoMerkleTreeDepth; j++) {
             inclusionProvers[i].pathElements[j] <== pathElements[i][j];
+            inclusionProvers[i].pathIndices[j] <== leafIdsDecompose[i].out[j];
+        }
+        inclusionProvers[i].pathElements[UtxoMerkleTreeDepth] <== pathElements[i][UtxoMerkleTreeDepth];
         inclusionProvers[i].root <== merkleRoots[i];
         inclusionProvers[i].utxoAmount <== amountsIn[i];
 
@@ -242,7 +231,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     // commitment
     component rewardOutHasher = Poseidon(3);
     rewardOutHasher.inputs[0] <== rPubKeyOut[0];
-    rewardOutHasher.inputs[1] <== rPubKeyOut[1]
+    rewardOutHasher.inputs[1] <== rPubKeyOut[1];
     rewardOutHasher.inputs[2] <== rAmountOut;
     rewardOutHasher.out === rCommitmentOut;
 
@@ -262,4 +251,32 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     publicTokenChecker.publicToken <== publicToken;
     publicTokenChecker.tokenAddress <== tokenAddress;
     publicTokenChecker.extAmounts <== extAmountIn + extAmountOut;
+
+    // Verify "public" input signals
+
+    // TODO: tightly pack "public" input signals to optimize hashing
+    component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
+    publicInputHasher.extraInputsHash <== extraInputsHash;
+    publicInputHasher.publicToken <== publicToken;
+    publicInputHasher.extAmountIn <== extAmountIn;
+    publicInputHasher.extAmountOut <== extAmountOut;
+    publicInputHasher.tokenMerkleRoot <== tokenMerkleRoot;
+    publicInputHasher.forTxReward <== forTxReward;
+    publicInputHasher.forUtxoReward <== forUtxoReward;
+    publicInputHasher.forDepositReward <== forDepositReward;
+    publicInputHasher.spendTime <== spendTime;
+    publicInputHasher.rMerkleRoot <== rMerkleRoot;
+    publicInputHasher.rNullifier <== rNullifier;
+    publicInputHasher.createTime <== createTime;
+    for (var i=0; i<4; i++)
+        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i];
+    for (var i=0; i<nUtxoIn; i++) {
+        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
+        publicInputHasher.nullifiers[i] <== nullifiers[i];
+        publicInputHasher.treeNumbers[i] <== treeNumbers[i].out;
+    }
+    for (var i=0; i<nUtxoOut; i++)
+        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
+
+    publicInputHasher.out === publicInputsHash;
 }

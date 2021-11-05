@@ -21,36 +21,34 @@ in the array are leaves (pair leaves to the one set by the `leaf` signal).
 
 template MerkleTreeInclusionProof(n_levels) {
     signal input leaf;
-    signal input pathIndices;
+    signal input pathIndices[n_levels];
     signal input pathElements[n_levels+1]; // extra slot for third leave
 
     signal output root;
 
     component hashers[n_levels];
     component switchers[n_levels];
-    component index = Num2Bits(n_levels);
-    index.in <== pathIndices;
-    // Note: `index.out[0]` gets the leaves level bit
+    // Note: `pathIndices[0]` gets the leaves level bit
 
     // first, process 3 leaves ...
     hashers[0] = Poseidon(3);
     // c = leaf, l pathElements[0], r = pathElements[1];
-    // bl = index.out[0], bh = index.out[1]
+    // bl = pathIndices[0], bh = pathIndices[1]
     // enforece that bh,bl can't be 11
-    0 === index.out[0]*index.out[1];
+    0 === pathIndices[0]*pathIndices[1];
     // n1 is c if bl
-    hashers[0].inputs[0] <== leaf + (index.out[0]+index.out[1])*(pathElements[0] - leaf);
+    hashers[0].inputs[0] <== leaf + (pathIndices[0]+pathIndices[1])*(pathElements[0] - leaf);
     signal temp;
-    temp <== pathElements[0] + index.out[0]*(leaf - pathElements[0]);
-    hashers[0].inputs[1] <== temp + index.out[1]*(pathElements[1] - pathElements[0]);
-    hashers[0].inputs[2] <== pathElements[1] + index.out[1]*(leaf -pathElements[1]);
+    temp <== pathElements[0] + pathIndices[0]*(leaf - pathElements[0]);
+    hashers[0].inputs[1] <== temp + pathIndices[1]*(pathElements[1] - pathElements[0]);
+    hashers[0].inputs[2] <== pathElements[1] + pathIndices[1]*(leaf -pathElements[1]);
 
     // ... then loop through levels above leaves
     for (var i = 1; i < n_levels; i++) {
         switchers[i] = Switcher(); // (outL,outR) = sel==0 ? (L,R) : (R,L)
         switchers[i].L <== hashers[i-1].out;
         switchers[i].R <== pathElements[i+1];
-        switchers[i].sel <== index.out[i];
+        switchers[i].sel <== pathIndices[i];
         hashers[i] = Poseidon(2);
         hashers[i].inputs[0] <== switchers[i].outL;
         hashers[i].inputs[1] <== switchers[i].outR;
@@ -63,16 +61,18 @@ template MerkleTreeInclusionProof(n_levels) {
 template NoteInclusionProver(n_levels) {
     signal input root;
     signal input leaf;
-    signal input pathIndices;
+    signal input pathIndices[n_levels];
     signal input pathElements[n_levels+1]; // extra slot for third leave
     signal input utxoAmount;
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProof(n_levels);
     proof.leaf <== leaf;
-    proof.pathIndices <== pathIndices;
-    for (var i=0; i<=n_levels; i++)
+    for (var i=0; i<n_levels; i++){
+        proof.pathIndices[i] <== pathIndices[i];
         proof.pathElements[i] <== pathElements[i];
+    }
+    proof.pathElements[n_levels] <== pathElements[n_levels];
 
     // check if UTXO amount is zero
     component isZeroUtxo = IsZero();

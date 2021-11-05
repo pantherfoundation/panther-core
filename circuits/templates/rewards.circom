@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
+include "../../node_modules/circomlib/circuits/comparators.circom";
 
 template Rewards(nUtxoIn) {
     signal input extAmountIn;
@@ -45,5 +46,9 @@ template Rewards(nUtxoIn) {
     S5 <== (S4 + S2) * assetWeight;
     R <== S1 + S5;
     // TODO: analyze if overflow handling needs
+    component lte = LessEqThan(120); // assuming R and rAmountTips are 120-bits
+    lte.in[0] <== rAmountTips;
+    lte.in[1] <== R;
+    lte.out === 1;
     rAmount <== R - rAmountTips;
 }

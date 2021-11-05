@@ -40,17 +40,17 @@ template PublicInputHasher(nUtxoIn, nUtxoOut) {
     signal input forDepositReward;
     signal input spendTime;
     signal input rMerkleRoot;
-    signal input rNullifier;
+    signal input rNullifier;    
     signal input createTime;
     signal input relayerRewardCipherText[4];
     signal input merkleRoots[nUtxoIn];
+    signal input treeNumbers[nUtxoIn];
     signal input nullifiers[nUtxoIn];
     signal input commitmentsOut[nUtxoOut];
 
     signal output out;
 
-
-    var nSignals = 16 + 2*nUtxoIn + nUtxoOut;
+    var nSignals = 16 + 3*nUtxoIn + nUtxoOut;
     component hasher = SignalsHasher(nSignals);
 
     hasher.in[0] <== extraInputsHash;
@@ -73,8 +73,9 @@ template PublicInputHasher(nUtxoIn, nUtxoOut) {
     for(var i=0; i<nUtxoIn; i++) {
         hasher.in[shift+i] <== merkleRoots[i];
         hasher.in[shift+nUtxoIn+i] <== nullifiers[i];
+        hasher.in[shift+ 2*nUtxoIn+i] <== treeNumbers[i];
     }
-    shift += 2*nUtxoIn;
+    shift += 3*nUtxoIn;
     for(var i=0; i<nUtxoOut; i++)
         hasher.in[shift+i] <== commitmentsOut[i];
     
