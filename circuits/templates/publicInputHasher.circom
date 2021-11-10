@@ -34,7 +34,7 @@ template PublicInputHasher(nUtxoIn, nUtxoOut) {
     signal input publicToken;
     signal input extAmountIn;
     signal input extAmountOut;
-    signal input tokenMerkleRoot;
+    signal input weightMerkleRoot;
     signal input forTxReward;
     signal input forUtxoReward;
     signal input forDepositReward;
@@ -57,7 +57,7 @@ template PublicInputHasher(nUtxoIn, nUtxoOut) {
     hasher.in[1] <== publicToken;
     hasher.in[2] <== extAmountIn;
     hasher.in[3] <== extAmountOut;
-    hasher.in[4] <== tokenMerkleRoot;
+    hasher.in[4] <== weightMerkleRoot;
     hasher.in[5] <== forTxReward;
     hasher.in[6] <== forUtxoReward;
     hasher.in[7] <== forDepositReward;

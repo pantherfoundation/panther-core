@@ -6,16 +6,16 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 
 template PublicTokenChecker() {
     signal input publicToken;
-    signal input tokenAddress;
+    signal input token;
     signal input extAmounts;
 
-    // `publicToken` must be zero if `extAmounts == 0`, or `tokenAddress` otherwise
+    // `publicToken` must be zero if `extAmounts == 0`, or `token` otherwise
 
     component isZero = IsZero();
     isZero.in <== extAmounts;
 
     component isEqual = ForceEqualIfEnabled();
     isEqual.in[0] <== publicToken;
-    isEqual.in[1] <== tokenAddress;
+    isEqual.in[1] <== token;
     isEqual.enabled <== 1-isZero.out;
 }

@@ -60,14 +60,14 @@ template MerkleTreeInclusionProof(n_levels) {
 
 template NoteInclusionProver(n_levels) {
     signal input root;
-    signal input leaf;
+    signal input note;
     signal input pathIndices[n_levels];
     signal input pathElements[n_levels+1]; // extra slot for third leave
     signal input utxoAmount;
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProof(n_levels);
-    proof.leaf <== leaf;
+    proof.leaf <== note;
     for (var i=0; i<n_levels; i++){
         proof.pathIndices[i] <== pathIndices[i];
         proof.pathElements[i] <== pathElements[i];

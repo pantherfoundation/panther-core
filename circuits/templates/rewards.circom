@@ -8,11 +8,12 @@ template Rewards(nUtxoIn) {
     signal input forUtxoReward;
     signal input forDepositReward;
     signal input rAmountTips;
+    signal input spendTime;
+    signal input assetWeight;
     signal input amountsIn[nUtxoIn];
     signal input createTimes[nUtxoIn];
 
-    signal input spendTime;
-    signal input assetWeight;
+    
 
     signal output rAmount;
 
@@ -45,7 +46,7 @@ template Rewards(nUtxoIn) {
     S4 <== forUtxoReward*S3;
     S5 <== (S4 + S2) * assetWeight;
     R <== S1 + S5;
-    // TODO: analyze if overflow handling needs
+
     component lte = LessEqThan(120); // assuming R and rAmountTips are 120-bits
     lte.in[0] <== rAmountTips;
     lte.in[1] <== R;
