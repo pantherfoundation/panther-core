@@ -9,14 +9,14 @@ template UtxoLeafDecoder(UtxoMerkleTreeDepth){
   signal output amount;
   signal output createTime;
   signal output treeNumber;
-  signal output index[UtxoMerkleTreeDepth];
+  signal output index[UtxoMerkleTreeDepth+1];
   // 120 bits for amount
   //  32 bits for createTime
   //   8 bits for treeNumber
   //  depth bits for index
   assert(UtxoMerkleTreeDepth <= 16);
 
-  component n2b = Num2Bits(160+UtxoMerkleTreeDepth);
+  component n2b = Num2Bits(160+UtxoMerkleTreeDepth+1);
   n2b.in <== leaf;
   
   component b2nAmount = Bits2Num(120);
@@ -37,7 +37,7 @@ template UtxoLeafDecoder(UtxoMerkleTreeDepth){
   treeNumber <== b2nTree.out;
 
   shift = shift + 8;
-  component b2nIndex = Bits2Num(UtxoMerkleTreeDepth);
-  for(var i=0; i<UtxoMerkleTreeDepth; i++)
+  component b2nIndex = Bits2Num(UtxoMerkleTreeDepth+1);
+  for(var i=0; i<UtxoMerkleTreeDepth+1; i++)
       index[i] <== n2b.out[shift+i];
 }

@@ -8,7 +8,7 @@ template RewardLeafDecoder(UtxoMerkleTreeDepth){
   signal input leaf;
   signal output amount;
   signal output treeNumber;
-  signal output index[UtxoMerkleTreeDepth];
+  signal output index[UtxoMerkleTreeDepth+1];
   // 120 bits for amount
   //   8 bits for treeNumber
   //  depth bits for index

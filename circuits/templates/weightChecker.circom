@@ -24,10 +24,9 @@ template WeightChecker(WeightMerkleTreeDepth){
     0 === (weightDecoder.token-token)*weightDecoder.token;
 
     merkleVerifier.leaf <== leaf;
-    for (var i=0; i<WeightMerkleTreeDepth; i++){
+    for (var i=0; i<WeightMerkleTreeDepth+1; i++){
         merkleVerifier.pathIndices[i] <== weightDecoder.index[i];
         merkleVerifier.pathElements[i] <== pathElements[i];
     }
-    merkleVerifier.pathElements[WeightMerkleTreeDepth] <== pathElements[WeightMerkleTreeDepth];
     merkleVerifier.root === merkleRoot;
 }

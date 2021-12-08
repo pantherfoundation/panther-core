@@ -19,9 +19,7 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 // Note := Poseidon(spendPubKey, amount, token, createTime)
 // Nullifier := Poseidon(spendPrivKey, leaf)
 
-template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDepth) {
-
-    signal input publicInputsHash; // single explicitly public
+template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDepth) {
 
     signal input extraInputsHash; // public
 
@@ -223,31 +221,9 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     publicTokenChecker.token <== token;
     publicTokenChecker.extAmounts <== extAmountIn + extAmountOut;
 
-    // Verify "public" input signals
-
-    // TODO: tightly pack "public" input signals to optimize hashing
-    component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
-    publicInputHasher.extraInputsHash <== extraInputsHash;
-    publicInputHasher.publicToken <== publicToken;
-    publicInputHasher.extAmountIn <== extAmountIn;
-    publicInputHasher.extAmountOut <== extAmountOut;
-    publicInputHasher.weightMerkleRoot <== weightMerkleRoot;
-    publicInputHasher.forTxReward <== forTxReward;
-    publicInputHasher.forUtxoReward <== forUtxoReward;
-    publicInputHasher.forDepositReward <== forDepositReward;
-    publicInputHasher.spendTime <== spendTime;
-    publicInputHasher.rMerkleRoot <== rMerkleRoot;
-    publicInputHasher.rNullifier <== rNullifier;
-    publicInputHasher.createTime <== createTime;
-    for (var i=0; i<4; i++)
-        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i];
-    for (var i=0; i<nUtxoIn; i++) {
-        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
-        publicInputHasher.nullifiers[i] <== nullifiers[i];
-        publicInputHasher.treeNumbers[i] <== leafDecoders[i].treeNumber;
-    }
-    for (var i=0; i<nUtxoOut; i++)
-        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
-
-    publicInputHasher.out === publicInputsHash;
 }
+
+component main {public [extraInputsHash, publicToken, extAmountIn, extAmountOut,
+ weightMerkleRoot, forTxReward, forUtxoReward,  forDepositReward, spendTime,
+ rMerkleRoot, rNullifier, createTime, relayerRewardCipherText, merkleRoots, 
+ nullifiers, commitmentsOut ]} = ProverEfficientTransaction(2,2,16,6);
