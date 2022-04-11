@@ -23,7 +23,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     signal input publicInputsHash; // single explicitly public
 
-    signal input extraInputsHash; // public
+    signal input extraInputsHash; // public - sha256 hash of: depositAddress, withdrawalAddress, plugin.ContractAddress, secrets ( cipherText not needed ) 
 
     signal input publicToken; // public; address from `token` for a deposit/withdraw, zero otherwise
     signal input extAmountIn; // public; in token units, non-zero for a deposit
@@ -33,7 +33,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // weight    
     signal input weightMerkleRoot; // public
-    signal input weightLeaf; 
+    signal input weightLeaf; // 160b token, 32b weight, at most 8b path indexes 
     signal input weightPathElements[WeightMerkleTreeDepth+1]; // extra slot for the third leave
 
     // reward computation params
@@ -45,14 +45,14 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     signal input spendTime; // public
     // UTXOs
     signal input spendPrivKeys[nUtxoIn];
-    signal input leaves[nUtxoIn];
+    signal input leaves[nUtxoIn]; // 120b amount, 32b create time, 8b tree-number, Depth-bits for index  
     signal input merkleRoots[nUtxoIn]; // public
     signal input nullifiers[nUtxoIn]; // public
     signal input pathElements[nUtxoIn][UtxoMerkleTreeDepth+1]; // extra slot for the third leave
 
     // input 'reward UTXO'
-    signal input rLeaf;
-    signal input rSpendPrivKey;
+    signal input rLeaf; // 120b amount, 8b tree-number, Depth bits for index 
+    signal input rSpendPrivKey; 
     signal input rCommitmentIn;
     signal input rMerkleRoot; // public
     signal input rNullifier; // public
@@ -64,7 +64,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     // output 'token UTXOs'
     signal input amountsOut[nUtxoOut]; // in token units
     signal input spendPubKeys[nUtxoOut][2];
-    signal input commitmentsOut[nUtxoOut]; // public
+    signal input commitmentsOut[nUtxoOut]; // public - Poseidon(5) hash of spendPubKeys, amountOut, token, createTime 
 
     // output 'reward UTXO'
     signal input rAmountOut; // in reward units
@@ -129,7 +129,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
         // verify Merkle proofs for input notes
         inclusionProvers[i] = NoteInclusionProver(UtxoMerkleTreeDepth);
-        inclusionProvers[i].note <== inputNoteHashers[i].out;
+        inclusionProvers[i].note <== inputNoteHashers[i].out; // This is leaf in MerkleTree - Poseidon(5) hash of pubKey{Ax,Ay}, amount, token, createTime
         for(var j=0; j< UtxoMerkleTreeDepth+1; j++) {
             inclusionProvers[i].pathElements[j] <== pathElements[i][j];
             inclusionProvers[i].pathIndices[j] <== leafDecoders[i].index[j];
@@ -156,12 +156,12 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
         // verify commitment
         outputNoteHashers[i] = NoteHasher();
-        outputNoteHashers[i].spendPk[0] <== spendPubKeys[i][0];
-        outputNoteHashers[i].spendPk[1] <== spendPubKeys[i][1];
+        outputNoteHashers[i].spendPk[0] <== spendPubKeys[i][0]; // Poseidon.Ax
+        outputNoteHashers[i].spendPk[1] <== spendPubKeys[i][1]; // Poseidon.Ay 
         outputNoteHashers[i].amount <== amountsOut[i];
         outputNoteHashers[i].token <== token;
         outputNoteHashers[i].createTime <== createTime;
-        outputNoteHashers[i].out === commitmentsOut[i];
+        outputNoteHashers[i].out === commitmentsOut[i]; // Proof that Poseidon(5) hash is equal to provided precomputed hash of same params. 
 
         // accumulate total
         totalAmountOut += amountsOut[i];
@@ -227,27 +227,27 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // TODO: tightly pack "public" input signals to optimize hashing
     component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
-    publicInputHasher.extraInputsHash <== extraInputsHash;
-    publicInputHasher.publicToken <== publicToken;
-    publicInputHasher.extAmountIn <== extAmountIn;
-    publicInputHasher.extAmountOut <== extAmountOut;
-    publicInputHasher.weightMerkleRoot <== weightMerkleRoot;
-    publicInputHasher.forTxReward <== forTxReward;
-    publicInputHasher.forUtxoReward <== forUtxoReward;
-    publicInputHasher.forDepositReward <== forDepositReward;
-    publicInputHasher.spendTime <== spendTime;
-    publicInputHasher.rMerkleRoot <== rMerkleRoot;
-    publicInputHasher.rNullifier <== rNullifier;
-    publicInputHasher.createTime <== createTime;
+    publicInputHasher.extraInputsHash <== extraInputsHash; // kessac256 is 256 bits 
+    publicInputHasher.publicToken <== publicToken; // 160 bit 
+    publicInputHasher.extAmountIn <== extAmountIn; // at least 51 bit - 1e-6..1e9 US$ - 96 bit preferable 
+    publicInputHasher.extAmountOut <== extAmountOut; // at least 51 bits -  1e-6..1e9 US$ - 96 bit preferable 
+    publicInputHasher.weightMerkleRoot <== weightMerkleRoot; // 256 bit cause of poseidon(5) - at least 160+32+8 = 200 bit 
+    publicInputHasher.forTxReward <== forTxReward; // 40 bit 
+    publicInputHasher.forUtxoReward <== forUtxoReward; // 40 bit 
+    publicInputHasher.forDepositReward <== forDepositReward; // 40 bit  
+    publicInputHasher.spendTime <== spendTime; // 32 bit 
+    publicInputHasher.rMerkleRoot <== rMerkleRoot; // 256 bit    
+    publicInputHasher.rNullifier <== rNullifier; // 256 bit since Poseidon(3) hash  
+    publicInputHasher.createTime <== createTime; // 32 bit 
     for (var i=0; i<4; i++)
-        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i];
+        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i]; // 254 bit - ElGamal BabyPbk 
     for (var i=0; i<nUtxoIn; i++) {
         publicInputHasher.merkleRoots[i] <== merkleRoots[i];
         publicInputHasher.nullifiers[i] <== nullifiers[i];
         publicInputHasher.treeNumbers[i] <== leafDecoders[i].treeNumber;
     }
     for (var i=0; i<nUtxoOut; i++)
-        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i];
+        publicInputHasher.commitmentsOut[i] <== commitmentsOut[i]; // 256 bit since hashing 
 
-    publicInputHasher.out === publicInputsHash;
+    publicInputHasher.out === publicInputsHash; // 256 bit since hashing 
 }
