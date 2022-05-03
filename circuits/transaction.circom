@@ -45,13 +45,13 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     signal input spendTime; // public
     // UTXOs
     signal input spendPrivKeys[nUtxoIn];
-    signal input leaves[nUtxoIn]; // 120b amount, 32b create time, 8b tree-number, Depth-bits for index  
+    signal input leaves[nUtxoIn]; // 120b amount, 32b create time, 24b tree-number, Depth-bits for index  
     signal input merkleRoots[nUtxoIn]; // public
     signal input nullifiers[nUtxoIn]; // public
     signal input pathElements[nUtxoIn][UtxoMerkleTreeDepth+1]; // extra slot for the third leave
 
     // input 'reward UTXO'
-    signal input rLeaf; // 120b amount, 8b tree-number, Depth bits for index 
+    signal input rLeaf; // 120b amount, 8b tree-number, Depth bits for index -  
     signal input rSpendPrivKey; 
     signal input rCommitmentIn;
     signal input rMerkleRoot; // public
@@ -62,6 +62,9 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     signal input createTime; // public;
 
     // output 'token UTXOs'
+    // real leaf - 120b amount, 32b createTime, 24b treeNumber, 16b indexes   
+    // this info is encrypted by creater of Output UTXO and logged on-chain in order to use it later when one need to spend
+    // spendPrivKey known to owner of this UTXO_output 
     signal input amountsOut[nUtxoOut]; // in token units
     signal input spendPubKeys[nUtxoOut][2];
     signal input commitmentsOut[nUtxoOut]; // public - Poseidon(5) hash of spendPubKeys, amountOut, token, createTime 
@@ -73,7 +76,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
     // output 'relayer reward'
     signal input rAmountTips; // in reward units
-    signal input relayerRewardCipherText[4]; // public [c1, c2]
+    signal input relayerRewardCipherText[4]; // public [c1, c2] - c1{Ax,Ay}, c2{Ax,Ay} - we need it unpacked since we use it for computation that need unpacked - but in public hash we will use it as packed version 
     signal input relayerPK[2];
     signal input relayerRandomness;
 
@@ -109,7 +112,7 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
         leafDecoders[i] = UtxoLeafDecoder(UtxoMerkleTreeDepth);
         leafDecoders[i].leaf <== leaves[i];
 
-        // verify nullifier
+        // verify nullifier - know all parameters to hash Poseidon(2)
         nullifierHashers[i] = NullifierHasher();
         nullifierHashers[i].spendPrivKey <== spendPrivKeys[i];
         nullifierHashers[i].leaf <== leaves[i];
@@ -147,7 +150,6 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
 
 
     // 3. Verify output notes and compute total amount of output 'token UTXOs'
-
     component outputNoteHashers[nUtxoOut];
 
     var totalAmountOut = extAmountOut;
@@ -224,14 +226,15 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     publicTokenChecker.extAmounts <== extAmountIn + extAmountOut;
 
     // Verify "public" input signals
-
-    // TODO: tightly pack "public" input signals to optimize hashing
+    // TOTAL inputs ~ 256 + 160 + 2*96 + 256 + 3*40 + 32 + 256 + 256 + 32 + 4*256 + 2*256 + 2*256 + 2*24 + 2*256 = not more ! 4096 bit
+    // desirable for Polygon is 15x256 since Poseidon(5) is max in Solidity so 3 * Poseidon(5)  
+    // ACCEPTED - packed version of relayerRewardCipherText ( for public hasher input only )
     component publicInputHasher = PublicInputHasher(nUtxoIn, nUtxoOut);
     publicInputHasher.extraInputsHash <== extraInputsHash; // kessac256 is 256 bits 
     publicInputHasher.publicToken <== publicToken; // 160 bit 
-    publicInputHasher.extAmountIn <== extAmountIn; // at least 51 bit - 1e-6..1e9 US$ - 96 bit preferable 
-    publicInputHasher.extAmountOut <== extAmountOut; // at least 51 bits -  1e-6..1e9 US$ - 96 bit preferable 
-    publicInputHasher.weightMerkleRoot <== weightMerkleRoot; // 256 bit cause of poseidon(5) - at least 160+32+8 = 200 bit 
+    publicInputHasher.extAmountIn <== extAmountIn; // 1e-6..1e9 US$ - 96 bit preferable 
+    publicInputHasher.extAmountOut <== extAmountOut; // 1e-6..1e9 US$ - 96 bit preferable 
+    publicInputHasher.weightMerkleRoot <== weightMerkleRoot; // 256 bit cause of poseidon(5)  
     publicInputHasher.forTxReward <== forTxReward; // 40 bit 
     publicInputHasher.forUtxoReward <== forUtxoReward; // 40 bit 
     publicInputHasher.forDepositReward <== forDepositReward; // 40 bit  
@@ -240,11 +243,11 @@ template Transaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, WeightMerkleTreeDep
     publicInputHasher.rNullifier <== rNullifier; // 256 bit since Poseidon(3) hash  
     publicInputHasher.createTime <== createTime; // 32 bit 
     for (var i=0; i<4; i++)
-        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i]; // 254 bit - ElGamal BabyPbk 
+        publicInputHasher.relayerRewardCipherText[i] <== relayerRewardCipherText[i]; // 254 bit - ElGamal BabyPbk - Lets pack it for hash to be 256+1 bit - Ax, Sign 
     for (var i=0; i<nUtxoIn; i++) {
-        publicInputHasher.merkleRoots[i] <== merkleRoots[i];
-        publicInputHasher.nullifiers[i] <== nullifiers[i];
-        publicInputHasher.treeNumbers[i] <== leafDecoders[i].treeNumber;
+        publicInputHasher.merkleRoots[i] <== merkleRoots[i]; // 256 bit
+        publicInputHasher.nullifiers[i] <== nullifiers[i]; // 256 bit 
+        publicInputHasher.treeNumbers[i] <== leafDecoders[i].treeNumber; // 24 bit - ACCEPTED 
     }
     for (var i=0; i<nUtxoOut; i++)
         publicInputHasher.commitmentsOut[i] <== commitmentsOut[i]; // 256 bit since hashing 
