@@ -3,17 +3,18 @@ pragma circom 2.0.0;
 
 include "../../node_modules/circomlib/circuits/sha256/sha256.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/gates.circom";
 
 template SignalsHasher(nSignals) {
     signal input in[nSignals];
     signal output out;
 
+    var nBits = 256;
     component n2b[nSignals];
-    component sha256 = Sha256(nSignals*256);
+    component sha256 = Sha256(nSignals*nBits);
 
     // serialize all input signals into "bits"
     for(var i=0; i<nSignals; i++){
-        var nBits = 256;
         n2b[i] = Num2Bits(nBits);
         n2b[i].in <== in[i];
         for(var j=0; j<nBits; j++) { 
@@ -23,13 +24,13 @@ template SignalsHasher(nSignals) {
     }
 
     // deserialize output "bits" into (single) output signal
-    component b2n = Bits2Num(256);
-    for (var i = 0; i < 256; i++) {
+    component b2n = Bits2Num(nBits);
+    for (var i = 0; i < nBits; i++) {
         b2n.in[i] <== sha256.out[255-i];
     }
     out <== b2n.out;
 }
-
+// SHA256 
 template PublicInputHasher(nUtxoIn, nUtxoOut) {
     signal input extraInputsHash; // 256 bit - 0 
     signal input publicToken; // 160 bit - 1
@@ -82,6 +83,34 @@ template PublicInputHasher(nUtxoIn, nUtxoOut) {
     
     out <== hasher.out;
 }
+
+// Measurements Games 
+template PublicInputHasherOpt(nUtxoIn, nUtxoOut) {
+    signal input extraInputsHash; // 256 bit - 0 
+    signal input publicToken; // 160 bit - 1
+    signal input extAmountIn; // 96 bit - 2
+    signal input extAmountOut; // 96 bit - 3
+    signal input weightMerkleRoot; // 256 bit  - 4 
+    signal input forTxReward; // 40 bit - 5 
+    signal input forUtxoReward; // 40 bit - 6
+    signal input forDepositReward; // 40 bit - 7 
+    signal input spendTime; // 32 bit - 8
+    signal input rMerkleRoot; // 256 bit - 9
+    signal input rNullifier; // 256 bit - 10
+    signal input createTime; // 32 bit - 11
+    signal input relayerRewardCipherText[4]; // 256 bit - 12,13,14,15 
+    signal input merkleRoots[nUtxoIn]; // 256 bit - 16,17 ( for 2 )
+    signal input treeNumbers[nUtxoIn]; // 8 bit - 18,19 ( for 2 )
+    signal input nullifiers[nUtxoIn]; // 256 bit - 20,21 ( for 2 )
+    signal input commitmentsOut[nUtxoOut]; // 256 bit - 22,23 ( for 2 )
+
+    signal output out;
+    
+    component hasher = SignalsHasher(1);
+    hasher.in[0] <== extraInputsHash;
+
+    out <== hasher.out;
+} 
 
 // Packeging specific - not general 
 template SignalsHasherPacked(nSignals, nSha256InBits) {
@@ -163,7 +192,141 @@ template SignalsHasherPacked(nSignals, nSha256InBits) {
     }
     out <== b2n.out;
 }
+// FIXME: Support only nUtxoIn == nUtxoOut == 2
+template PublicInputHasherTripplePoseidon(nUtxoIn, nUtxoOut) {
+    signal input extraInputsHash; // 256 bit - 0 
+    signal input publicToken; // 160 bit - 1
+    signal input extAmountIn; // 96 bit - 2
+    signal input extAmountOut; // 96 bit - 3
+    signal input weightMerkleRoot; // 256 bit  - 4 
+    signal input forTxReward; // 40 bit - 5 
+    signal input forUtxoReward; // 40 bit - 6
+    signal input forDepositReward; // 40 bit - 7 
+    signal input spendTime; // 32 bit - 8
+    signal input rMerkleRoot; // 256 bit - 9
+    signal input rNullifier; // 256 bit - 10
+    signal input createTime; // 32 bit - 11
+    signal input relayerRewardCipherText[4]; // 256 bit - 12,13,14,15 --- can be decreased to 2x257
+    signal input merkleRoots[nUtxoIn]; // 256 bit - 16,17 ( for 2 )
+    signal input treeNumbers[nUtxoIn]; // 24 bit - 18,19 ( for 2 )   
+    signal input nullifiers[nUtxoIn]; // 256 bit - 20,21 ( for 2 )
+    signal input commitmentsOut[nUtxoOut]; // 256 bit - 22,23 ( for 2 )
 
+    signal output out;
+    
+    assert(nUtxoIn == 2);
+    assert(nUtxoOut == 2);
+
+    component hasher1 = Poseidon(5); 
+    component hasher2 = Poseidon(5); 
+    component hasher3 = Poseidon(5); 
+    component hasher4 = Poseidon(3); 
+
+    // ------------ NO PACK --------------- // 
+    hasher1.inputs[0] <== extraInputsHash; 
+    hasher1.inputs[1] <== weightMerkleRoot;
+    hasher1.inputs[2] <== rMerkleRoot;
+    hasher1.inputs[3] <== rNullifier;
+    hasher1.inputs[4] <== relayerRewardCipherText[0];
+    
+    hasher2.inputs[0] <== relayerRewardCipherText[2]; // DON FORGET TO PACK BITS 
+    //hasher2.inputs[1] <== relayerRewardCipherText[i];
+    //hasher2.inputs[2] <== relayerRewardCipherText[i];
+    hasher2.inputs[1] <== merkleRoots[0]; // i = 0 : 8, i = 1 : 9
+    hasher2.inputs[2] <== nullifiers[0]; // i = 0 : 10, i = 1 : 11
+    hasher2.inputs[3] <== merkleRoots[1]; // i = 0 : 8, i = 1 : 9
+    hasher2.inputs[4] <== nullifiers[1]; // i = 0 : 10, i = 1 : 11
+
+    hasher3.inputs[0] <== commitmentsOut[0];
+    hasher3.inputs[1] <== commitmentsOut[1];
+
+    // ------------ PACK ------------ // 
+    // [1] - we will have here aditional space of 96 bits if needed 
+    hasher3.inputs[2] <== publicToken; // 14  
+    
+    // [2] - extAmountIn, extAmountOut 
+    component n2b_eIn = Num2Bits(96);
+    n2b_eIn.in <== extAmountIn;
+    
+    component n2b_eOut = Num2Bits(96);
+    n2b_eOut.in <== extAmountOut;
+    
+    component b2n_eInOut = Bits2Num(2*96);
+    for(var i = 0; i < 96; i++) { 
+        b2n_eInOut.in[i] <== n2b_eIn.out[i];
+        b2n_eInOut.in[96 + i] <== n2b_eOut.out[i];
+    }
+
+    hasher3.inputs[3] <== b2n_eInOut.out;  
+    
+    // [3] - forTxReward, forUtxoReward, forDepositReward, spendTime, createTime, treeNumbers 
+    component n2b_forTxReward = Num2Bits(40);
+    n2b_forTxReward.in <== forTxReward;
+
+    component n2b_forUtxoReward = Num2Bits(40);
+    n2b_forUtxoReward.in <== forUtxoReward;
+
+    component n2b_forDepositReward = Num2Bits(40);
+    n2b_forDepositReward.in <== forDepositReward;
+
+    component n2b_spendTime = Num2Bits(32);
+    n2b_spendTime.in <== spendTime;
+
+    component n2b_createTime = Num2Bits(32);
+    n2b_createTime.in <== createTime;
+
+    component n2b_treeNumbers[nUtxoIn]; 
+
+    for(var i = 0; i < nUtxoIn; i++) {
+        n2b_treeNumbers[i] = Num2Bits(24);
+        n2b_treeNumbers[i].in <== treeNumbers[i];
+    }
+    
+    component moduloTwo1 = AND(); // number % 2 == number & 1
+    moduloTwo1.a <== relayerRewardCipherText[1];
+    moduloTwo1.b <== 1;
+    component n2b_Ay1 = Num2Bits(1);
+    n2b_Ay1.in <== moduloTwo1.out;
+
+    component moduloTwo2 = AND(); // number % 2 == number & 1
+    moduloTwo2.a <== relayerRewardCipherText[3];
+    moduloTwo2.b <== 1;
+    component n2b_Ay2 = Num2Bits(1);
+    n2b_Ay2.in <== moduloTwo2.out;
+
+    var nBits = 40+40+40+32+32+nUtxoIn*24+2; // 40,40,40 32,32, 24,24 1,1 
+    component b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs = Bits2Num(nBits);
+
+    var shift2 = 0;
+    for(var i = 0; i < 40; i++) {
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+i] <== n2b_forTxReward.out[i];   
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+40+i] <== n2b_forUtxoReward.out[i];   
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+40+40+i] <== n2b_forDepositReward.out[i];   
+    }
+    shift2 += 3*40;
+    for(var i = 0; i < 32; i++) {
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+i] <== n2b_spendTime.out[i];   
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+32+i] <== n2b_createTime.out[i];   
+    }
+    shift2 += 2*32;
+    for(var i = 0; i < 24; i++) { 
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+i] <== n2b_treeNumbers[0].out[i];   
+        b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+24+i] <== n2b_treeNumbers[1].out[i];   
+    }
+    
+    shift2 += 2*24;
+    b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+0] <== n2b_Ay1.out[0];   
+    b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.in[shift2+1] <== n2b_Ay2.out[0];   
+    
+    hasher3.inputs[4] <== b2n_forTxReward_Utxo_Deposit_spendTime_createTime_treeNumbers_cipherTest_signs.out; 
+    
+    hasher4.inputs[0] <== hasher1.out;
+    hasher4.inputs[1] <== hasher2.out;
+    hasher4.inputs[2] <== hasher3.out;
+
+    out <== hasher4.out;
+}
+// FIXME: Support only nUtxoIn == nUtxoOut == 2
 template PublicInputHasherDoublePoseidon(nUtxoIn, nUtxoOut) {
     signal input extraInputsHash; // 256 bit - 0 
     signal input publicToken; // 160 bit - 1
@@ -177,14 +340,17 @@ template PublicInputHasherDoublePoseidon(nUtxoIn, nUtxoOut) {
     signal input rMerkleRoot; // 256 bit - 9
     signal input rNullifier; // 256 bit - 10
     signal input createTime; // 32 bit - 11
-    signal input relayerRewardCipherText[4]; // 256 bit - 12,13,14,15 
+    signal input relayerRewardCipherText[4]; // 256 bit - 12,13,14,15 --- can be decreased to 2x257
     signal input merkleRoots[nUtxoIn]; // 256 bit - 16,17 ( for 2 )
-    signal input treeNumbers[nUtxoIn]; // 8 bit - 18,19 ( for 2 )
+    signal input treeNumbers[nUtxoIn]; // 24 bit - 18,19 ( for 2 )   
     signal input nullifiers[nUtxoIn]; // 256 bit - 20,21 ( for 2 )
     signal input commitmentsOut[nUtxoOut]; // 256 bit - 22,23 ( for 2 )
 
     signal output out;
 
+    assert(nUtxoIn == 2);
+    assert(nUtxoOut == 2);
+    
     component hasher = Poseidon(16); // SignalsHasher(nSignals, nSha256InBits);
 
     hasher.inputs[0] <== extraInputsHash; // 0
@@ -203,7 +369,7 @@ template PublicInputHasherDoublePoseidon(nUtxoIn, nUtxoOut) {
     for(var i=0; i< 4; i++) // 12,13,14,15 
         hasher.inputs[shift + i] <== relayerRewardCipherText[i];
 
-    component hasher2 = Poseidon(3*nUtxoIn+nUtxoOut); // SignalsHasher(nSignals, nSha256InBits);
+    component hasher2 = Poseidon(3*nUtxoIn+nUtxoOut+1); // SignalsHasher(nSignals, nSha256InBits);
     shift = 0;
     for(var i=0; i<nUtxoIn; i++) { // 16,17,18; 19,20,21; 22,23,24  
         hasher2.inputs[shift+i] <== merkleRoots[i];
@@ -213,11 +379,12 @@ template PublicInputHasherDoublePoseidon(nUtxoIn, nUtxoOut) {
     shift += 3*nUtxoIn;
     for(var i=0; i<nUtxoOut; i++) // 25 
         hasher2.inputs[shift+i] <== commitmentsOut[i];
-    hasher2.out === extraInputsHash; // this line is for tests - if double poseidon will be used we need to add second hash 
-    out <== hasher.out;
+    shift += nUtxoOut;
+    hasher2.inputs[shift] <== hasher.out;
+    //hasher2.out === extraInputsHash; // this line is for tests - if double poseidon will be used we need to add second hash 
+    out <== hasher2.out;
 }
-
-// TODO: support only nUtxoIn = 2, and nUtxoOut = 2
+// FIXME: Support only nUtxoIn == nUtxoOut == 2
 template PublicInputHasherPacked(nUtxoIn, nUtxoOut) {
     signal input extraInputsHash; // 256 bit - 0 
     signal input publicToken; // 160 bit - 1
@@ -274,7 +441,7 @@ template PublicInputHasherPacked(nUtxoIn, nUtxoOut) {
     
     out <== hasher.out;
 }
-// TODO: fixme - support only nUtxoIn = 2, nUtxoOut = 2
+// FIXME: Support only nUtxoIn == nUtxoOut == 2
 template PublicInputHasherPoseidon(nUtxoIn, nUtxoOut) {
     // no pack 
     signal input extraInputsHash; // 256 bit - 0 
