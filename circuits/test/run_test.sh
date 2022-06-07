@@ -16,10 +16,13 @@ cd ${CIRCUIT_BASE_NAME}_js
 
 node generate_witness.js ${CIRCUIT_BASE_NAME}.wasm ../${INPUT_JSON} witness.wtns
 
+RESULT="UNDIFINED"
 if [ -f "witness.wtns" ]; then
-    echo "***************** TEST ${CIRCUIT_NAME} SUCCESS ********************"
+    echo "***************** TEST ${CIRCUIT_NAME} ${INPUT_JSON} SUCCESS ********************"
+    RESULT=0
 else
-    echo "TEST ${CIRCUIT_NAME} FAIL"
+    echo "TEST ${CIRCUIT_NAME} ${INPUT_JSON} FAIL"
+    RESULT=1
 fi
 
 cd ../
@@ -28,4 +31,6 @@ rm -rf ${CIRCUIT_BASE_NAME}_js
 rm -rf ${CIRCUIT_BASE_NAME}_cpp
 rm -rf ${CIRCUIT_BASE_NAME}.r1cs
 rm -rf ${CIRCUIT_BASE_NAME}.sym
+
+return ${RESULT}
 

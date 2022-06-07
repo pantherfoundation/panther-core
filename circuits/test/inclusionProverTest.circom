@@ -84,4 +84,5 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 }
 // NOTE: solidity use TREE_DEPTH = 15 , JS tree.js code in order to generate MT-Path for circom 
 // must use TREE_DEPTH = 16. 
+// component main {public [merkleRoots]} = TestInclusionProver(3,3,16);
 component main {public [merkleRoots]} = TestInclusionProver(3,3,16);

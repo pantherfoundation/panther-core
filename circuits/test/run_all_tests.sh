@@ -11,3 +11,6 @@ chmod +x run_test.sh
 
 # [3] - Spend proof - without nullifier & rewards - Tree-Depth 15 ( as in Solidity )
 ./run_test.sh inclusionProverTest_2.circom inclusionProverTest_2.json 2>&1 | egrep "[SUCCESS|FAIL]"
+
+# [4] - Spend proof - without nullifier & rewards - Tree-Depth 15 ( as in Solidity )
+./run_test.sh inclusionProverTest_2.circom inclusionProverTest_3.json 2>&1 | egrep "[SUCCESS|FAIL]"
