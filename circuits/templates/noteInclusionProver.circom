@@ -8,13 +8,13 @@ include "../../node_modules/circomlib/circuits/switcher.circom";
 
 
 /*
-Check https://github.com/pantherprotocol/panther-protocol/blob/triad-tree/docs/triadMerkleTree.md.
+Check https://github.com/panther-core/circuits/blob/triad-tree/docs/triadMerkleTree.md.
 We use the "triad binary tree", a modified Merkle binary tree with 3 child
 nodes on the leaf level (other levels have 2 child nodes).
 Path indices represented as bits of the `pathIndices` signal, one per level,
-except the leaf level that takes 2 bits. Apart from the leaf level, if the
-path index for a level is 0, the path element for that level is the left node
-in a pair (if the index is 1, the element is the right one).
+except the leaf level that takes 2 lowest bits. Apart from the leaf level, if
+the path index for a level is 0, the path element for that level is the left
+node in a pair (if the index is 1, the element is the right one).
 The `pathElements` array of signals sets path elements. The first 2 elements
 in the array are leaves (pair leaves to the one set by the `leaf` signal).
 */
@@ -30,15 +30,18 @@ template MerkleTreeInclusionProof(n_levels) {
     component switchers[n_levels-1];
     signal temp;
 
+    // first, hash 3 leaves ...
     hashers[0] = Poseidon(3);
 
-    // enforece that bh,bl can't be 11
+    // enforcing that 2 bits of the leaf level index can't be 11
     0 === pathIndices[0]*pathIndices[1];
+
     hashers[0].inputs[0] <== leaf + (pathIndices[0]+pathIndices[1])*(pathElements[0] - leaf);
     temp <== pathElements[0] + pathIndices[0]*(leaf - pathElements[0]);
     hashers[0].inputs[1] <== temp + pathIndices[1]*(pathElements[1] - pathElements[0]);
     hashers[0].inputs[2] <== pathElements[1] + pathIndices[1]*(leaf -pathElements[1]);
 
+    // ... then iterate through levels above leaves
     for (var i = 1; i < n_levels; i++) {
         // (outL,outR) = sel==0 ? (L,R) : (R,L)
         switchers[i-1] = Switcher();
@@ -57,7 +60,7 @@ template NoteInclusionProver(n_levels) {
     signal input root;
     signal input note;
     signal input pathIndices[n_levels+1];
-    signal input pathElements[n_levels+1]; // extra slot for third leave
+    signal input pathElements[n_levels+1]; // extra slot for 3rd leave
     signal input utxoAmount;
 
     // compute the root from the Merkle inclusion proof

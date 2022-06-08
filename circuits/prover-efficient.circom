@@ -154,8 +154,8 @@ template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, Weig
 
         // verify commitment
         outputNoteHashers[i] = NoteHasher();
-        outputNoteHashers[i].spendPk[0] <== spendPubKeys[i][0];
-        outputNoteHashers[i].spendPk[1] <== spendPubKeys[i][1];
+        outputNoteHashers[i].spendPk[0] <== spendPubKeys[i][0]; // Ax
+        outputNoteHashers[i].spendPk[1] <== spendPubKeys[i][1]; // Ay
         outputNoteHashers[i].amount <== amountsOut[i];
         outputNoteHashers[i].token <== token;
         outputNoteHashers[i].createTime <== createTime;
