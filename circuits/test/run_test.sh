@@ -1,12 +1,8 @@
 #!/bin/bash
-CIRCOM=~/.cargo/bin/circom
+CIRCOM=${CIRCOM_EXE:-~/.cargo/bin/circom}
 
 CIRCUIT_NAME=$1
 INPUT_JSON=$2
-
-if [ "$3"]; then
-    CIRCOM_EXE=$3
-fi
 
 CIRCUIT_BASE_NAME=`echo ${CIRCUIT_NAME} | sed "s/\.circom//g"`;
 
