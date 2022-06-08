@@ -16,7 +16,7 @@ template RewardLeafDecoder(UtxoMerkleTreeDepth){
 
   component n2b = Num2Bits(160+UtxoMerkleTreeDepth);
   n2b.in <== leaf;
-  
+
   component b2nAmount = Bits2Num(120);
   for(var i=0; i<120; i++)
       b2nAmount.in[i] <== n2b.out[i];

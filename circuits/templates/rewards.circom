@@ -13,7 +13,6 @@ template Rewards(nUtxoIn) {
     signal input amountsIn[nUtxoIn];
     signal input createTimes[nUtxoIn];
 
-    
 
     signal output rAmount;
 

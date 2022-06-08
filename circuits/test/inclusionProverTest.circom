@@ -4,22 +4,22 @@ pragma circom 2.0.0;
 include "../templates/noteHasher.circom";
 include "../templates/noteInclusionProver.circom";
 include "../../node_modules/circomlib/circuits/babyjub.circom";
-// 3,3,16 
+// 3,3,16
 template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 
     signal input spendPubKey[2];
 
-    signal input amountsOut[nUtxoOut]; 
+    signal input amountsOut[nUtxoOut];
     signal input commitmentsOut[nUtxoOut];
 
     signal input spendPrivKey;
-    signal input amountsIn[nUtxoIn]; 
+    signal input amountsIn[nUtxoIn];
     signal input token;
-    signal input createTime; 
-    
+    signal input createTime;
+
     signal input pathElements[nUtxoIn][UtxoMerkleTreeDepth+1]; // extra slot for the third leave
-    signal input pathIndexes[nUtxoIn][UtxoMerkleTreeDepth+1];     
-    signal input merkleRoots[nUtxoIn]; 
+    signal input pathIndexes[nUtxoIn][UtxoMerkleTreeDepth+1];
+    signal input merkleRoots[nUtxoIn];
     /*
     for(var i = 0; i < nUtxoIn; i++) {
         for(var j = 0; j < UtxoMerkleTreeDepth+1; j++) {
@@ -31,7 +31,7 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
         log(merkleRoots[i]);
     }
     */
-    // [0] - Test public key derive 
+    // [0] - Test public key derive
     component babyPbk = BabyPbk();
     babyPbk.in <== spendPrivKey;
     //log(spendPubKey[0]);
@@ -41,26 +41,26 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     spendPubKey[0] === babyPbk.Ax;
     spendPubKey[1] === babyPbk.Ay;
 
-    // [1] - Test commitment out creation vs its hash - UTXO out 
+    // [1] - Test commitment out creation vs its hash - UTXO out
     component outputNoteHashers[nUtxoOut];
     for(var i = 0; i < nUtxoOut; i++) {
         outputNoteHashers[i] = NoteHasher();
-        outputNoteHashers[i].spendPk[0] <== spendPubKey[0];  // use provided pub-key - just in case 
-        outputNoteHashers[i].spendPk[1] <== spendPubKey[1];  // use provided pub-key - just in case 
+        outputNoteHashers[i].spendPk[0] <== spendPubKey[0];  // use provided pub-key - just in case
+        outputNoteHashers[i].spendPk[1] <== spendPubKey[1];  // use provided pub-key - just in case
         outputNoteHashers[i].amount <== amountsOut[i];
         outputNoteHashers[i].token <== token;
         outputNoteHashers[i].createTime <== createTime;
-        // verify 
+        // verify
         //log(commitmentsOut[i]);
         //log(outputNoteHashers[i].out);
-        outputNoteHashers[i].out === commitmentsOut[i]; 
+        outputNoteHashers[i].out === commitmentsOut[i];
     }
 
     // [2] - Test inclusion proof in order to spend UTXOs created in step "[1]"
-    component inputNoteHashers[nUtxoIn]; 
-    component inclusionProvers[nUtxoIn]; 
+    component inputNoteHashers[nUtxoIn];
+    component inclusionProvers[nUtxoIn];
     for(var i = 0; i < nUtxoIn; i++) {
-        // create UTXO input 
+        // create UTXO input
         inputNoteHashers[i] = NoteHasher();
         inputNoteHashers[i].spendPk[0] <== babyPbk.Ax;
         inputNoteHashers[i].spendPk[1] <== babyPbk.Ay;
@@ -68,7 +68,7 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
         inputNoteHashers[i].token <== token;
         inputNoteHashers[i].createTime <== createTime;
 
-        // verify - just in case 
+        // verify - just in case
         inputNoteHashers[i].out === outputNoteHashers[i].out;
 
         // verify Merkle proofs for input notes
@@ -82,7 +82,7 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
         inclusionProvers[i].utxoAmount <== amountsIn[i];
     }
 }
-// NOTE: solidity use TREE_DEPTH = 15 , JS tree.js code in order to generate MT-Path for circom 
-// must use TREE_DEPTH = 16. 
+// NOTE: solidity use TREE_DEPTH = 15 , JS tree.js code in order to generate MT-Path for circom
+// must use TREE_DEPTH = 16.
 // component main {public [merkleRoots]} = TestInclusionProver(3,3,16);
 component main {public [merkleRoots]} = TestInclusionProver(3,3,16);

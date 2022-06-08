@@ -5,20 +5,20 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 
 
 template UtxoLeafDecoder(UtxoMerkleTreeDepth){
-  signal input leaf; /// we must make leaf uniq - so no collision will happen 
+  signal input leaf; /// we must make leaf uniq - so no collision will happen
   signal output amount;
   signal output createTime;
   signal output treeNumber;
   signal output index[UtxoMerkleTreeDepth+1];
   // 120 bits for amount
   //  32 bits for createTime
-  //  24 bits for treeNumber 
+  //  24 bits for treeNumber
   //  depth bits for index
   assert(UtxoMerkleTreeDepth <= 16);
 
   component n2b = Num2Bits(120+32+24+UtxoMerkleTreeDepth+1);
   n2b.in <== leaf;
-  
+
   component b2nAmount = Bits2Num(120);
   for(var i=0; i<120; i++)
       b2nAmount.in[i] <== n2b.out[i];

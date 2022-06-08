@@ -1,12 +1,12 @@
-#!/bin/bash 
-CIRCOM_EXE=~/.cargo/bin/circom 
+#!/bin/bash
+CIRCOM=~/.cargo/bin/circom
 
-CIRCUIT_NAME=$1 
+CIRCUIT_NAME=$1
 INPUT_JSON=$2
 
 if [ "$3"]; then
     CIRCOM_EXE=$3
-fi 
+fi
 
 CIRCUIT_BASE_NAME=`echo ${CIRCUIT_NAME} | sed "s/\.circom//g"`;
 
@@ -16,7 +16,7 @@ cd ${CIRCUIT_BASE_NAME}_js
 
 node generate_witness.js ${CIRCUIT_BASE_NAME}.wasm ../${INPUT_JSON} witness.wtns
 
-RESULT="UNDIFINED"
+RESULT="UNDEFINED"
 if [ -f "witness.wtns" ]; then
     echo "***************** TEST ${CIRCUIT_NAME} ${INPUT_JSON} SUCCESS ********************"
     RESULT=0
@@ -33,4 +33,3 @@ rm -rf ${CIRCUIT_BASE_NAME}.r1cs
 rm -rf ${CIRCUIT_BASE_NAME}.sym
 
 return ${RESULT}
-

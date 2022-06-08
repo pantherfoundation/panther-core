@@ -29,9 +29,9 @@ template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, Weig
 
     signal input token;
 
-    // weight    
+    // weight
     signal input weightMerkleRoot; // public
-    signal input weightLeaf; 
+    signal input weightLeaf;
     signal input weightPathElements[WeightMerkleTreeDepth+1]; // extra slot for the third leave
 
     // reward computation params
@@ -82,14 +82,14 @@ template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, Weig
     weightChk.merkleRoot <== weightMerkleRoot;
     for(var i=0; i<= WeightMerkleTreeDepth; i++)
         weightChk.pathElements[i] <== weightPathElements[i];
-    
+
     // 2. Verify input notes, membership, compute total amount of input 'token UTXOs' and rewards
     component nullifierHashers[nUtxoIn];
     component inputPubKeys[nUtxoIn];
     component inputNoteHashers[nUtxoIn];
     component leafDecoders[nUtxoIn];
     component inclusionProvers[nUtxoIn];
-    
+
     // pass values for computing rewards
     component rewards = Rewards(nUtxoIn);
     rewards.extAmountIn <== extAmountIn;
@@ -187,7 +187,7 @@ template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, Weig
 
     // verify reward membership
     component rewardMerkleVerifier = MerkleTreeInclusionProof(UtxoMerkleTreeDepth);
-    rewardMerkleVerifier.leaf <== rCommitmentIn;    
+    rewardMerkleVerifier.leaf <== rCommitmentIn;
     for(var i=0; i<UtxoMerkleTreeDepth+1; i++) {
         rewardMerkleVerifier.pathIndices[i] <== rewardDecoder.index[i];
         rewardMerkleVerifier.pathElements[i] <== rPathElements[i];
@@ -225,5 +225,5 @@ template ProverEfficientTransaction(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth, Weig
 
 component main {public [extraInputsHash, publicToken, extAmountIn, extAmountOut,
  weightMerkleRoot, forTxReward, forUtxoReward,  forDepositReward, spendTime,
- rMerkleRoot, rNullifier, createTime, relayerRewardCipherText, merkleRoots, 
- nullifiers, commitmentsOut ]} = ProverEfficientTransaction(2,2,16,6);
+ rMerkleRoot, rNullifier, createTime, relayerRewardCipherText, merkleRoots,
+ nullifiers, commitmentsOut]} = ProverEfficientTransaction(2,2,16,6);

@@ -17,7 +17,7 @@ template WeightLeafDecoder(WeightMerkleTreeDepth){
 
   component n2b = Num2Bits(192+WeightMerkleTreeDepth+1);
   n2b.in <== leaf;
-  
+
   component b2nToken = Bits2Num(160);
   for(var i=0; i<160; i++)
       b2nToken.in[i] <== n2b.out[i];
