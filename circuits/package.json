@@ -1,5 +1,5 @@
 {
-  "name": "panther-circuits",
+  "name": "@panther-core/circuits",
   "version": "1.0.0",
   "description": "Panther Protocol Circuits",
   "license": "MIT",
