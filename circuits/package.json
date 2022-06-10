@@ -2,7 +2,7 @@
   "name": "@panther-core/circuits",
   "version": "1.0.0",
   "description": "Panther Protocol Circuits",
-  "license": "MIT",
+  "license": "Proprietary",
   "private": true,
   "repository": "git+https://github.com/pantherprotocol/panther-circuits.git",
   "scripts": {
