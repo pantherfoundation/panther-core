@@ -4,7 +4,7 @@ CIRCOM=${CIRCOM_EXE:-~/.cargo/bin/circom}
 CIRCUIT_NAME=$1
 INPUT_JSON=$2
 
-CIRCUIT_BASE_NAME=`echo ${CIRCUIT_NAME} | sed "s/\.circom//g"`;
+CIRCUIT_BASE_NAME=$(echo ${CIRCUIT_NAME} | sed "s/\.circom//g")
 
 ${CIRCOM_EXE} ${CIRCUIT_NAME} --r1cs --wasm --sym --verbose --c
 
