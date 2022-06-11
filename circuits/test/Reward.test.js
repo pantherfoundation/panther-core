@@ -1,8 +1,7 @@
-const chai = require("chai");
-const path = require("path");
-const wasm_tester = require("circom_tester").wasm;
-const F = require("circomlibjs").babyjub.F;
-const { getOptions } = require("./helpers/circomTester");
+const path = require('path');
+const wasm_tester = require('circom_tester').wasm;
+const F = require('circomlibjs').babyjub.F;
+const {getOptions} = require('./helpers/circomTester');
 
 describe('Rewards circuit', async () => {
     let circuitRewards;
