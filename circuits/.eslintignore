@@ -1,0 +1,3 @@
+test/*.json
+test/*.tar.gz
+test/*/*.circom
