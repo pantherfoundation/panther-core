@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "../templates/noteHasher.circom";
-include "../templates/noteInclusionProver.circom";
+include "../../circuits/templates/noteHasher.circom";
+include "../../circuits/templates/noteInclusionProver.circom";
 include "../../node_modules/circomlib/circuits/babyjub.circom";
 // 3,3,16
 template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
@@ -84,5 +84,4 @@ template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 }
 // NOTE: solidity use TREE_DEPTH = 15 , JS tree.js code in order to generate MT-Path for circom
 // must use TREE_DEPTH = 16.
-// component main {public [merkleRoots]} = TestInclusionProver(3,3,16);
-component main {public [merkleRoots]} = TestInclusionProver(3,3,16);
+component main {public [merkleRoots]} = TestInclusionProver(3,3,15);
