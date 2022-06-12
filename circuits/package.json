@@ -6,9 +6,16 @@
   "private": true,
   "repository": "git+https://github.com/pantherprotocol/panther-circuits.git",
   "scripts": {
+    "lint": "yarn eslint && yarn prettier:list-different",
+    "lint:eslint": "eslint --max-warnings 0",
+    "lint:circom": "yarn lint:eslint \"circuits/**/*.circom\"",
+    "prettier:check": "cd .. && yarn prettier --check circuits",
+    "prettier:fix": "cd .. && yarn prettier --write circuits",
+    "prettier:list-different": "cd .. && yarn prettier --list-different circuits",
     "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
     "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
-    "test": "mocha --max-old-space-size=4000 --timeout 10000",
+    "test": "mocha --max-old-space-size=4000 --timeout 10000 && cd test && ./run_all_tests.sh",
+    "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run_all_tests.sh",
     "test:docker": "export CIRCOM_DOCKER=yes && mocha --timeout 15000"
   },
   "devDependencies": {

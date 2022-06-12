@@ -1,3 +1,5 @@
 test/*.json
 test/*.tar.gz
 test/*/*.circom
+test/*.*
+circuits/*/*.circom
