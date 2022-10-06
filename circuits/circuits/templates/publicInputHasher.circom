@@ -196,8 +196,8 @@ template SignalsHasherPacked(nSignals, nSha256InBits) {
 template PublicInputHasherTripplePoseidon(nUtxoIn, nUtxoOut) {
     signal input extraInputsHash; // 256 bit - 0
     signal input publicToken; // 160 bit - 1
-    signal input extAmountIn; // 96 bit - 2
-    signal input extAmountOut; // 96 bit - 3
+    signal input extAmountIn; // 64 bit - 2
+    signal input extAmountOut; // 64 bit - 3
     signal input weightMerkleRoot; // 256 bit - 4
     signal input forTxReward; // 40 bit - 5
     signal input forUtxoReward; // 40 bit - 6
