@@ -12,7 +12,6 @@ import {data} from './assets/advancesStakingData.data';
 
 import {
     FakePantherPoolV0,
-    FakePrpGrantor,
     MockAdvancedStakeRewardController,
     TokenMock,
     ERC721Mock,
@@ -22,13 +21,11 @@ import {getBlockTimestamp} from '../../lib/provider';
 describe('AdvancedStakeRewardController', () => {
     const fakeVaultAddress = '0x4321555555555555555555555555555555551234';
     const rewardingPeriod = 200;
-    const prpRewardPerStake = 10000;
     const rewardingStartApy = 70;
     const rewardingEndApy = 40;
     const rewardingRoundingNumber = BigNumber.from('10000000000000000');
     const advStake = '0xcc995ce8';
     const asrControllerZkpBalance = BigNumber.from(10).pow(24);
-    const asrControllerPrpBalance = BigNumber.from(10 * prpRewardPerStake);
     const asrControllerNftRewardsLimit = BigNumber.from(10);
 
     let asrController: MockAdvancedStakeRewardController;
@@ -38,7 +35,6 @@ describe('AdvancedStakeRewardController', () => {
     let staker: SignerWithAddress;
     let rewardMaster: SignerWithAddress;
     let pantherPool: FakePantherPoolV0;
-    let prpGrantor: FakePrpGrantor;
     let rewardingStartTime: number;
     let rewardingEndTime: number;
     let snapshotId: number;
@@ -48,7 +44,6 @@ describe('AdvancedStakeRewardController', () => {
         endZkpApy: number;
         endTime: number;
         startZkpApy: number;
-        prpPerStake: number;
     };
 
     const getDefaultRewardParams = (): RewardParams => ({
@@ -56,7 +51,6 @@ describe('AdvancedStakeRewardController', () => {
         endTime: rewardingEndTime,
         startZkpApy: rewardingStartApy,
         endZkpApy: rewardingEndApy,
-        prpPerStake: prpRewardPerStake,
     });
 
     before(async () => {
@@ -80,11 +74,6 @@ describe('AdvancedStakeRewardController', () => {
             exitTime,
         )) as FakePantherPoolV0;
 
-        const FakePrpGrantor = await ethers.getContractFactory(
-            'FakePrpGrantor',
-        );
-        prpGrantor = (await FakePrpGrantor.deploy()) as FakePrpGrantor;
-
         const MockAdvancedStakeRewardController =
             await ethers.getContractFactory(
                 'MockAdvancedStakeRewardController',
@@ -93,7 +82,6 @@ describe('AdvancedStakeRewardController', () => {
             owner.address,
             rewardMaster.address,
             pantherPool.address,
-            prpGrantor.address,
             zkpToken.address,
             nftToken.address,
         )) as MockAdvancedStakeRewardController;
@@ -106,12 +94,6 @@ describe('AdvancedStakeRewardController', () => {
         await zkpToken
             .connect(owner)
             .transfer(asrController.address, asrControllerZkpBalance);
-
-        // grant PRPs for rewards
-        await prpGrantor.issueOwnerGrant(
-            asrController.address,
-            asrControllerPrpBalance,
-        );
     });
 
     beforeEach(async () => {
@@ -739,16 +721,8 @@ describe('AdvancedStakeRewardController', () => {
             ).to.be.eq(BigNumber.from(0));
         });
 
-        it('should update the PRP reward limits', async () => {
-            await asrController.updateZkpAndPrpRewardsLimit();
-
-            expect((await asrController.limits()).prpRewards).to.be.eq(
-                asrControllerPrpBalance,
-            );
-        });
-
         it('should update ZKP reward limit and approve Vault as spender', async () => {
-            await asrController.updateZkpAndPrpRewardsLimit();
+            await asrController.updateZkpRewardsLimit();
 
             expect((await asrController.limits()).zkpRewards).to.be.eq(
                 asrControllerZkpBalance,
@@ -803,7 +777,6 @@ describe('AdvancedStakeRewardController', () => {
 
                     await asrController.fakeTotals({
                         zkpRewards: 1e15,
-                        prpRewards: 1e5,
                         nftRewards: 3323,
                         scZkpStaked: 1000,
                     });
@@ -843,7 +816,6 @@ describe('AdvancedStakeRewardController', () => {
         async function checkTotals(
             scZkpStaked: BigNumberish,
             zkpRewards: BigNumberish,
-            prpRewards: BigNumberish,
             nftRewards: BigNumberish,
         ) {
             expect((await asrController.totals()).scZkpStaked).to.be.eq(
@@ -853,10 +825,6 @@ describe('AdvancedStakeRewardController', () => {
             expect((await asrController.totals()).zkpRewards).to.be.eq(
                 BigNumber.from(zkpRewards),
                 'zkpRewards',
-            );
-            expect((await asrController.totals()).prpRewards).to.be.eq(
-                prpRewards,
-                'prpRewards',
             );
             expect((await asrController.totals()).nftRewards).to.be.eq(
                 nftRewards,
@@ -911,7 +879,6 @@ describe('AdvancedStakeRewardController', () => {
         describe('Generate rewards', () => {
             let expZkpReward: BigNumber;
             let expScZkpStaked: BigNumber;
-            let expPrpReward: number;
 
             beforeEach(async () => {
                 const rewardParams = getDefaultRewardParams();
@@ -922,9 +889,8 @@ describe('AdvancedStakeRewardController', () => {
                     .div(rewardingRoundingNumber)
                     .mul(rewardingRoundingNumber);
                 expScZkpStaked = amountToStake.div(1e15);
-                expPrpReward = rewardParams.prpPerStake;
 
-                await asrController.updateZkpAndPrpRewardsLimit();
+                await asrController.updateZkpRewardsLimit();
                 await asrController
                     .connect(owner)
                     .setNftRewardLimit(asrControllerNftRewardsLimit);
@@ -946,15 +912,9 @@ describe('AdvancedStakeRewardController', () => {
                             staker.address,
                             0, // firstLeafId
                             expZkpReward,
-                            expPrpReward,
                             1, // nft
                         );
-                    await checkTotals(
-                        expScZkpStaked,
-                        expZkpReward,
-                        expPrpReward,
-                        1,
-                    );
+                    await checkTotals(expScZkpStaked, expZkpReward, 1);
                 });
             });
 
@@ -970,14 +930,12 @@ describe('AdvancedStakeRewardController', () => {
                             staker.address,
                             4, // firstLeafId
                             expZkpReward,
-                            expPrpReward,
                             1, // nft
                         );
 
                     await checkTotals(
                         expScZkpStaked.mul(2),
                         expZkpReward.mul(2),
-                        expPrpReward * 2,
                         2,
                     );
                 });
@@ -998,14 +956,12 @@ describe('AdvancedStakeRewardController', () => {
                             staker.address,
                             8, // firstLeafId
                             expZkpReward,
-                            expPrpReward,
                             1, // nft
                         );
 
                     await checkTotals(
                         expScZkpStaked.mul(3),
                         expZkpReward.mul(3),
-                        expPrpReward * 3,
                         3,
                     );
                 });
@@ -1135,7 +1091,6 @@ describe('AdvancedStakeRewardController', () => {
                     endTime: oldParams.endTime + 5,
                     startZkpApy: oldParams.startZkpApy + 3,
                     endZkpApy: oldParams.endZkpApy + 6,
-                    prpPerStake: oldParams.prpPerStake + 777,
                 };
 
                 expect(
@@ -1159,9 +1114,6 @@ describe('AdvancedStakeRewardController', () => {
                     rewardParams.startZkpApy,
                 );
                 expect(actualParams.endZkpApy).to.be.eq(rewardParams.endZkpApy);
-                expect(actualParams.prpPerStake).to.be.eq(
-                    rewardParams.prpPerStake,
-                );
             });
 
             it('should NOT revert if new start APY is equal to new end APY', async () => {

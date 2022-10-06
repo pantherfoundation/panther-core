@@ -22,7 +22,7 @@ import {deriveKeypairFromSeed} from '../../lib/keychain';
 
 import {PantherPoolV0AndZAssetRegistryAndVaultTester} from '../../types/contracts';
 import {deployPantherPoolV0AndZAssetRegistryAndVaultTester} from './helpers/pantherPoolV0AndZAssetRegistryAndVaultTester';
-import {PathElementsType, toBytes32, Triad} from '../../lib/utilities';
+import {Pair, PathElementsType, toBytes32} from '../../lib/utilities';
 import {BigNumber} from 'ethers';
 import type {BytesLike} from '@ethersproject/bytes';
 
@@ -99,18 +99,25 @@ describe('PantherPoolV0 and Vault Integration', () => {
                 spenderRootKeys,
             );
             // [5] - Deserialize --- we actually will first get this text from chain
-            recipientTransaction.unpackMessageV1(
-                senderTransaction.cipheredTextMessageV1,
-            );
+            try {
+                recipientTransaction.unpackMessageV1(
+                    senderTransaction.cipheredTextMessageV1,
+                );
+            } catch (e) {
+                throw Error("Can't unpack: " + e.toString());
+            }
             // [6] - Decrypt ( try... )
             try {
                 recipientTransaction.decryptMessageV1();
             } catch (e) {
-                // can't decrypt - this message is not for us
+                throw Error(
+                    "can't decrypt - this message is not for us " +
+                        e.toString(),
+                );
             }
             // [7] - Extract random ( try ... )
             try {
-                recipientTransaction.unpackRandomAndCheckProlog();
+                recipientTransaction.unpackRandom();
             } catch (e) {
                 // prolog is not equal to expected
             }
@@ -154,15 +161,7 @@ describe('PantherPoolV0 and Vault Integration', () => {
                             ),
                         ).toString(),
                     ),
-                    toBytes32(
-                        buffer32ToBigInt(
-                            senderTransaction.cipheredTextMessageV1.slice(
-                                64,
-                                96,
-                            ),
-                        ).toString(),
-                    ),
-                ] as Triad;
+                ] as Pair;
                 const createdAtNum = BigInt('1652375774');
                 await pantherPoolV0AndZAssetRegistryAndVaultTester.generateDepositsExtended(
                     [amounts[0], amounts[1], amounts[2]],
@@ -287,7 +286,7 @@ describe('PantherPoolV0 and Vault Integration', () => {
                 }
                 // [7] - Extract random ( try ... )
                 try {
-                    recipientTransaction.unpackRandomAndCheckProlog();
+                    recipientTransaction.unpackRandom();
                 } catch (e) {
                     console.log('prolog is not equal to expected');
                 }

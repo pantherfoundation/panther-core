@@ -52,7 +52,7 @@ async function getDefaultRewardParams(
     advancedStakeRewardController: AdvancedStakeRewardController,
     taskArgs: TaskArguments,
 ): Promise<AdvancedStakeRewardController.RewardParamsStruct> {
-    const {startTime, endTime, startZkpApy, endZkpApy, prpPerStake} =
+    const {startTime, endTime, startZkpApy, endZkpApy} =
         await advancedStakeRewardController.rewardParams();
 
     return {
@@ -60,7 +60,6 @@ async function getDefaultRewardParams(
         endTime,
         startZkpApy: taskArgs.startZkpApy || startZkpApy,
         endZkpApy: taskArgs.endZkpApy || endZkpApy,
-        prpPerStake: taskArgs.prpPerStake || prpPerStake,
     };
 }
 
@@ -107,12 +106,6 @@ task(TASK_REWARDS_PARAMS_UPDATE, 'Update advanced stake reward parameters')
     .addOptionalParam(
         'endZkpApy',
         'Defines $ZKP reward APY at endTime',
-        undefined,
-        types.int,
-    )
-    .addOptionalParam(
-        'prpPerStake',
-        'Defines amount of PRP reward (per a stake)',
         undefined,
         types.int,
     )
