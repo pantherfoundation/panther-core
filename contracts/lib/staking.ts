@@ -139,12 +139,12 @@ export async function saveHistoricalData(
     }
 }
 
-export async function updateZkpAndPrpRewardsLimit(
+export async function updateZkpRewardsLimit(
     advController: AdvancedStakeRewardController,
 ) {
-    console.log('Updating ZKP and PRP rewards limit...');
+    console.log('Updating ZKP limit...');
 
-    const tx = await advController.updateZkpAndPrpRewardsLimit();
+    const tx = await advController.updateZkpRewardsLimit();
     const receipt = await tx.wait();
 
     console.log('Transaction confirmed:', receipt);
