@@ -1,10 +1,15 @@
-const path = require('path');
-const wasm_tester = require('circom_tester').wasm;
-const F = require('circomlibjs').babyjub.F;
-const {getOptions} = require('./helpers/circomTester');
+import * as path from 'path';
 
-describe('Rewards circuit', async () => {
-    let circuitRewards;
+import cicom_wasm_tester from 'circom_tester';
+const wasm_tester = cicom_wasm_tester.wasm;
+
+import {babyjub} from 'circomlibjs';
+const F = babyjub.F;
+
+import {getOptions} from './helpers/circomTester';
+
+describe('Rewards circuit', async function (this: any) {
+    let circuitRewards: any;
 
     before(async () => {
         const opts = getOptions();
@@ -12,7 +17,7 @@ describe('Rewards circuit', async () => {
         circuitRewards = await wasm_tester(input, opts);
     });
 
-    it('Should compute valid rewards', async () => {
+    it('Should compute valid rewards', async function () {
         /*
     // Total reward (i.e. user reward plus relayer reward)
     R= forTxReward + (
@@ -48,10 +53,12 @@ describe('Rewards circuit', async () => {
         let S1 = input.forTxReward;
         let S2 = input.forDepositReward * input.extAmountIn;
         for (var i = 0; i < input.amountsIn.length; i++) {
-            S3 += input.amountsIn[i] * (input.spendTime - input.createTimes[i]);
+            S3 += BigInt(
+                input.amountsIn[i] * (input.spendTime - input.createTimes[i]),
+            );
         }
         let S4 = S3 * input.forUtxoReward;
-        let S5 = (S4 + S2) * input.assetWeight;
+        let S5 = (S4 + BigInt(S2)) * input.assetWeight;
         let R = S1 + S5;
 
         const rAmountTips = input.rAmountTips;

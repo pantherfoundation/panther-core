@@ -1,19 +1,27 @@
-const path = require('path');
-const wasm_tester = require('circom_tester').wasm;
-const F = require('circomlibjs').babyjub.F;
-const {getOptions} = require('./helpers/circomTester');
-const poseidon = require('circomlibjs').poseidon;
+import * as path from 'path';
 
-const getRandomInt = (min, max) => {
+import cicom_wasm_tester from 'circom_tester';
+const wasm_tester = cicom_wasm_tester.wasm;
+
+import {babyjub} from 'circomlibjs';
+const F = babyjub.F;
+
+import {getOptions} from './helpers/circomTester';
+
+import {poseidon} from 'circomlibjs';
+
+const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
 };
 
-describe('NoteHasherPacked circuit', async () => {
-    let circuit;
+describe('NoteHasherPacked circuit', async function (this: any) {
+    let circuit: any;
 
-    before(async () => {
+    this.timeout(10000000);
+
+    before(async function () {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
@@ -22,7 +30,7 @@ describe('NoteHasherPacked circuit', async () => {
         circuit = await wasm_tester(input, opts);
     });
 
-    it('Should compute valid commitment for ZERO', async () => {
+    it('Should compute valid commitment for ZERO', async function () {
         let value = BigInt(0);
         const input = {
             spendPk: [F.e(value), F.e(value)],
@@ -39,7 +47,7 @@ describe('NoteHasherPacked circuit', async () => {
         await circuit.assertOut(w, {out: out});
     });
 
-    it('Should compute valid commitment for random input', async () => {
+    it('Should compute valid commitment for random input', async function () {
         const pk = [
             BigInt(getRandomInt(0, 123456789)),
             BigInt(getRandomInt(0, 123456789)),
