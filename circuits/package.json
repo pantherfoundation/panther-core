@@ -6,15 +6,20 @@
   "private": true,
   "repository": "git+https://github.com/pantherprotocol/panther-circuits.git",
   "scripts": {
+    "build": "yarn build:types && yarn build:ts",
+    "build:types": "./scripts/gen-types.sh",
+    "build:ts": "tsc -p tsconfig.json",
+    "clean": "rm -rf ./node_modules && rm -rf ./types/* && rm -rf ./lib",
+    "clean:circuits": "sudo rm -rf compiled/mainTransaction*",
+    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
+    "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
     "lint": "yarn eslint && yarn prettier:list-different",
     "lint:eslint": "eslint --max-warnings 0",
     "lint:circom": "yarn lint:eslint \"circuits/**/*.circom\"",
     "prettier:check": "cd .. && yarn prettier --check circuits",
     "prettier:fix": "cd .. && yarn prettier --write circuits",
     "prettier:list-different": "cd .. && yarn prettier --list-different circuits",
-    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
-    "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
-    "test": "mocha --max-old-space-size=4000 --timeout 10000 && cd test && ./run_all_tests.sh",
+    "test": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 10000 && cd test && ./run_all_tests.sh",
     "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run_all_tests.sh",
     "test:docker": "export CIRCOM_DOCKER=yes && mocha --timeout 15000"
   },
@@ -25,7 +30,8 @@
     "mocha": "^9.1.3"
   },
   "dependencies": {
-    "circomlib": "^2.0.2"
+    "circomlib": "^2.0.2",
+    "typescript": "^4.9.4"
   },
   "main": "index.js",
   "author": "Pantherprotocol team"
