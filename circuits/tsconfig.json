@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "outDir": "lib",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["../node_modules/*", "node_modules/*", "scripts/*", "types/*"]
+    },
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  },
+  "include": ["test"],
+  "exclude": ["node_modules"]
+}
