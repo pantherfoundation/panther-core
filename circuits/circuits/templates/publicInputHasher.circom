@@ -192,6 +192,7 @@ template SignalsHasherPacked(nSignals, nSha256InBits) {
     }
     out <== b2n.out;
 }
+
 // FIXME: Support only nUtxoIn == nUtxoOut == 2
 template PublicInputHasherTripplePoseidon(nUtxoIn, nUtxoOut) {
     signal input extraInputsHash; // 256 bit - 0

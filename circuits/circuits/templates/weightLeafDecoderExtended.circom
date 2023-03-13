@@ -4,15 +4,15 @@ pragma circom 2.0.0;
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
-template WeightLeafDecoder(WeightMerkleTreeDepth){
+template WeightLeafDecoderExtended(WeightMerkleTreeDepth){
   signal input leaf;
   signal output token;
   signal output weight;
   signal output index[WeightMerkleTreeDepth+1];
   // 160 bits for token
   //  32 bits for weight
-  //  depth bits (maximum 8 bits) for leafIndex
-  assert(WeightMerkleTreeDepth <= 8);
+  //  depth bits (maximum 16 bits) for leafIndex
+  assert(WeightMerkleTreeDepth <= 16);
 
   component n2b = Num2Bits(192+WeightMerkleTreeDepth+1);
   n2b.in <== leaf;
