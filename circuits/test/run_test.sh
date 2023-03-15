@@ -10,7 +10,7 @@ fi
 
 CIRCUIT_BASE_NAME=$(echo ${CIRCUIT_NAME} | sed "s/\.circom//g" | awk -F "/" '{print $NF}')
 
-${CIRCOM_EXE} ${CIRCUIT_NAME} --r1cs --wasm --sym --verbose --c
+${CIRCOM_EXE} ${CIRCUIT_NAME} --r1cs --wasm --sym --c
 
 cd "${CIRCUIT_BASE_NAME}_js" || exit 1
 
