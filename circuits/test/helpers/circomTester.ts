@@ -1,4 +1,7 @@
 import * as path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config({});
 
 type Options = {
     basedir: string;
@@ -11,7 +14,7 @@ export const getOptions = (): Options => {
     let options: Options = {
         basedir,
     };
-    if (!process.env.CIRCOM_DOCKER) {
+    if (!!process.env.CIRCOM_DOCKER) {
         const compiler = path.join(basedir, './scripts/circom-docker.sh');
         const tmpdir = path.join(basedir, './compiled/tmp/');
         options = {...options, compiler, tmpdir};
