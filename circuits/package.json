@@ -19,9 +19,9 @@
     "prettier:check": "cd .. && yarn prettier --check circuits",
     "prettier:fix": "cd .. && yarn prettier --write circuits",
     "prettier:list-different": "cd .. && yarn prettier --list-different circuits",
-    "test": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 10000 && cd test && ./run_all_tests.sh",
+    "test": "yarn build && mocha 'lib/**/*.js' && cd test && ./run_all_tests.sh",
     "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run_all_tests.sh",
-    "test:docker": "export CIRCOM_DOCKER=yes && mocha --timeout 15000"
+    "test:docker": "yarn build && export CIRCOM_DOCKER=yes && mocha 'lib/**/*.js' --timeout 15000"
   },
   "devDependencies": {
     "chai": "^4.3.4",
@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "circomlib": "^2.0.2",
+    "dotenv": "^16.0.3",
     "typescript": "^4.9.4"
   },
   "main": "index.js",

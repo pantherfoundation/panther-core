@@ -9,7 +9,7 @@ This repository contains circom circuits, scripts facilitating the circom compil
 - Rust
 - Node.js
 - Cargo
-- Docker
+- Docker (optional)
 
 Complete installation guide is available
 [here](https://docs.circom.io/getting-started/installation/ 'Circom installation page').
@@ -32,8 +32,10 @@ Run the following command to transpile typescript files and also to build types.
 
 This should populate types/_ and lib/_ folder.
 
-Upon successful build, run the following command to run the test cases for circom files
+Upon successful build, run the following command to run the test cases for circom files. This command runs the test cases in local environment.
 
 `yarn test`
 
-**Note:** Please note that the test cases will run inside docker environment, so please make sure that the docker is up and running before executing the above command.
+To run test cases in docker environment run the following command
+
+`yarn test:docker`
