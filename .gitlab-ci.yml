@@ -1,5 +1,3 @@
-# Description: Gitlab CI/CD configuration file
-
 default:
   image: node:16
 
@@ -19,11 +17,93 @@ default:
     - subgraph/node_modules/
   policy: pull
 
+.base_scripts: &base_scripts
+  - time yarn danger ci
+  - echo "${CI_COMMIT_MESSAGE}" | yarn commitlint
+  - time yarn lint
+  - time yarn build:types
+  - time yarn test
+  - cp dapp/.env.staging dapp/.env
+  - time yarn run build:dapp:staging
+
+.preview_script: &preview_script
+  - |
+    apt-get update
+    apt-get -y install jq
+    if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+      threadsBodies=$(
+          curl \
+              --request GET \
+              --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions" \
+              | jq -r '.[].notes[].body' )
+
+      if [[ "$threadsBodies" != *"${AMPLIFY_APP_ID}"* ]]; then
+        echo "Didn't find existing comment in MR about Amplify preview"
+
+        thread_id=$(
+          curl \
+              --data-urlencode "body=## After build, preview will 🚀[be here!](https://pr-${CI_MERGE_REQUEST_IID}.${AMPLIFY_APP_ID}.amplifyapp.com/)" \
+              --request POST \
+              --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions" \
+          | jq -r .id
+        )
+
+        echo "Posted Amplify preview link comment with thread id $thread_id"
+
+        curl -v -X PUT \
+          --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+          "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions/$thread_id?resolved=true" \
+        | jq .
+
+        echo "Marked Amplify preview link comment as resolved"
+      else
+        echo "Amplify preview comment already exists in this MR"
+      fi
+    fi
+
+.combined_job_template:
+  cache:
+    <<: *yarn_cache_template
+    policy: pull
+  before_script:
+    - time yarn install --frozen-lockfile --check-files --cache-folder .yarn-cache
+
+.ipfs_deploy_script: &ipfs_deploy_script
+  - time yarn deploy:dapp:ci:ipfs
+
+job-on-MR:
+  extends: .combined_job_template
+  rules:
+    - if: $CI_COMMIT_TITLE !~ /^Merge branch/ && $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+  interruptible: true
+  script:
+    - *base_scripts
+    - *preview_script
+    - *ipfs_deploy_script
+
+.ipfs_unpin_script: &ipfs_unpin_script
+  - time yarn deploy:dapp:ci:ipfs --unpin
+
+job-on-merge:
+  extends: .combined_job_template
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /^Merge branch/
+      when: always
+  script:
+    - *base_scripts
+    - *ipfs_unpin_script
+
 build-cache:
   interruptible: true
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_TITLE =~ /^Merge branch/
+    - if: $CI_COMMIT_TITLE !~ /^Merge branch/ && $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
+  cache:
+    <<: *yarn_cache_template
+    policy: pull-push
   script:
     - |
       if [[ -d node_modules ]]; then
@@ -33,108 +113,3 @@ build-cache:
     - time yarn install --frozen-lockfile --check-files --cache-folder .yarn-cache
   allow_failure:
     exit_codes: 10
-  cache:
-    <<: *yarn_cache_template
-    policy: pull-push
-
-.install-dependencies:
-  interruptible: true
-  before_script:
-    - time yarn install --frozen-lockfile --check-files --cache-folder .yarn-cache
-  cache:
-    <<: *yarn_cache_template
-    policy: pull
-
-deploy-ipfs:
-  extends: .install-dependencies
-  rules:
-    - if: $CI_COMMIT_TITLE !~ /^Merge branch/ && $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-  script:
-    - time yarn build:types
-    - cp dapp/.env.staging dapp/.env
-    - time yarn run build:dapp:staging
-    - time yarn deploy:dapp:ci:ipfs
-
-unpin-ipfs-job:
-  extends: .install-dependencies
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /See merge request/
-      when: always
-  script:
-    - time yarn deploy:dapp:ci:ipfs --unpin
-
-.job-template-mr-or-merge:
-  extends: .install-dependencies
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_TITLE =~ /^Merge branch/
-      when: always
-
-lint:
-  extends: .job-template-mr-or-merge
-  script:
-    - time yarn danger ci
-    - echo "${CI_COMMIT_MESSAGE}" | yarn commitlint
-    - time yarn lint
-
-test-dapp:
-  extends: .job-template-mr-or-merge
-  script:
-    - time yarn build:crypto
-    - time yarn workspace @panther-core/dapp build:types
-    - time yarn test:dapp
-
-test-contracts:
-  extends: .job-template-mr-or-merge
-  script:
-    - time yarn build:crypto
-    - time HARDHAT_NO_MNEMONIC=yes yarn build:contracts
-    - time yarn workspace @panther-core/contracts build:types
-    - time yarn test:contracts
-
-test-crypto:
-  extends: .job-template-mr-or-merge
-  script:
-    - time yarn build:crypto
-    - time yarn test:crypto
-
-amplify-preview:
-  rules:
-    - if: $CI_COMMIT_TITLE !~ /^Merge branch/ && $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-  script:
-    - |
-      apt-get update
-      apt-get -y install jq
-      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
-        threadsBodies=$(
-            curl \
-                --request GET \
-                --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
-                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions" \
-                | jq -r '.[].notes[].body' )
-
-        if [[ "$threadsBodies" != *"${AMPLIFY_APP_ID}"* ]]; then
-          echo "Didn't find existing comment in MR about Amplify preview"
-
-          thread_id=$(
-            curl \
-                --data-urlencode "body=## After build, preview will 🚀[be here!](https://pr-${CI_MERGE_REQUEST_IID}.${AMPLIFY_APP_ID}.amplifyapp.com/)" \
-                --request POST \
-                --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
-                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions" \
-            | jq -r .id
-          )
-
-          echo "Posted Amplify preview link comment with thread id $thread_id"
-
-          curl -v -X PUT \
-            --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
-            "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/discussions/$thread_id?resolved=true" \
-          | jq .
-
-          echo "Marked Amplify preview link comment as resolved"
-        else
-          echo "Amplify preview comment already exists in this MR"
-        fi
-      fi
