@@ -32,7 +32,7 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     for (var j = 0; j < 8; j++) {
         b2n_zAccountIdInsideLeaf.in[j] <== n2b_zAccountId.out[j];
     }
-    assert(b2n_zAccountIdInsideLeaf.out < 253); // regular BabyJubJub limit
+    assert(b2n_zAccountIdInsideLeaf.out < 253); // regular BabyJubJub limit, TODO: double check why 252 bits
 
     signal temp;
     temp <-- 1 << b2n_zAccountIdInsideLeaf.out; // switch-on single bit
@@ -41,8 +41,8 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     and.a <== leaf;
     and.b <== temp;
 
-    component isZero = IsZero(); // require
+    component isZero = IsZero(); // require to be zero
     isZero.in <== and.out;
 
-    isZero.out === 0;
+    isZero.out === 1;
 }

@@ -52,7 +52,9 @@ template PublicInputHasherExtended( nUtxoIn,
     // this is the size excluded `y` coordinate: `5 packed`, `5 rare`, `8 regular` and `parameter dependent`
     var n    = 5 + 5 + 8  + nUtxoIn + nUtxoIn +     nZrDataEscrow   +      nDataEscrow  +      nDaoDataEscrow  + nUtxoOut;
     signal hash_inputs[n];
-
+    // Current Value of `n` is 44 for UTXO-in = 2, UTXO-out = 2
+    // log("Public-Hash-Inputs");
+    // log(n);
     // --------------------- SIGNALS TO PACK ---------------------------------------------------------------------------
     // publicZAsset;                                      // 160 bit  <-- 0
     // depositAmount;                                     // 64 bit   <-- 1

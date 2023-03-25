@@ -5,26 +5,57 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZAccountNoteHasher(){
-    signal input spendPubKey[2];     // 2 x 256 bit
-    signal input rootSpendPubKey[2]; // 2 x 256 bit
-    signal input masterEOA;          // 160 bit
-    signal input id;                 // 24 bit
-    signal input amountZkp;          // 64 bit
-    signal input amountPrp;          // 64 bit
-    signal input zoneId;             // 16 bit
-    signal input expiryTime;         // 32 bit
-    signal input nonce;              // 16 bit
+    signal input spendPubKey[2];            // 2 x 256 bit
+    signal input rootSpendPubKey[2];        // 2 x 256 bit
+    signal input masterEOA;                 // 160 bit
+    signal input id;                        // 24 bit
+    signal input amountZkp;                 // 64 bit
+    signal input amountPrp;                 // 64 bit
+    signal input zoneId;                    // 16 bit
+    signal input expiryTime;                // 32 bit
+    signal input nonce;                     // 16 bit
+    signal input totalAmountPerTimePeriod;  // 256 bit
+    signal input createTime;                // 32 bit
+    signal input networkId;                 // 6 bit
 
     signal output out;
+
+    component hash = Poseidon(14);
+
+    hash.inputs[0] <== spendPubKey[0];
+    hash.inputs[1] <== spendPubKey[1];
+    hash.inputs[2] <== rootSpendPubKey[0];
+    hash.inputs[3] <== rootSpendPubKey[1];
+    hash.inputs[4] <== masterEOA;
+    hash.inputs[5] <== id;
+    hash.inputs[6] <== amountZkp;
+    hash.inputs[7] <== amountPrp;
+    hash.inputs[8] <== zoneId;
+    hash.inputs[9] <== expiryTime;
+    hash.inputs[10] <== nonce;
+    hash.inputs[11] <== totalAmountPerTimePeriod;
+    hash.inputs[12] <== createTime;
+    hash.inputs[13] <== networkId;
+
+    out <== hash.out;
+
+    /* OLD CODE
     // MSB to LSB
-    // id [24] + amountZkp [64] + amountPrp [64] + zoneId [16] + expiryTime [32] + nonce [16] = 216
-    component b2n_zero = Bits2Num(216);
+    // id [24]
+    // + amountZkp [64]
+    // + amountPrp [64]
+    // + zoneId [16]
+    // + expiryTime [32]
+    // + nonce [16]
+    // + createTime [32]
+    // + networkId [6] = 254
+    component b2n_zero = Bits2Num(254);
 
     // [0] - id
     component n2b_id = Num2Bits(24);
     n2b_id.in <== id;
 
-    var shift = 216;
+    var shift = 248;
     for(var i = 24; i > 0; i--) {
         b2n_zero.in[shift-i] <== n2b_id.out[24-i];
     }
@@ -69,7 +100,25 @@ template ZAccountNoteHasher(){
         b2n_zero.in[shift-i] <== n2b_nonce.out[16-i];
     }
 
-    // [6] - Hasher-0
+    // [6] - createTime
+    component n2b_createTime = Num2Bits(32);
+    n2b_createTime.in <== createTime;
+
+    shift -= 16;
+    for(var i = 32; i > 0; i--) {
+        b2n_zero.in[shift-i] <== n2b_createTime.out[32-i];
+    }
+
+    // [7] - networkId
+    component n2b_networkId = Num2Bits(6);
+    n2b_networkId.in <== networkId;
+
+    shift -= 32;
+    for(var i = 6; i > 0; i--) {
+        b2n_zero.in[shift-i] <== n2b_networkId.out[6-i];
+    }
+
+    // [8] - Hasher-0
     component hasher0 = Poseidon(5);
 
     hasher0.inputs[0] <== spendPubKey[0];
@@ -78,13 +127,16 @@ template ZAccountNoteHasher(){
     hasher0.inputs[3] <== rootSpendPubKey[1];
     hasher0.inputs[4] <== masterEOA;
 
-    // [7] - Top hasher
-    component topHasher = Poseidon(2);
+    // [9] - Top hasher
+    component topHasher = Poseidon(3);
     topHasher.inputs[0] <== hasher0.out;
-    topHasher.inputs[1] <== b2n_zero.out;
+    topHasher.inputs[1] <== totalAmountPerTimePeriod;
+    topHasher.inputs[2] <== b2n_zero.out;
 
-    // [8] - Output
+    // [10] - Output
     out <== topHasher.out;
+
+    */
 }
 
 

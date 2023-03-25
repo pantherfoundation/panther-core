@@ -37,7 +37,7 @@ template KycKytNoteInclusionProver(n_levels) {
         proof.pathIndices[i] <== pathIndex[i];
         proof.pathElements[i] <== pathElements[i];
     }
-    // verify computed root against provided one if UTXO is non-zero
+    // verify computed root against provided one
     component isEqual = ForceEqualIfEnabled();
     isEqual.in[0] <== root;
     isEqual.in[1] <== proof.root;
