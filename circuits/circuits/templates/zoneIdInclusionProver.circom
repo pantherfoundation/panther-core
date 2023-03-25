@@ -16,7 +16,8 @@ template ZoneIdInclusionProver(){
     component n2b = Num2Bits(16);
     signal temp;
     temp <-- zoneIds >> offset;
-    n2b.in <== temp;
+    signal temp1 <-- temp & ((1<<16)-1);
+    n2b.in <== temp1;
 
     component b2nZoneId = Bits2Num(16);
     for (var i = 0; i < 16; i++) {

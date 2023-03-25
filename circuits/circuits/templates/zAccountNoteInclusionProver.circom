@@ -20,6 +20,10 @@ template ZAccountNoteInclusionProver(n_levels) {
         proof.pathIndices[i] <== pathIndices[i];
         proof.pathElements[i] <== pathElements[i];
     }
-    // verify computed root against provided one if UTXO is non-zero
-    root === proof.root;
+    // verify computed root against provided one
+    component isEqual = ForceEqualIfEnabled();
+    isEqual.in[0] <== root;
+    isEqual.in[1] <== proof.root;
+    isEqual.enabled <== root;
+    //root === proof.root;
 }

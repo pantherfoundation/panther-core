@@ -29,13 +29,41 @@ template BalanceChecker() {
     signal input zAccountUtxoOutZkpAmount;
     signal input totalUtxoInAmount;
     signal input totalUtxoOutAmount;
+    signal input zAssetWeight;
+    signal input zAssetScale;
+    signal output total;
+    signal output depositScaledAmount;
+    signal output depositChange;
+    signal output withdrawScaledAmount;
+    signal output withdrawChange;
+
+    // Scale external amounts
+    var zAssetScaleFactor = 10**zAssetScale;
+    // 1 - deposit
+    signal depositScaledAmountTmp;
+    depositScaledAmountTmp <-- depositAmount \ zAssetScaleFactor;
+    depositScaledAmount <== depositScaledAmountTmp;
+    signal depositAmountRestored;
+    depositAmountRestored <-- depositScaledAmount * zAssetScaleFactor;
+
+    depositChange <== depositAmount - depositAmountRestored;
+
+    // 2 - withdraw
+    signal withdrawScaledAmountTmp;
+    withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScaleFactor;
+    withdrawScaledAmount <== withdrawScaledAmountTmp;
+    signal withdrawAmountRestored;
+    withdrawAmountRestored <-- withdrawScaledAmount * zAssetScaleFactor;
+
+    withdrawChange <== withdrawAmount - withdrawAmountRestored;
+
 
     // Verify total balances
     signal totalBalanceIn;
-    totalBalanceIn <== depositAmount + totalUtxoInAmount + isZkpToken * zAccountUtxoInZkpAmount;
+    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * zAccountUtxoInZkpAmount;
 
     signal totalBalanceOut;
-    totalBalanceOut <== withdrawAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedAmountZkp );
+    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedAmountZkp );
 
     component isEqual = IsEqual();
     isEqual.in[0] <== totalBalanceIn;
@@ -47,4 +75,8 @@ template BalanceChecker() {
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
     zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoOutZkpAmount;
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount - chargedAmountZkp;
+
+    total <== totalBalanceIn * zAssetWeight;
 }
+
+

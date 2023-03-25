@@ -29,7 +29,8 @@ template WeightLeafDecoder(WeightMerkleTreeDepth){
   weight <== b2nWeight.out;
 
   shift = shift + 32;
-  component b2nIndex = Bits2Num(WeightMerkleTreeDepth+1);
-  for(var i=0; i<WeightMerkleTreeDepth+1; i++)
+  // component b2nIndex = Bits2Num(WeightMerkleTreeDepth+1);
+  for(var i = 0; i < WeightMerkleTreeDepth+1; i++) {
       index[i] <== n2b.out[shift+i];
+  }
 }
