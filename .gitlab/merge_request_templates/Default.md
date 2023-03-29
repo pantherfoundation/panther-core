@@ -20,6 +20,10 @@ ClickUp: #u7hu <!-- replace ClickUp ID here -->
 
 <!-- Add any relevant info -->
 
+## Assets
+
+<!-- Add any screenshots, videos, diagrams if any -->
+
 ## Other useful info
 
 <!-- Add any relevant info -->
