@@ -14,7 +14,7 @@ import {
     deriveChildPubKeyFromRootPubKey,
     isChildPubKeyValid,
 } from '../base/keypairs';
-import {IKeypair, PrivateKey} from '../types/keypair';
+import {Keypair, WalletKeypairs, PrivateKey} from '../types/keypair';
 import {assertInBabyJubJubSubOrder, assert} from '../utils/assertions';
 
 // generateSpendingChildKeypair generates child spending keypair (s', S')
@@ -22,7 +22,7 @@ import {assertInBabyJubJubSubOrder, assert} from '../utils/assertions';
 export function generateSpendingChildKeypair(
     rootSpendingPrivKey: PrivateKey,
     r: bigint,
-): IKeypair {
+): Keypair {
     const spendingChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
         rootSpendingPrivKey,
         r,
@@ -65,12 +65,14 @@ export const derivePrivKeyFromSignature = (signature: string): bigint => {
     return privKey;
 };
 
-export const deriveKeypairFromSignature = (signature: string): IKeypair => {
+export const deriveKeypairFromSignature = (signature: string): Keypair => {
     const pKey = derivePrivKeyFromSignature(signature);
     return deriveKeypairFromPrivKey(pKey);
 };
 
-export async function deriveRootKeypairs(signer: Signer): Promise<IKeypair[]> {
+export async function deriveRootKeypairs(
+    signer: Signer,
+): Promise<WalletKeypairs> {
     const derivationMessage = `Greetings from Panther Protocol!
 
 Sign this message in order to obtain the keys to your Panther wallet.
@@ -78,18 +80,22 @@ Sign this message in order to obtain the keys to your Panther wallet.
 This signature will not cost you any fees.
 
 Keypair version: 1`;
+
     const signature = await signer.signMessage(derivationMessage);
-    const hashedSignature = poseidon([signature]);
-    return [
-        deriveKeypairFromSignature(signature),
-        deriveKeypairFromSeed(hashedSignature),
-    ];
+    const hashedSignature: bigint = poseidon([signature]);
+    const hashOfHashedSigature: bigint = poseidon([hashedSignature]);
+
+    return {
+        rootSpendingKeypair: deriveKeypairFromSignature(signature),
+        rootReadingKeypair: deriveKeypairFromSeed(hashedSignature),
+        storageEncryptionKeypair: deriveKeypairFromSeed(hashOfHashedSigature),
+    };
 }
 
 export function deriveSpendingChildKeypair(
-    rootSpendingKeypair: IKeypair,
+    rootSpendingKeypair: Keypair,
     randomSecret: bigint,
-): [IKeypair, boolean] {
+): [Keypair, boolean] {
     const childSpendingPrivateKey = deriveChildPrivKeyFromRootPrivKey(
         rootSpendingKeypair.privateKey,
         randomSecret,
