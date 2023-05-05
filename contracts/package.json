@@ -5,7 +5,7 @@
   "description": "Panther Protocol smart contracts",
   "license": "SEE LICENSE IN ./LICENSE",
   "scripts": {
-    "build:types": "cp -a types ../dapp/src",
+    "build:types": "cp -r types/. ../dapp/src/types",
     "build:contracts:triad-tree": "./scripts/generateTriadMerkleZeroesContracts.sh",
     "chain": "HARDHAT_NO_MNEMONIC=yes hardhat node",
     "clean": "rm -rf artifacts/ cache/solidity-files-cache.json types/contracts/",
