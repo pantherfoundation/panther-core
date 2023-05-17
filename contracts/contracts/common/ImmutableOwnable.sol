@@ -3,7 +3,7 @@
 // slither-disable-next-line solc-version
 pragma solidity ^0.8.4;
 
-/// @title Staking
+/// @title ImmutableOwnable
 abstract contract ImmutableOwnable {
     /// @notice The owner who has privileged rights
     address public immutable OWNER;
