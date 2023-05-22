@@ -11,7 +11,7 @@
     "build:ts": "tsc -p tsconfig.json",
     "clean": "rm -rf ./node_modules && rm -rf ./types/* && rm -rf ./lib",
     "clean:circuits": "sudo rm -rf compiled/mainTransaction*",
-    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
+    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom -l node_modules/",
     "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
     "lint": "yarn eslint && yarn prettier:list-different",
     "lint:eslint": "eslint --max-warnings 0",
