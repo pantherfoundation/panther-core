@@ -1,7 +1,7 @@
 import {describe, expect} from '@jest/globals';
 import {Wallet} from 'ethers';
 
-import {IKeypair} from '../../lib/types/keypair';
+import {Keypair} from '../../lib/types/keypair';
 import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {
     deriveRootKeypairs,
@@ -11,8 +11,8 @@ import {
 import {SNARK_FIELD_SIZE} from '../../src/utils/constants';
 
 describe('Spending child keypair', () => {
-    let spendingChildKeypair: IKeypair;
-    let spendingRootKeypair: IKeypair;
+    let spendingChildKeypair: Keypair;
+    let spendingRootKeypair: Keypair;
 
     beforeAll(async () => {
         const randomAccount = Wallet.createRandom();
@@ -50,32 +50,43 @@ describe('Keychain', () => {
 
     describe('Root keypairs', () => {
         it('should be smaller than snark FIELD_SIZE', async () => {
-            const keypairs: IKeypair[] = (await deriveRootKeypairs(
-                randomAccount,
-            )) as IKeypair[];
-            expect(keypairs[0].privateKey < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypairs[0].publicKey[0] < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypairs[0].publicKey[1] < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypairs[1].privateKey < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypairs[1].publicKey[0] < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypairs[1].publicKey[1] < SNARK_FIELD_SIZE).toBeTruthy();
+            const {
+                rootReadingKeypair,
+                rootSpendingKeypair,
+                storageEncryptionKeypair,
+            } = await deriveRootKeypairs(randomAccount);
+            [
+                rootReadingKeypair,
+                rootSpendingKeypair,
+                storageEncryptionKeypair,
+            ].forEach(keypair => {
+                expect(keypair.privateKey < SNARK_FIELD_SIZE).toBeTruthy();
+                expect(keypair.publicKey[0] < SNARK_FIELD_SIZE).toBeTruthy();
+                expect(keypair.publicKey[1] < SNARK_FIELD_SIZE).toBeTruthy();
+            });
         });
 
         it('should be deterministic', async () => {
-            const keypairsOne = (await deriveRootKeypairs(
-                randomAccount,
-            )) as IKeypair[];
-            const keypairsTwo = (await deriveRootKeypairs(
-                randomAccount,
-            )) as IKeypair[];
-            expect(keypairsOne[0].privateKey).toEqual(
-                keypairsTwo[0].privateKey,
-            );
-            expect(keypairsOne[0].publicKey).toEqual(keypairsTwo[0].publicKey);
-            expect(keypairsOne[1].privateKey).toEqual(
-                keypairsTwo[1].privateKey,
-            );
-            expect(keypairsOne[1].publicKey).toEqual(keypairsTwo[1].publicKey);
+            const keypairsOne = await deriveRootKeypairs(randomAccount);
+            const keypairsTwo = await deriveRootKeypairs(randomAccount);
+
+            [
+                [
+                    keypairsOne.rootSpendingKeypair,
+                    keypairsTwo.rootSpendingKeypair,
+                ],
+                [
+                    keypairsOne.rootReadingKeypair,
+                    keypairsTwo.rootReadingKeypair,
+                ],
+                [
+                    keypairsOne.storageEncryptionKeypair,
+                    keypairsTwo.storageEncryptionKeypair,
+                ],
+            ].forEach(([keypairOne, keypairTwo]) => {
+                expect(keypairOne.privateKey).toEqual(keypairTwo.privateKey);
+                expect(keypairOne.publicKey).toEqual(keypairTwo.publicKey);
+            });
         });
     });
 });

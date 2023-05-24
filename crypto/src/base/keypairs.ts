@@ -9,7 +9,7 @@ https://github.com/appliedzkp/maci/blob/master/crypto/ts/index.ts
 // @ts-ignore
 import {babyjub} from 'circomlibjs';
 
-import {IKeypair, PrivateKey, PublicKey} from '../types/keypair';
+import {Keypair, PrivateKey, PublicKey} from '../types/keypair';
 import {
     assertInSnarkField,
     assertInBabyJubJubSubOrder,
@@ -26,7 +26,7 @@ export const PRIV_KEY_SIZE = 32;
 
 export const isChildPubKeyValid = (
     childPubKey: PublicKey,
-    rootKeypair: IKeypair,
+    rootKeypair: Keypair,
     randomSecret: bigint,
 ): boolean => {
     assertInSnarkField(childPubKey[0], 'Child public key X');
@@ -52,13 +52,13 @@ export const isChildPubKeyValid = (
     return isValid;
 };
 
-export const deriveKeypairFromPrivKey = (privateKey: bigint): IKeypair => {
+export const deriveKeypairFromPrivKey = (privateKey: bigint): Keypair => {
     assertInBabyJubJubSubOrder(privateKey, 'privateKey');
     const publicKey = derivePubKeyFromPrivKey(privateKey);
     return {privateKey, publicKey};
 };
 
-export const deriveKeypairFromSeed = (seed: bigint): IKeypair => {
+export const deriveKeypairFromSeed = (seed: bigint): Keypair => {
     assert(seed != BigInt(0), 'Zero seed is not allowed');
     const privateKey = moduloBabyJubSubFieldPrime(seed);
     return deriveKeypairFromPrivKey(privateKey);

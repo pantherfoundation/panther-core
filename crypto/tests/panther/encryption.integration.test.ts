@@ -8,7 +8,7 @@ import {
 import {generateRandomKeypair, packPublicKey} from '../../src/base/keypairs';
 import {deriveKeypairFromSignature} from '../../src/panther/keys';
 import {extractCipherKeyAndIvFromPackedPoint} from '../../src/panther/messages';
-import {IKeypair} from '../../src/types/keypair';
+import {Keypair} from '../../src/types/keypair';
 import {bigIntToUint8Array} from '../../src/utils/bigint-conversions';
 
 describe('Message encryption and decryption', () => {
@@ -17,7 +17,7 @@ describe('Message encryption and decryption', () => {
 
         const signature = await signer.signMessage('some message');
 
-        const readingKeypair: IKeypair = deriveKeypairFromSignature(signature);
+        const readingKeypair: Keypair = deriveKeypairFromSignature(signature);
         // spending keypair(R,r)
         const childRandomKeypair = generateRandomKeypair();
 
