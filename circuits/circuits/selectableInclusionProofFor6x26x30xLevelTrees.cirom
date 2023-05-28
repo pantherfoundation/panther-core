@@ -1,19 +1,12 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "./templates/selectable3TreeInclusionProof.circom";
+include "./templates/selectable3TreeInclusionProofChecker.circom";
 
-// Based upon the given leaf, path elements and indices, compute the root
+// Based upon the given leaf, path elements and indices, verify the root
 // of the merkle tree chosen by the `treeSelector` signal out of 3 trees:
 // the left one with 6 levels, middle one having 26 levels, and the right
 // one of 30 levels.
 // (non-linear constraints: 7236, linear constraints: 0)
-component main {
-    public [
-        treeSelector,
-        leaf,
-        pathElements,
-        pathIndices
-    ]
 // trees levels (depths): 6, 26=6+20, 30=6+18+4
-} = Selectable3TreeInclusionProof(6, 20, 4);
+component main {public [root]} = Selectable3TreeInclusionProofChecker(6, 20, 4);
