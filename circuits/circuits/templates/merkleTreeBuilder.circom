@@ -4,13 +4,12 @@ pragma circom 2.0.0;
 include "circomlib/circuits/switcher.circom";
 include "./hasher.circom";
 
-template MerkleTreeRootBuilder(levels) {
-    signal input leafs[2**levels];
+template MerkleTreeBuilder(levels) {
+    var nLeafs = 2**levels;
+    signal input leafs[nLeafs];
     signal output root;
 
-    var nLeafs = 2**levels;
     var nHashes = nLeafs - 1;
-
     component nodes[nHashes];
 
     // Iterate through the leafs
@@ -25,7 +24,7 @@ template MerkleTreeRootBuilder(levels) {
     // Iterate through levels above leafs
     var firstChildNodeIndex = 0;
     var nNodes = nLeafs/2;
-    for (var l=1; l < nNodes; l++) {
+    for (var l=1; l < levels; l++) {
         // Iterate through level nodes
         for (var n = 0; n<nNodes; n=n+2) {
             var childNodeIndex = firstChildNodeIndex + n;
@@ -40,5 +39,5 @@ template MerkleTreeRootBuilder(levels) {
         nNodes = nNodes / 2;
     }
 
-    root <== nodes[levels - 1].out;
+    root <== nodes[nHashes - 1].out;
 }

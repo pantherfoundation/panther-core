@@ -2,7 +2,7 @@
 pragma circom 2.0.0;
 
 include "./merkleInclusionProof.circom";
-include "./merkleTreeRootBuilder.circom";
+include "./merkleTreeBuilder.circom";
 
 // It computes the new root of a binary Merkle tree, if one of the inner nodes
 // (and its child elements down the leafs) gets replaced with a subtree built
@@ -31,7 +31,7 @@ template BatchUpdaterAndNewRootBuilder(
     assert(tree_levels > batch_levels);
 
     component upperTree = MerkleInclusionProof(upperLevels);
-    component batchTree = MerkleTreeRootBuilder(batch_levels);
+    component batchTree = MerkleTreeBuilder(batch_levels);
     component newUpperTree = MerkleInclusionProof(upperLevels);
 
     // Verify the Merkle inclusion proof for the replacedNode
@@ -47,7 +47,7 @@ template BatchUpdaterAndNewRootBuilder(
         batchTree.leafs[i] <== newLeafs[i];
     }
 
-    // Compute the new root when the new value in the `replacedNode`
+    // Compute the new root for the new value in the `replacedNode`
     newUpperTree.leaf <== batchTree.root;
     for (var l=0; l<upperLevels; l++) {
         newUpperTree.pathElements[l] <== replacePathElements[l];
