@@ -3,8 +3,8 @@ pragma circom 2.0.0;
 
 include "./templates/partiallyFilledChainedBatchUpdaterAndNewRootChecker.circom";
 
-// It proofs updating the 26-level binary Merkle tree with the batch of up to 64 new leafs.
-// (non-linear constraints: 43573, linear constraints: 0)
+// It proves updating the 26-level binary Merkle tree with the batch of up to 64 new leafs.
+// (non-linear constraints: 44293, linear constraints: 0)
 component main {
     public [
         newLeafsCommitment,

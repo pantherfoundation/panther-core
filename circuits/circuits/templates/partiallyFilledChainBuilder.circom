@@ -14,7 +14,7 @@ include "circomlib/circuits/comparators.circom";
 // - and the number of (not-ignored) inputs may vary:
 //  0 < nInputs =< max_nInputs
 //
-template PartiallyFilledChainHasher(max_nInputs){
+template PartiallyFilledChainBuilder(max_nInputs){
     signal input inputs[max_nInputs];
     signal input nInputs;
 
@@ -31,7 +31,7 @@ template PartiallyFilledChainHasher(max_nInputs){
     signal factors[max_nInputs-1];
     signal accumulator[max_nInputs];
 
-    // First, let's process inputs[0] 
+    // First, let's process inputs[0]
     interimHashes[0] <== inputs[0];
     accumulator[0] <== interimHashes[0];
 
