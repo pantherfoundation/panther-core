@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "./templates/selectable3TreeInclusionProofChecker.circom";
+include "../../circuits/templates/selectable3TreeInclusionProofChecker.circom";
 
 // Based upon the given leaf, path elements and indices, verify the root
 // of the merkle tree chosen by the `treeSelector` signal out of 3 trees:
