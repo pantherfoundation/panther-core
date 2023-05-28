@@ -2,7 +2,7 @@
 pragma circom 2.0.0;
 
 include "./batchUpdaterAndNewRootBuilder.circom";
-include "./partiallyFilledChainHasher.circom";
+include "./partiallyFilledChainBuilder.circom";
 include "./zeroPaddedInputChecker.circom";
 
 // It computes the new root of a binary Merkle tree, if one of the inner nodes
@@ -40,7 +40,7 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
     assert(nNewLeafs >= nNonZeroNewLeafs);
 
     component inputChecker = ZeroPaddedInputChecker(nNewLeafs, zeroLeafValue);
-    component chain = PartiallyFilledChainHasher(nNewLeafs);
+    component chain = PartiallyFilledChainBuilder(nNewLeafs);
 
     inputChecker.nInputs <== nNonZeroNewLeafs;
     chain.nInputs <== nNonZeroNewLeafs;
