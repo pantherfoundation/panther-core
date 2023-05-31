@@ -2,22 +2,28 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import { BinaryTree, DegenerateBinaryTree } from "./Types.sol";
-
+/**
+ * @dev It computes the root of the degenerate binary merkle tree
+ * - i.e. for the tree of this kind (_tree.nLeafs is 4 here):
+ *     root
+ *      /\
+ *     /\ 3
+ *    /\ 2
+ *   0  1
+ * If the tree has just a single leaf, it's root equals to the leaf.
+ */
 abstract contract DegenerateIncrementalBinaryTree {
-    function insertLeafs(
-        DegenerateBinaryTree storage tree,
-        bytes32[] memory leafs
-    ) internal returns (uint256 firstLeafIndex, bytes32 newRoot) {
-        return (0, 0);
+    function insertLeaf(
+        bytes32 leaf,
+        bytes32 root,
+        bool isFirstLeaf
+    ) internal pure returns (bytes32 newRoot) {
+        newRoot = isFirstLeaf ? leaf : hash(root, leaf);
     }
 
-    function insertLeaf(DegenerateBinaryTree storage tree, bytes32 leaf)
+    function hash(bytes32 left, bytes32 right)
         internal
-        returns (uint256 leafIndex, bytes32 newRoot)
-    {
-        return (0, 0);
-    }
-
-    function hash(bytes32[2] memory) internal view virtual returns (bytes32);
+        pure
+        virtual
+        returns (bytes32);
 }
