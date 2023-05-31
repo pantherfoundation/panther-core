@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "./partiallyFilledChainedBatchUpdaterAndNewRootBuilder.circom";
+include "./treeBatchUpdaterAndNewRootBuilder.circom";
 
 // It verifies the new root of a binary Merkle tree, if one of the inner nodes
 // (and its child elements down the leafs) gets replaced with a subtree built
 // from new leafs (batch). The root of the degenerate binary tree (aka "chain")
 // built from these new leafs serves as the commitment to these leafs.
 //
-template PartiallyFilledChainedBatchUpdaterAndNewRootChecker(
+template TreeBatchUpdaterAndNewRootChecker(
     tree_levels,   // depth of the tree being updated
     batch_levels,  // depth of the subtree with new leafs
     zeroLeafValue
@@ -26,15 +26,18 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootChecker(
     // The tree old root that includes the `nodeBeingReplaced` original value
     signal input root;
 
-    // Original value, path elements and indices of the node to be replaced
+    // Original value, index, and path elements of the node to be replaced
     signal input replacedNode;
-    signal input replacePathElements[upperLevels];
-    signal input replacePathIndices[upperLevels];
+    signal input replacedNodeIndex;
+    signal input replacedNodePathElements[upperLevels];
+
+    // Other public input to anchor into the proof
+    signal input extraInput;
 
     // The tree new root that includes the replaced `replacedNode`
     signal input newRoot;
 
-    component builder = PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
+    component builder = TreeBatchUpdaterAndNewRootBuilder(
         tree_levels,
         batch_levels,
         zeroLeafValue
@@ -44,14 +47,15 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootChecker(
     builder.nNonZeroNewLeafs <== nNonZeroNewLeafs;
     builder.root <== root;
     builder.replacedNode <== replacedNode;
+    builder.replacedNodeIndex <== replacedNodeIndex;
+    builder.extraInput <== extraInput;
 
     for (var i=0; i<nNewLeafs; i++) {
          builder.newLeafs[i] <== newLeafs[i];
     }
 
     for (var l=0; l<upperLevels; l++) {
-        builder.replacePathElements[l] <== replacePathElements[l];
-        builder.replacePathIndices[l] <== replacePathIndices[l];
+        builder.replacedNodePathElements[l] <== replacedNodePathElements[l];
     }
 
     newRoot === builder.newRoot;
