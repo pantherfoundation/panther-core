@@ -7,12 +7,12 @@ import "./rootHistory/RootHistory.sol";
 import "./taxiTree/TaxiTree.sol";
 
 abstract contract PantherForest is TaxiTree, BusTree, RootHistory {
-    function hash(bytes32[2] memory)
+    function hash(bytes32 left, bytes32 right)
         internal
-        view
+        pure
         virtual
-        override(BinaryIncrementalTree, DegenerateIncrementalBinaryTree)
+        override
         returns (bytes32);
 
-    function hash(bytes32[4] memory) internal view virtual returns (bytes32);
+    function hash(bytes32[4] memory) internal pure virtual returns (bytes32);
 }
