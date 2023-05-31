@@ -14,7 +14,7 @@ import { PoseidonT3 } from "./crypto/Poseidon.sol";
 contract PantherFerryTree is BinaryUpdatableTree {
     function hash(bytes32[2] memory input)
         internal
-        view
+        pure
         override
         returns (bytes32)
     {

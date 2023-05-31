@@ -12,6 +12,7 @@ abstract contract BinaryUpdatableTree is BinaryIncrementalTree {
         uint256 leafInd,
         bytes32[] memory siblings
     ) internal returns (bytes32 newRoot) {
+        // TODO: implement BinaryUpdatableTree::insertLeaf
         return 0;
     }
 }

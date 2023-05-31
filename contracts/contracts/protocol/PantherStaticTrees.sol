@@ -15,7 +15,7 @@ import { PoseidonT6 } from "./crypto/Poseidon.sol";
 // It's supposed to run on the mainnet only.
 // Bridges keepers are expected to propagate its root to other networks
 abstract contract PantherStaticTrees {
-    function hash(bytes32[5] memory input) private view returns (bytes32) {
+    function hash(bytes32[5] memory input) private pure returns (bytes32) {
         return PoseidonT6.poseidon(input);
     }
 }
