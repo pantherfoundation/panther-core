@@ -5,17 +5,14 @@ pragma solidity ^0.8.16;
 import "../common/Bytecode.sol";
 import { VerifyingKey } from "../common/Types.sol";
 import "./pantherVerifier/Verifier.sol";
+import "./interfaces/IPantherVerifier.sol";
 
-contract PantherVerifier is Verifier {
-    /**
-     * @notice Get the verifying key for the specified circuits
-     * @param circuitId ID of the circuit
-     * @dev circuitId is an address where the key is deployed as bytecode
-     * @return Verifying key
-     */
+contract PantherVerifier is Verifier, IPantherVerifier {
+    /// @inheritdoc IPantherVerifier
     function getVerifyingKey(uint160 circuitId)
         external
         view
+        override
         returns (VerifyingKey memory)
     {
         return loadVerifyingKey(circuitId);
