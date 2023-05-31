@@ -6,11 +6,11 @@ include "./partiallyFilledChainBuilder.circom";
 include "./zeroPaddedInputChecker.circom";
 
 // It computes the new root of a binary Merkle tree, if one of the inner nodes
-// (and its child elements down the leafs) gets replaced with a subtree built
-// from new leafs (batch). The root of the degenerate binary tree (aka "chain")
+// (and all its child elements) gets replaced with a root of the subtree built
+// from a batch of new leafs. The root of the degenerate binary tree ("chain")
 // built from these new leafs serves as the commitment to these leafs.
 //
-template PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
+template TreeBatchUpdaterAndNewRootBuilder(
     tree_levels,   // depth of the tree being updated
     batch_levels,  // depth of the subtree with new leafs
     zeroLeafValue
@@ -28,22 +28,35 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
     // The tree old root that includes the `replacedNode` original value
     signal input root;
 
-    // Original value, path elements and indices of the node to be replaced
+    // Original value, index, and path elements of the node to be replaced
     signal input replacedNode;
-    signal input replacePathElements[upperLevels];
-    signal input replacePathIndices[upperLevels];
+    signal input replacedNodeIndex;
+    signal input replacedNodePathElements[upperLevels];
+
+    // Other public input to anchor into the proof
+    signal input extraInput;
 
     // The tree new root that includes the replaced `replacedNode`
     signal output newRoot;
 
     assert(tree_levels > batch_levels);
     assert(nNewLeafs >= nNonZeroNewLeafs);
+    assert(replacedNodeIndex < 2**upperLevels);
 
     component inputChecker = ZeroPaddedInputChecker(nNewLeafs, zeroLeafValue);
     component chain = PartiallyFilledChainBuilder(nNewLeafs);
 
     inputChecker.nInputs <== nNonZeroNewLeafs;
     chain.nInputs <== nNonZeroNewLeafs;
+
+    // Compute pathIndices (for pathElements) of the node to be replaced
+    signal replacedNodePathIndices[upperLevels];
+    component indexBityfier = Num2Bits(upperLevels);
+
+    indexBityfier.in <== replacedNodeIndex;
+    for (var l = 0; l < upperLevels; l++) {
+        replacedNodePathIndices[l] <== indexBityfier.out[l];
+    }
 
     for (var i=0; i<nNewLeafs; i++) {
         inputChecker.inputs[i] <== newLeafs[i];
@@ -53,13 +66,13 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
     newLeafsCommitment === chain.out;
 
     // Compute the tree new root
-    component treeUpdater = BatchUpdaterAndNewRootBuilder(tree_levels, batch_levels);
+    component treeUpdater = TreeFullBatchUpdaterAndNewRootBuilder(tree_levels, batch_levels);
     treeUpdater.root <== root;
     treeUpdater.replacedNode <== replacedNode;
 
     for (var l=0; l<upperLevels; l++) {
-        treeUpdater.replacePathElements[l] <== replacePathElements[l];
-        treeUpdater.replacePathIndices[l] <== replacePathIndices[l];
+        treeUpdater.replacedNodePathElements[l] <== replacedNodePathElements[l];
+        treeUpdater.replacedNodePathIndices[l] <== replacedNodePathIndices[l];
     }
 
     for (var i=0; i<nNewLeafs; i++) {
@@ -67,4 +80,7 @@ template PartiallyFilledChainedBatchUpdaterAndNewRootBuilder(
     }
 
     newRoot <== treeUpdater.newRoot;
+
+    // Ensure extraInput can't be cheated
+    extraInput === extraInput * 1;
 }
