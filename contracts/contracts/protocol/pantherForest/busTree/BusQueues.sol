@@ -15,7 +15,11 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     event BusQueueOpened(uint256 queueId);
-    event BusQueueOnboarded(uint256 indexed queueId, uint256 firstIndex);
+    event BusQueueOnboarded(
+        uint256 indexed queueId,
+        uint256 nUtxos,
+        uint256 firstIndex
+    );
     event BusQueueRevalued(uint256 queueId, uint256 accumReward);
     event UtxoBusQueued(bytes32 indexed utxo, uint256 queueId, uint256 index);
 
@@ -52,18 +56,19 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         internal
         returns (uint256 reward)
     {
-        ensureQueueNotEmpty(queueId);
-        reward = uint256(busQueues[queueId].reward);
+        uint8 nUtxos;
+        (nUtxos, reward) = ensureQueueExists(queueId);
+
         busQueues[queueId] = BusQueue(0, 0, 0);
 
-        emit BusQueueOnboarded(queueId, firstIndex);
+        emit BusQueueOnboarded(queueId, nUtxos, firstIndex);
     }
 
     function registerExtraReward(uint32 queueId, uint96 extraReward) internal {
         require(extraReward > 0, "BQ:ZERO_REWARD");
-        ensureQueueNotEmpty(queueId);
+        (, uint96 reward) = ensureQueueExists(queueId);
 
-        uint96 accumReward = busQueues[queueId].reward + extraReward;
+        uint96 accumReward = reward + extraReward;
         busQueues[queueId].reward = accumReward;
 
         emit BusQueueRevalued(queueId, accumReward);
@@ -81,8 +86,13 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         emit BusQueueOpened(queueId);
     }
 
-    function ensureQueueNotEmpty(uint32 queueId) private view {
-        uint8 nUtxos = busQueues[queueId].nUtxos;
+    function ensureQueueExists(uint32 queueId)
+        private
+        view
+        returns (uint8 nUtxos, uint96 reward)
+    {
+        nUtxos = busQueues[queueId].nUtxos;
+        reward = busQueues[queueId].reward;
         require(nUtxos > 0, "BQ:EMPTY_QUEUE");
     }
 }
