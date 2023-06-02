@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
+import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
 
 abstract contract BusQueues is DegenerateIncrementalBinaryTree {
@@ -14,13 +15,24 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint96 reward;
     }
 
+    // Queue lifecycle: opened -> extended -> closed (optionally) -> onboarded
     event BusQueueOpened(uint256 queueId);
+    event BusQueueExtended(
+        uint256 indexed queueId,
+        uint256 nUtxos,
+        uint256 reward
+    );
+    event BusQueueClosed(
+        uint256 indexed queueId,
+        uint256 nUtxos,
+        uint256 reward
+    );
     event BusQueueOnboarded(
         uint256 indexed queueId,
         uint256 nUtxos,
         uint256 firstIndex
     );
-    event BusQueueRevalued(uint256 queueId, uint256 accumReward);
+    event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
     event UtxoBusQueued(bytes32 indexed utxo, uint256 queueId, uint256 index);
 
     // Mapping from queue ID to queue params
@@ -31,25 +43,40 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     function addUtxosToBatch(bytes32[] memory utxos, uint96 reward) internal {
         uint32 queueId = curQueueId;
         BusQueue memory queue = busQueues[queueId];
-        uint8 firstUtxoInd = queue.nUtxos;
 
-        bool isNewBusQueue = firstUtxoInd == 0;
         for (uint256 n = 0; n < utxos.length; n++) {
             bytes32 utxo = utxos[n];
+            require(uint256(utxo) < FIELD_SIZE, "BQ:TOO_LARGE_COMMITMENT");
             queue.commitment = insertLeaf(
                 utxo,
                 queue.commitment,
-                isNewBusQueue && n == 0
+                queue.nUtxos == 0
             );
-            emit UtxoBusQueued(utxos[n], queueId, queue.nUtxos);
+            emit UtxoBusQueued(utxo, queueId, queue.nUtxos);
             queue.nUtxos += 1;
-            if (queue.nUtxos == QUEUE_SIZE) openNewBusQueue();
+
+            // If the current queue gets fully populated, switch to a new queue
+            if (queue.nUtxos == QUEUE_SIZE) {
+                // Part of the reward relates to the populated queue
+                uint96 rewardUsed = uint96(
+                    (uint256(reward) * (n + 1)) / utxos.length
+                );
+                queue.reward += rewardUsed;
+                // Remaining reward is for the new queue
+                reward -= rewardUsed;
+
+                busQueues[queueId] = queue;
+                emit BusQueueClosed(queueId, queue.nUtxos, queue.reward);
+
+                (queueId, queue) = openNewBusQueue();
+            }
         }
-        if (reward > 0) {
+
+        if (queue.nUtxos > 0) {
             queue.reward += reward;
-            emit BusQueueRevalued(queueId, queue.reward);
+            busQueues[queueId] = queue;
+            emit BusQueueExtended(queueId, queue.nUtxos, queue.reward);
         }
-        busQueues[queueId] = queue;
     }
 
     function markQueueAsOnboarded(uint32 queueId, uint256 firstIndex)
@@ -71,19 +98,23 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint96 accumReward = reward + extraReward;
         busQueues[queueId].reward = accumReward;
 
-        emit BusQueueRevalued(queueId, accumReward);
+        emit BusQueueRewardAdded(queueId, accumReward);
     }
 
-    function openNewBusQueue() private {
-        uint32 queueId;
+    function openNewBusQueue()
+        private
+        returns (uint32 newQueueId, BusQueue memory queue)
+    {
         unchecked {
             // (Theoretical) overflow is acceptable
-            queueId = curQueueId + 1;
+            newQueueId = curQueueId + 1;
         }
-        curQueueId = queueId;
+        curQueueId = newQueueId;
+        queue = BusQueue(0, 0, 0);
         // New storage slots contains zeros, so
-        // no extra initialization for `busQueues[queueId]` needed
-        emit BusQueueOpened(queueId);
+        // no extra initialization for `busQueues[newQueueId]` needed
+
+        emit BusQueueOpened(newQueueId);
     }
 
     function ensureQueueExists(uint32 queueId)
