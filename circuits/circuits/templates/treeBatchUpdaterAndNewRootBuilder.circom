@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
 
-include "./batchUpdaterAndNewRootBuilder.circom";
+include "./treeFullBatchUpdaterAndNewRootBuilder.circom";
 include "./partiallyFilledChainBuilder.circom";
 include "./zeroPaddedInputChecker.circom";
 
