@@ -10,7 +10,7 @@ abstract contract BusTree is BusQueues {
     IPantherVerifier public immutable verifier;
     uint160 public immutable circuitId;
 
-    bytes32 private _busRoot;
+    bytes32 public busRoot;
     uint256 public nLeafs;
 
     event BusRootUpdated(bytes32 busNewRoot);
@@ -39,7 +39,9 @@ abstract contract BusTree is BusQueues {
         // newLeafsCommitment
         input[0] = uint256(busQueues[queueId].commitment);
         // oldRoot
-        input[1] = getBusRoot();
+        input[1] = _nLeafs == 0 // With this, busRoot initialization unneeded
+            ? uint256(EMPTY_BUS_TREE_ROOT)
+            : uint256(busRoot);
         // replacedNodeIndex (equivalent to `_nLeafs / QUEUE_SIZE`)
         input[2] = _nLeafs >> QUEUE_SIZE_BIT;
         // extraInput
@@ -52,19 +54,12 @@ abstract contract BusTree is BusQueues {
         require(verifier.verify(circuitId, input, proof), "BT:FAILED_PROOF");
 
         // Update queues and reward the miner
-        _busRoot = busNewRoot;
+        busRoot = busNewRoot;
         nLeafs = _nLeafs + QUEUE_SIZE;
         uint256 reward = markQueueAsOnboarded(queueId, _nLeafs);
         emit BusRootUpdated(busNewRoot);
 
         rewardMiner(miner, reward);
-    }
-
-    function getBusRoot() public view returns (uint256) {
-        uint256 busRoot = uint256(_busRoot);
-        // With this the constructor does not need to initialize _busRoot
-        if (uint256(busRoot) == 0) return uint256(EMPTY_BUS_TREE_ROOT);
-        return busRoot;
     }
 
     function rewardMiner(address miner, uint256 reward) internal virtual;
