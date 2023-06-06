@@ -33,7 +33,11 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint256 firstIndex
     );
     event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
-    event UtxoBusQueued(bytes32 indexed utxo, uint256 queueId, uint256 index);
+    event UtxoBusQueued(
+        bytes32 indexed utxo,
+        uint256 indexed queueId,
+        uint256 index
+    );
 
     // Mapping from queue ID to queue params
     mapping(uint32 => BusQueue) public busQueues;
