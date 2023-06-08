@@ -31,7 +31,7 @@ function reuseEnvAddress(
 ): boolean {
     const envKey = getContractEnvVariable(hre, envWithoutNetworkSuffix);
     const envValue = getContractEnvAddress(hre, envWithoutNetworkSuffix);
-    let resue = false;
+    let reuse = false;
 
     if (
         envValue &&
@@ -44,13 +44,13 @@ function reuseEnvAddress(
             envValue,
             '\x1b[0m',
         );
-        resue = true;
+        reuse = true;
     }
 
-    return resue;
+    return reuse;
 }
 
-export function fulfillLocalAddress(
+function fulfillLocalAddress(
     hre: HardhatRuntimeEnvironment,
     envWithoutNetworkSuffix: string,
 ) {
@@ -79,6 +79,120 @@ export function fulfillLocalAddress(
         ] = localAddress;
 
     return localAddress;
+}
+
+function fulfillExistingContractAddresses(hre: HardhatRuntimeEnvironment) {
+    if (hre.network.name === 'mainnet') fulfillMainnetAddresses(hre);
+    if (hre.network.name === 'polygon') fulfillPolygonAddresses(hre);
+    if (hre.network.name === 'goerli') fulfillGoerliAddresses(hre);
+    if (hre.network.name === 'mumbai') fulfillMumbaiAddresses(hre);
+}
+
+function fulfillMainnetAddresses(hre: HardhatRuntimeEnvironment) {
+    process.env[getContractEnvVariable(hre, 'FX_ROOT')] =
+        '0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2';
+
+    // Panther protocol contracts on mainnet
+    process.env[getContractEnvVariable(hre, 'ZKP_TOKEN')] =
+        '0x909E34d3f6124C324ac83DccA84b74398a6fa173';
+    process.env[getContractEnvVariable(hre, 'VESTING_POOLS')] =
+        '0xb476104aa9D1f30180a01987FB09b1e96dDCF14B';
+    process.env[getContractEnvVariable(hre, 'STAKING')] =
+        '0xf4d06d72dACdD8393FA4eA72FdcC10049711F899';
+    process.env[getContractEnvVariable(hre, 'REWARD_MASTER')] =
+        '0x347a58878D04951588741d4d16d54B742c7f60fC';
+    process.env[getContractEnvVariable(hre, 'STAKE_REWARD_ADVISER')] =
+        '0x5Df8Ec95d8b96aDa2B4041D639Ab66361564B050';
+    process.env[getContractEnvVariable(hre, 'STAKE_REWARD_CONTROLLER_2')] =
+        '0x1B316635a9Ed279995c78e5a630e13aaD7C0086b';
+    process.env[getContractEnvVariable(hre, 'REWARD_POOL')] =
+        '0xcF463713521Af5cE31AD18F6914f3706493F10e5';
+    process.env[
+        getContractEnvVariable(
+            hre,
+            'ADVANCED_STAKE_REWARD_ADVISER_AND_MSG_SENDER',
+        )
+    ] = '0xFED599513aB078Edea7Cf46574154f92b0B9FCAB';
+    process.env[
+        getContractEnvVariable(hre, 'ADVANCED_STAKE_V2_ACTION_MSG_TRANSLATOR')
+    ] = '0x39ed49B3cEA4796E669f2542a41B876646c1BBe7';
+}
+
+function fulfillPolygonAddresses(hre: HardhatRuntimeEnvironment) {
+    process.env[getContractEnvVariable(hre, 'FX_CHILD')] =
+        '0x8397259c983751DAf40400790063935a11afa28a';
+
+    // Panther protocol contracts on polygon
+    process.env[getContractEnvVariable(hre, 'ZKP_TOKEN')] =
+        '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC';
+    process.env[getContractEnvVariable(hre, 'STAKING')] =
+        '0x4cEc451F63DBE47D9dA2DeBE2B734E4CB4000Eac';
+    process.env[getContractEnvVariable(hre, 'REWARD_MASTER')] =
+        '0x09220DD0c342Ee92C333FAa6879984D63B4dff03';
+    process.env[getContractEnvVariable(hre, 'STAKE_REWARD_ADVISER')] =
+        '0xAa943954eB256cc8C170C1bacF538D65D9eb9069';
+    process.env[getContractEnvVariable(hre, 'STAKE_REPORTER')] =
+        '0x17f590df4Dd5000a223Cc08E31695cB83B181730';
+    process.env[getContractEnvVariable(hre, 'STAKE_REWARD_CONTROLLER')] =
+        '0xdCd54b9355F60A7B596D1B7A9Ac10E6477d6f1bb';
+    process.env[getContractEnvVariable(hre, 'REWARD_TREASURY')] =
+        '0x20AD9300BdE78a24798b1Ee2e14858E5581585Bc';
+    process.env[getContractEnvVariable(hre, 'MATIC_REWARD_POOL')] =
+        '0x773d49309c4E9fc2e9254E7250F157D99eFe2d75';
+    process.env[getContractEnvVariable(hre, 'POSEIDON_T3')] =
+        '0xA944DFafE9bcb0094A471E58206079c43ce0043D';
+    process.env[getContractEnvVariable(hre, 'POSEIDON_T4')] =
+        '0xf0FfB73D51d001024F6301a19c8A56488e9d2110';
+    process.env[getContractEnvVariable(hre, 'VAULT_PROXY')] =
+        '0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9';
+    process.env[getContractEnvVariable(hre, 'VAULT_IMP')] =
+        '0xd33B839Cd4f75b860dBF1662C25cfD1dC78B07Ba';
+    process.env[getContractEnvVariable(hre, 'Z_ASSET_REGISTRY_PROXY')] =
+        '0xb658B085144a0BEd098620BB829b676371B9B48c';
+    process.env[getContractEnvVariable(hre, 'Z_ASSET_REGISTRY_IMP')] =
+        '0x3F432d43E33B5CE9E10beE80f474394174f0E41D';
+    process.env[getContractEnvVariable(hre, 'PANTHER_POOL_V0_PROXY')] =
+        '0x9a423671e9Cde99Ae88853B701f98ca9e136877B';
+    process.env[getContractEnvVariable(hre, 'PANTHER_POOL_V0_IMP')] =
+        '0xD44bf566E132c6A8E49dD781f606123f9a6866C4';
+    process.env[getContractEnvVariable(hre, 'PNFT_TOKEN')] =
+        '0xE5da4955cBC480Eb9Bf9534def229F9D8339eE6d';
+    process.env[
+        getContractEnvVariable(hre, 'ADVANCED_STAKE_REWARD_CONTROLLER')
+    ] = '0x8f15a43961c27C74CB4F55234A78802401614de3';
+    process.env[
+        getContractEnvVariable(hre, 'ADVANCED_STAKE_ACTION_MSG_RELAYER_PROXY')
+    ] = '0x47374FBE2289c0442f33a388590385A0b32a20Ff';
+    process.env[
+        getContractEnvVariable(hre, 'ADVANCED_STAKE_ACTION_MSG_RELAYER_IMP')
+    ] = '0x365882023e894C09F6bcC3F7c2fbb7fFF5b2512e';
+    process.env[
+        getContractEnvVariable(hre, 'ADVANCED_STAKE_V2_ACTION_MSG_TRANSLATOR')
+    ] = '0x7f076D64055E19d0f9E84160748c6c3CED9c28aC';
+}
+
+function fulfillGoerliAddresses(hre: HardhatRuntimeEnvironment) {
+    process.env[getContractEnvVariable(hre, 'FX_ROOT')] =
+        '0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA';
+
+    // Panther protocol contracts on mainnet
+    process.env[getContractEnvVariable(hre, 'ZKP_TOKEN')] =
+        '0x9a27804316F7b31110E3823b68578A821D144bA0';
+    process.env[getContractEnvVariable(hre, 'ZKP_FAUCET')] =
+        '0x720BEF9e9cceebd80e77460dEa5CaeD06D01Aa9D';
+    process.env[getContractEnvVariable(hre, 'VESTING_POOLS')] =
+        '0x1d5e02FBa32C9781AfdE40124ebeF54Ce8E8DCD5';
+}
+
+function fulfillMumbaiAddresses(hre: HardhatRuntimeEnvironment) {
+    process.env[getContractEnvVariable(hre, 'FX_CHILD')] =
+        '0xCf73231F28B7331BBe3124B907840A94851f9f11';
+
+    // Panther protocol contracts on mainnet
+    process.env[getContractEnvVariable(hre, 'ZKP_TOKEN')] =
+        '0x3F73371cFA58F338C479928AC7B4327478Cb859f';
+    process.env[getContractEnvVariable(hre, 'ZKP_FAUCET')] =
+        '0xB79A02672bb45B5fFBE907b2aD1A5Ab84e151EC6';
 }
 
 async function getContractAddress(
@@ -298,6 +412,9 @@ export {
     reuseEnvAddress,
     getContractAddress,
     getContractEnvAddress,
+    getContractEnvVariable,
+    fulfillLocalAddress,
+    fulfillExistingContractAddresses,
     verifyUserConsentOnProd,
     upgradeEIP1967Proxy,
     setDeterministicDeploymentProxy,

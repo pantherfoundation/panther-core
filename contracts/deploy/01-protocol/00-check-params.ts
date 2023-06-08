@@ -5,10 +5,15 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isLocal} from '../../lib/checkNetwork';
-import {fulfillLocalAddress} from '../../lib/deploymentHelpers';
+import {
+    fulfillLocalAddress,
+    fulfillExistingContractAddresses,
+} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts, network} = hre;
+
+    fulfillExistingContractAddresses(hre);
 
     console.log(`Deploying on ${network.name}...`);
 
