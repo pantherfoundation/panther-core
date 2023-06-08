@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import assert from 'assert';
+
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {ethers} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import inq from 'inquirer';
@@ -183,10 +186,121 @@ async function verifyUserConsentOnProd(
     }
 }
 
+function getDeterministicDeploymentProxyAddressAndCode() {
+    // Using the deterministic-deployment-proxy contract from the Github repo:
+    // https://github.com/Arachnid/deterministic-deployment-proxy
+    const deployerAddr = '0x4e59b44847b379578588920cA78FbF26c0B4956C';
+    const deployerCode =
+        '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3';
+
+    return {deployerAddr, deployerCode};
+}
+
+async function setDeterministicDeploymentProxy(hre: HardhatRuntimeEnvironment) {
+    const zeroCode = '0x';
+    const hhSetCodeCommand = 'hardhat_setCode';
+
+    const {deployerAddr, deployerCode} =
+        getDeterministicDeploymentProxyAddressAndCode();
+
+    const deployedCode = await hre.ethers.provider.getCode(deployerAddr);
+
+    if (deployedCode == zeroCode) {
+        await hre.ethers.provider.send(hhSetCodeCommand, [
+            deployerAddr,
+            deployerCode,
+        ]);
+        assert(
+            (await hre.ethers.provider.getCode(deployerAddr)) == deployerCode,
+            'Unexpected codes have been set',
+        );
+    } else if (deployedCode != deployerCode) {
+        Error(`Unexpected code at ${deployerAddr}`);
+    }
+}
+
+async function deterministicDeploy(
+    hre: HardhatRuntimeEnvironment,
+    content: string,
+    salt?: string,
+    deployer?: SignerWithAddress,
+): Promise<string> {
+    const {deployerAddr, deployerCode} =
+        getDeterministicDeploymentProxyAddressAndCode();
+
+    const signer = deployer ? deployer : (await hre.ethers.getSigners())[0];
+    const deploymentSalt = salt ? salt : hre.ethers.utils.id('salt');
+
+    if ((await hre.ethers.provider.getCode(deployerAddr)) != deployerCode) {
+        Error(`Unexpected d11cDeployer contract code at ${deployerAddr}`);
+    }
+
+    const callData = ethers.utils.solidityPack(
+        ['bytes', 'bytes'],
+        [deploymentSalt, content],
+    );
+
+    const txData = {to: deployerAddr, data: callData};
+
+    const address = await signer.call(txData);
+    const tx = await signer.sendTransaction(txData);
+    await tx.wait();
+
+    return address;
+}
+
+async function arbitraryDataDeterministicDeploy(
+    hre: HardhatRuntimeEnvironment,
+    content: string,
+    salt?: string,
+    deployer?: SignerWithAddress,
+): Promise<string> {
+    /**
+     * @dev When called as the CONSTRUCTOR, this code skips 11 bytes of itself and returns
+     * the rest of the "init code" (i.e. the "deployed code" that follows these 11 bytes):
+     * | Bytecode | Mnemonic  | Stack View                                                    |
+     * |----------|-----------|---------------------------------------------------------------|
+     * | 0x600B   | PUSH1 11  | codeOffset                                                    |
+     * | 0x59     | MSIZE     | 0 codeOffset                                                  |
+     * | 0x81     | DUP2      | codeOffset 0 codeOffset                                       |
+     * | 0x38     | CODESIZE  | codeSize codeOffset 0 codeOffset                              |
+     * | 0x03     | SUB       | (codeSize - codeOffset) 0 codeOffset                          |
+     * | 0x80     | DUP1      | (codeSize - codeOffset) (codeSize - codeOffset) 0 codeOffset  |
+     * | 0x92     | SWAP3     | codeOffset (codeSize - codeOffset) 0 (codeSize - codeOffset)  |
+     * | 0x59     | MSIZE     | 0 codeOffset (codeSize - codeOffset) 0 (codeSize - codeOffset)|
+     * | 0x39     | CODECOPY  | 0 (codeSize - codeOffset)                                     |
+     * | 0xf3     | RETURN    | -                                                             |
+     *
+     * @dev Deployed bytecode starts with this HEADER to prevent calling the bytecode
+     * | Bytecode | Mnemonic  | Stack View                                                    |
+     * |----------|-----------|---------------------------------------------------------------|
+     * | 0x00     | STOP      | -                                                             |
+     */
+    const constructorAndHeader = '0x600B5981380380925939F300';
+
+    const data = ethers.utils.solidityPack(
+        ['bytes', 'bytes'],
+        [constructorAndHeader, content],
+    );
+
+    const pointer = deterministicDeploy(hre, data, salt, deployer);
+
+    assert(
+        (await hre.ethers.provider.getCode(pointer)) ==
+            '0x00' + content.replace('0x', ''),
+        `Unexpected deployed code at ${pointer}`,
+    );
+
+    return pointer;
+}
+
 export {
     reuseEnvAddress,
     getContractAddress,
     getContractEnvAddress,
     verifyUserConsentOnProd,
     upgradeEIP1967Proxy,
+    setDeterministicDeploymentProxy,
+    deterministicDeploy,
+    arbitraryDataDeterministicDeploy,
 };
