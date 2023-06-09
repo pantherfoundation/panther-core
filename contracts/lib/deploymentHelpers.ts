@@ -219,9 +219,9 @@ async function setDeterministicDeploymentProxy(hre: HardhatRuntimeEnvironment) {
     }
 }
 
-async function deterministicDeploy(
+async function deployBytecodeDeterministically(
     hre: HardhatRuntimeEnvironment,
-    content: string,
+    bytecode: string,
     salt?: string,
     deployer?: SignerWithAddress,
 ): Promise<string> {
@@ -237,7 +237,7 @@ async function deterministicDeploy(
 
     const callData = ethers.utils.solidityPack(
         ['bytes', 'bytes'],
-        [deploymentSalt, content],
+        [deploymentSalt, bytecode],
     );
 
     const txData = {to: deployerAddr, data: callData};
@@ -249,7 +249,7 @@ async function deterministicDeploy(
     return address;
 }
 
-async function arbitraryDataDeterministicDeploy(
+async function deployContentDeterministically(
     hre: HardhatRuntimeEnvironment,
     content: string,
     salt?: string,
@@ -283,7 +283,7 @@ async function arbitraryDataDeterministicDeploy(
         [constructorAndHeader, content],
     );
 
-    const pointer = deterministicDeploy(hre, data, salt, deployer);
+    const pointer = deployBytecodeDeterministically(hre, data, salt, deployer);
 
     assert(
         (await hre.ethers.provider.getCode(pointer)) ==
@@ -301,6 +301,6 @@ export {
     verifyUserConsentOnProd,
     upgradeEIP1967Proxy,
     setDeterministicDeploymentProxy,
-    deterministicDeploy,
-    arbitraryDataDeterministicDeploy,
+    deployBytecodeDeterministically,
+    deployContentDeterministically,
 };
