@@ -28,25 +28,16 @@ template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
 
     component merkleVerifier = MerkleTreeInclusionProofDoubleLeaves(ZAssetMerkleTreeDepth);
 
-    component hash[3];
-    hash[0] = Poseidon(3);
-    hash[1] = Poseidon(4);
-    hash[2] = Poseidon(2);
+    component hash = Poseidon(7);
+    hash.inputs[0] <== zAsset;
+    hash.inputs[1] <== token;
+    hash.inputs[2] <== tokenId;
+    hash.inputs[3] <== network;
+    hash.inputs[4] <== offset;
+    hash.inputs[5] <== weight;
+    hash.inputs[6] <== scale;
 
-    // 1
-    hash[0].inputs[0] <== zAsset;
-    hash[0].inputs[1] <== token;
-    hash[0].inputs[2] <== tokenId;
-    // 2
-    hash[1].inputs[0] <== network;
-    hash[1].inputs[1] <== offset;
-    hash[1].inputs[2] <== weight;
-    hash[1].inputs[3] <== scale;
-    // 3 - top hash
-    hash[2].inputs[0] <== hash[0].out;
-    hash[2].inputs[1] <== hash[1].out;
-
-    merkleVerifier.leaf <== hash[2].out;
+    merkleVerifier.leaf <== hash.out;
 
     for (var i = 0; i < ZAssetMerkleTreeDepth; i++){
         merkleVerifier.pathIndices[i] <== pathIndex[i];
