@@ -206,10 +206,10 @@ template IsTokenIdEqual() {
     assert(offset < 33);
     assert(utxoZAsset < 2**64);
 
-    // we want to extract offset-bits
-    // 252 is MSB in FF
-    // shift-left to 252 - offset - (252 - 32) = 220
-    var shift = 252 - offset;
+    // we want to extract offset-bits, TODO: double check 254 bits issue !!!
+    // 254 is MSB in FF
+    // shift-left to 254 - offset - (254 - 32) = 220
+    var shift = 254 - offset;
     signal tokenIdTmp1;
     tokenIdTmp1 <-- tokenId << shift;
     signal tokenIdTmp2;

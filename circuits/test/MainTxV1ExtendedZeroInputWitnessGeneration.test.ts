@@ -98,14 +98,14 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         // to switch-off:
         //      1) utxoInAmount = 0
         //      2) utxoInSpendPrivKey = 0
-        //      3) utxoInRootSpendPrivKey = 0
+        //      3) utxoInSpendKeyRandom = 0
         // switch-off control is used for:
         //      1) deposit only tx
         //      2) deposit & zAccount::zkpAmount
         //      3) deposit & zAccount::zkpAmount & withdraw
         //      4) deposit & withrdaw
         utxoInSpendPrivKey: [BigInt(0n), BigInt(0n)],
-        utxoInRootSpendPrivKey: [BigInt(0n), BigInt(0n)],
+        utxoInSpendKeyRandom: [BigInt(0n), BigInt(0n)],
         utxoInAmount: [BigInt(0n), BigInt(0n)],
         utxoInOriginZoneId: [BigInt(0n), BigInt(0n)],
         utxoInOriginZoneIdOffset: [BigInt(0n), BigInt(0n)],

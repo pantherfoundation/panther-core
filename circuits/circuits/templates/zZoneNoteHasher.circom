@@ -22,6 +22,25 @@ template ZZoneNoteHasher(){
 
     signal output out;
 
+    component hash = Poseidon(15);
+    hash.inputs[0] <== zoneId;
+    hash.inputs[1] <== edDsaPubKey[0];
+    hash.inputs[2] <== edDsaPubKey[1];
+    hash.inputs[3] <== originZoneIDs;
+    hash.inputs[4] <== targetZoneIDs;
+    hash.inputs[5] <== networkIDsBitMap;
+    hash.inputs[6] <== kycKytMerkleTreeLeafIDsAndRulesList;
+    hash.inputs[7] <== kycExpiryTime;
+    hash.inputs[8] <== kytExpiryTime;
+    hash.inputs[9] <== depositMaxAmount;
+    hash.inputs[10] <== withdrawMaxAmount;
+    hash.inputs[11] <== internalMaxAmount;
+    hash.inputs[12] <== zAccountIDsBlackList;
+    hash.inputs[13] <== maximumAmountPerTimePeriod;
+    hash.inputs[14] <== timePeriodPerMaximumAmount;
+
+    hash.out ==> out;
+    /*
     component b2n_0 = Bits2Num(16+32+32+64+32); // 144+32 = 176
 
     component n2b_zoneId = Num2Bits(16);
@@ -96,5 +115,6 @@ template ZZoneNoteHasher(){
     hash1.inputs[3] <== hash0.out;
 
     hash1.out ==> out;
+    */
 }
 
