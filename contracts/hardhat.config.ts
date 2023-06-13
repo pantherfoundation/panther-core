@@ -1,8 +1,8 @@
 import {resolve} from 'path';
 
+import '@nomicfoundation/hardhat-chai-matchers';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
-import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
 import {config as dotenvConfig} from 'dotenv';
 import {HardhatUserConfig} from 'hardhat/config';
