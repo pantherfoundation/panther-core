@@ -43,9 +43,7 @@ describe('RewardPool', async () => {
             const expiryTime = Math.round(+new Date() / 1000) - 100;
             await expect(
                 rewardPool.initialize(0, alice.address, expiryTime),
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'RP: expired'",
-            );
+            ).to.be.revertedWith('RP: expired');
         });
 
         it('returns error in initialisation when 0th address is not used', async () => {
@@ -56,18 +54,14 @@ describe('RewardPool', async () => {
                     '0x0000000000000000000000000000000000000000',
                     expiryTime,
                 ),
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'RP: zero address'",
-            );
+            ).to.be.revertedWith('RP: zero address');
         });
 
         it('returns error in initialisation when wallet address of pool is not used', async () => {
             const expiryTime = Math.round(+new Date() / 1000) + 100;
             await expect(
                 rewardPool.initialize(0, alice.address, expiryTime),
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'RP:E7'",
-            );
+            ).to.be.revertedWith('RP:E7');
         });
 
         it('successfully initializes the contract', async () => {
@@ -122,7 +116,7 @@ describe('RewardPool', async () => {
             const expiryTime = Math.round(+new Date() / 1000) + 100;
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(rewardPool.vestRewards()).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'RP: unauthorized'",
+                'RP: unauthorized',
             );
         });
 
@@ -168,9 +162,7 @@ describe('RewardPool', async () => {
                 rewardPool.transferPoolWalletRole(
                     '0x0000000000000000000000000000000000000000',
                 ),
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'RP: zero address",
-            );
+            ).to.be.revertedWith('RP: zero address');
         });
 
         it('reverts when non-owner calls transferPoolWalletRole()', async () => {
@@ -182,9 +174,7 @@ describe('RewardPool', async () => {
                 rewardPool
                     .connect(wallet1)
                     .transferPoolWalletRole(wallet2.address),
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with reason string 'ImmOwn: unauthorized",
-            );
+            ).to.be.revertedWith('ImmOwn: unauthorized');
         });
 
         it('successfully transfers pool wallet address', async () => {
