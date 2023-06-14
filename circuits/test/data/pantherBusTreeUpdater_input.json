@@ -1,9 +1,8 @@
 {
+  "oldRoot": "0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6",
   "newRoot": "0x11cfaafe29eb237ce2f76811b4bc9d537ca113042214a5f6ec2cefd1ab576fd8",
-  "root": "0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6",
-  "replacedNode": "0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69",
   "replacedNodeIndex": 261646,
-  "replacedNodePathElements": [
+  "pathElements": [
     "0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69",
     "0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f",
     "0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7",
@@ -26,7 +25,7 @@
     "0x212b13c9cbf421942ae3e3c62a3c072903c2a745a220cfb3c43cd520f55f44bf"
   ],
   "newLeafsCommitment": "0x22fbeb55d785f2d0723d9325756a56c25f2e4006f1a0427ab17516fd033ed3f5",
-  "nNonZeroNewLeafs":  43,
+  "nNonEmptyNewLeafs": 43,
   "newLeafs": [
     0,
     1,
@@ -93,5 +92,8 @@
     "0x667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d",
     "0x667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d"
   ],
-  "extraInput": "0x7BAe1c04e5Cef0E5d635ccC0D782A21aCB920BeB"
+  "batchRoot": "0x0e62c35815ea2f6c4d91f678060d8024520302e63bb157b6828efe07a136a9d3",
+  "branchRoot": "0x2040984adeff1464342b6e14835c95e4f06096cb6c5100a2f861e9d84c7e6a89",
+  "extraInput": "0x7BAe1c04e5Cef0E5d635ccC0D782A21aCB920BeB",
+  "magicalConstraint": "0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00"
 }
