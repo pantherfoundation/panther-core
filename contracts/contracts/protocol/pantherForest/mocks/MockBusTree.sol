@@ -30,9 +30,9 @@ contract MockBusTree is BusTree {
         return PoseidonT3.poseidon([left, right]);
     }
 
-    function simulateAddUtxosToBatch(bytes32[] memory utxos, uint96 reward)
+    function simulateAddUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
         external
     {
-        addUtxosToBatch(utxos, reward);
+        addUtxosToBusQueue(utxos, reward);
     }
 }

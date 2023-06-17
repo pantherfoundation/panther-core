@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// solhint-disable var-name-mixedcase
 // slither-disable-next-line solc-version
 pragma solidity ^0.8.4;
 
@@ -49,3 +50,8 @@ uint256 constant CIPHERTEXT1_WORDS = 2;
 uint256 constant PUBKEY_WORDS = 2;
 // Number of elements in `pathElements`
 uint256 constant PATH_ELEMENTS_NUM = 16;
+
+// @dev Unusable on public network address, which is useful for simulations
+//  in forked test env, e.g. for bypassing SNARK proof verification like this:
+// `require(isValidProof || tx.origin == DEAD_CODE_ADDRESS)`
+address constant DEAD_CODE_ADDRESS = address(uint160(0xDEADC0DE));
