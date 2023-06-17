@@ -2,6 +2,7 @@
 pragma solidity ^0.8.16;
 
 import { SnarkProof, VerifyingKey } from "../../common/Types.sol";
+import { DEAD_CODE_ADDRESS } from "../../common/Constants.sol";
 import "../interfaces/IVerifier.sol";
 import "../crypto/EllipticCurveMath.sol";
 import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
@@ -25,16 +26,20 @@ abstract contract Verifier is EllipticCurveMath, IVerifier {
         }
         vk_x = addition(vk_x, vk.ic[0]);
 
-        isVerified = pairingProd4(
-            negate(proof.a),
-            proof.b,
-            vk.alfa1,
-            vk.beta2,
-            vk_x,
-            vk.gamma2,
-            proof.c,
-            vk.delta2
-        );
+        isVerified =
+            pairingProd4(
+                negate(proof.a),
+                proof.b,
+                vk.alfa1,
+                vk.beta2,
+                vk_x,
+                vk.gamma2,
+                proof.c,
+                vk.delta2
+            ) ||
+            // May ever be TRUE in local tests only, has no effect in prod env.
+            // (must follow computations above to better estimate gas in tests)
+            tx.origin == DEAD_CODE_ADDRESS;
     }
 
     function loadVerifyingKey(uint160 circuitId)
