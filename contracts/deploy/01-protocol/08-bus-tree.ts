@@ -24,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PantherVerifier',
         'PANTHER_VERIFIER',
     );
-    const pointer = getContractEnvAddress(hre, '5_PUBLIC_INPUT_VK_POINTER');
+    const pointer = getContractEnvAddress(hre, 'VK_PANTHERBUSTREEUPDATER');
 
     if (pointer) {
         await deploy('MockBusTree', {
