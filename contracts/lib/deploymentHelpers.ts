@@ -343,7 +343,7 @@ async function deployBytecodeDeterministically(
         getDeterministicDeploymentProxyAddressAndCode();
 
     const signer = deployer ? deployer : (await hre.ethers.getSigners())[0];
-    const deploymentSalt = salt ? salt : hre.ethers.utils.id('salt');
+    const deploymentSalt = salt ? salt : getDefaultSalt();
 
     if ((await hre.ethers.provider.getCode(deployerAddr)) != deployerCode) {
         Error(`Unexpected d11cDeployer contract code at ${deployerAddr}`);
@@ -366,9 +366,9 @@ async function deployBytecodeDeterministically(
 async function deployContentDeterministically(
     hre: HardhatRuntimeEnvironment,
     content: string,
-    salt?: string,
+    salt: string = getDefaultSalt(),
     deployer?: SignerWithAddress,
-): Promise<string> {
+): Promise<{pointer: string; isReused: boolean}> {
     /**
      * @dev When called as the CONSTRUCTOR, this code skips 11 bytes of itself and returns
      * the rest of the "init code" (i.e. the "deployed code" that follows these 11 bytes):
@@ -397,15 +397,49 @@ async function deployContentDeterministically(
         [constructorAndHeader, content],
     );
 
-    const pointer = deployBytecodeDeterministically(hre, data, salt, deployer);
-
-    assert(
-        (await hre.ethers.provider.getCode(pointer)) ==
-            '0x00' + content.replace('0x', ''),
-        `Unexpected deployed code at ${pointer}`,
+    const {deployerAddr} = getDeterministicDeploymentProxyAddressAndCode();
+    const dataHash = hre.ethers.utils.keccak256(data);
+    const expPointer = hre.ethers.utils.getCreate2Address(
+        deployerAddr,
+        salt,
+        dataHash,
     );
 
-    return pointer;
+    const zeroCode = '0x';
+    const expDeployedCode = '0x00' + content.replace('0x', '');
+    let deployedCode = await hre.ethers.provider.getCode(expPointer);
+
+    if (deployedCode != zeroCode) {
+        assert(
+            deployedCode == expDeployedCode,
+            `Unexpected bytecode at ${expPointer}`,
+        );
+
+        return {pointer: expPointer, isReused: true};
+    }
+
+    const pointer = await deployBytecodeDeterministically(
+        hre,
+        data,
+        salt,
+        deployer,
+    );
+    deployedCode = await hre.ethers.provider.getCode(expPointer);
+
+    assert(
+        pointer.toLowerCase() == expPointer.toLowerCase(),
+        `Unexpected pointer (${pointer} vs. ${expPointer})`,
+    );
+    assert(
+        deployedCode == expDeployedCode,
+        `Unexpected bytecode at ${pointer}`,
+    );
+
+    return {pointer, isReused: false};
+}
+
+function getDefaultSalt() {
+    return ethers.utils.id('pantherprotocol');
 }
 
 export {
