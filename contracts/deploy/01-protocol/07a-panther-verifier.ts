@@ -19,4 +19,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['verifier', 'forest', 'protocol'];
+func.tags = ['verifier', 'forest', 'zwallet', 'protocol'];
