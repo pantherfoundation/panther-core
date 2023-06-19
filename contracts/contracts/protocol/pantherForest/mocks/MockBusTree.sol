@@ -5,6 +5,7 @@ pragma solidity ^0.8.16;
 import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
+import { DEAD_CODE_ADDRESS } from "../../../common/Constants.sol";
 
 contract MockBusTree is BusTree {
     event MinerRewarded(address miner, uint256 reward);
@@ -34,5 +35,23 @@ contract MockBusTree is BusTree {
         external
     {
         addUtxosToBusQueue(utxos, reward);
+    }
+
+    function simulateAddBusQueueReward(uint32 queueId, uint96 extraReward)
+        external
+    {
+        addBusQueueReward(queueId, extraReward);
+    }
+
+    function simulateSetBusQueueAsProcessed(uint32 queueId)
+        external
+        returns (
+            bytes32 commitment,
+            uint8 nUtxos,
+            uint96 reward
+        )
+    {
+        require(tx.origin == DEAD_CODE_ADDRESS, "Only allowed in forked env");
+        return setBusQueueAsProcessed(queueId);
     }
 }
