@@ -15,8 +15,11 @@ import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
  * built from UTXOs (think of it as a "chain" of UTXOs).
  * For every queue, it also records the amount of rewards associated with the
  * Queue (think of "reward for processing the queue").
- * Queue has the following lifecycle:
- * opened -> extended -> (optionally) filled -> (onboarded and) deleted.
+ * If a Queue is fully populated with UTXOs but not yet processed, the Queue is
+ * considered to be "pending" processing. As a main scenario, pending Queues are
+ * expected to be processed. However, partially filled Queues may be processed
+ * also. So, a Queue has the following lifecycle:
+ * Opened -> (optionally) Pending processing -> Processed (and deleted).
  */
 abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // solhint-disable-next-line var-name-mixedcase
@@ -32,10 +35,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Mapping from queue ID to queue commitment
     mapping(uint32 => bytes32) internal busQueueCommitments;
 
-    // ID of the currently "open" queue
-    uint32 private curBusQueueId;
+    // ID of the "opened" queue (next UTXO will be appended to this queue)
+    uint32 private _curQueueId;
     // Number of filled non-deleted queues
-    uint32 private numFilledQueues;
+    uint32 private _numPendingQueues;
+    // Total rewards associated with filled non-deleted queues
+    uint96 private _numPendingRewards;
 
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
@@ -47,21 +52,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Emitted when a new queue is opened (it becomes the "current" one)
     event BusQueueOpened(uint256 queueId);
 
-    // Emitted when new UTXOs appended to a queue
-    event BusQueueExtended(
-        uint256 indexed queueId,
-        uint256 totalNumUtxos,
-        uint256 accumReward
-    );
+    // Emitted when a queue gets its maximum size (no more UTXOs can be added,
+    // the queue pends processing), or queue reward increased w/o adding UTXOs
+    event BusQueuePending(uint256 indexed queueId, uint256 accumReward);
 
-    // Emitted when a queue gets its maximum size (and it is "closed")
-    event BusQueueFilled(uint256 indexed queueId);
-
-    // Emitted when a queue is deleted (disposed)
-    event BusQueueDeleted(uint256 indexed queueId);
-
-    // Emitted when queue reward increased w/o appending UTXOs
-    event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
+    // Emitted when a queue is registered as the processed one (and deleted)
+    event BusQueueProcessed(uint256 indexed queueId);
 
     modifier nonEmptyBusQueue(uint32 queueId) {
         require(busQueueParams[queueId].nUtxos > 0, "BQ:EMPTY_QUEUE");
@@ -70,8 +66,26 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
     constructor() {
         // Initial value of storage variables is 0 (which is implicitly set in
-        // new storage slots). No explicit initialization needed.
+        // new storage slots). There is no need for explicit initialization.
         emit BusQueueOpened(0);
+    }
+
+    function getBusQueuesStats()
+        external
+        view
+        returns (
+            uint32 curQueueId,
+            uint8 curQueueNumUtxos,
+            uint96 curQueueReward,
+            uint32 numPendingQueues,
+            uint96 numPendingRewards
+        )
+    {
+        curQueueId = _curQueueId;
+        curQueueNumUtxos = busQueueParams[curQueueId].nUtxos;
+        curQueueReward = busQueueParams[curQueueId].reward;
+        numPendingQueues = _numPendingQueues;
+        numPendingRewards = _numPendingRewards;
     }
 
     function getQueue(uint32 queueId)
@@ -92,14 +106,14 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     function addUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
         internal
     {
-        uint32 queueId = curBusQueueId;
-        BusQueue memory queue = busQueueParams[queueId];
-        bytes32 commitment = busQueueCommitments[queueId];
+        uint32 cQueueId = _curQueueId;
+        BusQueue memory queue = busQueueParams[cQueueId];
+        bytes32 commitment = busQueueCommitments[cQueueId];
 
         for (uint256 n = 0; n < utxos.length; n++) {
             bytes32 utxo = utxos[n];
             commitment = insertLeaf(utxo, commitment, queue.nUtxos == 0);
-            emit UtxoBusQueued(utxo, queueId, queue.nUtxos);
+            emit UtxoBusQueued(utxo, cQueueId, queue.nUtxos);
             queue.nUtxos += 1;
 
             // If the current queue gets fully populated, switch to a new queue
@@ -113,34 +127,48 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
                 reward -= rewardUsed;
 
                 // Close the current queue
-                busQueueParams[queueId] = queue;
-                busQueueCommitments[queueId] = commitment;
-                emit BusQueueExtended(queueId, queue.nUtxos, queue.reward);
-                emit BusQueueFilled(queueId);
+                busQueueParams[cQueueId] = queue;
+                busQueueCommitments[cQueueId] = commitment;
+                _numPendingQueues += 1;
+                _numPendingRewards += queue.reward;
+                emit BusQueuePending(cQueueId, queue.reward);
 
                 // Open a new queue
-                (queueId, queue) = openNewBusQueue();
-                numFilledQueues += 1;
+                (cQueueId, queue) = openNewBusQueue();
                 commitment = 0;
             }
         }
 
         if (queue.nUtxos > 0) {
             queue.reward += reward;
-            busQueueParams[queueId] = queue;
-            busQueueCommitments[queueId] = commitment;
-            emit BusQueueExtended(queueId, queue.nUtxos, queue.reward);
+            busQueueParams[cQueueId] = queue;
+            busQueueCommitments[cQueueId] = commitment;
         }
     }
 
-    function deleteBusQueue(uint32 queueId) internal nonEmptyBusQueue(queueId) {
+    // It returns params of the deleted queue
+    function setBusQueueAsProcessed(uint32 queueId)
+        internal
+        nonEmptyBusQueue(queueId)
+        returns (
+            bytes32 commitment,
+            uint8 nUtxos,
+            uint96 reward
+        )
+    {
+        (commitment, nUtxos, reward) = getQueue(queueId);
+
         busQueueParams[queueId] = BusQueue(0, 0);
         busQueueCommitments[queueId] = bytes32(0);
-        numFilledQueues -= 1;
-        emit BusQueueDeleted(queueId);
+        _numPendingQueues -= 1;
+        _numPendingRewards -= reward;
+
+        emit BusQueueProcessed(queueId);
+
+        if (queueId == _curQueueId) openNewBusQueue();
     }
 
-    function registerExtraReward(uint32 queueId, uint96 extraReward)
+    function addBusQueueReward(uint32 queueId, uint96 extraReward)
         internal
         nonEmptyBusQueue(queueId)
     {
@@ -151,7 +179,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             accumReward = busQueueParams[queueId].reward + extraReward;
             busQueueParams[queueId].reward = accumReward;
         }
-        emit BusQueueRewardAdded(queueId, accumReward);
+        emit BusQueuePending(queueId, accumReward);
     }
 
     function openNewBusQueue()
@@ -160,9 +188,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     {
         unchecked {
             // (Theoretical) overflow is acceptable
-            newQueueId = curBusQueueId + 1;
+            newQueueId = _curQueueId + 1;
         }
-        curBusQueueId = newQueueId;
+        _curQueueId = newQueueId;
         queue = BusQueue(0, 0);
         // New storage slots contains zeros, so
         // no extra initialization for `busQueueParams[newQueueId]` needed

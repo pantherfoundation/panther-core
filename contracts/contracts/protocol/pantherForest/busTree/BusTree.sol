@@ -65,8 +65,8 @@ abstract contract BusTree is BusQueues {
         CIRCUIT_ID = _circuitId;
         // Code of `function onboardQueue` let avoid explicit initialization:
         // `busTreeRoot = EMPTY_BUS_TREE_ROOT`.
-        // Initial value of other storage variables is 0 (which is implicitly
-        // set in new slots). No explicit initialization needed.
+        // Initial value of storage variables is 0 (which is implicitly set in
+        // new storage slots). There is no need for explicit initialization.
     }
 
     function onboardQueue(
@@ -78,7 +78,11 @@ abstract contract BusTree is BusQueues {
         SnarkProof memory proof
     ) external nonEmptyBusQueue(queueId) {
         uint128 nBatches = numBatchesInBusTree;
-        (bytes32 commitment, uint8 nUtxos, uint96 reward) = getQueue(queueId);
+        (
+            bytes32 commitment,
+            uint8 nUtxos,
+            uint96 reward
+        ) = setBusQueueAsProcessed(queueId);
 
         // Circuit public input signals
         uint256[] memory input = new uint256[](9);
@@ -124,8 +128,6 @@ abstract contract BusTree is BusQueues {
             uint256 branchIndex = (nBatches - 1) >> BRANCH_LEVELS;
             emit BusBranchFilled(branchIndex, busBranchNewRoot);
         }
-
-        deleteBusQueue(queueId);
 
         rewardMiner(miner, reward);
     }
