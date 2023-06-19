@@ -12,7 +12,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
     let mainZAccountRegistrationWitness: any;
 
     this.timeout(10000000);
-    
+
     before(async () => {
         const opts = getOptions();
         const input = path.join(

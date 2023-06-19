@@ -19,7 +19,7 @@ describe('ZoneRecordNoteHasher circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zoneRecordNoteHasher.circom',
+            './test/circuits/zZoneNoteHasher.circom',
         );
         zoneRecordNoteHasher = await wasm_tester(input, opts);
     });
@@ -30,7 +30,7 @@ describe('ZoneRecordNoteHasher circuit', async function (this: any) {
     });
 
     // Example test case flow is below -
-    /* 
+    /*
     describe('Valid input signals',(){
             it(...){}
             it(...){}

@@ -113,7 +113,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input zAccountUtxoInPrpAmount;
     signal input zAccountUtxoInZoneId;
     signal input zAccountUtxoInNetworkId;
-    signal input zAccountUtxoInExpiryTime;
+    signal input zAccountUtxoInExpiryTime; // TODO: FIXME - add contraint for it
     signal input zAccountUtxoInNonce;
     signal input zAccountUtxoInTotalAmountPerTimePeriod;
     signal input zAccountUtxoInCreateTime;
@@ -803,8 +803,11 @@ template TransactionV1Extended( nUtxoIn,
     kytWithdrawLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
 
     // [17] - Verify DataEscrow public key membership
+    component isDataEscrowInclusionProverEnabled = IsNotZero();
+    isDataEscrowInclusionProverEnabled.in <== kycKytMerkleRoot;
+
     component dataEscrowInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
-    dataEscrowInclusionProver.enabled <== kycKytMerkleRoot; // 1; // TODO:FIXME - enabled in any case
+    dataEscrowInclusionProver.enabled <== isDataEscrowInclusionProverEnabled.out; // 1; // TODO:FIXME - enabled in any case
     dataEscrowInclusionProver.root <== kycKytMerkleRoot;
     dataEscrowInclusionProver.key[0] <== dataEscrowPubKey[0];
     dataEscrowInclusionProver.key[1] <== dataEscrowPubKey[1];
@@ -972,7 +975,14 @@ template TransactionV1Extended( nUtxoIn,
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 
-    // [25] - Verify static-merkle-root
+    // [25] - verify expiryTimes
+    assert(zAccountUtxoInExpiryTime <= utxoOutCreateTime);
+    assert(kytEdDsaPubKeyExpiryTime <= utxoOutCreateTime);
+    assert(dataEscrowPubKeyExpiryTime <= utxoOutCreateTime);
+    assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime <= utxoOutCreateTime);
+    assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime <= utxoOutCreateTime);
+
+    // [26] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
     staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
@@ -986,7 +996,7 @@ template TransactionV1Extended( nUtxoIn,
     isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
-    // [26] - Verify forest-merkle-roots
+    // [27] - Verify forest-merkle-roots
     component forestTreeMerkleRootVerifier = Poseidon(4);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
@@ -999,7 +1009,7 @@ template TransactionV1Extended( nUtxoIn,
     isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
     isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
 
-    // [27] - Verify salt
+    // [28] - Verify salt
     component saltVerify = Poseidon(1);
     saltVerify.inputs[0] <== salt;
 
@@ -1009,7 +1019,7 @@ template TransactionV1Extended( nUtxoIn,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [27] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    // [29] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
 }
