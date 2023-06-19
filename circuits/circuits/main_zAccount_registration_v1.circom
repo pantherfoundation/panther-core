@@ -10,15 +10,16 @@ component main {
         zkpChange,                             // [3]
         zAccountId,                            // [4]
         zAccountPrpAmount,                     // [5]
-        zAccountRootSpendPubKey,               // [6] - x,y = 2
-        zAccountMasterEOA,                     // [7]
-        zAccountNullifier,                     // [8]
-        zAccountCommitment,                    // [9]
-        kycSignedMessageHash,                  // [10]
-        forestMerkleRoot,                      // [11]
-        saltHash,                              // [12]
-        magicalConstraint                      // [13]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 11 + 2 = 13
+        zAccountCreateTime,                    // [6]
+        zAccountRootSpendPubKey,               // [7] - x,y = 2
+        zAccountMasterEOA,                     // [8]
+        zAccountNullifier,                     // [9]
+        zAccountCommitment,                    // [10]
+        kycSignedMessageHash,                  // [11]
+        forestMerkleRoot,                      // [12]
+        saltHash,                              // [13]
+        magicalConstraint                      // [14]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 13 + 2 = 15
     ]} = ZAccountRegitrationV1( 6,     // ZNetworkMerkleTreeDepth
                                 16,    // ZAssetMerkleTreeDepth
                                 16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size

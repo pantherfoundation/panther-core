@@ -2,6 +2,7 @@
 pragma circom 2.0.0;
 
 // project deps
+include "./templates/isNotZero.circom";
 include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/kycKytNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
@@ -204,8 +205,14 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountNoteHasher.createTime <== zAccountCreateTime;
     zAccountNoteHasher.networkId <== zAccountNetworkId;
 
+    // verify required values
+    zAccountTotalAmountPerTimePeriod === 0;
+
     // verify zNetworkId is equal to zAccountNetworkId (anchoring)
     zAccountNetworkId === zNetworkId;
+
+    // verify expireTime
+    zAccountExpiryTime === zAccountCreateTime + zZoneKycExpiryTime;
 
     // [3] - verify ZKP & PRP balance
     assert(zAccountZkpAmount < 2**254);
@@ -255,14 +262,19 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     // [7] - Verify KYT signature
     component kycSignedMessageHashInternal = Poseidon(8);
 
-    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
+    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType; // TODO: FIXME - equal to 1
     kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
-    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
+    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender; // TODO: should we check MasterEOA === sender ?
     kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
     kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageToken;
     kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageSessionIdHex;
     kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageRuleId;
     kycSignedMessageHashInternal.inputs[7] <== kycSignedMessageAmount;
+
+    // verify required values
+    kycSignedMessageReceiver === 0;
+    kycSignedMessageToken === 0;
+    kycSignedMessageAmount === 0;
 
     component kycSignatureVerifier = EdDSAPoseidonVerifier();
     kycSignatureVerifier.enabled <== kycKytMerkleRoot;
@@ -274,9 +286,13 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
 
     kycSignatureVerifier.M <== kycSignedMessageHashInternal.out;
 
-    // kyc-hash
+    // check if enabled
+    component iskycSignedMessageHashIsEqualEnabled = IsNotZero();
+    iskycSignedMessageHashIsEqualEnabled.in <== kycKytMerkleRoot;
+
+    // verify kyc-hash
     component kycSignedMessageHashIsEqual = ForceEqualIfEnabled();
-    kycSignedMessageHashIsEqual.enabled <== kycKytMerkleRoot;
+    kycSignedMessageHashIsEqual.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
     kycSignedMessageHashIsEqual.in[0] <== kycSignedMessageHash;
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 

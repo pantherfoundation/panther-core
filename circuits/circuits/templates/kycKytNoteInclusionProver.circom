@@ -15,6 +15,8 @@ template KycKytNoteInclusionProver(n_levels) {
     signal input pathIndex[n_levels];
     signal input pathElements[n_levels];
 
+    assert(enabled < 2);
+
     // verify expiryTime
     component expiryTimeIsZero = IsZero();
     expiryTimeIsZero.in <== expiryTime;
