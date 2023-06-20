@@ -10,7 +10,7 @@ template ZZoneZAccountBlackListExclusionProver(){
     signal input zAccountId;              // 24 bit
     signal input zAccountIDsBlackList;    // 10 x 24 bit at most
 
-    assert(zAccountId <= 2**24);
+    assert(zAccountId < 2**24);
 
     component n2b = Num2Bits(10 * 24);
     n2b.in <== zAccountIDsBlackList;
