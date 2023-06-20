@@ -1,6 +1,6 @@
 import * as path from 'path';
 import {wtns, groth16} from 'snarkjs';
-import {getOptions} from './../helpers/circomTester';
+import {getOptions} from '../helpers/circomTester';
 
 const opts = getOptions();
 

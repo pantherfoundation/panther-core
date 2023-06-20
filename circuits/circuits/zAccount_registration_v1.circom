@@ -259,7 +259,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [7] - Verify KYT signature
+    // [7] - Verify KYC signature
     component kycSignedMessageHashInternal = Poseidon(8);
 
     kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType; // TODO: FIXME - equal to 1
@@ -297,15 +297,15 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 
     // [8] - Verify kycEdDSA public key membership
-    component kycKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
-    kycKycNoteInclusionProver.enabled <== kycKytMerkleRoot;
-    kycKycNoteInclusionProver.root <== kycKytMerkleRoot;
-    kycKycNoteInclusionProver.key[0] <== kycEdDsaPubKey[0];
-    kycKycNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
-    kycKycNoteInclusionProver.expiryTime <== kycEdDsaPubKeyExpiryTime;
+    component kycKytNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
+    kycKytNoteInclusionProver.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
+    kycKytNoteInclusionProver.root <== kycKytMerkleRoot;
+    kycKytNoteInclusionProver.key[0] <== kycEdDsaPubKey[0];
+    kycKytNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
+    kycKytNoteInclusionProver.expiryTime <== kycEdDsaPubKeyExpiryTime;
     for (var j=0; j< KycKytMerkleTreeDepth; j++) {
-        kycKycNoteInclusionProver.pathIndex[j] <== kycPathIndex[j];
-        kycKycNoteInclusionProver.pathElements[j] <== kycPathElements[j];
+        kycKytNoteInclusionProver.pathIndex[j] <== kycPathIndex[j];
+        kycKytNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
     // [9] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
