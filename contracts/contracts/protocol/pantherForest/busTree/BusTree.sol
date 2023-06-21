@@ -5,6 +5,7 @@ pragma solidity ^0.8.16;
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import { EMPTY_BUS_TREE_ROOT } from "../zeroTrees/Constants.sol";
+import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
 
 /**
  * @dev The Bus Tree ("Tree") is an incremental binary Merkle tree that stores
@@ -104,6 +105,8 @@ abstract contract BusTree is BusQueues {
         input[6] = uint256(busBranchNewRoot);
         // `extraInput` signal (front-run protection)
         input[7] = uint256(uint160(miner));
+        // magicalConstraint
+        input[8] = MAGICAL_CONSTRAINT;
 
         // Verify the proof
         require(VERIFIER.verify(CIRCUIT_ID, input, proof), "BT:FAILED_PROOF");
