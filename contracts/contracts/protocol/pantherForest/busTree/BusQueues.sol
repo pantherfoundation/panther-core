@@ -160,8 +160,10 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
         busQueueParams[queueId] = BusQueue(0, 0);
         busQueueCommitments[queueId] = bytes32(0);
-        _numPendingQueues -= 1;
-        _numPendingRewards -= reward;
+        if (nUtxos == QUEUE_SIZE) {
+            _numPendingQueues -= 1;
+            _numPendingRewards -= reward;
+        }
 
         emit BusQueueProcessed(queueId);
 
