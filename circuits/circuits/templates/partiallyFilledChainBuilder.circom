@@ -33,7 +33,7 @@ template PartiallyFilledChainBuilder(max_nInputs){
 
     // First, let's process inputs[0]
     interimHashes[0] <== inputs[0];
-    accumulator[0] <== interimHashes[0];
+    accumulator[0] <== 0;
 
     for(var i=0; i<max_nInputs-1; i++) {
         // Let's process inputs[nextInd] signal
