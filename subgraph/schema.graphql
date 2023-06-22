@@ -25,3 +25,69 @@ type Triad @entity {
     creationTime: Int!
     txHash: Bytes!
 }
+
+type BusBatchOnboarded @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    batchRoot: Bytes! # bytes32
+    numUtxosInBatch: BigInt! # uint256
+    leftLeafIndexInBusTree: BigInt! # uint256
+    busTreeNewRoot: Bytes! # bytes32
+    busBranchNewRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusBranchFilled @entity(immutable: true) {
+    id: Bytes!
+    branchIndex: BigInt! # uint256
+    busBranchFinalRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueOpened @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueuePending @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    accumReward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueProcessed @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type MinerRewarded @entity(immutable: true) {
+    id: Bytes!
+    miner: Bytes! # address
+    reward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type UtxoBusQueued @entity(immutable: true) {
+    id: Bytes!
+    utxo: Bytes! # bytes32
+    queueId: BigInt! # uint256
+    utxoIndexInBatch: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}

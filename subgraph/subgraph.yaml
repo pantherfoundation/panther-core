@@ -4,14 +4,14 @@ schema:
 dataSources:
   - kind: ethereum
     name: AdvancedStakeRewardController
-    network: matic
+    network: mumbai
     source:
-      address: '0x8f15a43961c27C74CB4F55234A78802401614de3'
+      address: '0xaEf203DB2d26615FeE0Dc045D1112712AA214b2E'
       abi: AdvancedStakeRewardController
       startBlock: 36337906
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - RewardGenerated
@@ -24,14 +24,14 @@ dataSources:
       file: ./src/handleAdvancedStakingRewards.ts
   - kind: ethereum
     name: PantherPoolV0
-    network: matic
+    network: mumbai
     source:
-      address: '0x9a423671e9Cde99Ae88853B701f98ca9e136877B'
+      address: '0x15eABaed2474D584E739d390b4BEa4904CEeef9a'
       abi: PantherPoolV0
       startBlock: 36301252
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - NewCommitments
@@ -42,3 +42,41 @@ dataSources:
         - event: NewCommitments(indexed uint256,uint256,bytes32[3],bytes)
           handler: handleNewCommitments
       file: ./src/handleAdvancedStakingRewards.ts
+  - kind: ethereum
+    name: BusTree
+    network: mumbai
+    source:
+      address: '0xc283bC41D32d923F41246C79E8db04403b942C1E'
+      abi: BusTree
+      startBlock: 37143125
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BusBatchOnboarded
+        - BusBranchFilled
+        - BusQueueOpened
+        - BusQueuePending
+        - BusQueueProcessed
+        - MinerRewarded
+        - UtxoBusQueued
+      abis:
+        - name: BusTree
+          file: ./abis/BusTree.json
+      eventHandlers:
+        - event: BusBatchOnboarded(indexed uint256,indexed bytes32,uint256,uint256,bytes32,bytes32)
+          handler: handleBusBatchOnboarded
+        - event: BusBranchFilled(indexed uint256,bytes32)
+          handler: handleBusBranchFilled
+        - event: BusQueueOpened(uint256)
+          handler: handleBusQueueOpened
+        - event: BusQueuePending(indexed uint256,uint256)
+          handler: handleBusQueuePending
+        - event: BusQueueProcessed(indexed uint256)
+          handler: handleBusQueueProcessed
+        - event: MinerRewarded(address,uint256)
+          handler: handleMinerRewarded
+        - event: UtxoBusQueued(indexed bytes32,indexed uint256,uint256)
+          handler: handleUtxoBusQueued
+      file: ./src/handleBusTreeQueues.ts
