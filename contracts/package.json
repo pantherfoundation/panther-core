@@ -24,7 +24,7 @@
     "deploy:staking:advanced": "hardhat deploy --tags advanced-staking,protocol",
     "deploy:forest": "hardhat deploy --tags forest",
     "deploy": "hardhat deploy",
-    "generate:bus-tree-dcenario": "test/protocol/data/busTreeScenario.js",
+    "generate:bus-tree-scenario": "test/protocol/data/busTreeScenario.js",
     "verify": "hardhat etherscan-verify",
     "deploy:chain": "HARDHAT_NO_MNEMONIC=yes hardhat deploy --network localhost",
     "flatten": "HARDHAT_NO_MNEMONIC=yes hardhat flatten",
