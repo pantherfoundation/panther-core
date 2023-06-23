@@ -6,20 +6,21 @@
 
 /* eslint @typescript-eslint/no-var-requires: 0 */
 const assert = require('assert');
-const {writeFileSync} = require('fs');
+const {readFileSync, writeFileSync} = require('fs');
 const {join} = require('path');
 
-const circomlibjs = require('circomlibjs');
+const {poseidon} = require('circomlibjs');
 const ethers = require('ethers');
 
 // The number of Queues (Batches) to generate for the test
+// (extension of `scenarioSteps` needed, if it's exceed 32)
 const nBatches = 32;
 console.info(`Generating scenario with ${nBatches} Batches`);
 
 /**** 0. Let's define some helpers and constants ***/
 const numToBytes32 = n => ethers.utils.hexZeroPad('0x' + n.toString(16), 32);
-const oneInputHash = n => numToBytes32(circomlibjs.poseidon([n]));
-const twoInputHash = (a, b) => numToBytes32(circomlibjs.poseidon([a, b]));
+const oneInputHash = n => numToBytes32(poseidon([n]));
+const twoInputHash = (a, b) => numToBytes32(poseidon([a, b]));
 
 // Value in an "empty" leaf
 const emptyLeaf =
@@ -72,7 +73,7 @@ function generateBatchData(queueId) {
     // Generate pseudo-random number in [32..64], with probability density peak at 64,
     // to be a number of non-empty UTXOs in a queue
     const nNonEmptyNewLeafs = Math.min(
-        parseInt((circomlibjs.poseidon([queueId]) & 63n).toString()) + 32,
+        parseInt((poseidon([queueId]) & 63n).toString()) + 32,
         64,
     );
     const emptyLeafsNum = 64 - nNonEmptyNewLeafs;
@@ -101,6 +102,8 @@ function generateBatchData(queueId) {
     // Return Batch data
     return {newLeafs, nNonEmptyNewLeafs, newLeafsCommitment, batchRoot};
 }
+console.info(`1 (of 6). Generating ${nBatches} queues (and batches)`);
+
 const batches = Array(nBatches)
     .fill(0)
     .map((_, i) => generateBatchData(i));
@@ -177,7 +180,10 @@ const scenarioSteps = [
     {inserted: 31},
     {inserted: 30},
     {inserted: 23},
-];
+].slice(0, nBatches * 2);
+
+console.info(`2 (of 6). Defining ${scenarioSteps.length} scenario steps`);
+
 const queuedBatches = scenarioSteps
     .filter(v => v.hasOwnProperty('queued'))
     .map(v => v.queued);
@@ -296,6 +302,10 @@ function insertLeaf(tree, leaf, leafInd) {
     return res;
 }
 
+console.info(
+    `3 (of 6). Computing bus tree roots for ${insertedBatches.length} insertions`,
+);
+
 const inBranchTreeInserts = insertedBatches.map((v, i) =>
     insertLeaf(branchTree, batches[v].batchRoot, i),
 );
@@ -319,69 +329,121 @@ const proofInputs = inBusTreeInserts.map((v, i) => ({
     magicalConstraint: '0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00',
 }));
 
-/*** 5. Generate data for scenario player ***/
+/*** 5. Define SNARK-proof generator ***/
 
-const scenario = scenarioSteps.map((v, i) => {
-    if (v.hasOwnProperty('queued')) {
-        const b = batches[v.queued];
-        const queue = b.newLeafs.slice(0, b.nNonEmptyNewLeafs);
-        // Decompose the queue in chunks with pseudo-random length of 1..8 UTXOs
-        const queueChunks = [];
-        let pos = 0;
-        while (pos < queue.length) {
-            const chunkSize = Math.min(
-                (parseInt(queue[pos].slice(4)) & 7) + 1,
-                queue.length - pos,
-            );
-            const chunkInd = queueChunks.push([]) - 1;
-            for (let n = 0; n < chunkSize; n++) {
-                queueChunks[chunkInd].push(queue[pos + n]);
-            }
-            pos += chunkSize;
-        }
-        return {
-            description: `Step #${i}: Queue the Batch.${v.queued}`,
-            calls: queueChunks.map(v => ({
-                method: 'simulateAddUtxosToBusQueue(bytes32[] utxos, uint96 reward)',
-                params: [v, v.length * 10],
-            })),
-        };
-    } else if (v.hasOwnProperty('inserted')) {
-        const proofIndex = insertedBatches.findIndex(
-            batchNum => batchNum === v.inserted,
+async function generateProofs(proofInputs) {
+    const {groth16} = require('snarkjs');
+    const wc = require('./wasm/witness_calculator');
+    const wasmBuf = readFileSync(
+        join(__dirname, './wasm/pantherBusTreeUpdater.wasm'),
+    );
+    const vk = require('./verificationKeys/VK_pantherBusTreeUpdater.json');
+    const pkPath = join(
+        __dirname,
+        './provingKeys/pantherBusTreeUpdater_final.zkey',
+    );
+
+    const proofs = [];
+    let counter = 1;
+    for await (const input of proofInputs) {
+        console.info(`- proof ${counter++} out of ${proofInputs.length}`);
+        // As it's just simulation, assertion `input[..] < SNARK_FIELD_SIZE` skipped
+        const wtnsBuf = await wc(wasmBuf).then(async witCalc =>
+            witCalc.calculateWTNSBin(input, 0),
         );
-        assert(
-            proofIndex >= 0,
-            `PANIC!!! proof input for batch ${v.inserted} missing`,
+        const {proof: lProof, publicSignals} = await groth16.prove(
+            pkPath,
+            wtnsBuf,
+            null,
         );
-        const inp = proofInputs[proofIndex];
-        assert(
-            batches[v.inserted].batchRoot === inp.batchRoot,
-            `PANIC!!! Mismatching batchRoot in proof input for batch ${v.inserted}`,
-        );
-        return {
-            description: `Step #${i}: Insert the Batch.${v.inserted}`,
-            calls: [
-                {
-                    method: 'onboardQueue(address miner, uint32 queueId, bytes32 busTreeNewRoot, bytes32 batchRoot, bytes32 busBranchNewRoot, SnarkProof memory proof)',
-                    params: [
-                        inp.extraInput,
-                        v.inserted,
-                        inp.newRoot,
-                        inp.batchRoot,
-                        inp.branchRoot,
-                        '<snark proof to be here>',
-                    ],
-                },
-            ],
-        };
+        assert(await groth16.verify(vk, publicSignals, lProof, null));
+        const solProof = (replica => [
+            replica.pi_a.slice(0, 2),
+            replica.pi_b.slice(0, 2).map(x => x.reverse()),
+            replica.pi_c.slice(0, 2),
+        ])(JSON.parse(JSON.stringify(lProof)));
+        proofs.push(solProof);
     }
-});
+    return proofs;
+}
 
-const scFName = join(__dirname, './busTreeScenario.json');
-const piFName = join(__dirname, './busTreeScenario.proofInput.json');
-writeFileSync(scFName, JSON.stringify(scenario, null, 2) + `\n`);
-writeFileSync(piFName, JSON.stringify(proofInputs, null, 2) + `\n`);
+/*** 6. Define scenario compiler ***/
+
+const compileScenario = proofs =>
+    scenarioSteps.map((v, i) => {
+        if (v.hasOwnProperty('queued')) {
+            const b = batches[v.queued];
+            const queue = b.newLeafs.slice(0, b.nNonEmptyNewLeafs);
+            // Decompose the queue in chunks with pseudo-random length of 1..8 UTXOs
+            const queueChunks = [];
+            let pos = 0;
+            while (pos < queue.length) {
+                const chunkSize = Math.min(
+                    (parseInt(queue[pos].slice(4)) & 7) + 1,
+                    queue.length - pos,
+                );
+                const chunkInd = queueChunks.push([]) - 1;
+                for (let n = 0; n < chunkSize; n++) {
+                    queueChunks[chunkInd].push(queue[pos + n]);
+                }
+                pos += chunkSize;
+            }
+            return {
+                description: `Step #${i}: Queue the Batch.${v.queued}`,
+                calls: queueChunks.map(v => ({
+                    method: 'simulateAddUtxosToBusQueue(bytes32[] utxos, uint96 reward)',
+                    params: [v, v.length * 10],
+                })),
+            };
+        } else if (v.hasOwnProperty('inserted')) {
+            const proofIndex = insertedBatches.findIndex(
+                batchNum => batchNum === v.inserted,
+            );
+            assert(
+                proofIndex >= 0,
+                `PANIC!!! proof input for batch ${v.inserted} missing`,
+            );
+            const inp = proofInputs[proofIndex];
+            assert(
+                batches[v.inserted].batchRoot === inp.batchRoot,
+                `PANIC!!! Mismatching batchRoot in proof input for batch ${v.inserted}`,
+            );
+            return {
+                description: `Step #${i}: Insert the Batch.${v.inserted}`,
+                calls: [
+                    {
+                        method: 'onboardQueue(address miner, uint32 queueId, bytes32 busTreeNewRoot, bytes32 batchRoot, bytes32 busBranchNewRoot, SnarkProof memory proof)',
+                        params: [
+                            inp.extraInput,
+                            v.inserted,
+                            inp.newRoot,
+                            inp.batchRoot,
+                            inp.branchRoot,
+                            proofs[proofIndex],
+                        ],
+                    },
+                ],
+            };
+        }
+    });
+
+/*** 6. Finally, run proof generator, scenario compiler, and write results ***/
+
 console.info(
-    `DONE: Scenario has been generated and save in\n${scFName}\n${piFName}`,
+    `4 (of 6). Generating proofs for ${insertedBatches.length} insertions`,
 );
+generateProofs(proofInputs).then(proofs => {
+    console.info(`5 (of 6). Compiling scenario data`);
+    const scenario = compileScenario(proofs);
+
+    console.info(`6 (of 6). Writing result files`);
+    const scFName = join(__dirname, './busTreeScenario.json');
+    const piFName = join(__dirname, './busTreeScenario.proofInput.json');
+    writeFileSync(scFName, JSON.stringify(scenario, null, 2) + `\n`);
+    writeFileSync(piFName, JSON.stringify(proofInputs, null, 2) + `\n`);
+
+    console.info(
+        `DONE: Scenario has been generated and save in\n${scFName}\n${piFName}`,
+    );
+    process.exit(0);
+});
