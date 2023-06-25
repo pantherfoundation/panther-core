@@ -1,7 +1,7 @@
 #!/usr/bin/node
 /**
  * @dev This script (deterministically) generates data fot the test scenario
- * and writes the scenario to the file `__dirname/busTreeScenario.json`.
+ * and writes the scenario to the file `__dirname/busTreeScenario_XX_steps.json`.
  */
 
 /* eslint @typescript-eslint/no-var-requires: 0 */
@@ -13,8 +13,7 @@ const {poseidon} = require('circomlibjs');
 const ethers = require('ethers');
 
 // The number of Queues (Batches) to generate for the test
-// (extension of `scenarioSteps` needed, if it's exceed 32)
-const nBatches = 32;
+const nBatches = parseInt(process.env.NUM_BATCHES || '10');
 console.info(`Generating scenario with ${nBatches} Batches`);
 
 /**** 0. Let's define some helpers and constants ***/
@@ -182,6 +181,15 @@ const scenarioSteps = [
     {inserted: 23},
 ].slice(0, nBatches * 2);
 
+if (2 * nBatches > scenarioSteps.length) {
+    const numMissingBatches = 2 * nBatches - scenarioSteps.length;
+    let i = scenarioSteps.length >> 1;
+    for (let n = 0; n < numMissingBatches; n++) {
+        const nextStep = n & 1 ? {inserted: i++} : {queued: i};
+        scenarioSteps.push(nextStep);
+    }
+}
+
 console.info(`2 (of 6). Defining ${scenarioSteps.length} scenario steps`);
 
 const queuedBatches = scenarioSteps
@@ -222,12 +230,16 @@ queuedBatches.forEach((v, i, a) => {
         if (v.isPart) {
             const curStep = v.queueingStep;
             if (curStep === scenarioSteps.length - 1) return;
-            const nextQueuingStep =
-                curStep +
+
+            const nextQueueingStepShift =
                 1 +
                 scenarioSteps
                     .slice(curStep + 1, scenarioSteps.length)
                     .findIndex(s => s.hasOwnProperty('queued'));
+            // Return if no more insertions remain
+            if (nextQueueingStepShift === 0) return;
+
+            const nextQueuingStep = curStep + nextQueueingStepShift;
             assert(
                 nextQueuingStep > v.insertionStep,
                 `Partially populated batch ${i} inserted after next batch queued`,
@@ -437,8 +449,14 @@ generateProofs(proofInputs).then(proofs => {
     const scenario = compileScenario(proofs);
 
     console.info(`6 (of 6). Writing result files`);
-    const scFName = join(__dirname, './busTreeScenario.json');
-    const piFName = join(__dirname, './busTreeScenario.proofInput.json');
+    const scFName = join(
+        __dirname,
+        `./busTreeScenario_${scenarioSteps.length}_steps.json`,
+    );
+    const piFName = join(
+        __dirname,
+        `./busTreeScenario_${scenarioSteps.length}_steps.proofInput.json`,
+    );
     writeFileSync(scFName, JSON.stringify(scenario, null, 2) + `\n`);
     writeFileSync(piFName, JSON.stringify(proofInputs, null, 2) + `\n`);
 
