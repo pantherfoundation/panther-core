@@ -77,6 +77,10 @@ export class SparseMerkleTree {
         return this;
     }
 
+    public getDefaultRoot(): bigint {
+        return this.defaultHashes.slice(-1)[0];
+    }
+
     public getRoot(): bigint {
         const root = this.layers[this.depth][0];
         if (!root) return this.defaultHashes[this.depth];
