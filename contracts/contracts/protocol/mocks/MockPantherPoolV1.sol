@@ -14,7 +14,11 @@ interface IMockPantherPoolV1 {
 // solhint-disable var-name-mixedcase
 // slither-disable shadowing-state
 // slither-disable unused-state
-contract MockPantherPoolV1 is PantherForest, IMockPantherPoolV1, ImmutableOwnable {
+contract MockPantherPoolV1 is
+    PantherForest,
+    IMockPantherPoolV1,
+    ImmutableOwnable
+{
     // slither-disable-next-line shadowing-state unused-state
     uint256[500 - 26] private __gap;
 
@@ -38,5 +42,13 @@ contract MockPantherPoolV1 is PantherForest, IMockPantherPoolV1, ImmutableOwnabl
         require(vaultAssetUnlockers[msg.sender], "mockPoolV1: unauthorized");
 
         IVault(VAULT).unlockAsset(data);
+    }
+
+    function createUtxo(SnarkProof calldata proof)
+        external
+        view
+        returns (bool)
+    {
+        return true;
     }
 }
