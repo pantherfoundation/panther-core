@@ -18,4 +18,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['zwallet'];
+func.tags = ['zwallet-vk', 'vk-list', 'forest', 'protocol'];

@@ -18,4 +18,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['bus-tree', 'forest', 'protocol'];
+func.tags = ['bus-tree-vk', 'vk-list', 'forest', 'protocol'];
