@@ -74,5 +74,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['add-verification-key', 'forest', 'zwallet', 'protocol'];
+func.tags = ['add-verification-key', 'forest', 'protocol'];
 func.dependencies = ['check-params', 'vk-list'];
