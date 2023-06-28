@@ -1,5 +1,11 @@
-compiled
+compiled/*
+*.ptau
+compiled/main_zAccount_registration_v1_js/*.js
+!compiled/main_zAccount_registration_v1_js/
+!compiled/main_zAccount_registration_v1_js/main_zAccount_registration_v1.wasm
 !compiled/tmp/README.txt
+!compiled/main_zAccount_registration_v1_extended_final.zkey
+!compiled/main_zAccount_registration_v1_extended_verification_key.json
 node_modules
 package-lock.json
 types/
