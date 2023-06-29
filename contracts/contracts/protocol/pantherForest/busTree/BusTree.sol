@@ -25,10 +25,15 @@ import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
 abstract contract BusTree is BusQueues {
     // solhint-disable var-name-mixedcase
 
+    // Number of levels in every Batch (that is a binary tree)
+    uint256 internal constant BATCH_LEVELS = QUEUE_MAX_LEVELS;
+
     // Number of levels in every Branch, counting from roots of Batches
     uint256 private constant BRANCH_LEVELS = 10;
     // Number of Batches in a fully filled Branch
     uint256 private constant BRANCH_SIZE = 2**BRANCH_LEVELS;
+    // Bitmask for cheaper modulo math
+    uint256 private constant BRANCH_BITMASK = BRANCH_SIZE - 1;
 
     IPantherVerifier public immutable VERIFIER;
     uint160 public immutable CIRCUIT_ID;
@@ -36,8 +41,14 @@ abstract contract BusTree is BusQueues {
 
     bytes32 public busTreeRoot;
 
-    uint128 public numBatchesInBusTree;
-    uint128 public numUtxosInBusTree;
+    // Number of Batches in the Bus Tree
+    uint32 private _numBatchesInBusTree;
+    // Number of UTXOs (excluding empty leafs) in the tree
+    uint32 private _numUtxosInBusTree;
+    // Block when the 1st Batch inserted in the latest branch
+    uint40 private _latestBranchFirstBatchBlock;
+    // Block when the latest Batch inserted in the Bus Tree
+    uint40 private _latestBatchBlock;
 
     event BusBatchOnboarded(
         uint256 indexed queueId,
@@ -70,6 +81,22 @@ abstract contract BusTree is BusQueues {
         // new storage slots). There is no need for explicit initialization.
     }
 
+    function getBusTreeStats()
+        external
+        view
+        returns (
+            uint32 numBatchesInBusTree,
+            uint32 numUtxosInBusTree,
+            uint40 latestBranchFirstBatchBlock,
+            uint40 latestBatchBlock
+        )
+    {
+        numBatchesInBusTree = _numBatchesInBusTree;
+        numUtxosInBusTree = _numUtxosInBusTree;
+        latestBranchFirstBatchBlock = _latestBranchFirstBatchBlock;
+        latestBatchBlock = _latestBatchBlock;
+    }
+
     function onboardQueue(
         address miner,
         uint32 queueId,
@@ -78,7 +105,7 @@ abstract contract BusTree is BusQueues {
         bytes32 busBranchNewRoot,
         SnarkProof memory proof
     ) external nonEmptyBusQueue(queueId) {
-        uint128 nBatches = numBatchesInBusTree;
+        uint32 nBatches = _numBatchesInBusTree;
         (
             bytes32 commitment,
             uint8 nUtxos,
@@ -111,11 +138,32 @@ abstract contract BusTree is BusQueues {
         // Verify the proof
         require(VERIFIER.verify(CIRCUIT_ID, input, proof), "BT:FAILED_PROOF");
 
-        // Store updated Bus Tree
+        {
+            // Overflow risk ignored
+            uint40 curBlock = uint40(block.number);
+            _latestBatchBlock = curBlock;
+
+            // `& BRANCH_BITMASK` is equivalent to `% BRANCH_SIZE`
+            uint256 batchBranchIndex = uint256(nBatches) & BRANCH_BITMASK;
+            if (batchBranchIndex == 0) {
+                _latestBranchFirstBatchBlock = curBlock;
+            } else {
+                if (batchBranchIndex + 1 == BRANCH_SIZE) {
+                    // `>>BRANCH_LEVELS` is equivalent to `/BRANCH_SIZE`
+                    uint256 branchIndex = nBatches >> BRANCH_LEVELS;
+                    emit BusBranchFilled(branchIndex, busBranchNewRoot);
+                }
+            }
+        }
+
+        // Store updated Bus Tree params
         busTreeRoot = busTreeNewRoot;
-        uint128 leftLeafIndex = numUtxosInBusTree;
-        numUtxosInBusTree = leftLeafIndex + nUtxos;
-        numBatchesInBusTree = ++nBatches;
+        // Overflow impossible as nUtxos and _numBatchesInBusTree are limited
+        _numBatchesInBusTree = nBatches + 1;
+        _numUtxosInBusTree += nUtxos;
+
+        // `<< BATCH_LEVELS` is equivalent to `* 2**BATCH_LEVELS`
+        uint32 leftLeafIndex = nBatches << BATCH_LEVELS;
 
         emit BusBatchOnboarded(
             queueId,
@@ -125,12 +173,6 @@ abstract contract BusTree is BusQueues {
             busTreeNewRoot,
             busBranchNewRoot
         );
-
-        if (nBatches % BRANCH_SIZE == 0) {
-            // `>>BRANCH_LEVELS` is a cheaper equivalent of `/BRANCH_SIZE`
-            uint256 branchIndex = (nBatches - 1) >> BRANCH_LEVELS;
-            emit BusBranchFilled(branchIndex, busBranchNewRoot);
-        }
 
         rewardMiner(miner, reward);
     }
