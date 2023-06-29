@@ -10,6 +10,8 @@ import {
     fulfillExistingContractAddresses,
 } from '../../lib/deploymentHelpers';
 
+const scaledVaultBalance = 1e6;
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts, network} = hre;
 
@@ -34,6 +36,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             throw 'POOL_EXIT_TIME is less than current time';
         }
     }
+
+    process.env['VAULT_BALANCE'] = hre.ethers.utils.parseEther(
+        scaledVaultBalance.toString(),
+    );
 };
 
 export default func;
