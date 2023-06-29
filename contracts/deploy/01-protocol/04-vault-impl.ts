@@ -21,8 +21,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const pantherPool = await getContractAddress(
         hre,
-        'PantherPoolV0_Proxy',
-        'PANTHER_POOL_V0_PROXY',
+        'PantherPoolV1_Proxy',
+        'PANTHER_POOL_V1_PROXY',
     );
 
     await deploy('Vault_Implementation', {
@@ -36,4 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['vault-impl', 'protocol'];
-func.dependencies = ['check-params', 'pool'];
+func.dependencies = ['check-params', 'pool-v1'];

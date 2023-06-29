@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
+import { IMockPantherPoolV1 } from "../../mocks/MockPantherPoolV1.sol";
+
 import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
@@ -55,6 +57,16 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     }
 
     function rewardMiner(address miner, uint256 reward) internal override {
+        LockData memory data = LockData({
+            tokenType: ERC20_TOKEN_TYPE,
+            token: REWARD_TOKEN,
+            tokenId: 0,
+            extAccount: miner,
+            extAmount: uint96(reward)
+        });
+
+        IMockPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
+
         emit MinerRewarded(miner, reward);
     }
 

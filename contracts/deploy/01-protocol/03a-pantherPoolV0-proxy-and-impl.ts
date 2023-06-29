@@ -13,10 +13,14 @@ import {
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    //info PantherPool V0 is outdated
+    return;
+
     const {
         deployments: {deploy, get},
         getNamedAccounts,
     } = hre;
+
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
 
@@ -97,7 +101,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['pool', 'protocol'];
+func.tags = ['pool-v0', 'protocol'];
 func.dependencies = [
     'check-params',
     'crypto-libs',

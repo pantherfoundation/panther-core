@@ -24,12 +24,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PantherVerifier',
         'PANTHER_VERIFIER',
     );
+    const pantherPool = await getContractAddress(
+        hre,
+        'PantherPoolV1_Proxy',
+        'PANTHER_POOL_V1_PROXY',
+    );
+
+    const zkpToken = getContractEnvAddress(hre, 'ZKP_TOKEN');
+
     const pointer = getContractEnvAddress(hre, 'VK_PANTHERBUSTREEUPDATER');
 
     if (pointer) {
         await deploy('MockBusTree', {
             from: deployer,
-            args: [pantherVerifier, pointer],
+            args: [pantherPool, zkpToken, pantherVerifier, pointer],
             libraries: {
                 PoseidonT3: poseidonT3,
             },
