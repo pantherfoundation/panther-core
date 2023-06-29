@@ -3,52 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: AdvancedStakeRewardController
-    network: mumbai
-    source:
-      address: '0xaEf203DB2d26615FeE0Dc045D1112712AA214b2E'
-      abi: AdvancedStakeRewardController
-      startBlock: 36337906
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - RewardGenerated
-      abis:
-        - name: AdvancedStakeRewardController
-          file: ./abis/AdvancedStakeRewardController.json
-      eventHandlers:
-        - event: RewardGenerated(indexed address,uint256,uint256,uint256)
-          handler: handleRewardGenerated
-      file: ./src/handleAdvancedStakingRewards.ts
-  - kind: ethereum
-    name: PantherPoolV0
-    network: mumbai
-    source:
-      address: '0x15eABaed2474D584E739d390b4BEa4904CEeef9a'
-      abi: PantherPoolV0
-      startBlock: 36301252
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - NewCommitments
-      abis:
-        - name: PantherPoolV0
-          file: ./abis/PantherPoolV0.json
-      eventHandlers:
-        - event: NewCommitments(indexed uint256,uint256,bytes32[3],bytes)
-          handler: handleNewCommitments
-      file: ./src/handleAdvancedStakingRewards.ts
-  - kind: ethereum
     name: BusTree
     network: mumbai
     source:
-      address: '0xc283bC41D32d923F41246C79E8db04403b942C1E'
+      address: '0x678D34aA4fc546bA806287a8289FfdAA84681a03'
       abi: BusTree
-      startBlock: 37143125
+      startBlock: 37770053
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -71,8 +31,6 @@ dataSources:
           handler: handleBusBranchFilled
         - event: BusQueueOpened(uint256)
           handler: handleBusQueueOpened
-        - event: BusQueuePending(indexed uint256,uint256)
-          handler: handleBusQueuePending
         - event: BusQueueProcessed(indexed uint256)
           handler: handleBusQueueProcessed
         - event: MinerRewarded(address,uint256)

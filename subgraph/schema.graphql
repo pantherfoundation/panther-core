@@ -48,21 +48,13 @@ type BusBranchFilled @entity(immutable: true) {
     transactionHash: Bytes!
 }
 
-type BusQueueOpened @entity(immutable: true) {
-    id: Bytes!
+type BusQueueOpened @entity(immutable: false) {
+    id: String!
     queueId: BigInt! # uint256
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
-}
-
-type BusQueuePending @entity(immutable: true) {
-    id: Bytes!
-    queueId: BigInt! # uint256
-    accumReward: BigInt! # uint256
-    blockNumber: BigInt!
-    blockTimestamp: BigInt!
-    transactionHash: Bytes!
+    isOnboarded: Boolean!
 }
 
 type BusQueueProcessed @entity(immutable: true) {
