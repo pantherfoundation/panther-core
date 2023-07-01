@@ -17,8 +17,7 @@ import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
  * If a queue gets fully populated with UTXOs, it is considered to be "closed".
  * No more UTXOs may be appended to that queue, and a new queue is created.
  * There may be many closed which pends processing. But one only partially
- * populated queue exists (it is always the most recently created queue and it
- * is always unprocessed).
+ * populated queue exists (it is always the most recently created queue).
  * Queues may be processed in any order (say, the 3rd queue may go before the
  * 1st one; and a fully populated queue may be processed after the partially
  * populated one).
@@ -104,32 +103,37 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         view
         returns (
             uint32 curQueueId,
-            uint8 curQueueNumUtxos,
-            uint96 curQueueReward,
             uint32 numPendingQueues,
-            uint32 oldestPendingQueueLink
+            uint32 oldestPendingQueueId
         )
     {
         uint32 nextQueueId = _nextQueueId;
-        require(nextQueueId != 0, "BT:NO_QUEUES_YET");
+        require(nextQueueId != 0, "BT:NO_QUEUES");
         curQueueId = nextQueueId - 1;
-        curQueueNumUtxos = _busQueues[curQueueId].nUtxos;
-        curQueueReward = _busQueues[curQueueId].reward;
         numPendingQueues = _numPendingQueues;
-        oldestPendingQueueLink = _oldestPendingQueueLink;
+        oldestPendingQueueId = numPendingQueues == 0
+            ? 0
+            : _oldestPendingQueueLink - 1;
     }
 
     function getBusQueue(uint32 queueId)
         external
         view
-        returns (bytes32 commitment, BusQueue memory params)
+        returns (BusQueueRec memory queue)
     {
-        params = _busQueues[queueId];
+        BusQueue memory q = _busQueues[queueId];
         require(
-            queueId + 1 == _nextQueueId || params.nUtxos > 0,
+            queueId + 1 == _nextQueueId || q.nUtxos > 0,
             "BT:UNKNOWN_OR_PROCESSED_QUEUE"
         );
-        commitment = _busQueueCommitments[queueId];
+        queue = BusQueueRec(
+            queueId,
+            q.nUtxos,
+            q.reward,
+            q.firstUtxoBlock,
+            q.lastUtxoBlock,
+            _busQueueCommitments[queueId]
+        );
     }
 
     // Returns upto maxLength unprocessed queues records
