@@ -2,12 +2,14 @@
 pragma circom 2.0.0;
 
 // project deps
+include "./templates/balanceChecker.circom";
 include "./templates/isNotZero.circom";
 include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/kycKytNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAssetChecker.circom";
 include "./templates/zAssetNoteInclusionProver.circom";
 include "./templates/zNetworkNoteInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
@@ -30,6 +32,21 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     // external data anchoring
     signal input extraInputsHash;  // public
 
+    // output 'protocol + relayer fee in ZKP'
+    signal input chargedAmountZkp; // public
+
+    // zAsset
+    signal input zAssetId;
+    signal input zAssetToken;
+    signal input zAssetTokenId;
+    signal input zAssetNetwork;
+    signal input zAssetOffset;
+    signal input zAssetWeight;
+    signal input zAssetScale;
+    signal input zAssetMerkleRoot;
+    signal input zAssetPathIndex[ZAssetMerkleTreeDepth];
+    signal input zAssetPathElements[ZAssetMerkleTreeDepth];
+
     // zAccount Input
     signal input zAccountUtxoInId;
     signal input zAccountUtxoInZkpAmount;
@@ -48,6 +65,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     signal input zAccountUtxoInNullifier;  // public
 
     // zAccount Output
+    signal input zAccountUtxoOutZkpAmount;
     signal input zAccountUtxoOutExpiryTime;
     signal input zAccountUtxoOutCreateTime; // public
     signal input zAccountUtxoOutSpendKeyRandom;
@@ -120,7 +138,6 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     // 3) zNetworkTreeMerkleRoot
     // 4) zZoneMerkleRoot
     // 5) kycKytMerkleRoot
-    signal input zAssetMerkleRoot;
     signal input staticTreeMerkleRoot;
 
     // forest root
@@ -150,7 +167,48 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     extraInputsHash === 1 * extraInputsHash;
 
-    // [1] - Verify input 'zAccount UTXO input'
+    // [1] - Verify zAsset's membership and decode its weight
+    component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
+    zAssetNoteInclusionProver.zAsset <== zAssetId;
+    zAssetNoteInclusionProver.token <== zAssetToken;
+    zAssetNoteInclusionProver.tokenId <== zAssetTokenId;
+    zAssetNoteInclusionProver.network <== zAssetNetwork;
+    zAssetNoteInclusionProver.offset <== zAssetOffset;
+    zAssetNoteInclusionProver.weight <== zAssetWeight;
+    zAssetNoteInclusionProver.scale <== zAssetScale;
+    zAssetNoteInclusionProver.merkleRoot <== zAssetMerkleRoot;
+
+    for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
+        zAssetNoteInclusionProver.pathIndex[i] <== zAssetPathIndex[i];
+        zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
+    }
+
+    // [2] - Check zAsset
+    component zAssetChecker = ZAssetChecker();
+    zAssetChecker.token <== 0;
+    zAssetChecker.tokenId <== 0;
+    zAssetChecker.zAsset <== zAssetId;
+    zAssetChecker.zAssetToken <== zAssetToken;
+    zAssetChecker.zAssetTokenId <== zAssetTokenId;
+    zAssetChecker.zAssetOffset <== zAssetOffset;
+    zAssetChecker.depositAmount <== 0;
+    zAssetChecker.withdrawAmount <== 0;
+    zAssetChecker.utxoZAsset <== zAssetId;
+
+    // [3] - Zkp balance
+    component totalBalanceChecker = BalanceChecker();
+    totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
+    totalBalanceChecker.depositAmount <== 0;
+    totalBalanceChecker.withdrawAmount <== 0;
+    totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    totalBalanceChecker.totalUtxoInAmount <== 0;
+    totalBalanceChecker.totalUtxoOutAmount <== 0;
+    totalBalanceChecker.zAssetWeight <== zAssetWeight;
+    totalBalanceChecker.zAssetScale <== zAssetScale;
+
+    // [4] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInRootSpendPubKeyCheck = BabyPbk();
     zAccountUtxoInRootSpendPubKeyCheck.in <== zAccountUtxoInRootSpendPrivKey;
 
@@ -183,13 +241,13 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     // verify zNetworkId is equal to zAccountUtxoInNetworkId (anchoring)
     zAccountUtxoInNetworkId === zNetworkId;
 
-    // [2] - Verify zAccountUtxoInUtxo commitment
+    // [5] - Verify zAccountUtxoInUtxo commitment
     component zAccountUtxoInHasherProver = ForceEqualIfEnabled();
     zAccountUtxoInHasherProver.in[0] <== zAccountUtxoInCommitment;
     zAccountUtxoInHasherProver.in[1] <== zAccountUtxoInNoteHasher.out;
     zAccountUtxoInHasherProver.enabled <== zAccountUtxoInCommitment;
 
-    // [3] - Verify zAccountUtxoIn nullifier
+    // [6] - Verify zAccountUtxoIn nullifier
     component zAccountUtxoInNullifierHasher = Poseidon(4);
     zAccountUtxoInNullifierHasher.inputs[0] <== zAccountUtxoInId;
     zAccountUtxoInNullifierHasher.inputs[1] <== zAccountUtxoInZoneId;
@@ -201,7 +259,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
     zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
 
-    // [4] - Verify zAccoutId exclusion proof
+    // [7] - Verify zAccoutId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
@@ -210,7 +268,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [5] - Verify zAccount UTXO out
+    // [8] - Verify zAccount UTXO out
     // derive spend pub key
     component zAccountUtxoOutSpendPubKeyDeriver = PubKeyDeriver();
     zAccountUtxoOutSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
@@ -236,13 +294,13 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     // verify expiry time
     zAccountUtxoOutExpiryTime === zAccountUtxoOutCreateTime + zZoneKycExpiryTime;
 
-    // [6] - Verify zAccountUtxoOut commitment
+    // [9] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
     zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
     zAccountUtxoOutHasherProver.in[1] <== zAccountUtxoOutNoteHasher.out;
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
-    // [7] - Verify KYT signature
+    // [10] - Verify KYT signature
     component kycSignedMessageHashInternal = Poseidon(8);
 
     kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType; // TODO: FIXME - equal to 1
@@ -279,7 +337,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     kycSignedMessageHashIsEqual.in[0] <== kycSignedMessageHash;
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 
-    // [8] - Verify kycEdDSA public key membership
+    // [11] - Verify kycEdDSA public key membership
     component kycKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
     kycKycNoteInclusionProver.enabled <== kycKytMerkleRoot;
     kycKycNoteInclusionProver.root <== kycKytMerkleRoot;
@@ -291,7 +349,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         kycKycNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
-    // [9] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
+    // [12] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(KycKytMerkleTreeDepth);
     for (var j = 0; j < KycKytMerkleTreeDepth; j++) {
         b2nLeafId.in[j] <== kycPathIndex[j];
@@ -303,7 +361,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     kycLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
     kycLeafIdAndRuleInclusionProver.offset <== kycMerkleTreeLeafIDsAndRulesOffset;
 
-    // [10] - Verify zZone membership
+    // [13] - Verify zZone membership
     component zZoneNoteHasher = ZZoneNoteHasher();
     zZoneNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zZoneNoteHasher.edDsaPubKey[0] <== zZoneEdDsaPubKey[0];
@@ -329,12 +387,12 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
-    // [11] - Verify zAccountId exclusion
+    // [14] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
     zZoneZAccountBlackListExclusionProver.zAccountId <== zAccountUtxoInId;
     zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
 
-    // [12] - Verify zNetwork's membership
+    // [15] - Verify zNetwork's membership
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -352,7 +410,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 
-    // [13] - Verify static-merkle-root
+    // [16] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
     staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
@@ -366,7 +424,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
-    // [14] - Verify forest-merkle-roots
+    // [17] - Verify forest-merkle-roots
     component forestTreeMerkleRootVerifier = Poseidon(4);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
@@ -379,7 +437,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
     isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
 
-    // [15] - Verify salt
+    // [18] - Verify salt
     component saltVerify = Poseidon(1);
     saltVerify.inputs[0] <== salt;
 
@@ -389,7 +447,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [16] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    // [19] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
 }
