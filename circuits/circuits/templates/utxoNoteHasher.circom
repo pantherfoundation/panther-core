@@ -16,6 +16,7 @@ template UtxoNoteHasher(){
     signal input createTime;      // 32
     signal input originZoneId;    // 16
     signal input targetZoneId;    // 16
+    signal input zAccountId;      // 24
 
     signal output out;
 
@@ -25,6 +26,7 @@ template UtxoNoteHasher(){
     assert(createTime < 2**32);
     assert(originZoneId < 2**16);
     assert(targetZoneId < 2**16);
+    assert(zAccountId < 2**24);
     /*
     component hiden_hash = Poseidon(5);
     hiden_hash.inputs[0] <== originNetworkId;
@@ -34,12 +36,13 @@ template UtxoNoteHasher(){
     hiden_hash.inputs[4] <== targetZoneId;
     */
 
-    component multiOR = MultiOR(5);
-    multiOR.in[0] <-- originNetworkId << 6 + 32 + 16 + 16;
-    multiOR.in[1] <-- targetNetworkId << 32 + 16 + 16;
-    multiOR.in[2] <-- createTime << 16 + 16;
-    multiOR.in[3] <-- originZoneId << 16;
-    multiOR.in[4] <-- targetZoneId << 0;
+    component multiOR = MultiOR(6);
+    multiOR.in[0] <-- zAccountId << 6 + 6 + 32 + 16 + 16;
+    multiOR.in[1] <-- originNetworkId << 6 + 32 + 16 + 16;
+    multiOR.in[2] <-- targetNetworkId << 32 + 16 + 16;
+    multiOR.in[3] <-- createTime << 16 + 16;
+    multiOR.in[4] <-- originZoneId << 16;
+    multiOR.in[5] <-- targetZoneId << 0;
 
     component hiden_hash = Poseidon(1);
     hiden_hash.inputs[0] <== multiOR.out;

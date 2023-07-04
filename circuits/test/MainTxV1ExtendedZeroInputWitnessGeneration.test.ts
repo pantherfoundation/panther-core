@@ -112,6 +112,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         utxoInOriginNetworkId: [BigInt(0n), BigInt(0n)],
         utxoInTargetNetworkId: [BigInt(0n), BigInt(0n)],
         utxoInCreateTime: [BigInt(0n), BigInt(0n)],
+        utxoInZAccountId: [BigInt(0n), BigInt(0n)],
         utxoInMerkleTreeSelector: [
             [BigInt(0n), BigInt(0n)],
             [BigInt(0n), BigInt(0n)],

@@ -102,6 +102,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input utxoInOriginNetworkId[nUtxoIn];
     signal input utxoInTargetNetworkId[nUtxoIn];
     signal input utxoInCreateTime[nUtxoIn];
+    signal input utxoInZAccountId[nUtxoIn];
     signal input utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
     signal input utxoInPathIndex[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
@@ -113,7 +114,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input zAccountUtxoInPrpAmount;
     signal input zAccountUtxoInZoneId;
     signal input zAccountUtxoInNetworkId;
-    signal input zAccountUtxoInExpiryTime; // TODO: FIXME - add contraint for it
+    signal input zAccountUtxoInExpiryTime;
     signal input zAccountUtxoInNonce;
     signal input zAccountUtxoInTotalAmountPerTimePeriod;
     signal input zAccountUtxoInCreateTime;
@@ -364,6 +365,9 @@ template TransactionV1Extended( nUtxoIn,
         zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
     }
 
+    // verify zAsset::network is equal to the current networkId
+    zAssetNetwork === zNetworkId;
+
     // [4] - Pass values for computing rewards
     component rewards = RewardsExtended(nUtxoIn);
     rewards.depositAmount <== totalBalanceChecker.depositScaledAmount;
@@ -420,6 +424,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoInNoteHashers[i].createTime <== utxoInCreateTime[i];
         utxoInNoteHashers[i].originZoneId <== utxoInOriginZoneId[i];
         utxoInNoteHashers[i].targetZoneId <== zAccountUtxoInZoneId; // ALWAYS will be ZoneId of current zAccount
+        utxoInNoteHashers[i].zAccountId <== utxoInZAccountId[i]; // ALWAYS will be ZAccountId of the sender
 
         // is-zero amount check
         utxoInIsEnabled[i] = IsNotZero();
@@ -520,6 +525,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoOutNoteHasher[i].createTime <== utxoOutCreateTime;
         utxoOutNoteHasher[i].originZoneId <== zAccountUtxoInZoneId; // ALWAYS will be ZoneId of current zAccount
         utxoOutNoteHasher[i].targetZoneId <== utxoOutTargetZoneId[i];
+        utxoOutNoteHasher[i].zAccountId <== zAccountUtxoInId; // ALWAYS will be ZAccountId of current zAccount
         // utxoOutCommitment[i] === utxoOutNoteHasher[i].out;
 
         // is-zero amount check

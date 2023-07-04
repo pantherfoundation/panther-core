@@ -120,6 +120,7 @@ describe('MainTransactionV1Extended circuit - TODO: IMPLEMENT', async function (
         utxoInOriginNetworkId: [BigInt(0n), BigInt(0n)],
         utxoInTargetNetworkId: [BigInt(0n), BigInt(0n)],
         utxoInCreateTime: [BigInt(0n), BigInt(0n)],
+        utxoInZAccountId: [BigInt(0n), BigInt(0n)],
         utxoInMerkleTreeSelector: [
             [BigInt(0n), BigInt(0n)],
             [BigInt(0n), BigInt(0n)],
