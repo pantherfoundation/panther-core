@@ -25,13 +25,13 @@ component main {
         daoDataEscrowEncryptedMessageAx,       // [18] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
         utxoOutCreateTime,                     // [19]
         utxoOutCommitment,                     // [20] - nUtxoOut = 2
-        zAccountUtxoOutCommitment,             // [20]
-        chargedAmountZkp,                      // [21]
-        zNetworkChainId,                       // [22]
-        forestMerkleRoot,                      // [23]
-        saltHash,                              // [24]
-        magicalConstraint                      // [25]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 25 + 1 + 7 + 2 + 1 = 36
+        zAccountUtxoOutCommitment,             // [21]
+        chargedAmountZkp,                      // [22]
+        zNetworkChainId,                       // [23]
+        forestMerkleRoot,                      // [24]
+        saltHash,                              // [25]
+        magicalConstraint                      // [26]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 26 + 1 + 7 + 2 + 1 = 37
     ]} = TransactionV1Extended( 2,     // nUtxoIn
                                 2,     // nUtxoOut
                                 6,     // UtxoLeftMerkleTreeDepth
