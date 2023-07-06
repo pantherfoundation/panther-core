@@ -1,6 +1,9 @@
 build/
+circuits/compiled/
 circuits/circuits/*.circom
 circuits/circuits/*/*.circom
+circuits/lib/
+circuits/scripts/
 circuits/test/*.sh
 circuits/test/circuits/*.circom
 circuits/test/data/*.info

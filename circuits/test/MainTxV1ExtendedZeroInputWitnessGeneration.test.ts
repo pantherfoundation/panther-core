@@ -264,7 +264,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         zAccountUtxoInZkpAmount: BigInt(0n),
         zAccountUtxoInPrpAmount: BigInt(0n),
         zAccountUtxoInZoneId: BigInt(0n),
-        zAccountUtxoInNetworkId:BigInt(0n),
+        zAccountUtxoInNetworkId: BigInt(0n),
         zAccountUtxoInExpiryTime: BigInt(0n),
         zAccountUtxoInNonce: BigInt(0n),
         zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),

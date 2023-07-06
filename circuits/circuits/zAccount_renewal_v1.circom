@@ -339,7 +339,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
 
     // [11] - Verify kycEdDSA public key membership
     component kycKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
-    kycKycNoteInclusionProver.enabled <== kycKytMerkleRoot;
+    kycKycNoteInclusionProver.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
     kycKycNoteInclusionProver.root <== kycKytMerkleRoot;
     kycKycNoteInclusionProver.key[0] <== kycEdDsaPubKey[0];
     kycKycNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
