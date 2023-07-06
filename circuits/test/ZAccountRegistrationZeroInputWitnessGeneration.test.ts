@@ -292,7 +292,12 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
     };
 
     it('should compute valid witness for zero input tx', async () => {
-        await wtns.calculate(zeroInput, mainZAccountRegistrationWasm, mainZAccountRegistrationWitness, null);
+        await wtns.calculate(
+            zeroInput,
+            mainZAccountRegistrationWasm,
+            mainZAccountRegistrationWitness,
+            null,
+        );
         console.log('Witness calculation successful!');
     });
 });

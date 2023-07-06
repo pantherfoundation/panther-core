@@ -9,13 +9,13 @@ const wasm_tester = cicom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {wtns, groth16} from 'snarkjs';
 
-import {MerkleTree} from "@zk-kit/merkle-tree";
-import {TriadMerkleTree} from "@panther-core/crypto/lib/other/triad-merkle-tree";
-import assert from "assert";
+import {MerkleTree} from '@zk-kit/merkle-tree';
+import {TriadMerkleTree} from '@panther-core/crypto/lib/other/triad-merkle-tree';
+import assert from 'assert';
 
-import {poseidon} from "circomlibjs";
+import {poseidon} from 'circomlibjs';
 // import {zeroLeaf} from "@panther-core/contracts/lib/utilities";
-import {deriveKeypairFromSeed} from "@panther-core/crypto/lib/base/keypairs";
+import {deriveKeypairFromSeed} from '@panther-core/crypto/lib/base/keypairs';
 
 describe('MainTransactionV1Extended circuit - TODO: IMPLEMENT', async function (this: any) {
     const poseidon2or3 = (inputs: bigint[]): bigint => {
@@ -272,7 +272,7 @@ describe('MainTransactionV1Extended circuit - TODO: IMPLEMENT', async function (
         zAccountUtxoInZkpAmount: BigInt(0n),
         zAccountUtxoInPrpAmount: BigInt(0n),
         zAccountUtxoInZoneId: BigInt(0n),
-        zAccountUtxoInNetworkId:BigInt(0n),
+        zAccountUtxoInNetworkId: BigInt(0n),
         zAccountUtxoInExpiryTime: BigInt(0n),
         zAccountUtxoInNonce: BigInt(0n),
         zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
@@ -699,15 +699,25 @@ describe('MainTransactionV1Extended circuit - TODO: IMPLEMENT', async function (
         mainTxVKeyJSON = require(mainTxVKey);
 
         // NOTE: depths values can be taken from: mainTransaction_v1_extended.circom
-        triadMerkleTree = new TriadMerkleTree(16,BigInt('0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d'),poseidon2or3);
+        triadMerkleTree = new TriadMerkleTree(
+            16,
+            BigInt(
+                '0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d',
+            ),
+            poseidon2or3,
+        );
 
-        zAssetMerkleTree = new MerkleTree(poseidon2or3,16, BigInt(0));
-        zoneRecordMerkleTree = new MerkleTree(poseidon2or3,16, BigInt(0));
-        zAccountBlackListMerkleTree = new MerkleTree(poseidon2or3,16,BigInt(0));
-        kycKytMerkleTree = new MerkleTree(poseidon2or3,16,BigInt(0));
+        zAssetMerkleTree = new MerkleTree(poseidon2or3, 16, BigInt(0));
+        zoneRecordMerkleTree = new MerkleTree(poseidon2or3, 16, BigInt(0));
+        zAccountBlackListMerkleTree = new MerkleTree(
+            poseidon2or3,
+            16,
+            BigInt(0),
+        );
+        kycKytMerkleTree = new MerkleTree(poseidon2or3, 16, BigInt(0));
 
-        rootSenderKeys = deriveKeypairFromSeed(BigInt(0x0123456789ABCDEF));
-        rootRecipientKeys = deriveKeypairFromSeed(BigInt(0x0123456789ABCDEF));
+        rootSenderKeys = deriveKeypairFromSeed(BigInt(0x0123456789abcdef));
+        rootRecipientKeys = deriveKeypairFromSeed(BigInt(0x0123456789abcdef));
     });
 
     it('Should compute valid witness', async () => {
@@ -736,23 +746,13 @@ describe('MainTransactionV1Extended circuit - TODO: IMPLEMENT', async function (
         }
     });
 
-    it('Should compute valid full-proccess proof with deposit-input (w/o public-hash)', async () => {
+    it('Should compute valid full-proccess proof with deposit-input (w/o public-hash)', async () => {});
 
-    });
+    it('Should compute valid full-proccess proof with withdraw-input (w/o public-hash)', async () => {});
 
-    it('Should compute valid full-proccess proof with withdraw-input (w/o public-hash)', async () => {
+    it('Should compute valid full-proccess proof with deposit-withdraw-input (w/o public-hash)', async () => {});
 
-    });
+    it('Should compute valid full-proccess proof with masp-internal-input (w/o public-hash)', async () => {});
 
-    it('Should compute valid full-proccess proof with deposit-withdraw-input (w/o public-hash)', async () => {
-
-    });
-
-    it('Should compute valid full-proccess proof with masp-internal-input (w/o public-hash)', async () => {
-
-    });
-
-    it('Should compute valid full-proof', async () => {
-
-    });
+    it('Should compute valid full-proof', async () => {});
 });
