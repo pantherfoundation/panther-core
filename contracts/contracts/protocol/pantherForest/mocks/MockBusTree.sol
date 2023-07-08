@@ -8,7 +8,7 @@ import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import { DEAD_CODE_ADDRESS } from "../../../common/Constants.sol";
 
-contract MockBusTree is BusTree {
+contract MockBusTree is BusTree, LocalDevEnv {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -68,16 +68,16 @@ contract MockBusTree is BusTree {
     }
 
     function getAllowedUtxosAt(uint256 _timestamp, uint256 _utxoCounter)
-        public
-        view
-        returns (uint256 allowedUtxos)
+    public
+    view
+    returns (uint256 allowedUtxos)
     {
         if (_timestamp < START_TIME) return 0;
 
         allowedUtxos =
-            ((_timestamp - START_TIME) / 60 seconds) *
-            AVG_UTXOS_PER_MINUTE -
-            _utxoCounter;
+        ((_timestamp - START_TIME) / 60 seconds) *
+        AVG_UTXOS_PER_MINUTE -
+        _utxoCounter;
     }
 
     function simulateAddUtxosToBusQueue() external {
@@ -116,28 +116,36 @@ contract MockBusTree is BusTree {
         addUtxosToBusQueue(utxos, uint96(reward));
     }
 
-    function _simulateAddUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
+    function simulateAddGivenUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
         external
+        onlyLocalDevEnv
     {
         addUtxosToBusQueue(utxos, reward);
     }
 
     function simulateAddBusQueueReward(uint32 queueId, uint96 extraReward)
         external
+        onlyLocalDevEnv
     {
         addBusQueueReward(queueId, extraReward);
     }
 
+    function internalUpdateParams(uint16 reservationRate, uint16 premiumRate)
+        external
+        onlyLocalDevEnv
+    {
+        updateParams(reservationRate, premiumRate);
+    }
+
     function simulateSetBusQueueAsProcessed(uint32 queueId)
         external
+        onlyLocalDevEnv
         returns (
             bytes32 commitment,
             uint8 nUtxos,
             uint96 reward
         )
     {
-        // solhint-disable-next-line avoid-tx-origin
-        require(tx.origin == DEAD_CODE_ADDRESS, "Only allowed in forked env");
         return setBusQueueAsProcessed(queueId);
     }
 }
