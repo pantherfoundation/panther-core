@@ -163,7 +163,7 @@ abstract contract BusTree is BusQueues {
         _numUtxosInBusTree += nUtxos;
 
         // `<< BATCH_LEVELS` is equivalent to `* 2**BATCH_LEVELS`
-        uint32 leftLeafIndex = nBatches << BATCH_LEVELS;
+        uint32 leftLeafIndex = nBatches << uint32(BATCH_LEVELS);
 
         emit BusBatchOnboarded(
             queueId,
