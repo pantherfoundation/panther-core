@@ -55,3 +55,6 @@ uint256 constant PATH_ELEMENTS_NUM = 16;
 //  in forked test env, e.g. for bypassing SNARK proof verification like this:
 // `require(isValidProof || tx.origin == DEAD_CODE_ADDRESS)`
 address constant DEAD_CODE_ADDRESS = address(uint160(0xDEADC0DE));
+
+// 100% expressed in 1/100th of 1% ("pips")
+uint256 constant HUNDRED_PERCENT = 100 * 100;

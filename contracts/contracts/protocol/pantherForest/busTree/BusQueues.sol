@@ -3,6 +3,7 @@
 pragma solidity ^0.8.16;
 
 import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
+import { HUNDRED_PERCENT } from "../../../common/Constants.sol";
 
 /**
  * @dev It handles "queues" of commitments to UTXOs (further - "UTXOs").
@@ -56,6 +57,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint32 queueId;
         uint8 nUtxos;
         uint96 reward;
+        uint96 potentialExtraReward;
         uint40 firstUtxoBlock;
         uint40 lastUtxoBlock;
         bytes32 commitment;
@@ -74,6 +76,14 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // (if 0 - no such queue exists, otherwise the queue's ID adjusted by +1)
     uint32 private _oldestPendingQueueLink;
 
+    // Part (in 1/100th of 1%) of queue reward to be reserved for "premiums"
+    uint16 private _reservationRate;
+    // Part (in 1/100th of 1%) of a queue reward to be accrued as the premium
+    // (i.e. an extra reward) for every block the queue pends processing
+    uint16 private _premiumRate;
+    // Unused yet part of queue rewards which were reserved for premiums
+    uint96 private _rewardReserve;
+
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
         bytes32 indexed utxo,
@@ -84,19 +94,44 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Emitted when a new queue is opened (it becomes the "current" one)
     event BusQueueOpened(uint256 queueId);
 
-    // Emitted when queue reward increased w/o adding UTXOs
-    event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
-
     // Emitted when a queue is registered as the processed one (and deleted)
     event BusQueueProcessed(uint256 indexed queueId);
+
+    // Emitted when params of reward computation updated
+    event BusQueueRewardParamsUpdated(
+        uint256 reservationRate,
+        uint256 premiumRate
+    );
+    // Emitted when new reward "reserves" added
+    event BusQueueRewardReserved(uint256 extraReseve);
+    // Emitted when (part of) reward "reserves" used
+    event BusQueueRewardReserveUsed(uint256 usage);
+
+    // Emitted when queue reward increased w/o adding UTXOs
+    event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
 
     modifier nonEmptyBusQueue(uint32 queueId) {
         require(_busQueues[queueId].nUtxos > 0, "BQ:EMPTY_QUEUE");
         _;
     }
 
-    // Initial value of storage variables is 0, which is implicitly set in new
-    // storage slots. No need for explicit initialization in the constructor.
+    // @return  reservationRate Part (in 1/100th of 1%) of every queue reward to
+    // reserve for "premiums" (the remaining reward is "guaranteed" one)
+    // @return premiumRate Part (in 1/100th of 1%) of a queue reward to accrue as
+    // the premium for every block the queue pends processing
+    function getParams()
+        external
+        view
+        returns (uint16 reservationRate, uint16 premiumRate)
+    {
+        reservationRate = _reservationRate;
+        premiumRate = _premiumRate;
+    }
+
+    // The contract is intentionally written so, that explicit initialization of
+    // storage variables is unneeded (zero values are implicitly initialized in
+    // new storage slots).
+    // To enable premiums, however, the `updateParams` call needed.
 
     function getBusQueuesStats()
         external
@@ -104,7 +139,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         returns (
             uint32 curQueueId,
             uint32 numPendingQueues,
-            uint32 oldestPendingQueueId
+            uint32 oldestPendingQueueId,
+            uint96 rewardReserve
         )
     {
         uint32 nextQueueId = _nextQueueId;
@@ -114,6 +150,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         oldestPendingQueueId = numPendingQueues == 0
             ? 0
             : _oldestPendingQueueLink - 1;
+        rewardReserve = _rewardReserve;
     }
 
     function getBusQueue(uint32 queueId)
@@ -126,10 +163,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             queueId + 1 == _nextQueueId || q.nUtxos > 0,
             "BT:UNKNOWN_OR_PROCESSED_QUEUE"
         );
+        (uint256 reward, uint256 premium, ) = _estimateRewarding(q);
         queue = BusQueueRec(
             queueId,
             q.nUtxos,
-            q.reward,
+            uint96(reward),
+            uint96(premium),
             q.firstUtxoBlock,
             q.lastUtxoBlock,
             _busQueueCommitments[queueId]
@@ -150,9 +189,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         for (uint256 i = 0; i < nQueues; i++) {
             uint32 queueId = nextLink - 1;
             BusQueue memory queue = _busQueues[queueId];
+
             queues[i].queueId = queueId;
             queues[i].nUtxos = queue.nUtxos;
-            queues[i].reward = queue.reward;
+            (uint256 reward, uint256 premium, ) = _estimateRewarding(queue);
+            queues[i].reward = uint96(reward);
+            queues[i].potentialExtraReward = uint96(premium);
             queues[i].firstUtxoBlock = queue.firstUtxoBlock;
             queues[i].lastUtxoBlock = queue.lastUtxoBlock;
             queues[i].commitment = _busQueueCommitments[queueId];
@@ -161,6 +203,17 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         }
 
         return queues;
+    }
+
+    function updateParams(uint16 reservationRate, uint16 premiumRate) internal {
+        require(
+            reservationRate <= HUNDRED_PERCENT &&
+                premiumRate <= HUNDRED_PERCENT,
+            "BQ:INVALID_PARAMS"
+        );
+        _reservationRate = reservationRate;
+        _premiumRate = premiumRate;
+        emit BusQueueRewardParamsUpdated(reservationRate, premiumRate);
     }
 
     // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
@@ -237,7 +290,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         BusQueue memory queue = _busQueues[queueId];
         commitment = _busQueueCommitments[queueId];
         nUtxos = queue.nUtxos;
-        reward = queue.reward;
+        reward = uint96(_computeReward(queue));
 
         // Clear the storage for the processed queue
         _busQueues[queueId] = BusQueue(0, 0, 0, 0, 0, 0);
@@ -306,5 +359,54 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         commitment = bytes32(0);
 
         emit BusQueueOpened(newQueueId);
+    }
+
+    function _computeReward(BusQueue memory queue)
+        private
+        returns (uint256 actReward)
+    {
+        (
+            uint256 reward,
+            uint256 premium,
+            int256 netReserveChange
+        ) = _estimateRewarding(queue);
+        uint256 reserve = _rewardReserve;
+        if (netReserveChange > 0) {
+            uint256 addition = uint256(netReserveChange);
+            _rewardReserve = uint96(reserve + addition);
+            emit BusQueueRewardReserved(addition);
+        }
+        if (netReserveChange < 0) {
+            uint256 usage = uint256(-netReserveChange);
+            if (usage > reserve) {
+                premium -= (usage - reserve);
+                usage = reserve;
+            }
+            _rewardReserve = uint96(reserve - usage);
+            emit BusQueueRewardReserveUsed(usage);
+        }
+        actReward = reward + premium;
+    }
+
+    function _estimateRewarding(BusQueue memory queue)
+        private
+        view
+        returns (
+            uint256 reward,
+            uint256 premium,
+            int256 netReserveChange
+        )
+    {
+        // _reservationRate MUST be less than HUNDRED_PERCENT ...
+        uint256 contrib = (uint256(queue.reward) * _reservationRate) /
+            HUNDRED_PERCENT;
+        // ... so this can't underflow
+        reward = uint256(queue.reward) - contrib;
+        uint256 pendBlocks = block.number - queue.firstUtxoBlock;
+        premium =
+            (uint256(queue.reward) * pendBlocks * _premiumRate) /
+            HUNDRED_PERCENT;
+        // positive/negative value means "supply"/"demand" to/from reserves
+        netReserveChange = int256(contrib) - int256(premium);
     }
 }
