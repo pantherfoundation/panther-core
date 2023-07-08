@@ -6,52 +6,52 @@ import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import { DEAD_CODE_ADDRESS } from "../../../common/Constants.sol";
+import "../../../common/ImmutableOwnable.sol";
 import "../../mocks/LocalDevEnv.sol";
 
-contract MockBusTree is BusTree, LocalDevEnv {
+contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
-
-    // avg utxos which can be added per minute
-    uint256 public immutable AVG_UTXOS_PER_MINUTE;
-
-    // max number of utxos to be added
-    uint256 public immutable UTXO_LIMIT;
-
-    // base reward per each utxo
-    uint256 public immutable BASE_REWARD_PER_UTXO;
-
     // timestamp of deployment
+    // solhint-disable-next-line var-name-mixedcase
     uint256 public immutable START_TIME;
 
-    // solhint-enable var-name-mixedcase
+    // avg number of utxos which can be added per minute
+    uint16 public perMinuteUtxosLimit;
+
+    // base reward per each utxo
+    uint96 public basePerUtxoReward;
 
     // keeps track of number of the added utxos
-    uint256 public utxoCounter;
+    uint32 public utxoCounter;
 
     event MinerRewarded(address miner, uint256 reward);
 
     constructor(
+        address owner,
         address _verifier,
-        uint160 _circuitId,
-        uint256 _avgUtxosPerMinute,
-        uint256 _utxoLimit,
-        uint256 _baseRewardPerUtxo
-    ) BusTree(_verifier, _circuitId) {
-        require(
-            _avgUtxosPerMinute > 0 && _utxoLimit > 0 && _baseRewardPerUtxo > 0,
-            "init: zero value"
-        );
-
-        AVG_UTXOS_PER_MINUTE = _avgUtxosPerMinute;
-        UTXO_LIMIT = _utxoLimit;
-        BASE_REWARD_PER_UTXO = _baseRewardPerUtxo;
-
+        uint160 _circuitId
+    ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId) {
         START_TIME = block.timestamp;
+    }
+
+    function updateParams(
+        uint16 _perMinuteUtxosLimit,
+        uint96 _basePerUtxoReward,
+        uint16 reservationRate,
+        uint16 premiumRate
+    ) external onlyOwner {
+        BusQueues.updateParams(reservationRate, premiumRate);
+
+        require(
+            _perMinuteUtxosLimit > 0 && _basePerUtxoReward > 0,
+            "updateParams: zero value"
+        );
+        perMinuteUtxosLimit = _perMinuteUtxosLimit;
+        basePerUtxoReward = _basePerUtxoReward;
     }
 
     function rewardMiner(address miner, uint256 reward) internal override {
@@ -78,14 +78,12 @@ contract MockBusTree is BusTree, LocalDevEnv {
     {
         if (_timestamp < START_TIME) return 0;
 
-        allowedUtxos =
-            ((_timestamp - START_TIME) / 60 seconds) *
-            AVG_UTXOS_PER_MINUTE -
-            _utxoCounter;
+        uint256 secs = _timestamp - START_TIME;
+        allowedUtxos = (secs * perMinuteUtxosLimit) / 60 seconds - _utxoCounter;
     }
 
     function simulateAddUtxosToBusQueue() external {
-        uint256 _counter = utxoCounter;
+        uint256 _counter = uint256(utxoCounter);
 
         // generating the first utxo
         uint256 utxo = uint256(keccak256(abi.encode(_counter))) % FIELD_SIZE;
@@ -114,8 +112,9 @@ contract MockBusTree is BusTree, LocalDevEnv {
             }
         }
 
-        utxoCounter = _counter;
-        uint256 reward = BASE_REWARD_PER_UTXO * length;
+        // overflow risk ignored
+        utxoCounter = uint32(_counter);
+        uint256 reward = uint256(basePerUtxoReward) * length;
 
         addUtxosToBusQueue(utxos, uint96(reward));
     }
