@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
-// solhint-disable var-name-mixedcase
 pragma solidity ^0.8.16;
 
 import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import { DEAD_CODE_ADDRESS } from "../../../common/Constants.sol";
+import "../../mocks/LocalDevEnv.sol";
 
 contract MockBusTree is BusTree, LocalDevEnv {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
+
+    // solhint-disable var-name-mixedcase
 
     // avg utxos which can be added per minute
     uint256 public immutable AVG_UTXOS_PER_MINUTE;
@@ -25,6 +27,8 @@ contract MockBusTree is BusTree, LocalDevEnv {
 
     // timestamp of deployment
     uint256 public immutable START_TIME;
+
+    // solhint-enable var-name-mixedcase
 
     // keeps track of number of the added utxos
     uint256 public utxoCounter;
@@ -68,16 +72,16 @@ contract MockBusTree is BusTree, LocalDevEnv {
     }
 
     function getAllowedUtxosAt(uint256 _timestamp, uint256 _utxoCounter)
-    public
-    view
-    returns (uint256 allowedUtxos)
+        public
+        view
+        returns (uint256 allowedUtxos)
     {
         if (_timestamp < START_TIME) return 0;
 
         allowedUtxos =
-        ((_timestamp - START_TIME) / 60 seconds) *
-        AVG_UTXOS_PER_MINUTE -
-        _utxoCounter;
+            ((_timestamp - START_TIME) / 60 seconds) *
+            AVG_UTXOS_PER_MINUTE -
+            _utxoCounter;
     }
 
     function simulateAddUtxosToBusQueue() external {
@@ -116,10 +120,10 @@ contract MockBusTree is BusTree, LocalDevEnv {
         addUtxosToBusQueue(utxos, uint96(reward));
     }
 
-    function simulateAddGivenUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
-        external
-        onlyLocalDevEnv
-    {
+    function simulateAddGivenUtxosToBusQueue(
+        bytes32[] memory utxos,
+        uint96 reward
+    ) external onlyLocalDevEnv {
         addUtxosToBusQueue(utxos, reward);
     }
 
