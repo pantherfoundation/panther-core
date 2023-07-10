@@ -94,7 +94,7 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         if (_counter + length > getAllowedUtxosAt(block.timestamp, _counter))
             return;
 
-        bytes32[] memory utxos;
+        bytes32[] memory utxos = new bytes32[](length);
 
         // adding the first commitment
         utxos[0] = bytes32(utxo);
