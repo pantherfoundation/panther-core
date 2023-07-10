@@ -4,6 +4,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {isLocal, isProd} from '../../lib/checkNetwork';
 import {getContractAddress} from '../../lib/deploymentHelpers';
 
+// TODO To be deleted after implementing panther pool v1
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre) || isLocal(hre)) return;
 
