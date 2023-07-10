@@ -7,7 +7,8 @@ import { IMockPantherPoolV1 } from "../../mocks/MockPantherPoolV1.sol";
 import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
-import { DEAD_CODE_ADDRESS } from "../../../common/Constants.sol";
+import { DEAD_CODE_ADDRESS, ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
+import { LockData } from "../../../common/Types.sol";
 import "../../../common/ImmutableOwnable.sol";
 import "../../mocks/LocalDevEnv.sol";
 
@@ -17,9 +18,18 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
+    // solhint-disable var-name-mixedcase
+
     // timestamp of deployment
-    // solhint-disable-next-line var-name-mixedcase
     uint256 public immutable START_TIME;
+
+    // address of reward token
+    address public immutable REWARD_TOKEN;
+
+    // address of panther pool
+    address public immutable PANTHER_POOL;
+
+    // solhint-enable var-name-mixedcase
 
     // avg number of utxos which can be added per minute
     uint16 public perMinuteUtxosLimit;
@@ -34,10 +44,20 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
 
     constructor(
         address owner,
+        address rewardToken,
+        address pantherPool,
         address _verifier,
         uint160 _circuitId
     ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId) {
+        require(
+            rewardToken != address(0) && pantherPool != address(0),
+            "init: zero address"
+        );
+
         START_TIME = block.timestamp;
+
+        REWARD_TOKEN = rewardToken;
+        PANTHER_POOL = pantherPool;
     }
 
     function updateParams(

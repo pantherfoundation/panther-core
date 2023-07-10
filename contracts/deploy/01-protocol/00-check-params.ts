@@ -10,6 +10,7 @@ import {
     fulfillExistingContractAddresses,
 } from '../../lib/deploymentHelpers';
 
+const scaledConvertibleZkp = 1e6;
 const scaledVaultBalance = 1e6;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -39,6 +40,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     process.env['VAULT_BALANCE'] = hre.ethers.utils.parseEther(
         scaledVaultBalance.toString(),
+    );
+    process.env['CONVERTIBLE_ZKP'] = hre.ethers.utils.parseEther(
+        scaledConvertibleZkp.toString(),
     );
 };
 
