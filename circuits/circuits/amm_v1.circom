@@ -1,0 +1,406 @@
+//SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
+
+// project deps
+include "./templates/balanceChecker.circom";
+include "./templates/isNotZero.circom";
+include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./templates/kycKytNoteInclusionProver.circom";
+include "./templates/pubKeyDeriver.circom";
+include "./templates/zAccountBlackListLeafInclusionProver.circom";
+include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAssetChecker.circom";
+include "./templates/zAssetNoteInclusionProver.circom";
+include "./templates/zNetworkNoteInclusionProver.circom";
+include "./templates/zZoneNoteHasher.circom";
+include "./templates/zZoneNoteInclusionProver.circom";
+include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utxoNoteHasher.circom";
+
+// 3rd-party deps
+include "../node_modules/circomlib/circuits/babyjub.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/gates.circom";
+include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+
+template AmmV1 ( ZNetworkMerkleTreeDepth,
+                 ZAssetMerkleTreeDepth,
+                 ZAccountBlackListMerkleTreeDepth,
+                 ZZoneMerkleTreeDepth ) {
+    // external data anchoring
+    signal input extraInputsHash;  // public
+
+    // output 'protocol + relayer fee in ZKP'
+    signal input chargedAmountZkp;       // public
+    signal input createTime;             // public
+    signal input depositAmountPrp;       // public
+    signal input withdrawAmountPrp;      // public
+
+    // utxo - hidden part
+    signal input utxoCommitment;         // public
+    signal input utxoSpendPubKey[2];     // public
+    signal input utxoSpendKeyRandom;
+
+    // zAsset
+    signal input zAssetId;
+    signal input zAssetToken;
+    signal input zAssetTokenId;
+    signal input zAssetNetwork;
+    signal input zAssetOffset;
+    signal input zAssetWeight;
+    signal input zAssetScale; // public
+    signal input zAssetMerkleRoot;
+    signal input zAssetPathIndex[ZAssetMerkleTreeDepth];
+    signal input zAssetPathElements[ZAssetMerkleTreeDepth];
+
+    // zAccount Input
+    signal input zAccountUtxoInId;
+    signal input zAccountUtxoInZkpAmount;
+    signal input zAccountUtxoInPrpAmount;
+    signal input zAccountUtxoInZoneId;
+    signal input zAccountUtxoInNetworkId;
+    signal input zAccountUtxoInExpiryTime;
+    signal input zAccountUtxoInNonce;
+    signal input zAccountUtxoInTotalAmountPerTimePeriod;
+    signal input zAccountUtxoInCreateTime;
+    signal input zAccountUtxoInRootSpendPubKey[2];
+    signal input zAccountUtxoInSpendPrivKey;
+    signal input zAccountUtxoInMasterEOA;
+    signal input zAccountUtxoInSpendKeyRandom;
+    signal input zAccountUtxoInCommitment;
+    signal input zAccountUtxoInNullifier;  // public
+
+    // zAccount Output
+    signal input zAccountUtxoOutZkpAmount;
+    signal input zAccountUtxoOutPrpAmount;
+    signal input zAccountUtxoOutSpendKeyRandom;
+    signal input zAccountUtxoOutCommitment; // public
+
+
+    // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
+    signal input zAccountBlackListLeaf;
+    signal input zAccountBlackListMerkleRoot;
+    signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
+
+    // zZone
+    signal input zZoneOriginZoneIDs;
+    signal input zZoneTargetZoneIDs;
+    signal input zZoneNetworkIDsBitMap;
+    signal input zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    signal input zZoneKycExpiryTime;
+    signal input zZoneKytExpiryTime;
+    signal input zZoneDepositMaxAmount;
+    signal input zZoneWithrawMaxAmount;
+    signal input zZoneInternalMaxAmount;
+    signal input zZoneMerkleRoot;
+    signal input zZonePathElements[ZZoneMerkleTreeDepth];
+    signal input zZonePathIndex[ZZoneMerkleTreeDepth];
+    signal input zZoneEdDsaPubKey[2];
+    signal input zZoneZAccountIDsBlackList;
+    signal input zZoneMaximumAmountPerTimePeriod;
+    signal input zZoneTimePeriodPerMaximumAmount;
+
+    // zNetworks tree
+    // network parameters:
+    // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
+    // 2) network-id - 6 bit
+    // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
+    // 4) daoDataEscrowPubKey[2]
+    signal input zNetworkId;
+    signal input zNetworkChainId;
+    signal input zNetworkIDsBitMap;
+    signal input zNetworkTreeMerkleRoot;
+    signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
+    signal input zNetworkTreePathIndex[ZNetworkMerkleTreeDepth];
+
+    signal input daoDataEscrowPubKey[2];
+    signal input forTxReward;
+    signal input forUtxoReward;
+    signal input forDepositReward;
+
+    // static tree merkle root
+    // Poseidon of:
+    // 1) zAssetMerkleRoot
+    // 2) zAccountBlackListMerkleRoot
+    // 3) zNetworkTreeMerkleRoot
+    // 4) zZoneMerkleRoot
+    // 5) kycKytMerkleRoot
+    signal input kycKytMerkleRoot;
+    signal input staticTreeMerkleRoot;
+
+    // forest root
+    // Poseidon of:
+    // 1) UTXO-Taxi-Tree   - 6 levels MT
+    // 2) UTXO-Bus-Tree    - 26 levels MT
+    // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
+    // 4) Static-Tree
+    signal input forestMerkleRoot;   // public
+    signal input taxiMerkleRoot;
+    signal input busMerkleRoot;
+    signal input ferryMerkleRoot;
+
+    // salt
+    signal input salt;
+    signal input saltHash; // public - poseidon(salt)
+
+    // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
+    signal input magicalConstraint; // public
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // START OF CODE /////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [0] - Extra inputs hash anchoring
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    extraInputsHash === 1 * extraInputsHash;
+
+    // [1] - Verify zAsset's membership and decode its weight
+    component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
+    zAssetNoteInclusionProver.zAsset <== zAssetId;
+    zAssetNoteInclusionProver.token <== zAssetToken;
+    zAssetNoteInclusionProver.tokenId <== zAssetTokenId;
+    zAssetNoteInclusionProver.network <== zAssetNetwork;
+    zAssetNoteInclusionProver.offset <== zAssetOffset;
+    zAssetNoteInclusionProver.weight <== zAssetWeight;
+    zAssetNoteInclusionProver.scale <== zAssetScale;
+    zAssetNoteInclusionProver.merkleRoot <== zAssetMerkleRoot;
+
+    for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
+        zAssetNoteInclusionProver.pathIndex[i] <== zAssetPathIndex[i];
+        zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
+    }
+
+    // [2] - Check zAsset
+    component zAssetChecker = ZAssetChecker();
+    zAssetChecker.token <== 0;
+    zAssetChecker.tokenId <== 0;
+    zAssetChecker.zAsset <== zAssetId;
+    zAssetChecker.zAssetToken <== zAssetToken;
+    zAssetChecker.zAssetTokenId <== zAssetTokenId;
+    zAssetChecker.zAssetOffset <== zAssetOffset;
+    zAssetChecker.depositAmount <== 0;
+    zAssetChecker.withdrawAmount <== 0;
+    zAssetChecker.utxoZAsset <== zAssetId;
+
+    // [3] - Zkp balance
+    component totalBalanceChecker = BalanceChecker();
+    totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
+    totalBalanceChecker.depositAmount <== 0;
+    totalBalanceChecker.withdrawAmount <== 0;
+    totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    totalBalanceChecker.totalUtxoInAmount <== 0;
+    totalBalanceChecker.totalUtxoOutAmount <== 0;
+    totalBalanceChecker.zAssetWeight <== zAssetWeight;
+    totalBalanceChecker.zAssetScale <== zAssetScale;
+
+    // verify zAsset is ZKP
+    zAssetChecker.isZkpToken === 1;
+
+    // [4] - Verify input 'zAccount UTXO input'
+    // derive spend pub key
+    component zAccountUtxoInSpendPubKeyDeriver = PubKeyDeriver();
+    zAccountUtxoInSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
+    zAccountUtxoInSpendPubKeyDeriver.rootPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoInSpendPubKeyDeriver.random <== zAccountUtxoInSpendKeyRandom; // random generated by sender
+
+    component zAccountUtxoInNoteHasher = ZAccountNoteHasher();
+    zAccountUtxoInNoteHasher.spendPubKey[0] <== zAccountUtxoInSpendPubKeyDeriver.derivedPubKey[0];
+    zAccountUtxoInNoteHasher.spendPubKey[1] <== zAccountUtxoInSpendPubKeyDeriver.derivedPubKey[1];
+    zAccountUtxoInNoteHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
+    zAccountUtxoInNoteHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoInNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
+    zAccountUtxoInNoteHasher.id <== zAccountUtxoInId;
+    zAccountUtxoInNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
+    zAccountUtxoInNoteHasher.amountPrp <== zAccountUtxoInPrpAmount;
+    zAccountUtxoInNoteHasher.zoneId <== zAccountUtxoInZoneId;
+    zAccountUtxoInNoteHasher.expiryTime <== zAccountUtxoInExpiryTime;
+    zAccountUtxoInNoteHasher.nonce <== zAccountUtxoInNonce;
+    zAccountUtxoInNoteHasher.totalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zAccountUtxoInNoteHasher.createTime <== zAccountUtxoInCreateTime;
+    zAccountUtxoInNoteHasher.networkId <== zAccountUtxoInNetworkId;
+
+    // verify zNetworkId is equal to zAccountUtxoInNetworkId (anchoring)
+    zAccountUtxoInNetworkId === zNetworkId;
+
+    // verify prp amount to be used in AMM - balance check
+    assert(zAccountUtxoInPrpAmount + depositAmountPrp >= withdrawAmountPrp);
+    zAccountUtxoOutPrpAmount === zAccountUtxoInPrpAmount + depositAmountPrp - withdrawAmountPrp;
+
+    // [5] - Verify zAccountUtxoInUtxo commitment
+    component zAccountUtxoInHasherProver = ForceEqualIfEnabled();
+    zAccountUtxoInHasherProver.in[0] <== zAccountUtxoInCommitment;
+    zAccountUtxoInHasherProver.in[1] <== zAccountUtxoInNoteHasher.out;
+    zAccountUtxoInHasherProver.enabled <== zAccountUtxoInCommitment;
+
+    // [6] - Verify zAccountUtxoIn nullifier
+    component zAccountUtxoInNullifierHasher = Poseidon(4);
+    zAccountUtxoInNullifierHasher.inputs[0] <== zAccountUtxoInId;
+    zAccountUtxoInNullifierHasher.inputs[1] <== zAccountUtxoInZoneId;
+    zAccountUtxoInNullifierHasher.inputs[2] <== zAccountUtxoInNetworkId;
+    zAccountUtxoInNullifierHasher.inputs[3] <== zAccountUtxoInSpendPrivKey;
+
+    component zAccountUtxoInNullifierHasherProver = ForceEqualIfEnabled();
+    zAccountUtxoInNullifierHasherProver.in[0] <== zAccountUtxoInNullifier;
+    zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
+    zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
+
+    // [7] - Verify zAccoutId exclusion proof
+    component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
+    zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
+    zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
+    zAccountBlackListInlcusionProver.merkleRoot <== zAccountBlackListMerkleRoot;
+    for (var j = 0; j < ZZoneMerkleTreeDepth; j++) {
+        zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
+    }
+
+    // [8] - Verify zAccount UTXO out
+    // derive spend pub key
+    component zAccountUtxoOutSpendPubKeyDeriver = PubKeyDeriver();
+    zAccountUtxoOutSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
+    zAccountUtxoOutSpendPubKeyDeriver.rootPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoOutSpendPubKeyDeriver.random <== zAccountUtxoOutSpendKeyRandom; // random generated by sender
+
+    component zAccountUtxoOutNoteHasher = ZAccountNoteHasher();
+    zAccountUtxoOutNoteHasher.spendPubKey[0] <== zAccountUtxoOutSpendPubKeyDeriver.derivedPubKey[0];
+    zAccountUtxoOutNoteHasher.spendPubKey[1] <== zAccountUtxoOutSpendPubKeyDeriver.derivedPubKey[1];
+    zAccountUtxoOutNoteHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
+    zAccountUtxoOutNoteHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoOutNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
+    zAccountUtxoOutNoteHasher.id <== zAccountUtxoInId;
+    zAccountUtxoOutNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
+    zAccountUtxoOutNoteHasher.amountPrp <== 0;
+    zAccountUtxoOutNoteHasher.zoneId <== zAccountUtxoInZoneId;
+    zAccountUtxoOutNoteHasher.expiryTime <== zAccountUtxoInExpiryTime;
+    zAccountUtxoOutNoteHasher.nonce <== zAccountUtxoInNonce + 1;
+    zAccountUtxoOutNoteHasher.totalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zAccountUtxoOutNoteHasher.createTime <== createTime;
+    zAccountUtxoOutNoteHasher.networkId <== zAccountUtxoInNetworkId;
+
+    // verify expiryTime
+    assert(zAccountUtxoInExpiryTime <= createTime);
+
+    // [9] - Verify zAccountUtxoOut commitment
+    component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
+    zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
+    zAccountUtxoOutHasherProver.in[1] <== zAccountUtxoOutNoteHasher.out;
+    zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
+
+    // [10] - Utxo hidden part generation & commitment
+    component utxoNoteHasher = UtxoNoteLeafHasher();
+    utxoNoteHasher.originNetworkId <== zNetworkId;
+    utxoNoteHasher.targetNetworkId <== zNetworkId;
+    utxoNoteHasher.createTime <== createTime;
+    utxoNoteHasher.originZoneId <== zAccountUtxoInZoneId;
+    utxoNoteHasher.targetZoneId <== zAccountUtxoInZoneId;
+    utxoNoteHasher.zAccountId <== zAccountUtxoInId;
+
+    component utxoCommitmentIsEqual = ForceEqualIfEnabled();
+    utxoCommitmentIsEqual.enabled <== utxoCommitment;
+    utxoCommitmentIsEqual.in[0] <== utxoCommitment;
+    utxoCommitmentIsEqual.in[1] <== utxoNoteHasher.out;
+
+    // [11] - derive utxo spend pub key & verify
+    component utxoInSpendPubKeyDeriver = PubKeyDeriver();
+    utxoInSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
+    utxoInSpendPubKeyDeriver.rootPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    utxoInSpendPubKeyDeriver.random <== utxoSpendKeyRandom; // random generated by sender
+
+    // verify
+    utxoSpendPubKey[0] === utxoInSpendPubKeyDeriver.derivedPubKey[0];
+    utxoSpendPubKey[1] === utxoInSpendPubKeyDeriver.derivedPubKey[1];
+
+    // [13] - Verify zZone membership
+    component zZoneNoteHasher = ZZoneNoteHasher();
+    zZoneNoteHasher.zoneId <== zAccountUtxoInZoneId;
+    zZoneNoteHasher.edDsaPubKey[0] <== zZoneEdDsaPubKey[0];
+    zZoneNoteHasher.edDsaPubKey[1] <== zZoneEdDsaPubKey[1];
+    zZoneNoteHasher.originZoneIDs <== zZoneOriginZoneIDs;
+    zZoneNoteHasher.targetZoneIDs <== zZoneTargetZoneIDs;
+    zZoneNoteHasher.networkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zZoneNoteHasher.kycKytMerkleTreeLeafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    zZoneNoteHasher.kycExpiryTime <== zZoneKycExpiryTime;
+    zZoneNoteHasher.kytExpiryTime <== zZoneKytExpiryTime;
+    zZoneNoteHasher.depositMaxAmount <== zZoneDepositMaxAmount;
+    zZoneNoteHasher.withdrawMaxAmount <== zZoneWithrawMaxAmount;
+    zZoneNoteHasher.internalMaxAmount <== zZoneInternalMaxAmount;
+    zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+
+    component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
+    zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
+    zZoneInclusionProver.root <== zZoneMerkleRoot;
+    for (var j=0; j < ZZoneMerkleTreeDepth; j++) {
+        zZoneInclusionProver.pathIndices[j] <== zZonePathIndex[j];
+        zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
+    }
+
+    // [14] - Verify zAccountId exclusion
+    component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
+    zZoneZAccountBlackListExclusionProver.zAccountId <== zAccountUtxoInId;
+    zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+
+    // [15] - Verify zNetwork's membership
+    component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
+    zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
+    zNetworkNoteInclusionProver.networkId <== zNetworkId;
+    zNetworkNoteInclusionProver.chainId <== zNetworkChainId;
+    zNetworkNoteInclusionProver.networkIDsBitMap <== zNetworkIDsBitMap;
+    zNetworkNoteInclusionProver.forTxReward <== forTxReward;
+    zNetworkNoteInclusionProver.forUtxoReward <== forUtxoReward;
+    zNetworkNoteInclusionProver.forDepositReward <== forDepositReward;
+    zNetworkNoteInclusionProver.daoDataEscrowPubKey[0] <== daoDataEscrowPubKey[0];
+    zNetworkNoteInclusionProver.daoDataEscrowPubKey[1] <== daoDataEscrowPubKey[1];
+    zNetworkNoteInclusionProver.merkleRoot <== zNetworkTreeMerkleRoot;
+
+    for (var i = 0; i < ZNetworkMerkleTreeDepth; i++) {
+        zNetworkNoteInclusionProver.pathIndex[i] <== zNetworkTreePathIndex[i];
+        zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
+    }
+
+    // [16] - Verify static-merkle-root
+    component staticTreeMerkleRootVerifier = Poseidon(5);
+    staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[2] <== zNetworkTreeMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[3] <== zZoneMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[4] <== kycKytMerkleRoot;
+
+    // verify computed root against provided one
+    component isEqualStaticTreeMerkleRoot = ForceEqualIfEnabled();
+    isEqualStaticTreeMerkleRoot.in[0] <== staticTreeMerkleRootVerifier.out;
+    isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
+    isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
+
+    // [17] - Verify forest-merkle-roots
+    component forestTreeMerkleRootVerifier = Poseidon(4);
+    forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
+    forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
+    forestTreeMerkleRootVerifier.inputs[2] <== ferryMerkleRoot;
+    forestTreeMerkleRootVerifier.inputs[3] <== staticTreeMerkleRoot;
+
+    // verify computed root against provided one
+    component isEqualForestTreeMerkleRoot = ForceEqualIfEnabled();
+    isEqualForestTreeMerkleRoot.in[0] <== forestTreeMerkleRootVerifier.out;
+    isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
+    isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
+
+    // [18] - Verify salt
+    component saltVerify = Poseidon(1);
+    saltVerify.inputs[0] <== salt;
+
+    component isEqualSalt = ForceEqualIfEnabled();
+    isEqualSalt.in[0] <== saltVerify.out;
+    isEqualSalt.in[1] <== saltHash;
+    isEqualSalt.enabled <== saltHash;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [19] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    magicalConstraint * 0 === 0;
+}

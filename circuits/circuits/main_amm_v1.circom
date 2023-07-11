@@ -1,0 +1,25 @@
+//SPDX-License-Identifier: ISC
+pragma circom 2.0.0;
+
+include "./amm_v1.circom";
+
+component main {
+    public [
+        extraInputsHash,                       // [1]
+        chargedAmountZkp,                      // [2]
+        createTime,                            // [3]
+        depositAmountPrp,                      // [4]
+        withdrawAmountPrp,                     // [5]
+        utxoCommitment,                        // [6]
+        utxoSpendPubKey,                       // [7] - x,y
+        zAssetScale,                           // [8]
+        zAccountUtxoInNullifier,               // [9]
+        zAccountUtxoOutCommitment,             // [10]
+        forestMerkleRoot,                      // [11]
+        saltHash,                              // [12]
+        magicalConstraint                      // [13]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 12 + 2 = 14
+    ]} = AmmV1 ( 6,     // ZNetworkMerkleTreeDepth
+                 16,    // ZAssetMerkleTreeDepth
+                 16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
+                 16 );  // ZZoneMerkleTreeDepth - depends on zoneID size
