@@ -15,6 +15,7 @@
     "compile_v1_extended": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction_v1_extended.circom",
     "compile_zAccount_regitration": "circom --r1cs --wasm --sym -o compiled/ circuits/main_zAccount_registration_v1.circom",
     "compile_zAccount_renewal": "circom --r1cs --wasm --sym -o compiled/ circuits/main_zAccount_renewal_v1.circom",
+    "compile_amm": "circom --r1cs --wasm --sym -o compiled/ circuits/main_amm_v1.circom",
     "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
     "build_mainTx_v1_extended": "./scripts/build_mainTransaction_v1_extended.sh",
     "build_mainZAccountRegistration_v1_extended": "./scripts/build_mainZAccountRegistration_v1_extended.sh",

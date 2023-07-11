@@ -9,7 +9,7 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // since in generare-deposits api, spendPk, zAsset and amount are publicly know parameters
 template UtxoNoteHasher(){
     signal input spendPk[2];      // 256
-    signal input zAsset;          // 160
+    signal input zAsset;          // 64
     signal input amount;          // 64
     signal input originNetworkId; // 6
     signal input targetNetworkId; // 6
@@ -27,14 +27,6 @@ template UtxoNoteHasher(){
     assert(originZoneId < 2**16);
     assert(targetZoneId < 2**16);
     assert(zAccountId < 2**24);
-    /*
-    component hiden_hash = Poseidon(5);
-    hiden_hash.inputs[0] <== originNetworkId;
-    hiden_hash.inputs[1] <== targetNetworkId;
-    hiden_hash.inputs[2] <== createTime;
-    hiden_hash.inputs[3] <== originZoneId;
-    hiden_hash.inputs[4] <== targetZoneId;
-    */
 
     component multiOR = MultiOR(6);
     multiOR.in[0] <-- zAccountId << 6 + 6 + 32 + 16 + 16;
@@ -62,7 +54,7 @@ template UtxoNoteHasher(){
 
 template UtxoNoteTwoStageHasher(){
     signal input spendPk[2];      // 256
-    signal input zAsset;          // 160
+    signal input zAsset;          // 64
     signal input amount;          // 64
     signal input leaf;            // 256
     signal output out;
@@ -86,6 +78,7 @@ template UtxoNoteLeafHasher(){
     signal input createTime;      // 32
     signal input originZoneId;    // 16
     signal input targetZoneId;    // 16
+    signal input zAccountId;      // 24
 
     signal output out;
 
@@ -95,21 +88,14 @@ template UtxoNoteLeafHasher(){
     assert(createTime < 2**32);
     assert(originZoneId < 2**16);
     assert(targetZoneId < 2**16);
-    /*
-    component hiden_hash = Poseidon(5);
-    hiden_hash.inputs[0] <== originNetworkId;
-    hiden_hash.inputs[1] <== targetNetworkId;
-    hiden_hash.inputs[2] <== createTime;
-    hiden_hash.inputs[3] <== originZoneId;
-    hiden_hash.inputs[4] <== targetZoneId;
-    */
 
-    component multiOR = MultiOR(5);
-    multiOR.in[0] <-- originNetworkId << 6 + 32 + 16 + 16;
-    multiOR.in[1] <-- targetNetworkId << 32 + 16 + 16;
-    multiOR.in[2] <-- createTime << 16 + 16;
-    multiOR.in[3] <-- originZoneId << 16;
-    multiOR.in[4] <-- targetZoneId << 0;
+    component multiOR = MultiOR(6);
+    multiOR.in[0] <-- zAccountId << 6 + 6 + 32 + 16 + 16;
+    multiOR.in[1] <-- originNetworkId << 6 + 32 + 16 + 16;
+    multiOR.in[2] <-- targetNetworkId << 32 + 16 + 16;
+    multiOR.in[3] <-- createTime << 16 + 16;
+    multiOR.in[4] <-- originZoneId << 16;
+    multiOR.in[5] <-- targetZoneId << 0;
 
     component hiden_hash = Poseidon(1);
     hiden_hash.inputs[0] <== multiOR.out;
@@ -119,13 +105,14 @@ template UtxoNoteLeafHasher(){
 
 template UtxoNoteGenericHasher(){
     signal input spendPk[2];      // 256
-    signal input zAsset;          // 160
+    signal input zAsset;          // 64
     signal input amount;          // 64
     signal input originNetworkId; // 6
     signal input targetNetworkId; // 6
     signal input createTime;      // 32
     signal input originZoneId;    // 16
     signal input targetZoneId;    // 16
+    signal input zAccountId;      // 24
 
     signal output out;
 
@@ -135,6 +122,7 @@ template UtxoNoteGenericHasher(){
     utxoNoteLeafHasher_Stage1.createTime <== createTime;
     utxoNoteLeafHasher_Stage1.originZoneId <== originZoneId;
     utxoNoteLeafHasher_Stage1.targetZoneId <== targetZoneId;
+    utxoNoteLeafHasher_Stage1.zAccountId <== zAccountId;
 
     component utxoNoteTowStageHasher = UtxoNoteTwoStageHasher();
     utxoNoteTowStageHasher.spendPk[0] <== spendPk[0];
