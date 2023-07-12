@@ -83,12 +83,12 @@ Keypair version: 1`;
 
     const signature = await signer.signMessage(derivationMessage);
     const hashedSignature: bigint = poseidon([signature]);
-    const hashOfHashedSigature: bigint = poseidon([hashedSignature]);
+    const hashOfHashedSignature: bigint = poseidon([hashedSignature]);
 
     return {
         rootSpendingKeypair: deriveKeypairFromSignature(signature),
         rootReadingKeypair: deriveKeypairFromSeed(hashedSignature),
-        storageEncryptionKeypair: deriveKeypairFromSeed(hashOfHashedSigature),
+        storageEncryptionKeypair: deriveKeypairFromSeed(hashOfHashedSignature),
     };
 }
 

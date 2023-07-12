@@ -5,7 +5,6 @@ import {
     BusBatchOnboarded as BusBatchOnboardedEvent,
     BusBranchFilled as BusBranchFilledEvent,
     BusQueueOpened as BusQueueOpenedEvent,
-    BusQueuePending as BusQueuePendingEvent,
     BusQueueProcessed as BusQueueProcessedEvent,
     MinerRewarded as MinerRewardedEvent,
     UtxoBusQueued as UtxoBusQueuedEvent,
@@ -14,7 +13,6 @@ import {
     BusBatchOnboarded,
     BusBranchFilled,
     BusQueueOpened,
-    BusQueuePending,
     BusQueueProcessed,
     MinerRewarded,
     UtxoBusQueued,
@@ -34,6 +32,13 @@ export function handleBusBatchOnboarded(event: BusBatchOnboardedEvent): void {
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
 
+    // update the corresponding BusQueueOpened entity
+    const queue = BusQueueOpened.load(event.params.queueId.toString());
+    if (queue != null) {
+        queue.isOnboarded = true;
+        queue.save();
+    }
+
     entity.save();
 }
 
@@ -50,24 +55,14 @@ export function handleBusBranchFilled(event: BusBranchFilledEvent): void {
 }
 
 export function handleBusQueueOpened(event: BusQueueOpenedEvent): void {
-    const entity = new BusQueueOpened(generateEntityId(event));
+    const entity = new BusQueueOpened(event.params.queueId.toString());
     entity.queueId = event.params.queueId;
 
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
 
-    entity.save();
-}
-
-export function handleBusQueuePending(event: BusQueuePendingEvent): void {
-    const entity = new BusQueuePending(generateEntityId(event));
-    entity.queueId = event.params.queueId;
-    entity.accumReward = event.params.accumReward;
-
-    entity.blockNumber = event.block.number;
-    entity.blockTimestamp = event.block.timestamp;
-    entity.transactionHash = event.transaction.hash;
+    entity.isOnboarded = false;
 
     entity.save();
 }
