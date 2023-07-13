@@ -53,10 +53,32 @@ library TransferHelper {
         require(
             // since `data` can't be empty, `onlyDeployedToken` unneeded
             success && (data.length != 0),
-            "TransferHelper: balanceOff call failed"
+            "TransferHelper: balanceOf call failed"
         );
 
         balance = abi.decode(data, (uint256));
+    }
+
+    /// @dev Get the ERC20 allowance of `spender`
+    // disabled since false positive
+    // slither-disable-next-line dead-code
+    function safeAllowance(
+        address token,
+        address owner,
+        address spender
+    ) internal onlyDeployedToken(token) returns (uint256 allowance) {
+        // slither-disable-next-line low-level-calls
+        (bool success, bytes memory data) = token.call(
+            // bytes4(keccak256("allowance(address,address)"));
+            abi.encodeWithSelector(0xdd62ed3e, owner, spender)
+        );
+        require(
+            // since `data` can't be empty, `onlyDeployedToken` unneeded
+            success && (data.length != 0),
+            "TransferHelper: allowance call failed"
+        );
+
+        allowance = abi.decode(data, (uint256));
     }
 
     /// @dev Approve the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.
@@ -71,6 +93,22 @@ library TransferHelper {
         (bool success, bytes memory data) = token.call(
             // bytes4(keccak256('approve(address,uint256)'));
             abi.encodeWithSelector(0x095ea7b3, to, value)
+        );
+        _requireSuccess(success, data);
+    }
+
+    /// @dev Increase approval of the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.
+    // disabled since false positive
+    // slither-disable-next-line dead-code
+    function safeIncreaseAllowance(
+        address token,
+        address to,
+        uint256 value
+    ) internal onlyDeployedToken(token) {
+        // slither-disable-next-line low-level-calls
+        (bool success, bytes memory data) = token.call(
+            // bytes4(keccak256("increaseAllowance(address,uint256)"));
+            abi.encodeWithSelector(0x39509351, to, value)
         );
         _requireSuccess(success, data);
     }
