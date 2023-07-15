@@ -60,6 +60,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint96 potentialExtraReward;
         uint40 firstUtxoBlock;
         uint40 lastUtxoBlock;
+        uint40 remainingBlocks;
         bytes32 commitment;
     }
 
@@ -84,6 +85,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Unused yet part of queue rewards which were reserved for premiums
     uint96 private _rewardReserve;
 
+    // Minimum number of blocks an empty queue must pend processing.
+    uint16 private _minEmptyQueueAge;
+
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
         bytes32 indexed utxo,
@@ -100,7 +104,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Emitted when params of reward computation updated
     event BusQueueRewardParamsUpdated(
         uint256 reservationRate,
-        uint256 premiumRate
+        uint256 premiumRate,
+        uint256 minEmptyQueueAge
     );
     // Emitted when new reward "reserves" added
     event BusQueueRewardReserved(uint256 extraReseve);
@@ -115,23 +120,31 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         _;
     }
 
+    // The contract is intentionally written so, that explicit initialization of
+    // storage variables is unneeded (zero values are implicitly initialized in
+    // new storage slots).
+    // To enable premiums or queue age limit, the `updateParams` call needed.
+
     // @return  reservationRate Part (in 1/100th of 1%) of every queue reward to
     // reserve for "premiums" (the remaining reward is "guaranteed" one)
     // @return premiumRate Part (in 1/100th of 1%) of a queue reward to accrue as
     // the premium for every block the queue pends processing
+    // @return minEmptyQueueAge Min number of blocks an empty queue must pend
+    // processing. For a partially filled queue, it declines linearly with the
+    // number of queue's UTXOs. Full queues are immediately processable.
     function getParams()
         external
         view
-        returns (uint16 reservationRate, uint16 premiumRate)
+        returns (
+            uint16 reservationRate,
+            uint16 premiumRate,
+            uint16 minEmptyQueueAge
+        )
     {
         reservationRate = _reservationRate;
         premiumRate = _premiumRate;
+        minEmptyQueueAge = _minEmptyQueueAge;
     }
-
-    // The contract is intentionally written so, that explicit initialization of
-    // storage variables is unneeded (zero values are implicitly initialized in
-    // new storage slots).
-    // To enable premiums, however, the `updateParams` call needed.
 
     function getBusQueuesStats()
         external
@@ -171,11 +184,13 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             uint96(premium),
             q.firstUtxoBlock,
             q.lastUtxoBlock,
+            _getQueueRemainingBlocks(q),
             _busQueueCommitments[queueId]
         );
     }
 
-    // Returns upto maxLength unprocessed queues records
+    // @param maxLength Maximum number of queues to return
+    // @return queues Queues pending processing, starting from the oldest one
     function getOldestPendingQueues(uint32 maxLength)
         external
         view
@@ -197,6 +212,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             queues[i].potentialExtraReward = uint96(premium);
             queues[i].firstUtxoBlock = queue.firstUtxoBlock;
             queues[i].lastUtxoBlock = queue.lastUtxoBlock;
+            queues[i].remainingBlocks = _getQueueRemainingBlocks(queue);
             queues[i].commitment = _busQueueCommitments[queueId];
 
             nextLink = queue.nextLink == 0 ? nextLink + 1 : queue.nextLink;
@@ -205,7 +221,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         return queues;
     }
 
-    function updateParams(uint16 reservationRate, uint16 premiumRate) internal {
+    // @dev Refer to return values of the `getParam` function
+    function updateParams(
+        uint16 reservationRate,
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge
+    ) internal {
         require(
             reservationRate <= HUNDRED_PERCENT &&
                 premiumRate <= HUNDRED_PERCENT,
@@ -213,7 +234,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         );
         _reservationRate = reservationRate;
         _premiumRate = premiumRate;
-        emit BusQueueRewardParamsUpdated(reservationRate, premiumRate);
+        _minEmptyQueueAge = minEmptyQueueAge;
+        emit BusQueueRewardParamsUpdated(
+            reservationRate,
+            premiumRate,
+            minEmptyQueueAge
+        );
     }
 
     // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
@@ -288,6 +314,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         )
     {
         BusQueue memory queue = _busQueues[queueId];
+        require(_getQueueRemainingBlocks(queue) == 0, "BQT:IMMATURE_QUEUE");
+
         commitment = _busQueueCommitments[queueId];
         nUtxos = queue.nUtxos;
         reward = uint96(_computeReward(queue));
@@ -359,6 +387,27 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         commitment = bytes32(0);
 
         emit BusQueueOpened(newQueueId);
+    }
+
+    // Returns the number of blocks to wait until a queue may be processed.
+    // Always returns 0 for a fully populated queue (immediately processable).
+    // For an empty queue it returns a meaningless value.
+    function _getQueueRemainingBlocks(BusQueue memory queue)
+        private
+        view
+        returns (uint40)
+    {
+        if (queue.nUtxos >= QUEUE_MAX_SIZE) return 0;
+
+        // Minimum "age" declines linearly to the number of UTXOs in the queue
+        uint256 nEmptySeats = uint256(QUEUE_MAX_SIZE - queue.nUtxos);
+        uint256 minAge = (nEmptySeats * _minEmptyQueueAge) / QUEUE_MAX_SIZE;
+
+        uint256 maturityBlock = minAge + queue.firstUtxoBlock;
+        return
+            block.number >= maturityBlock
+                ? 0 // Overflow risk ignored
+                : uint40(maturityBlock - block.number);
     }
 
     function _computeReward(BusQueue memory queue)

@@ -28,9 +28,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const basePerUtxoReward = ethers.utils.parseUnits('1', 17);
     const reservationRate = '2000';
     const premiumRate = '10';
+    const minEmptyQueueAge = '100';
 
     console.log(
-        `Updating reward params for bus tree, perMinuteUtxosLimit: ${perMinuteUtxosLimit}, basePerUtxoReward: ${basePerUtxoReward}, reservationRate: ${reservationRate}, premiumRate: ${premiumRate}`,
+        `Updating reward params for bus tree, perMinuteUtxosLimit: ${perMinuteUtxosLimit}, ` +
+            `basePerUtxoReward: ${basePerUtxoReward}, reservationRate: ${reservationRate}, ` +
+            `premiumRate: ${premiumRate}, ` +
+            `minEmptyQueueAge: ${minEmptyQueueAge}`,
     );
 
     const tx = await busTree.updateParams(
@@ -38,6 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         basePerUtxoReward,
         reservationRate,
         premiumRate,
+        minEmptyQueueAge,
     );
     const res = await tx.wait();
 
