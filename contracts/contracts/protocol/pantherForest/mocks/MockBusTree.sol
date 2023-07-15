@@ -64,9 +64,10 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         uint16 _perMinuteUtxosLimit,
         uint96 _basePerUtxoReward,
         uint16 reservationRate,
-        uint16 premiumRate
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge
     ) external onlyOwner {
-        BusQueues.updateParams(reservationRate, premiumRate);
+        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
 
         require(
             _perMinuteUtxosLimit > 0 && _basePerUtxoReward > 0,
@@ -163,13 +164,6 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         onlyLocalDevEnv
     {
         addBusQueueReward(queueId, extraReward);
-    }
-
-    function internalUpdateParams(uint16 reservationRate, uint16 premiumRate)
-        external
-        onlyLocalDevEnv
-    {
-        updateParams(reservationRate, premiumRate);
     }
 
     function simulateSetBusQueueAsProcessed(uint32 queueId)
