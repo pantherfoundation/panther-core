@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.0.0;
+pragma circom 2.1.6;
 
 include "../../node_modules/circomlib/circuits/sha256/sha256.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
