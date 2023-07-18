@@ -14,10 +14,10 @@ template KycKytMerkleTreeLeafIDAndRuleInclusionProver(){
     signal input offset;                // 4 bit
 
     assert(offset < 10);
-
+    var ellement_offset = offset * 24;
     component n2b = Num2Bits(24);
     signal temp;
-    temp <-- leafIDsAndRulesList >> offset;
+    temp <-- leafIDsAndRulesList >> ellement_offset;
     n2b.in <== temp;
 
     component b2nRule = Bits2Num(8);

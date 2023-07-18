@@ -6,29 +6,26 @@ const wasm_tester = circom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {wtns} from 'snarkjs';
 
-describe('ZAccount Registration - ZeroInput - Witness computation', async function (this: any) {
+describe('Automated Market Maker - ZeroInput - Witness computation', async function (this: any) {
     let circuit: any;
-    let mainZAccountRegistrationWasm: any;
-    let mainZAccountRegistrationWitness: any;
+    let ammWasm: any;
+    let ammWitness: any;
 
     this.timeout(10000000);
 
     before(async () => {
         const opts = getOptions();
-        const input = path.join(
-            opts.basedir,
-            './circuits/main_zAccount_registration_v1.circom',
-        );
+        const input = path.join(opts.basedir, './circuits/main_amm_v1.circom');
         circuit = await wasm_tester(input, opts);
 
-        mainZAccountRegistrationWasm = path.join(
+        ammWasm = path.join(
             opts.basedir,
-            './compiled/main_zAccount_registration_v1_js/main_zAccount_registration_v1.wasm',
+            './compiled/main_amm_v1_js/main_amm_v1.wasm',
         );
 
-        mainZAccountRegistrationWitness = path.join(
+        ammWitness = path.join(
             opts.basedir,
-            './compiled/main_zAccount_registration_v1_js/generate_witness.js',
+            './compiled/main_amm_v1_js/generate_witness.js',
         );
     });
 
@@ -36,9 +33,14 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         // external data anchoring
         extraInputsHash: BigInt(0n),
 
-        // zkp amounts (not scaled)
-        zkpAmount: BigInt(0n),
-        zkpChange: BigInt(0n),
+        chargedAmountZkp: BigInt(0n),
+        createTime: BigInt(0n),
+        depositAmountPrp: BigInt(0n),
+        withdrawAmountPrp: BigInt(0n),
+
+        utxoCommitment: BigInt(0n),
+        utxoSpendPubKey: [BigInt(0n), BigInt(1n)],
+        utxoSpendKeyRandom: BigInt(0n),
 
         // zAsset
         zAssetId: BigInt(0n),
@@ -86,22 +88,26 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
             BigInt(0n),
         ],
 
-        // zAccount
-        zAccountId: BigInt(0n),
-        zAccountZkpAmount: BigInt(0n),
-        zAccountPrpAmount: BigInt(0n),
-        zAccountZoneId: BigInt(0n),
-        zAccountNetworkId: BigInt(0n),
-        zAccountExpiryTime: BigInt(0n),
-        zAccountNonce: BigInt(0n),
-        zAccountTotalAmountPerTimePeriod: BigInt(0n),
-        zAccountCreateTime: BigInt(0n),
-        zAccountRootSpendPrivKey: BigInt(0n),
-        zAccountRootSpendPubKey: [BigInt(0n), BigInt(1n)],
-        zAccountMasterEOA: BigInt(0n),
-        zAccountSpendKeyRandom: BigInt(0n),
-        zAccountCommitment: BigInt(0n),
-        zAccountNullifier: BigInt(0n),
+        zAccountUtxoInId: BigInt(0n),
+        zAccountUtxoInZkpAmount: BigInt(0n),
+        zAccountUtxoInPrpAmount: BigInt(0n),
+        zAccountUtxoInZoneId: BigInt(0n),
+        zAccountUtxoInNetworkId: BigInt(0n),
+        zAccountUtxoInExpiryTime: BigInt(0n),
+        zAccountUtxoInNonce: BigInt(0n),
+        zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
+        zAccountUtxoInCreateTime: BigInt(0n),
+        zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(1n)],
+        zAccountUtxoInSpendPrivKey: BigInt(0n),
+        zAccountUtxoInMasterEOA: BigInt(0n),
+        zAccountUtxoInSpendKeyRandom: BigInt(0n),
+        zAccountUtxoInCommitment: BigInt(0n),
+        zAccountUtxoInNullifier: BigInt(0n),
+
+        zAccountUtxoOutZkpAmount: BigInt(0n),
+        zAccountUtxoOutPrpAmount: BigInt(0n),
+        zAccountUtxoOutSpendKeyRandom: BigInt(0n),
+        zAccountUtxoOutCommitment: BigInt(0n),
 
         // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
         zAccountBlackListLeaf: BigInt(0n),
@@ -179,63 +185,6 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         zZoneMaximumAmountPerTimePeriod: BigInt(0n),
         zZoneTimePeriodPerMaximumAmount: BigInt(0n),
 
-        // KYC
-        kycEdDsaPubKey: [BigInt(0n), BigInt(0n)],
-        kycEdDsaPubKeyExpiryTime: BigInt(0n),
-        kycKytMerkleRoot: BigInt(0n),
-        kycPathElements: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
-        kycPathIndex: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
-        kycMerkleTreeLeafIDsAndRulesOffset: BigInt(0n),
-        // signed message
-        kycSignedMessagePackageType: BigInt(1n), // MUST be 1 - pkg type of KYC is always 1
-        kycSignedMessageTimestamp: BigInt(0n),
-        kycSignedMessageSender: BigInt(0n),
-        kycSignedMessageReceiver: BigInt(0n),
-        kycSignedMessageSessionId: BigInt(0n),
-        kycSignedMessageRuleId: BigInt(0n),
-        kycSignedMessageHash: BigInt(0n),
-        kycSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
-
-        // zNetworks tree
-        // network parameters:
-        // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
-        // 2) network-id - 6 bit
-        // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
-        // 4) daoDataEscrowPubKey[2]
         zNetworkId: BigInt(0n),
         zNetworkChainId: BigInt(0n),
         zNetworkIDsBitMap: BigInt(0n),
@@ -261,21 +210,8 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         forUtxoReward: BigInt(0n),
         forDepositReward: BigInt(0n),
 
-        // static tree merkle root
-        // Poseidon of:
-        // 1) zAssetMerkleRoot
-        // 2) zAccountBlackListMerkleRoot
-        // 3) zNetworkTreeMerkleRoot
-        // 4) zZoneMerkleRoot
-        // 5) kycKytMerkleRoot
+        kycKytMerkleRoot: BigInt(0n),
         staticTreeMerkleRoot: BigInt(0n),
-
-        // forest root
-        // Poseidon of:
-        // 1) UTXO-Taxi-Tree   - 6 levels MT
-        // 2) UTXO-Bus-Tree    - 26 levels MT
-        // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
-        // 4) Static-Tree
         forestMerkleRoot: BigInt(0n),
         taxiMerkleRoot: BigInt(0n),
         busMerkleRoot: BigInt(0n),
@@ -290,12 +226,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
     };
 
     it('should compute valid witness for zero input tx', async () => {
-        await wtns.calculate(
-            zeroInput,
-            mainZAccountRegistrationWasm,
-            mainZAccountRegistrationWitness,
-            null,
-        );
+        await wtns.calculate(zeroInput, ammWasm, ammWitness, null);
         console.log('Witness calculation successful!');
     });
 });

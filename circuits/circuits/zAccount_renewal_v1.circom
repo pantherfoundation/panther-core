@@ -102,14 +102,12 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     signal input kycPathIndex[KycKytMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
     // signed message
-    signal input kycSignedMessagePackageType;         // 1 - KYC, TODO: require
+    signal input kycSignedMessagePackageType;         // 1 - KYC
     signal input kycSignedMessageTimestamp;
     signal input kycSignedMessageSender;              // 0
     signal input kycSignedMessageReceiver;            // 0
-    signal input kycSignedMessageToken;               // 0
-    signal input kycSignedMessageSessionIdHex;
+    signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
-    signal input kycSignedMessageAmount;              // 0
     signal input kycSignedMessageHash;                // public
     signal input kycSignature[3];                     // S,R8x,R8y
 
@@ -194,6 +192,9 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     zAssetChecker.depositAmount <== 0;
     zAssetChecker.withdrawAmount <== 0;
     zAssetChecker.utxoZAsset <== zAssetId;
+
+    // verify zkp-token
+    zAssetId === 0; // ZKP is zero
 
     // [3] - Zkp balance
     component totalBalanceChecker = BalanceChecker();
@@ -301,21 +302,18 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
     // [10] - Verify KYT signature
-    component kycSignedMessageHashInternal = Poseidon(8);
+    component kycSignedMessageHashInternal = Poseidon(6);
 
-    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType; // TODO: FIXME - equal to 1
+    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
     kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
-    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender; // TODO: should we check MasterEOA === sender ?
+    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
     kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
-    kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageToken;
-    kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageSessionIdHex;
-    kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageRuleId;
-    kycSignedMessageHashInternal.inputs[7] <== kycSignedMessageAmount;
+    kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
+    kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
 
     // verify required values
-    kycSignedMessageReceiver === 0;
-    kycSignedMessageToken === 0;
-    kycSignedMessageAmount === 0;
+    kycSignedMessagePackageType === 1; // KYC pkg type
+    kycSignedMessageSender === zAccountUtxoInMasterEOA;
 
     component kycSignatureVerifier = EdDSAPoseidonVerifier();
     kycSignatureVerifier.enabled <== kycKytMerkleRoot;

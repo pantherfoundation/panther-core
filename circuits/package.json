@@ -7,6 +7,7 @@
   "repository": "git+https://github.com/pantherprotocol/panther-circuits.git",
   "scripts": {
     "build": "yarn build:types && yarn build:ts",
+    "build:amm": "./scripts/build_amm.sh",
     "build:main-tx-v1-extended": "./scripts/build_mainTransaction_v1_extended.sh",
     "build:main-z-account-registration-v1-extended": "./scripts/build_mainZAccountRegistration_v1_extended.sh",
     "build:main-z-account-renewal-v1-extended": "./scripts/build_mainZAccountRenewal_v1_extended.sh",

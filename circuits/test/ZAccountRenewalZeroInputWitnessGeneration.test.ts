@@ -129,14 +129,12 @@ describe('ZAccount Renewal - ZeroInput - Witness computation', async function (t
         zZoneKycExpiryTime: BigInt(0n),
         zAccountUtxoOutCommitment: BigInt(0n),
 
-        kycSignedMessagePackageType: BigInt(0n),
+        kycSignedMessagePackageType: BigInt(1n),
         kycSignedMessageTimestamp: BigInt(0n),
         kycSignedMessageSender: BigInt(0n),
         kycSignedMessageReceiver: BigInt(0n),
-        kycSignedMessageToken: BigInt(0n),
-        kycSignedMessageSessionIdHex: BigInt(0n),
+        kycSignedMessageSessionId: BigInt(0n),
         kycSignedMessageRuleId: BigInt(0n),
-        kycSignedMessageAmount: BigInt(0n),
 
         kycKytMerkleRoot: BigInt(0n),
         kycEdDsaPubKey: [BigInt(0n), BigInt(1n)],
