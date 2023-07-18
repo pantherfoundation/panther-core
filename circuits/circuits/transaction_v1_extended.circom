@@ -174,7 +174,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input kytDepositSignedMessageSender;
     signal input kytDepositSignedMessageReceiver;
     signal input kytDepositSignedMessageToken;
-    signal input kytDepositSignedMessageSessionIdHex;
+    signal input kytDepositSignedMessageSessionId;
     signal input kytDepositSignedMessageRuleId;
     signal input kytDepositSignedMessageAmount;
     signal input kytDepositSignedMessageHash;                // public
@@ -185,7 +185,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input kytWithdrawSignedMessageSender;
     signal input kytWithdrawSignedMessageReceiver;
     signal input kytWithdrawSignedMessageToken;
-    signal input kytWithdrawSignedMessageSessionIdHex;
+    signal input kytWithdrawSignedMessageSessionId;
     signal input kytWithdrawSignedMessageRuleId;
     signal input kytWithdrawSignedMessageAmount;
     signal input kytWithdrawSignedMessageHash;                // public
@@ -493,7 +493,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
         // verify zone max internal limits
-        assert(zZoneInternalMaxAmount >= utxoInAmount[i]);
+        assert(zZoneInternalMaxAmount >= utxoInAmount[i] * zAssetWeight);
     }
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
@@ -569,7 +569,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
         // verify zone max internal limits
-        assert(zZoneInternalMaxAmount >= utxoOutAmount[i]);
+        assert(zZoneInternalMaxAmount >= utxoOutAmount[i] * zAssetWeight);
 
     }
 
@@ -581,7 +581,7 @@ template TransactionV1Extended( nUtxoIn,
     isDeltaTimeLessEqThen.in[0] <== deltaTime;
     isDeltaTimeLessEqThen.in[1] <== zZoneTimePeriodPerMaximumAmount;
 
-    signal zAccountUtxoOutTotalAmountPerTimePeriod <== totalBalanceChecker.total + (isDeltaTimeLessEqThen.out * zAccountUtxoInTotalAmountPerTimePeriod);
+    signal zAccountUtxoOutTotalAmountPerTimePeriod <== totalBalanceChecker.totalWeighted + (isDeltaTimeLessEqThen.out * zAccountUtxoInTotalAmountPerTimePeriod);
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
 
@@ -703,7 +703,7 @@ template TransactionV1Extended( nUtxoIn,
     kytDepositSignedMessageHashInternal.inputs[2] <== kytDepositSignedMessageSender;
     kytDepositSignedMessageHashInternal.inputs[3] <== kytDepositSignedMessageReceiver;
     kytDepositSignedMessageHashInternal.inputs[4] <== kytDepositSignedMessageToken;
-    kytDepositSignedMessageHashInternal.inputs[5] <== kytDepositSignedMessageSessionIdHex;
+    kytDepositSignedMessageHashInternal.inputs[5] <== kytDepositSignedMessageSessionId;
     kytDepositSignedMessageHashInternal.inputs[6] <== kytDepositSignedMessageRuleId;
     kytDepositSignedMessageHashInternal.inputs[7] <== kytDepositSignedMessageAmount;
 
@@ -744,7 +744,7 @@ template TransactionV1Extended( nUtxoIn,
     kytWithdrawSignedMessageHashInternal.inputs[2] <== kytWithdrawSignedMessageSender;
     kytWithdrawSignedMessageHashInternal.inputs[3] <== kytWithdrawSignedMessageReceiver;
     kytWithdrawSignedMessageHashInternal.inputs[4] <== kytWithdrawSignedMessageToken;
-    kytWithdrawSignedMessageHashInternal.inputs[5] <== kytWithdrawSignedMessageSessionIdHex;
+    kytWithdrawSignedMessageHashInternal.inputs[5] <== kytWithdrawSignedMessageSessionId;
     kytWithdrawSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageRuleId;
     kytWithdrawSignedMessageHashInternal.inputs[7] <== kytWithdrawSignedMessageAmount;
 
@@ -937,8 +937,8 @@ template TransactionV1Extended( nUtxoIn,
     }
 
     // [21] - Verify zZone max external limits
-    assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositScaledAmount);
-    assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawScaledAmount);
+    assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
+    assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawWeightedScaledAmount);
 
     // [22] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();

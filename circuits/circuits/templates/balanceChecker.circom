@@ -31,10 +31,13 @@ template BalanceChecker() {
     signal input totalUtxoOutAmount;
     signal input zAssetWeight;
     signal input zAssetScale;
-    signal output total;
+    signal output totalScaled;
+    signal output totalWeighted;
     signal output depositScaledAmount;
+    signal output depositWeightedScaledAmount;
     signal output depositChange;
     signal output withdrawScaledAmount;
+    signal output withdrawWeightedScaledAmount;
     signal output withdrawChange;
 
     // Scale external amounts
@@ -47,6 +50,7 @@ template BalanceChecker() {
     depositAmountRestored <-- depositScaledAmount * zAssetScaleFactor;
 
     depositChange <== depositAmount - depositAmountRestored;
+    depositWeightedScaledAmount <== depositScaledAmountTmp * zAssetWeight;
 
     // 2 - withdraw
     signal withdrawScaledAmountTmp;
@@ -56,6 +60,7 @@ template BalanceChecker() {
     withdrawAmountRestored <-- withdrawScaledAmount * zAssetScaleFactor;
 
     withdrawChange <== withdrawAmount - withdrawAmountRestored;
+    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
 
 
     // Verify total balances
@@ -76,7 +81,8 @@ template BalanceChecker() {
     zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoOutZkpAmount;
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount - chargedAmountZkp;
 
-    total <== totalBalanceIn * zAssetWeight;
+    totalScaled <== totalBalanceIn;
+    totalWeighted <== totalBalanceIn * zAssetWeight;
 }
 
 

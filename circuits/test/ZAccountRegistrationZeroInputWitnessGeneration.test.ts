@@ -221,14 +221,12 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         ],
         kycMerkleTreeLeafIDsAndRulesOffset: BigInt(0n),
         // signed message
-        kycSignedMessagePackageType: BigInt(0n),
+        kycSignedMessagePackageType: BigInt(1n), // MUST be 1 - pkg type of KYC is always 1
         kycSignedMessageTimestamp: BigInt(0n),
         kycSignedMessageSender: BigInt(0n),
         kycSignedMessageReceiver: BigInt(0n),
-        kycSignedMessageToken: BigInt(0n),
-        kycSignedMessageSessionIdHex: BigInt(0n),
+        kycSignedMessageSessionId: BigInt(0n),
         kycSignedMessageRuleId: BigInt(0n),
-        kycSignedMessageAmount: BigInt(0n),
         kycSignedMessageHash: BigInt(0n),
         kycSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 

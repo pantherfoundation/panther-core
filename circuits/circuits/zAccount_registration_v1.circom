@@ -94,14 +94,12 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input kycPathIndex[KycKytMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
     // signed message
-    signal input kycSignedMessagePackageType;         // 1 - KYC, TODO: require
+    signal input kycSignedMessagePackageType;         // 1 - KYC
     signal input kycSignedMessageTimestamp;
     signal input kycSignedMessageSender;              // 0
     signal input kycSignedMessageReceiver;            // 0
-    signal input kycSignedMessageToken;               // 0
-    signal input kycSignedMessageSessionIdHex;
+    signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
-    signal input kycSignedMessageAmount;              // 0
     signal input kycSignedMessageHash;                // public
     signal input kycSignature[3];                     // S,R8x,R8y
 
@@ -175,6 +173,9 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
         zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
     }
 
+    // verify zkp-token
+    zAssetId === 0; // ZKP is zero
+
     // [2] - Verify input 'zAccount UTXO input'
     component zAccountRootSpendPubKeyCheck = BabyPbk();
     zAccountRootSpendPubKeyCheck.in <== zAccountRootSpendPrivKey;
@@ -207,6 +208,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
 
     // verify required values
     zAccountTotalAmountPerTimePeriod === 0;
+    zAccountNonce === 0;
 
     // verify zNetworkId is equal to zAccountNetworkId (anchoring)
     zAccountNetworkId === zNetworkId;
@@ -215,9 +217,9 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountExpiryTime === zAccountCreateTime + zZoneKycExpiryTime;
 
     // [3] - verify ZKP & PRP balance
-    assert(zAccountZkpAmount < 2**254);
+    assert(0 <= zAccountZkpAmount < 2**252);
     // prp amount decided by the protocol on smart contract level
-    assert(zAccountPrpAmount < 2**64);
+    assert(0 <= zAccountPrpAmount < 2**64);
 
     var zAssetScaleFactor = 10**zAssetScale;
     signal zkpScaledAmount;
@@ -225,6 +227,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
 
     // verify scaled zkp amount
     zkpScaledAmount === zAccountZkpAmount;
+    assert(zkpScaledAmount * zAssetWeight <= zZoneDepositMaxAmount);
 
     signal zkpAmountRestored;
     zkpAmountRestored <-- zkpScaledAmount * zAssetScaleFactor;
@@ -260,21 +263,19 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     }
 
     // [7] - Verify KYC signature
-    component kycSignedMessageHashInternal = Poseidon(8);
+    component kycSignedMessageHashInternal = Poseidon(6);
 
-    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType; // TODO: FIXME - equal to 1
+    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
     kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
-    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender; // TODO: should we check MasterEOA === sender ?
+    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
     kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
-    kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageToken;
-    kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageSessionIdHex;
-    kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageRuleId;
-    kycSignedMessageHashInternal.inputs[7] <== kycSignedMessageAmount;
+    kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
+    kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
 
     // verify required values
-    kycSignedMessageReceiver === 0;
-    kycSignedMessageToken === 0;
-    kycSignedMessageAmount === 0;
+    kycSignedMessagePackageType === 1; // KYC pkg type
+    kycSignedMessageSender === zAccountMasterEOA;
+
 
     component kycSignatureVerifier = EdDSAPoseidonVerifier();
     kycSignatureVerifier.enabled <== kycKytMerkleRoot;

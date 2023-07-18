@@ -19,20 +19,26 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     assert(ZAccountBlackListMerkleTreeDepth < 17);
     assert(zAccountId < 2**(ZAccountBlackListMerkleTreeDepth+8));
 
-    component n2b_zAccountId = Num2Bits(ZAccountBlackListMerkleTreeDepth+8); // LSB is number of bit inside leaf
-    n2b_zAccountId.in <== zAccountId;
+    // copy path ellements
     for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
         zAccountBlackListInlcusionProver.pathElements[j] <== pathElements[j];
     }
-    for (var j = ZAccountBlackListMerkleTreeDepth; j > 0; j--) {
-        zAccountBlackListInlcusionProver.pathIndices[j-1] <== n2b_zAccountId.out[j+8-1]; // +8 --> path is MSB
+
+    component n2b_zAccountId = Num2Bits(ZAccountBlackListMerkleTreeDepth+8); // LSB is a bit number inside leaf
+    n2b_zAccountId.in <== zAccountId;
+
+    // build the path inside merkle-tree
+    for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
+        zAccountBlackListInlcusionProver.pathIndices[j] <== n2b_zAccountId.out[j+8]; // +8 --> path is ZAccountBlackListMerkleTreeDepth MSB bits
     }
 
+    // build the index inside leaf
     component b2n_zAccountIdInsideLeaf = Bits2Num(8);
     for (var j = 0; j < 8; j++) {
         b2n_zAccountIdInsideLeaf.in[j] <== n2b_zAccountId.out[j];
     }
-    assert(b2n_zAccountIdInsideLeaf.out < 253); // regular BabyJubJub limit, TODO: double check why 252 bits
+
+    assert(b2n_zAccountIdInsideLeaf.out < 254); // regular scalar field size
 
     signal temp;
     temp <-- 1 << b2n_zAccountIdInsideLeaf.out; // switch-on single bit
