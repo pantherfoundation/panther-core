@@ -423,7 +423,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         const networkId = BigInt(1);
         const chainId = BigInt(1);
         // Check networkIDsBitMap
-        const networkIDsBitMap = BigInt(1234);
+        const networkIDsBitMap = BigInt(1);
         // transaction reward, utxo reward and deposit rewards are specific to individual networks.
         const forTxReward = BigInt(1);
         const forUtxoReward = BigInt(2);
@@ -441,6 +441,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             active,
             chainId,
             networkId,
+            networkIDsBitMap,
             forTxReward,
             forUtxoReward,
             forDepositReward,
@@ -449,13 +450,16 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         ]);
 
         zNetworkMerkleTreeLeaf = hash;
+        // 3055780040239072029983302402692520014263900515058596363506432098686318796943n
+        // console.log("zNetworkMerkleTreeLeaf=>",zNetworkMerkleTreeLeaf);
+
         zNetworkMerkleTree.insert(zNetworkMerkleTreeLeaf);
 
         const poeOfzNetworkMerkleLeaf = zNetworkMerkleTree.createProof(0);
         // console.log('poeOfzNetworkMerkleLeaf=>', poeOfzNetworkMerkleLeaf);
         // poeOfzNetworkMerkleLeaf=> {
-        //     root: 11533271907829962178538751916725087229735862536220341910589678396909232316213n,
-        //     leaf: 2975862780230064381455879123327676928131791130716012440812619961621063814149n,
+        //     root: 3571799819190386765638761636798698138144469641608011835483658954125713500776n,
+        //     leaf: 3055780040239072029983302402692520014263900515058596363506432098686318796943n,
         //     siblingNodes: [
         //       0n,
         //       14744269619966411208579211824598458697587494354926760081771325075741142829156n,
@@ -659,7 +663,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
 
         const zNetworkTreeMerkleRoot =
             BigInt(
-                11533271907829962178538751916725087229735862536220341910589678396909232316213n,
+                3571799819190386765638761636798698138144469641608011835483658954125713500776n,
             );
 
         const zZoneMerkleRoot =
@@ -679,7 +683,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             zZoneMerkleRoot,
             kycKytMerkleRoot,
         ]);
-        // 18197452976927786101951542528157502839686672147607577319569794194168804384659n
+        // 11728486084117138299049842970728391864873855415795077492316123666247373393728n
         // console.log('staticTreeMerkleRoot=>', staticTreeMerkleRoot);
         /* END ========== static-merkle-root calculation ========== */
         /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
@@ -707,7 +711,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             ferryMerkleTree.root,
             staticTreeMerkleRoot,
         ]);
-        // 1788590139890853856524361509985991351177126059375077770958419371281014621553n
+        // 11038309636808859781829595886770882067715836362130672314164878094832132730791n
         // console.log('forestMerkleRoot=>', forestMerkleRoot);
         /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
 
@@ -1113,10 +1117,10 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
         // 4) daoDataEscrowPubKey[2]
         zNetworkChainId: BigInt(1n),
-        zNetworkIDsBitMap: BigInt(1234n),
+        zNetworkIDsBitMap: BigInt(1n),
         zNetworkTreeMerkleRoot:
             BigInt(
-                11533271907829962178538751916725087229735862536220341910589678396909232316213n,
+                3571799819190386765638761636798698138144469641608011835483658954125713500776n,
             ),
         zNetworkTreePathElements: [
             BigInt(0n),
@@ -1165,7 +1169,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 5) kycKytMerkleRoot
         staticTreeMerkleRoot:
             BigInt(
-                18197452976927786101951542528157502839686672147607577319569794194168804384659n,
+                11728486084117138299049842970728391864873855415795077492316123666247373393728n,
             ),
 
         // forest root
@@ -1176,7 +1180,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 4) Static-Tree
         forestMerkleRoot:
             BigInt(
-                1788590139890853856524361509985991351177126059375077770958419371281014621553n,
+                11038309636808859781829595886770882067715836362130672314164878094832132730791n,
             ),
         taxiMerkleRoot:
             BigInt(

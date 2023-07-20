@@ -21,15 +21,17 @@ template ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth){
 
     component merkleVerifier = MerkleTreeInclusionProofDoubleLeaves(ZNetworkMerkleTreeDepth);
 
-    component hash = Poseidon(8);
+    component hash = Poseidon(9);
     hash.inputs[0] <== active;
     hash.inputs[1] <== chainId;
     hash.inputs[2] <== networkId;
-    hash.inputs[3] <== forTxReward;
-    hash.inputs[4] <== forUtxoReward;
-    hash.inputs[5] <== forDepositReward;
-    hash.inputs[6] <== daoDataEscrowPubKey[0];
-    hash.inputs[7] <== daoDataEscrowPubKey[1];
+    hash.inputs[3] <== networkIDsBitMap;
+    hash.inputs[4] <== forTxReward;
+    hash.inputs[5] <== forUtxoReward;
+    hash.inputs[6] <== forDepositReward;
+    hash.inputs[7] <== daoDataEscrowPubKey[0];
+    hash.inputs[8] <== daoDataEscrowPubKey[1];
+
 
     merkleVerifier.leaf <== hash.out;
 

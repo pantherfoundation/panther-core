@@ -39,6 +39,11 @@ template BalanceChecker() {
     signal output withdrawScaledAmount;
     signal output withdrawWeightedScaledAmount;
     signal output withdrawChange;
+    signal output weightDenominator;
+
+    // system wide constant
+    var weightDenominator_local = 10**3;
+    weightDenominator <== weightDenominator_local;
 
     // Scale external amounts
     var zAssetScaleFactor = 10**zAssetScale;
@@ -50,7 +55,9 @@ template BalanceChecker() {
     depositAmountRestored <-- depositScaledAmount * zAssetScaleFactor;
 
     depositChange <== depositAmount - depositAmountRestored;
-    depositWeightedScaledAmount <== depositScaledAmountTmp * zAssetWeight;
+    signal depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
+    depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator <-- (depositScaledAmountTmp * zAssetWeight) \ weightDenominator_local;
+    depositWeightedScaledAmount <== depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
 
     // 2 - withdraw
     signal withdrawScaledAmountTmp;
@@ -60,7 +67,9 @@ template BalanceChecker() {
     withdrawAmountRestored <-- withdrawScaledAmount * zAssetScaleFactor;
 
     withdrawChange <== withdrawAmount - withdrawAmountRestored;
-    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
+    signal withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
+    withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator <-- (withdrawScaledAmountTmp * zAssetWeight) \ weightDenominator_local;
+    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
 
 
     // Verify total balances
@@ -82,7 +91,10 @@ template BalanceChecker() {
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount - chargedAmountZkp;
 
     totalScaled <== totalBalanceIn;
-    totalWeighted <== totalBalanceIn * zAssetWeight;
+    signal totalBalanceIn_mult_zAssetWeight_div_weightDenominator;
+    totalBalanceIn_mult_zAssetWeight_div_weightDenominator <-- (totalBalanceIn * zAssetWeight) \ weightDenominator_local;
+
+    totalWeighted <== totalBalanceIn_mult_zAssetWeight_div_weightDenominator;
 }
 
 

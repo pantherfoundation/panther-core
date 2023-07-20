@@ -713,10 +713,10 @@ const nonZeroInputForZAccountRegistration = {
     // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
     // 4) daoDataEscrowPubKey[2]
     zNetworkChainId: BigInt(1n),
-    zNetworkIDsBitMap: BigInt(1234n),
+    zNetworkIDsBitMap: BigInt(1n),
     zNetworkTreeMerkleRoot:
         BigInt(
-            11533271907829962178538751916725087229735862536220341910589678396909232316213n,
+            3571799819190386765638761636798698138144469641608011835483658954125713500776n,
         ),
     zNetworkTreePathElements: [
         BigInt(0n),
@@ -765,7 +765,7 @@ const nonZeroInputForZAccountRegistration = {
     // 5) kycKytMerkleRoot
     staticTreeMerkleRoot:
         BigInt(
-            18197452976927786101951542528157502839686672147607577319569794194168804384659n,
+            11728486084117138299049842970728391864873855415795077492316123666247373393728n,
         ),
 
     // forest root
@@ -776,7 +776,7 @@ const nonZeroInputForZAccountRegistration = {
     // 4) Static-Tree
     forestMerkleRoot:
         BigInt(
-            1788590139890853856524361509985991351177126059375077770958419371281014621553n,
+            11038309636808859781829595886770882067715836362130672314164878094832132730791n,
         ),
     taxiMerkleRoot:
         BigInt(

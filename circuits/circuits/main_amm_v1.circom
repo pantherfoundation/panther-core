@@ -16,9 +16,10 @@ component main {
         zAccountUtxoInNullifier,               // [9]
         zAccountUtxoOutCommitment,             // [10]
         forestMerkleRoot,                      // [11]
-        saltHash,                              // [12]
-        magicalConstraint                      // [13]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 12 + 2 = 14
+        zNetworkChainId,                       // [12]
+        saltHash,                              // [13]
+        magicalConstraint                      // [14]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 13 + 2 = 15
     ]} = AmmV1 ( 6,     // ZNetworkMerkleTreeDepth
                  16,    // ZAssetMerkleTreeDepth
                  16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size

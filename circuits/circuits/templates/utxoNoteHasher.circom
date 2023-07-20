@@ -28,51 +28,43 @@ template UtxoNoteHasher(){
     assert(targetZoneId < 2**16);
     assert(zAccountId < 2**24);
 
-    component multiOR = MultiOR(6);
-    multiOR.in[0] <-- zAccountId << 6 + 6 + 32 + 16 + 16;
-    multiOR.in[1] <-- originNetworkId << 6 + 32 + 16 + 16;
-    multiOR.in[2] <-- targetNetworkId << 32 + 16 + 16;
-    multiOR.in[3] <-- createTime << 16 + 16;
-    multiOR.in[4] <-- originZoneId << 16;
-    multiOR.in[5] <-- targetZoneId << 0;
-
-    component hiden_hash = Poseidon(1);
-    hiden_hash.inputs[0] <== multiOR.out;
+    component hiden_hash = Poseidon(9);
+    hiden_hash.inputs[0] <== spendPk[0];
+    hiden_hash.inputs[1] <== spendPk[1];
+    hiden_hash.inputs[2] <== zAsset;
+    hiden_hash.inputs[3] <== zAccountId;
+    hiden_hash.inputs[4] <== originNetworkId;
+    hiden_hash.inputs[5] <== targetNetworkId;
+    hiden_hash.inputs[6] <== createTime;
+    hiden_hash.inputs[7] <== originZoneId;
+    hiden_hash.inputs[8] <== targetZoneId;
 
     // quasi-public hash - used for generate-deposits
-    component hasher = Poseidon(5);
+    component hasher = Poseidon(2);
 
-    hasher.inputs[0] <== spendPk[0];
-    hasher.inputs[1] <== spendPk[1];
-    hasher.inputs[2] <== zAsset;
-    hasher.inputs[3] <== amount;
-
-    hasher.inputs[4] <== hiden_hash.out;
+    hasher.inputs[0] <== amount;
+    hasher.inputs[1] <== hiden_hash.out;
 
     hasher.out ==> out;
 }
 
 template UtxoNoteTwoStageHasher(){
-    signal input spendPk[2];      // 256
-    signal input zAsset;          // 64
     signal input amount;          // 64
     signal input leaf;            // 256
     signal output out;
 
     // quasi-public hash - used for generate-deposits - second stage
-    component hasher = Poseidon(5);
+    component hasher = Poseidon(2);
 
-    hasher.inputs[0] <== spendPk[0];
-    hasher.inputs[1] <== spendPk[1];
-    hasher.inputs[2] <== zAsset;
-    hasher.inputs[3] <== amount;
-
-    hasher.inputs[4] <== leaf;
+    hasher.inputs[0] <== amount;
+    hasher.inputs[1] <== leaf;
 
     hasher.out ==> out;
 }
 
 template UtxoNoteLeafHasher(){
+    signal input spendPk[2];      // 256
+    signal input zAsset;          // 64
     signal input originNetworkId; // 6
     signal input targetNetworkId; // 6
     signal input createTime;      // 32
@@ -89,16 +81,16 @@ template UtxoNoteLeafHasher(){
     assert(originZoneId < 2**16);
     assert(targetZoneId < 2**16);
 
-    component multiOR = MultiOR(6);
-    multiOR.in[0] <-- zAccountId << 6 + 6 + 32 + 16 + 16;
-    multiOR.in[1] <-- originNetworkId << 6 + 32 + 16 + 16;
-    multiOR.in[2] <-- targetNetworkId << 32 + 16 + 16;
-    multiOR.in[3] <-- createTime << 16 + 16;
-    multiOR.in[4] <-- originZoneId << 16;
-    multiOR.in[5] <-- targetZoneId << 0;
-
-    component hiden_hash = Poseidon(1);
-    hiden_hash.inputs[0] <== multiOR.out;
+    component hiden_hash = Poseidon(9);
+    hiden_hash.inputs[0] <== spendPk[0];
+    hiden_hash.inputs[1] <== spendPk[1];
+    hiden_hash.inputs[2] <== zAsset;
+    hiden_hash.inputs[3] <== zAccountId;
+    hiden_hash.inputs[4] <== originNetworkId;
+    hiden_hash.inputs[5] <== targetNetworkId;
+    hiden_hash.inputs[6] <== createTime;
+    hiden_hash.inputs[7] <== originZoneId;
+    hiden_hash.inputs[8] <== targetZoneId;
 
     out <== hiden_hash.out;
 }
@@ -117,6 +109,9 @@ template UtxoNoteGenericHasher(){
     signal output out;
 
     component utxoNoteLeafHasher_Stage1 = UtxoNoteLeafHasher();
+    utxoNoteLeafHasher_Stage1.spendPk[0] <== spendPk[0];
+    utxoNoteLeafHasher_Stage1.spendPk[1] <== spendPk[1];
+    utxoNoteLeafHasher_Stage1.zAsset <== zAsset;
     utxoNoteLeafHasher_Stage1.originNetworkId <== originNetworkId;
     utxoNoteLeafHasher_Stage1.targetNetworkId <== targetNetworkId;
     utxoNoteLeafHasher_Stage1.createTime <== createTime;
@@ -125,9 +120,6 @@ template UtxoNoteGenericHasher(){
     utxoNoteLeafHasher_Stage1.zAccountId <== zAccountId;
 
     component utxoNoteTowStageHasher = UtxoNoteTwoStageHasher();
-    utxoNoteTowStageHasher.spendPk[0] <== spendPk[0];
-    utxoNoteTowStageHasher.spendPk[1] <== spendPk[1];
-    utxoNoteTowStageHasher.zAsset <== zAsset;
     utxoNoteTowStageHasher.amount <== amount;
     utxoNoteTowStageHasher.leaf <== utxoNoteLeafHasher_Stage1.out;
 
