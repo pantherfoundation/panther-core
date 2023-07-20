@@ -4,6 +4,137 @@ pragma circom 2.1.6;
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
 template ZAssetChecker() {
+    signal input token;               // 160 bit - public value
+    signal input tokenId;             // 256 bit - public value
+    signal input zAssetId;            // 64 bit  - zAsset-Leaf
+    signal input zAssetToken;         // 160 bit - zAsset-Leaf
+    signal input zAssetTokenId;       // 256 bit - zAsset-Leaf
+    signal input zAssetOffset;        // 6 bit   - zAsset-Leaf
+    signal input depositAmount;       // 256 bit - public value
+    signal input withdrawAmount;      // 256 bit - public value
+    signal input utxoZAssetId;        // 64 bit  - UTXO in & out preimage value
+    signal output isZkpToken;         // 1 bit -- 0-FALSE, 1-TRUE
+
+    assert(depositAmount < 2**250);
+    assert(withdrawAmount < 2**250);
+
+    component isZeroExternalAmounts = IsZero();
+    isZeroExternalAmounts.in <== depositAmount + withdrawAmount;
+    var enable_If_ExternalAmountsAre_Zero = isZeroExternalAmounts.out;
+    var enable_If_ExternalAmountsAre_NOT_Zero = 1 - isZeroExternalAmounts.out;
+
+    // [0] - zAsset::token == token
+    component isZAssetTokenEqualToToken = ForceEqualIfEnabled();
+    isZAssetTokenEqualToToken.in[0] <== zAssetToken;
+    isZAssetTokenEqualToToken.in[1] <== token;
+    isZAssetTokenEqualToToken.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+
+    // [1] - zAsset::ID == UTXO:zAssetID with respect to offset
+    component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
+    isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
+    isZAssetIdEqualToUtxoZAssetId.utxoZAssetId <== utxoZAssetId;
+    isZAssetIdEqualToUtxoZAssetId.offset <== zAssetOffset;
+    isZAssetIdEqualToUtxoZAssetId.enabled <== 1; // always anabled
+
+    // [2] - zAsset::tokenId == tokenId with respect to offset
+    component isZAssetIdEqualToTokenId = IsZAssetTokenIdEqualToTokenId();
+    isZAssetIdEqualToTokenId.zAssetTokenId <== zAssetTokenId;
+    isZAssetIdEqualToTokenId.tokenId <== tokenId;
+    isZAssetIdEqualToTokenId.offset <== zAssetOffset;
+    isZAssetIdEqualToTokenId.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+
+    // [3] - UTXO::tokenId == tokenId with respect to offset
+    component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
+    isUtxoTokenIdEqualToTokenId.utxoZAssetId <== utxoZAssetId;
+    isUtxoTokenIdEqualToTokenId.tokenId <== tokenId;
+    isUtxoTokenIdEqualToTokenId.offset <== zAssetOffset;
+    isUtxoTokenIdEqualToTokenId.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+
+    // NOTE: zZKP zAssetID is alwase zero
+    var zZKP = 0;
+
+    component isZkpTokenEqual = IsEqual();
+    isZkpTokenEqual.in[0] <== zAssetId;
+    isZkpTokenEqual.in[1] <== zZKP;
+
+    isZkpToken <== isZkpTokenEqual.out;
+}
+
+// with respect to offset - `offset` address the LSB bit number
+// for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
+// and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
+// offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
+// tokenId is LSBs
+template IsZAssetIdEqualToUtxoZAssetId() {
+    signal input zAssetId;
+    signal input utxoZAssetId;
+    signal input offset;
+    signal input enabled;
+
+    assert(zAssetId < 2**64);
+    assert(offset < 33);
+    assert(utxoZAssetId < 2**64);
+
+    signal zAssetTmp;
+    zAssetTmp <-- zAssetId >> offset;
+
+    signal utxoZAssetTmp;
+    utxoZAssetTmp <-- utxoZAssetId >> offset;
+
+    component isEqual = ForceEqualIfEnabled();
+    isEqual.in[0] <== zAssetTmp;
+    isEqual.in[1] <== utxoZAssetTmp;
+    isEqual.enabled <== enabled;
+}
+
+
+template IsZAssetTokenIdEqualToTokenId() {
+    signal input zAssetTokenId;
+    signal input tokenId;
+    signal input offset;
+    signal input enabled;
+
+    assert(zAssetTokenId < 2**254);
+    assert(tokenId < 2**254);
+    assert(offset < 33);
+
+    signal tokenIdTmp;
+    tokenIdTmp <-- tokenId >> offset;
+    signal tokenIdTmp1;
+    tokenIdTmp1 <-- tokenIdTmp << offset;
+
+    component isEqual = ForceEqualIfEnabled();
+    isEqual.in[0] <== tokenIdTmp1;
+    isEqual.in[1] <== zAssetTokenId;
+    isEqual.enabled <== enabled;
+}
+
+template IsUtxoTokenIdEqualToTokenId() {
+    signal input utxoZAssetId;
+    signal input tokenId;
+    signal input offset;
+    signal input enabled;
+
+    assert(utxoZAssetId < 2**64);
+    assert(tokenId < 2**254);
+    assert(offset < 33);
+
+    //signal lsb_mask;
+    var lsb_mask = 2**offset - 1;
+
+    signal utxoZAssetIdTmp;
+    utxoZAssetIdTmp <-- utxoZAssetId & lsb_mask;
+    signal tokenIdTmp;
+    tokenIdTmp <-- tokenId & lsb_mask;
+
+    component isEqual = ForceEqualIfEnabled();
+    isEqual.in[0] <== utxoZAssetIdTmp;
+    isEqual.in[1] <== tokenIdTmp;
+    isEqual.enabled <== enabled;
+}
+
+// the old version for reference
+template ZAssetChecker2() {
     signal input token;               // 160 bit
     signal input tokenId;             // 256 bit
     signal input zAsset;              // 64 bit
@@ -19,7 +150,7 @@ template ZAssetChecker() {
     assert(withdrawAmount < 2**250);
 
     component isZeroAmounts = IsZero();
-    isZeroAmounts.in <== depositAmount + withdrawAmount;
+    isZeroAmounts.in <== depositAmount + withdrawAmount; // TODO: isZeroExternalAmounts
 
     // var isTxInternalOnly = isZeroAmounts.out;
 
@@ -28,9 +159,9 @@ template ZAssetChecker() {
     // 1) token == 0
     // 2) tokenId == 0
     // 3) If offset == 0
-    // ---> 3.1) tokenId was NOT used to setup zAssetID-LSBs (tokenId < 2^32)
+    // ---> 3.1) tokenId was NOT used to setup zAssetID-LSBs (tokenId < 2^32) --- ERC20 case
     // --- OR ---
-    // ---> 3.2) tokenId > 2^32 and specific zAssetId is given per each tokenId
+    // ---> 3.2) tokenId > 2^32 and specific zAssetId is given per each tokenId --- Not standart case of ERC721/ERC1155
     //           AND zAsset::tokenId is set to tokenId
     // 4) If offset != 0
     // ---> 4.1) public tokenId < 2^32 (otherwise offset must be ZERO and specific zAsset::tokenId was used)
@@ -101,7 +232,7 @@ template ZAssetChecker() {
     var enableIfZAssetTokenIdIs_Zero = isZAssetTokenIdZero.out;
 
     // 3.1.a) tokenId == UTXO::zAssetId (with respect of LSBs & offset)
-    component if_3_1_a_case = IsTokenIdEqual();
+    component if_3_1_a_case = IsTokenIdEqualToUtxoZAssetTokenId();
     if_3_1_a_case.tokenId <== tokenId;
     if_3_1_a_case.utxoZAsset <== utxoZAsset;
     if_3_1_a_case.offset <== zAssetOffset;
@@ -141,10 +272,10 @@ template ZAssetChecker() {
     if_4_1_case.enabled <== enable_4_1_case;
 
     // case-a: 3), 4), case-b: 2.1), 3.1.b), 3.2.b) cases
-    component isZAssetEqual = IsZAssetEqual();
-    isZAssetEqual.zAsset <== zAsset;
+    component isZAssetEqual = IsZAssetIdEqualToUtxoZAssetId();
+    isZAssetEqual.zAssetId <== zAsset;
     isZAssetEqual.offset <== zAssetOffset;
-    isZAssetEqual.utxoZAsset <== utxoZAsset;
+    isZAssetEqual.utxoZAssetId <== utxoZAsset;
     isZAssetEqual.enabled <== 1; // always
 
     // ---------------------------------------------------------------------------------------------------------------//
@@ -170,34 +301,7 @@ template ZAssetChecker() {
 // and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
 // offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
 // tokenId is LSBs
-template IsZAssetEqual() {
-    signal input zAsset;
-    signal input offset;
-    signal input utxoZAsset;
-    signal input enabled;
-
-    assert(zAsset < 2**64);
-    assert(offset < 33);
-    assert(utxoZAsset < 2**64);
-
-    signal zAssetTmp;
-    zAssetTmp <-- zAsset >> offset;
-
-    signal utxoZAssetTmp;
-    utxoZAssetTmp <-- utxoZAsset >> offset;
-
-    component isEqual = ForceEqualIfEnabled();
-    isEqual.in[0] <== zAssetTmp;
-    isEqual.in[1] <== utxoZAssetTmp;
-    isEqual.enabled <== enabled;
-}
-
-// with respect to offset - `offset` address the LSB bit number
-// for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
-// and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
-// offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
-// tokenId is LSBs
-template IsTokenIdEqual() {
+template IsTokenIdEqualToUtxoZAssetTokenId() {
     signal input tokenId;
     signal input offset;
     signal input utxoZAsset;
@@ -225,3 +329,4 @@ template IsTokenIdEqual() {
     isEqual.in[1] <== utxoZAssetTmp2;
     isEqual.enabled <== enabled;
 }
+

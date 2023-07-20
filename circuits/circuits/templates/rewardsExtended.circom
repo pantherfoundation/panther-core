@@ -7,8 +7,10 @@ template RewardsExtended(nUtxoIn) {
     signal input forTxReward;               // 40 bit
     signal input forUtxoReward;             // 40 bit
     signal input forDepositReward;          // 40 bit
+    signal input denominator;               // 40 bit
     signal input spendTime;                 // 32 bit
     signal input assetWeight;               // 32 bit
+    signal input assetWeightDenominator;    // 32 bit
     signal input utxoInAmount[nUtxoIn];     // 64 bit
     signal input utxoInCreateTime[nUtxoIn]; // 64 bit
 
@@ -52,8 +54,12 @@ template RewardsExtended(nUtxoIn) {
         sum[i] <== sum[i-1] + mult[i] * utxoInAmount[i];
     }
     S3 <== sum[nUtxoIn-1];
-    S4 <== forUtxoReward*S3;
-    S5 <== (S4 + S2) * assetWeight;
+    signal S4_tmp;
+    S4_tmp <-- (forUtxoReward*S3) \ denominator;
+    S4 <== S4_tmp;
+    signal S5_tmp;
+    S5_tmp <-- ((S4 + S2) * assetWeight) \ assetWeightDenominator;
+    S5 <== S5_tmp;
     R <== S1 + S5;
 
     amountPrp <== R;

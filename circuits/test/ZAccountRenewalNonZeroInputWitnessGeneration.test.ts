@@ -212,10 +212,10 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
             12345678n,
             0,
             BigInt(
-                18197452976927786101951542528157502839686672147607577319569794194168804384659n,
+                11728486084117138299049842970728391864873855415795077492316123666247373393728n,
             ),
         ]);
-        // 7487360697439466912718019294114680111559647997679841394294411142107264512319n
+        // 16616159038183636829667398880414570825997904123457688426875723483398671385616n
         // console.log('forestTreeMerkleRoot=>', forestTreeMerkleRoot);
 
         const saltHash = poseidon([BigInt(1122n)]);
@@ -630,7 +630,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
             BigInt(0n),
         ],
         zNetworkChainId: BigInt(1n),
-        zNetworkIDsBitMap: BigInt(1234n),
+        zNetworkIDsBitMap: BigInt(1n),
         forTxReward: BigInt(1n),
         forUtxoReward: BigInt(2n),
         forDepositReward: BigInt(3n),
@@ -645,7 +645,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         ],
         zNetworkTreeMerkleRoot:
             BigInt(
-                11533271907829962178538751916725087229735862536220341910589678396909232316213n,
+                3571799819190386765638761636798698138144469641608011835483658954125713500776n,
             ),
 
         zNetworkTreePathElements: [
@@ -681,12 +681,12 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
             ),
         staticTreeMerkleRoot:
             BigInt(
-                18197452976927786101951542528157502839686672147607577319569794194168804384659n,
+                11728486084117138299049842970728391864873855415795077492316123666247373393728n,
             ),
 
         forestMerkleRoot:
             BigInt(
-                7487360697439466912718019294114680111559647997679841394294411142107264512319n,
+                16616159038183636829667398880414570825997904123457688426875723483398671385616n,
             ),
         taxiMerkleRoot: BigInt(0n),
         // Bus is the most used mode of UTXO addition, hence the ZAccount UTXO's and ZAsset UTXO's will get added to this merkle tree in this case.

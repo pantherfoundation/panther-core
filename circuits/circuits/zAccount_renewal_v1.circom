@@ -185,13 +185,13 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     component zAssetChecker = ZAssetChecker();
     zAssetChecker.token <== 0;
     zAssetChecker.tokenId <== 0;
-    zAssetChecker.zAsset <== zAssetId;
+    zAssetChecker.zAssetId <== zAssetId;
     zAssetChecker.zAssetToken <== zAssetToken;
     zAssetChecker.zAssetTokenId <== zAssetTokenId;
     zAssetChecker.zAssetOffset <== zAssetOffset;
     zAssetChecker.depositAmount <== 0;
     zAssetChecker.withdrawAmount <== 0;
-    zAssetChecker.utxoZAsset <== zAssetId;
+    zAssetChecker.utxoZAssetId <== zAssetId;
 
     // verify zkp-token
     zAssetId === 0; // ZKP is zero

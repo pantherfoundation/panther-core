@@ -109,7 +109,7 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
     // 4) daoDataEscrowPubKey[2]
     signal input zNetworkId;
-    signal input zNetworkChainId;
+    signal input zNetworkChainId; // public
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
@@ -177,13 +177,13 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     component zAssetChecker = ZAssetChecker();
     zAssetChecker.token <== 0;
     zAssetChecker.tokenId <== 0;
-    zAssetChecker.zAsset <== zAssetId;
+    zAssetChecker.zAssetId <== zAssetId;
     zAssetChecker.zAssetToken <== zAssetToken;
     zAssetChecker.zAssetTokenId <== zAssetTokenId;
     zAssetChecker.zAssetOffset <== zAssetOffset;
     zAssetChecker.depositAmount <== 0;
     zAssetChecker.withdrawAmount <== 0;
-    zAssetChecker.utxoZAsset <== zAssetId;
+    zAssetChecker.utxoZAssetId <== zAssetId;
 
     // [3] - Zkp balance
     component totalBalanceChecker = BalanceChecker();
@@ -282,7 +282,7 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoOutNoteHasher.networkId <== zAccountUtxoInNetworkId;
 
     // verify expiryTime
-    assert(zAccountUtxoInExpiryTime <= createTime);
+    assert(zAccountUtxoInExpiryTime >= createTime);
 
     // [9] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
@@ -292,6 +292,9 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
 
     // [10] - Utxo hidden part generation & commitment
     component utxoNoteHasher = UtxoNoteLeafHasher();
+    utxoNoteHasher.zAsset <== zAssetId;
+    utxoNoteHasher.spendPk[0] <== utxoSpendPubKey[0];
+    utxoNoteHasher.spendPk[1] <== utxoSpendPubKey[1];
     utxoNoteHasher.originNetworkId <== zNetworkId;
     utxoNoteHasher.targetNetworkId <== zNetworkId;
     utxoNoteHasher.createTime <== createTime;
