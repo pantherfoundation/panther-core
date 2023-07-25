@@ -2,7 +2,7 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
-    collectCoverage: true,
+    collectCoverage: false,
     testMatch: ['**/__tests__/**/*.[t]s?(x)', '**/?(*.)+(spec|test).[t]s?(x)'],
     testPathIgnorePatterns: ['<rootDir>/lib'],
     watchPathIgnorePatterns: [

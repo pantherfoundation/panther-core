@@ -40,3 +40,7 @@ export function bigintToBytes32(data: bigint): string {
 export function bigintToBytes(data: bigint, width: number): string {
     return utils.hexZeroPad('0x' + data.toString(16), width);
 }
+
+export function bigintToBinaryString(n: bigint, width: number): string {
+    return '0b' + n.toString(2).padStart(width, '0');
+}
