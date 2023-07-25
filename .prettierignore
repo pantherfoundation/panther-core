@@ -39,6 +39,7 @@ dapp/src/types/blake-hash/
 dapp/src/types/circomlibjs/
 dapp/src/types/contracts/
 dapp/src/types/ffjavascript/
+dapp/src/types/modules/
 dapp/LICENSE*
 dapp/stats.json
 dapp/tests/data/*.index.html
