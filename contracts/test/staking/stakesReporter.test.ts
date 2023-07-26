@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {expect} from 'chai';
 import {BigNumber, utils as u} from 'ethers';

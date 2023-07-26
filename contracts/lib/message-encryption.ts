@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {generateEcdhSharedKey} from '@panther-core/crypto/lib/base/encryption';
 import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
 import {

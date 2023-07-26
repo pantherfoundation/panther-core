@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 /*
 These helpers are specifically  written for testing the walk-around for the bug
 with `unstake` on the Ethereum mainnet after May 4th, 2022.
