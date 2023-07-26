@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {Pair, toBytes32, Triad, zeroLeavesTriad} from '../../../lib/utilities';
 
 export function getTriadAt(index: number): Triad {

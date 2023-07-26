@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {smock, FakeContract} from '@defi-wonderland/smock';
 // eslint-disable-next-line
 import {TypedDataDomain} from '@ethersproject/abstract-signer';

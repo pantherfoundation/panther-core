@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {poseidon2or3} from '@panther-core/crypto/lib/other/triad-merkle-tree';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';

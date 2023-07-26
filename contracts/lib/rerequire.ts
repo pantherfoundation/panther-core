@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import path from 'path';
 
 // rerequire deletes the module from the cache and re-imports it.

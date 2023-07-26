@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 /*
 This module is supposed for manual testing of "unstaking" in the hardhat forked Polygon environment.
 For example, to test batch unstaking, run this in hardhat console:

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {Contract} from 'ethers';
 import type {EventFilter, Event} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';

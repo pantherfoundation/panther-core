@@ -6,6 +6,9 @@ circuits/test/circuits/*.circom
 circuits/test/data/*.info
 circuits/test/data/*.keys
 circuits/test/data/*.tar.gz
+circuits/lib
+circuits/types
+circuits/compiled
 
 contracts/artifacts/
 contracts/cache/

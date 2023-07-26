@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import poseidon from 'circomlibjs/src/poseidon';
 
@@ -63,7 +63,7 @@ export class BusTree {
         private readonly utxoPackDepth: number,
         private readonly branchDepth: number,
         private readonly depth: number,
-        zeroValue: bigint = BigInt(0),
+        zeroValue = BigInt(0),
     ) {
         this.validateDepths(utxoPackDepth, branchDepth, depth);
 

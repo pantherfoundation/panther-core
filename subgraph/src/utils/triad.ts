@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {log, BigInt} from '@graphprotocol/graph-ts';
+
 import {Triad} from '../../generated/schema';
 import {TriadParameters} from '../types/triad';
+
 import {TREE_MAX_LEAF} from './constants';
 
 export function createTriad(params: TriadParameters): Triad {

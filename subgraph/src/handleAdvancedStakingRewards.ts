@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {NewCommitments} from '../generated/PantherPoolV0/PantherPoolV0';
 import {RewardGenerated} from '../generated/AdvancedStakeRewardController/AdvancedStakeRewardController';
+import {NewCommitments} from '../generated/PantherPoolV0/PantherPoolV0';
 
-import {createOrUpdateStaker} from './utils/staker';
 import {createOrUpdateAdvancedStakingReward} from './utils/advancedStakingReward';
+import {createOrUpdateStaker} from './utils/staker';
 import {createTriad} from './utils/triad';
 
 export function handleRewardGenerated(event: RewardGenerated): void {

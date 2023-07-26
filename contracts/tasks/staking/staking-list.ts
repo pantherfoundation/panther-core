@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import fs from 'fs';
 
 import {filterPaginator} from '@panther-core/crypto/lib/utils/paginator';
