@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 // The code is inspired by applied ZKP
 import assert from 'assert';
 import fs from 'fs';
@@ -55,7 +56,7 @@ export function toBytes32(n: number | string | bigint) {
 // quadLeafIdToTreeIdAndTriadLeafId converts the Quad Leaf ID to Tree ID and
 // Triad Leaf ID
 export function quadLeafIdToTreeIdAndTriadLeafId(
-    leafId: BigInt,
+    leafId: bigint,
     treeDepth = TREE_DEPTH,
 ): [number, number] {
     const nLeafId = Number(leafId);

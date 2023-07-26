@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {task, types} from 'hardhat/config';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 

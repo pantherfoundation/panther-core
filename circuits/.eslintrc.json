@@ -18,7 +18,12 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "eslint-plugin-import", "import"],
+  "plugins": [
+    "@typescript-eslint",
+    "eslint-plugin-import",
+    "eslint-plugin-local-rules",
+    "import"
+  ],
   "rules": {
     "import/no-unresolved": "off",
     "import/named": "warn",
@@ -42,6 +47,7 @@
         "alphabetize": {"order": "asc", "caseInsensitive": true}
       }
     ],
+    "local-rules/license-header": "error",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-explicit-any": "off",
