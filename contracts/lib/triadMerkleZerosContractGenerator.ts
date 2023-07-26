@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import * as fs from 'fs';
 import * as path from 'path';
 

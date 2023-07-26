@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {
     BusBatchOnboarded as BusBatchOnboardedEvent,
@@ -17,6 +17,7 @@ import {
     MinerRewarded,
     UtxoBusQueued,
 } from '../generated/schema';
+
 import {generateEntityId} from './utils/idGenerators';
 
 export function handleBusBatchOnboarded(event: BusBatchOnboardedEvent): void {
