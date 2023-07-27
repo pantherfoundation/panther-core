@@ -1,0 +1,21 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes1",
+        "name": "txType",
+        "type": "bytes1"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "content",
+        "type": "bytes"
+      }
+    ],
+    "name": "TransactionNote",
+    "type": "event"
+  }
+]
