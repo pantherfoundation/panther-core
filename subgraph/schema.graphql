@@ -83,3 +83,12 @@ type UtxoBusQueued @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type TransactionNote @entity(immutable: true) {
+    id: Bytes!
+    txType: Bytes! # bytes1
+    content: Bytes! # bytes
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}

@@ -38,3 +38,23 @@ dataSources:
         - event: UtxoBusQueued(indexed bytes32,indexed uint256,uint256)
           handler: handleUtxoBusQueued
       file: ./src/handleBusTreeQueues.ts
+  - kind: ethereum
+    name: PoolContract
+    network: mumbai
+    source:
+      address: '0x075264C751aC15Ef255C14FD8D204cf4c1a708Cc'
+      abi: PoolContract
+      startBlock: 38314744
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TransactionNote
+      abis:
+        - name: PoolContract
+          file: ./abis/PantherPoolV1.json
+      eventHandlers:
+        - event: TransactionNote(bytes1,bytes)
+          handler: handleTransactionNote
+      file: ./src/handePoolContract.ts
