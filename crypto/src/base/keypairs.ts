@@ -90,8 +90,17 @@ export const deriveChildPrivKeyFromRootPrivKey = (
     return moduloBabyJubSubFieldPrime(rootPrivKey * random);
 };
 
-export const packPublicKey = babyjub.packPoint;
-export const unpackPublicKey = babyjub.unpackPoint;
+// packPublicKey packs the pub key and switches representation from
+// little-endian to big-endian representation
+export function packPublicKey(pubKey: PublicKey): Uint8Array {
+    return babyjub.packPoint(pubKey).reverse();
+}
+
+// unpackPublicKey switches representation from big-endian to little-endian and
+// unpacks the pub key
+export function unpackPublicKey(packedPubKey: Uint8Array): PublicKey {
+    return babyjub.unpackPoint([...packedPubKey].reverse());
+}
 
 export const generateRandomKeypair = () =>
     deriveKeypairFromPrivKey(generateRandomInBabyJubSubField());
