@@ -11,13 +11,8 @@ import { PoseidonT3 } from "./crypto/Poseidon.sol";
 // - synchronize "Bus" trees roots (which are leafs of this tree)
 // - propagate this tree root to other networks (that results in updating the
 // state of the `PantherForest` contracts on supported network).
-contract PantherFerryTree is BinaryUpdatableTree {
-    function hash(bytes32[2] memory input)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
+contract PantherFerryTree {
+    function hash(bytes32[2] memory input) internal pure returns (bytes32) {
         return PoseidonT3.poseidon(input);
     }
 }
