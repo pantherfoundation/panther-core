@@ -33,8 +33,6 @@ contract MockPantherPoolV1 is
     mapping(address => bool) public vaultAssetUnlockers;
     mapping(address => uint160) public circuitExecutor;
 
-    event LogCreateZAccountUtxo(bytes32 utxo);
-
     constructor(
         address _owner,
         address vault,
@@ -74,7 +72,7 @@ contract MockPantherPoolV1 is
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory /*secretMessage*/
+        bytes memory secretMessage
     )
         external
         returns (
@@ -82,6 +80,7 @@ contract MockPantherPoolV1 is
         )
     {
         require(zAccountRegistrationCircuitId != 0, "undefined circuit");
+        require(inputs[5] >= block.timestamp, "low zAccount creation time");
 
         require(
             VERIFIER.verify(zAccountRegistrationCircuitId, inputs, proof),
@@ -90,9 +89,26 @@ contract MockPantherPoolV1 is
 
         bytes32 commitment = bytes32(inputs[9]);
 
-        BUS_TREE.addZAccountUtxoToBusQueue(commitment);
+        (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
+            commitment
+        );
 
-        emit LogCreateZAccountUtxo(commitment);
+        uint32 creationType = 1;
+
+        bytes memory transactionNoteContent = abi.encodePacked(
+            // First public message
+            uint8(0x60),
+            creationType,
+            // Seconds public message
+            uint8(0x62),
+            inputs[11], // zAccountCommitment
+            queueId,
+            indexInQueue,
+            // Private message
+            secretMessage
+        );
+
+        emit TransactionNote(0x01, transactionNoteContent);
 
         return 0;
     }

@@ -6,8 +6,10 @@ import "../common/ImmutableOwnable.sol";
 import "../common/TransferHelper.sol";
 import { HUNDRED_PERCENT } from "../common/Constants.sol";
 
-contract OnboardingRewardController is ImmutableOwnable {
+contract OnboardingController is ImmutableOwnable {
     using TransferHelper for address;
+
+    // solhint-disable var-name-mixedcase
 
     uint256 private constant ZERO_REWARD = 0;
 
@@ -15,6 +17,8 @@ contract OnboardingRewardController is ImmutableOwnable {
     address public immutable ZKP_TOKEN;
     address public immutable VAULT;
     address public immutable RESERVE_CONTROLLER;
+
+    // solhint-enable var-name-mixedcase
 
     struct RewardParams {
         // reserved bytes
@@ -127,7 +131,7 @@ contract OnboardingRewardController is ImmutableOwnable {
         external
         returns (uint256 _zZkpRewardAlloc)
     {
-        require(msg.sender == ZACCOUNT_REGISTRY);
+        require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
 
         RewardParams memory _rewardParams = rewardParams;
 

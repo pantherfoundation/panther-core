@@ -115,6 +115,22 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         allowedUtxos = (secs * perMinuteUtxosLimit) / 60 seconds - _utxoCounter;
     }
 
+    function addUtxoToBusQueue(bytes32 utxo)
+        external
+        returns (uint32 queueId, uint8 indexInQueue)
+    {
+        require(msg.sender == PANTHER_POOL, "BT:UNAUTH_ZACCOUNT_UTXO_SENDER");
+
+        bytes32[] memory utxos = new bytes32[](1);
+        utxos[0] = utxo;
+
+        queueId = _nextQueueId - 1;
+        BusQueue memory busQueue = _busQueues[queueId];
+        indexInQueue = busQueue.nUtxos;
+
+        addUtxosToBusQueue(utxos, uint96(basePerUtxoReward));
+    }
+
     function simulateAddUtxosToBusQueue() external {
         uint256 _counter = uint256(utxoCounter);
 

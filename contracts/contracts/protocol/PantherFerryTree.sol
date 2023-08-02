@@ -15,4 +15,8 @@ contract PantherFerryTree {
     function hash(bytes32[2] memory input) internal pure returns (bytes32) {
         return PoseidonT3.poseidon(input);
     }
+
+    function zeroRoot() public pure override returns (bytes32) {
+        return bytes32(0);
+    }
 }

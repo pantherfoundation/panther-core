@@ -65,12 +65,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // Mapping from queue ID to queue params
-    mapping(uint32 => BusQueue) private _busQueues;
+    mapping(uint32 => BusQueue) internal _busQueues;
     // Mapping from queue ID to queue commitment
     mapping(uint32 => bytes32) private _busQueueCommitments;
 
     // ID of the next queue to create
-    uint32 private _nextQueueId;
+    uint32 internal _nextQueueId;
     // Number of unprocessed queues
     uint32 private _numPendingQueues;
     // Link to the oldest (created but yet) unprocessed queue
