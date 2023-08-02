@@ -7,7 +7,11 @@ import crypto from 'crypto';
 // @ts-ignore
 import {babyjub} from 'circomlibjs';
 
-import {assert, assertInBabyJubJubSubOrder} from '../utils/assertions';
+import {
+    assert,
+    assertInBabyJubJubSubOrder,
+    assertInSnarkField,
+} from '../utils/assertions';
 import {SNARK_FIELD_SIZE} from '../utils/constants';
 
 assert(babyjub.p === SNARK_FIELD_SIZE, 'SNARK field size mismatch');
@@ -28,6 +32,12 @@ export const generateRandom256Bits = (): bigint => {
 export const generateRandomInBabyJubSubField = (): bigint => {
     const random = moduloBabyJubSubFieldPrime(generateRandom256Bits());
     assertInBabyJubJubSubOrder(random, 'random');
+    return random;
+};
+
+export const generateRandomInSnarkField = (): bigint => {
+    const random = moduloSnarkFieldPrime(generateRandom256Bits());
+    assertInSnarkField(random, 'random');
     return random;
 };
 
