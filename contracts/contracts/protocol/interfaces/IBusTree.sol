@@ -3,5 +3,7 @@
 pragma solidity ^0.8.16;
 
 interface IBusTree {
-    function addZAccountUtxoToBusQueue(bytes32 utxo) external;
+    function addUtxoToBusQueue(bytes32 utxo)
+        external
+        returns (uint32 queueId, uint8 indexInQueue);
 }

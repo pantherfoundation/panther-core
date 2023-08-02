@@ -2,40 +2,54 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "./interfaces/IOnboardingController.sol";
+import "./interfaces/IPantherPoolV1.sol";
+import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+
+import "./crypto/BabyJubJub.sol";
+
+import "./zAccountsRegistry/BlacklistedZAccountIdsTree.sol";
+import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
+
 import "../common/ImmutableOwnable.sol";
 import "../common/Types.sol";
-import "./zAccountsRegistry/blacklistedZAccountIdsTree/BlacklistedZAccountIdsTree.sol";
-import "./zAccountsRegistry/ZAccountRegeistrationSignatureVerifier.sol";
-
-import "./interfaces/IPantherPoolV1.sol";
-import "./interfaces/IOnboardingRewardController.sol";
+import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constant.sol";
 
 /**
  * @title ZAccountsRegistry
  * @author Pantherprotocol Contributors
  * @notice Registry and whitelist of zAccounts allowed to interact with MASP.
  */
-// solhint-disable var-name-mixedcase
+
+// solhint-disable contract-name-camelcase
 contract ZAccountsRegistry is
     ImmutableOwnable,
     BlacklistedZAccountIdsTree,
-    ZAccountRegeistrationSignatureVerifier
+    ZAccountsRegeistrationSignatureVerifier
 {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    uint8 private constant ZONE_ZACCOUNT_UNDEFINED = 0x00;
-    uint8 private constant ZONE_ZACCOUNT_REGISTERED = 0x01;
-    uint8 private constant ZONE_ZACCOUNT_ACTIVATED = 0x02;
+    enum ZACCOUNT_STATUS {
+        UNDEFINED,
+        REGISTERED,
+        ACTIVATED
+    }
+    // solhint-disable var-name-mixedcase
+
+    uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
 
     IPantherPoolV1 public immutable PANTHER_POOL;
-    IOnboardingRewardController public immutable ONBOARDING_REWARD_CONTROLLER;
+    ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
+    IOnboardingController public immutable ONBOARDING_CONTROLLER;
+
+    // solhint-enable var-name-mixedcase
 
     struct ZAccount {
         uint224 _unused; // reserved
-        uint24 id; // the ZAccount id, starts from 1
+        uint24 id; // the ZAccount id, starts from 0
         uint8 version; // ZAccount version
         bytes32 pubRootSpendingKey;
         bytes32 pubReadingKey;
@@ -43,219 +57,238 @@ contract ZAccountsRegistry is
 
     uint256 public zAccountIdTracker;
 
+    mapping(bytes32 => uint256) public zoneZAccountNullifiers;
+    mapping(address => ZACCOUNT_STATUS) public zAccountStatus;
     mapping(address => bool) public isMasterEoaBlacklisted;
     mapping(bytes32 => bool) public isPubRootSpendingKeyBlacklisted;
     mapping(uint24 => bool) public isZAccountIdBlacklisted;
-    mapping(bytes32 => bool) public zoneZAccountNullifier;
-    mapping(address => uint8) public zAccountStatus;
 
     // Mapping from `MasterEoa` to ZAccount (i.e. params of an ZAccount)
     mapping(address => ZAccount) public zAccounts;
 
-    // Mapping from zAccount Id to Eoa
-    mapping(uint24 => address) public ids;
+    // Mapping from zAccount Id to Master Eoa
+    mapping(uint24 => address) public masterEOAs;
 
-    event ZAccountRegistered(address masterEoz, ZAccount zAccount);
-    event ZAccountStatusChanged(address masterEoa, uint256 newStatus);
+    event ZAccountRegistered(address masterEoa, ZAccount zAccount);
+    event ZAccountActivated(uint24 id);
     event BlacklistForZAccountIdUpdated(uint24 zAccountId, bool isBlackListed);
     event BlacklistForMasterEoaUpdated(address masterEoa, bool isBlackListed);
     event BlacklistForPubRootSpendingKeyUpdated(
-        bytes32 pubRootSpendingKey,
+        bytes32 packedPubRootSpendingKey,
         bool isBlackListed
     );
 
     constructor(
         address _owner,
+        uint8 _zAccountVersion,
         address pantherPool,
-        address onboardingRewardController
-    ) ImmutableOwnable(_owner) {
+        address pantherStaticTree,
+        address onboardingController
+    )
+        ImmutableOwnable(_owner)
+        ZAccountsRegeistrationSignatureVerifier(_zAccountVersion)
+    {
         require(
             pantherPool != address(0) &&
-                onboardingRewardController != address(0),
-            "Init: Zero address"
+                pantherStaticTree != address(0) &&
+                onboardingController != address(0),
+            ERR_INIT_CONTRACT
         );
 
         PANTHER_POOL = IPantherPoolV1(pantherPool);
-        ONBOARDING_REWARD_CONTROLLER = IOnboardingRewardController(
-            onboardingRewardController
-        );
+        PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);
+        ONBOARDING_CONTROLLER = IOnboardingController(onboardingController);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
 
-    function isZAccountBlacklisted(address _masterEOA)
+    function isZAccountWhitelisted(address _masterEOA)
         external
         view
-        returns (bool)
+        returns (bool isWhitelisted)
     {
-        ZAccount memory _ZAccount = zAccounts[_masterEOA];
+        ZAccount memory _zAccount = zAccounts[_masterEOA];
 
-        bytes32 pubRootSpendingKey = _ZAccount.pubRootSpendingKey;
-        uint24 zAccountId = _ZAccount.id;
+        bool isZAccountExists = masterEOAs[_zAccount.id] != address(0);
 
-        return
-            isPubRootSpendingKeyBlacklisted[pubRootSpendingKey] ||
-            isMasterEoaBlacklisted[_masterEOA] ||
-            isZAccountIdBlacklisted[zAccountId];
+        (bool isBlacklisted, ) = _isBlacklisted(
+            _zAccount.id,
+            _masterEOA,
+            _zAccount.pubRootSpendingKey
+        );
+
+        return isZAccountExists && !isBlacklisted;
     }
 
     /* ========== EXTERNAL FUNCTIONS ========== */
 
     function registerZAccount(
-        bytes32 _pubRootSpendingKey,
-        bytes32 _pubReadingKey,
-        bytes32 _salt,
+        G1Point memory _pubRootSpendingKey,
+        G1Point memory _pubReadingKey,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) external {
+        bytes32 pubRootSpendingKeyPacked = BabyJubJub.pointPack(
+            _pubRootSpendingKey
+        );
+        bytes32 pubReadingKeyPacked = BabyJubJub.pointPack(_pubReadingKey);
+
         require(
-            !isPubRootSpendingKeyBlacklisted[_pubRootSpendingKey],
-            "ZAR: Blacklisted pub root spending key"
+            !isPubRootSpendingKeyBlacklisted[pubRootSpendingKeyPacked],
+            ERR_BLACKLIST_PUB_ROOT_SPENDING_KEY
         );
 
-        bytes32 hash = toTypedMessageHash(
-            _salt,
-            _pubRootSpendingKey,
-            _pubReadingKey
+        address masterEoa = recoverMasterEoa(
+            pubRootSpendingKeyPacked,
+            pubReadingKeyPacked,
+            v,
+            r,
+            s
         );
 
-        address masterEoa = verifySignature(hash, v, r, s);
+        require(!isMasterEoaBlacklisted[masterEoa], ERR_BLACKLIST_MASTER_EOA);
         require(
-            !isMasterEoaBlacklisted[masterEoa],
-            "ZAR: Blacklisted master eoa"
-        );
-        require(
-            zAccountStatus[masterEoa] == ZONE_ZACCOUNT_UNDEFINED,
-            "ZAR: zAccount exists"
+            zAccountStatus[masterEoa] == ZACCOUNT_STATUS.UNDEFINED,
+            ERR_DUPLICATED_MASTER_EOA
         );
 
         uint24 zAccountId = uint24(_getNextZAccountId());
 
-        ZAccount memory _ZAccount = ZAccount({
+        ZAccount memory _zAccount = ZAccount({
             _unused: uint224(0),
             id: zAccountId,
-            version: ZACCOUNT_VERSION,
-            pubRootSpendingKey: _pubRootSpendingKey,
-            pubReadingKey: _pubReadingKey
+            version: uint8(ZACCOUNT_VERSION),
+            pubRootSpendingKey: pubRootSpendingKeyPacked,
+            pubReadingKey: pubReadingKeyPacked
         });
 
-        ids[zAccountId] = masterEoa;
-        zAccounts[masterEoa] = _ZAccount;
-        zAccountStatus[masterEoa] = ZONE_ZACCOUNT_REGISTERED;
+        masterEOAs[zAccountId] = masterEoa;
+        zAccounts[masterEoa] = _zAccount;
+        zAccountStatus[masterEoa] = ZACCOUNT_STATUS.REGISTERED;
 
-        emit ZAccountRegistered(masterEoa, _ZAccount);
+        emit ZAccountRegistered(masterEoa, _zAccount);
     }
 
-    // extraInputsHash,                       // [1]
-    // zkpAmount,                             // [2]
-    // zkpChange,                             // [3]
-    // zAccountId,                            // [4]
-    // zAccountPrpAmount,                     // [5]
-    // zAccountCreateTime,                    // [6]
-    // zAccountRootSpendPubKey,               // [7] - x,y = 2
-    // zAccountMasterEOA,                     // [8]
-    // zAccountNullifier,                     // [9]
-    // zAccountCommitment,                    // [10]
-    // kycSignedMessageHash,                  // [11]
-    // forestMerkleRoot,                      // [12]
-    // saltHash,                              // [13]
-    // magicalConstraint                      // [14]
     function activateZAccount(
-        uint256[14] calldata inputs,
-        uint256 secret,
+        uint256[15] calldata inputs,
+        bytes memory secretMessage,
         SnarkProof calldata proof
     ) external {
-        uint256 zAccountId = inputs[3];
-        address userMasterEoa = address(uint160(inputs[7]));
+        (
+            bytes32 extraInputsHash,
+            uint256 zkpAmount,
+            uint24 zAccountId,
+            ,
+            bytes32 zAccountRootSpendPubKey,
+            address zAccountMasterEOA,
+            bytes32 zAccountNullifier,
+            ,
 
-        require(ids[uint24(zAccountId)] == userMasterEoa, "ZAR: Not exist");
+        ) = _destructPublicInputs(inputs);
 
         require(
-            !isPubRootSpendingKeyBlacklisted[bytes32(inputs[6])],
-            "ZAR: Blacklisted pub root spending key"
+            extraInputsHash == keccak256(secretMessage),
+            ERR_INVALID_EXTRA_INPUT_HASH
         );
         require(
-            !isMasterEoaBlacklisted[userMasterEoa],
-            "ZAR: Blacklisted master eoa"
+            masterEOAs[zAccountId] == zAccountMasterEOA,
+            ERR_UNKNOWN_ZACCOUNT
         );
+
+        (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
+            zAccountId,
+            zAccountMasterEOA,
+            zAccountRootSpendPubKey
+        );
+        require(!isBlacklisted, errMsg);
+
+        // Prevent activating twice for same zone or same network
         require(
-            !isZAccountIdBlacklisted[uint24(inputs[3])],
-            "ZAR: Blacklisted zAccount id"
+            zoneZAccountNullifiers[zAccountNullifier] == 0,
+            ERR_DUPLICATED_NULLIFIER
         );
 
-        // Prevent activating twice for one zone
-        require(
-            !zoneZAccountNullifier[bytes32(inputs[8])],
-            "ZAR: nullifier exists"
+        zoneZAccountNullifiers[zAccountNullifier] = block.number;
+
+        ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
+
+        // if the status is registered, then change it to activate.
+        // If status is already activated, it means  Zaccount is activated at least in 1 zone.
+        if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
+            zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;
+        }
+
+        uint256 _zkpRewards = _notifyOnboardingController(
+            zAccountMasterEOA,
+            uint8(userPrevStatus),
+            uint8(ZACCOUNT_STATUS.ACTIVATED),
+            new bytes(0)
         );
-        zoneZAccountNullifier[bytes32(inputs[8])] = true;
 
-        // If status is activated, it means  Zaccount is activated at least in 1 zone.
-        if (zAccountStatus[userMasterEoa] == ZONE_ZACCOUNT_REGISTERED)
-            zAccountStatus[userMasterEoa] = ZONE_ZACCOUNT_ACTIVATED;
+        require(_zkpRewards == zkpAmount, ERR_LOW_ZKP_AMOUNT);
 
-        _grantZkpRewardsToUserAndKycProvider(
-            inputs[1], // zkpAmount
-            userMasterEoa,
-            address(0) // kycProvider address???
-        );
+        _createZAccountUTXO(inputs, proof, secretMessage);
 
-        _createZAccountUTXO(inputs, secret, proof);
-
-        emit ZAccountStatusChanged(
-            userMasterEoa,
-            uint256(ZONE_ZACCOUNT_ACTIVATED)
-        );
+        emit ZAccountActivated(zAccountId);
     }
 
-    function _grantZkpRewardsToUserAndKycProvider(
-        uint256 _userZkpReward,
-        address _user,
-        address _kycProvider
-    ) internal {
-        uint256 _userZkpRewardAlloc = ONBOARDING_REWARD_CONTROLLER.grantRewards(
-            _user,
-            _kycProvider
-        );
+    // /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
-        require(_userZkpRewardAlloc == _userZkpReward);
-    }
-
-    /* ========== ONLY FOR OWNER FUNCTIONS ========== */
-
-    // maybe batch
-    function updateBlacklistForMasterEoa(address masterEoa, bool isBlackListed)
-        external
-        onlyOwner
-    {
-        require(
-            isMasterEoaBlacklisted[masterEoa] != isBlackListed,
-            "ZAR: Invalid master eoa status"
-        );
-
-        isMasterEoaBlacklisted[masterEoa] = isBlackListed;
-
-        emit BlacklistForMasterEoaUpdated(masterEoa, isBlackListed);
-    }
-
-    // maybe batch
-    function updateBlacklistForPubRootSpendingKey(
-        bytes32 pubRootSpendingKey,
-        bool isBlackListed
+    function batchUpdateBlacklistForMasterEoa(
+        address[] calldata masterEoas,
+        bool[] calldata isBlackListed
     ) external onlyOwner {
         require(
-            isPubRootSpendingKeyBlacklisted[pubRootSpendingKey] !=
-                isBlackListed,
-            "ZAR: Invalid pub root spending key status"
+            masterEoas.length == isBlackListed.length,
+            ERR_MISMATCH_ARRAYS_LENGTH
         );
 
-        isPubRootSpendingKeyBlacklisted[pubRootSpendingKey] = isBlackListed;
+        for (uint256 i = 0; i < masterEoas.length; ) {
+            require(
+                isMasterEoaBlacklisted[masterEoas[i]] != isBlackListed[i],
+                ERR_REPETITIVE_STATUS
+            );
 
-        emit BlacklistForPubRootSpendingKeyUpdated(
-            pubRootSpendingKey,
-            isBlackListed
+            isMasterEoaBlacklisted[masterEoas[i]] = isBlackListed[i];
+
+            emit BlacklistForMasterEoaUpdated(masterEoas[i], isBlackListed[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function batchUpdateBlacklistForPubRootSpendingKey(
+        bytes32[] calldata packedPubRootSpendingKeys,
+        bool[] calldata isBlackListed
+    ) external onlyOwner {
+        require(
+            packedPubRootSpendingKeys.length == isBlackListed.length,
+            ERR_MISMATCH_ARRAYS_LENGTH
         );
+
+        for (uint256 i = 0; i < packedPubRootSpendingKeys.length; ) {
+            require(
+                isPubRootSpendingKeyBlacklisted[packedPubRootSpendingKeys[i]] !=
+                    isBlackListed[i],
+                ERR_REPETITIVE_STATUS
+            );
+
+            isPubRootSpendingKeyBlacklisted[
+                packedPubRootSpendingKeys[i]
+            ] = isBlackListed[i];
+
+            emit BlacklistForPubRootSpendingKeyUpdated(
+                packedPubRootSpendingKeys[i],
+                isBlackListed[i]
+            );
+
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     function updateBlacklistForZAccountId(
@@ -264,62 +297,171 @@ contract ZAccountsRegistry is
         bytes32[] calldata proofSiblings,
         bool isBlacklisted
     ) public onlyOwner {
-        require(ids[zAccountId] != address(0), "ZAR: not exists");
-        require(isZAccountIdBlacklisted[zAccountId] != isBlacklisted, "");
+        require(masterEOAs[zAccountId] != address(0), ERR_UNKNOWN_ZACCOUNT);
+        require(
+            isZAccountIdBlacklisted[zAccountId] != isBlacklisted,
+            ERR_REPETITIVE_STATUS
+        );
+
+        bytes32 blacklistedZAccountIdsTreeRoot;
 
         if (isBlacklisted) {
-            _addBlacklistZAccountId(zAccountId, leaf, proofSiblings);
+            blacklistedZAccountIdsTreeRoot = _addZAccountIdToBlacklist(
+                zAccountId,
+                leaf,
+                proofSiblings
+            );
         } else {
-            _removeBlacklistZAccountId(zAccountId, leaf, proofSiblings);
+            blacklistedZAccountIdsTreeRoot = _removeZAccountIdFromBlacklist(
+                zAccountId,
+                leaf,
+                proofSiblings
+            );
         }
 
         isZAccountIdBlacklisted[zAccountId] = isBlacklisted;
 
+        PANTHER_STATIC_TREE.updateRoot(
+            blacklistedZAccountIdsTreeRoot,
+            ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX
+        );
+
         emit BlacklistForZAccountIdUpdated(zAccountId, isBlacklisted);
     }
 
-    /* ========== PRIVATE FUNCTIONS ========== */
+    // /* ========== PRIVATE FUNCTIONS ========== */
+
+    function _getNextZAccountId() internal returns (uint256 curId) {
+        curId = zAccountIdTracker;
+        zAccountIdTracker = curId & 0xFF < 254
+            ? curId + 1
+            : curId + ZACCOUNT_ID_COUNTER_JUMP;
+    }
 
     function _createZAccountUTXO(
-        uint256[14] calldata inputs,
-        uint256 secret,
-        SnarkProof calldata proof
-    ) private {
+        uint256[15] calldata inputs,
+        SnarkProof calldata proof,
+        bytes memory secretMessage
+    ) private returns (uint256) {
         // Pool is supposed to revert in case of any error
-        // solhint-disable-next-line no-empty-blocks
-        try PANTHER_POOL.createUtxo(inputs, secret, proof) {} catch Error(
-            string memory reason
-        ) {
+        try
+            PANTHER_POOL.createZAccountUtxo(inputs, proof, secretMessage)
+        returns (uint256 result) {
+            return result;
+        } catch Error(string memory reason) {
             revert(reason);
         }
     }
 
-    function _getNextZAccountId() internal returns (uint256 nextId) {
-        nextId = zAccountIdTracker + 1;
+    function _notifyOnboardingController(
+        address _user,
+        uint8 _prevStatus,
+        uint8 _newStatus,
+        bytes memory _data
+    ) private returns (uint256 _zkpRewards) {
+        _zkpRewards = ONBOARDING_CONTROLLER.grantRewards(
+            _user,
+            _prevStatus,
+            _newStatus,
+            _data
+        );
+    }
 
-        if (nextId & zACCOUNT_ID_MAX_RANGE == zACCOUNT_ID_MAX_RANGE)
-            zAccountIdTracker = nextId + zACCOUNT_ID_JUMP_COUNT;
-        else zAccountIdTracker = nextId;
+    // extraInputsHash,                       // [1]
+    // zkpAmount,                             // [2]
+    // zkpChange,                             // [3]
+    // zAccountId,                            // [4]
+    // zAccountPrpAmount,                     // [5]
+    // zAccountCreateTime,                    // [6]
+    // zAccountRootSpendPubKeyX,              // [7]
+    // zAccountRootSpendPubKeyY,              // [8]
+    // zAccountMasterEOA,                     // [9]
+    // zAccountNullifier,                     // [10]
+    // zAccountCommitment,                    // [12]
+    // kycSignedMessageHash,                  // [12]
+    // forestMerkleRoot,                      // [13]
+    // saltHash,                              // [14]
+    // magicalConstraint                      // [15]
+    function _destructPublicInputs(uint256[15] memory inputs)
+        private
+        pure
+        returns (
+            bytes32 extraInputsHash,
+            uint256 zkpAmount,
+            uint24 zAccountId,
+            uint256 zAccountPrpAmount,
+            bytes32 zAccountRootSpendPubKey,
+            address zAccountMasterEOA,
+            bytes32 zAccountNullifier,
+            uint256 zAccountCommitment,
+            uint256 kycSignedMessageHash
+        )
+    {
+        extraInputsHash = bytes32(inputs[0]);
+        zkpAmount = inputs[1];
+        zAccountId = uint24(inputs[3]);
+        zAccountPrpAmount = inputs[4];
+
+        zAccountRootSpendPubKey = BabyJubJub.pointPack(
+            G1Point({ x: inputs[6], y: inputs[7] })
+        );
+
+        zAccountMasterEOA = address(uint160(inputs[8]));
+        zAccountNullifier = bytes32(inputs[9]);
+        zAccountCommitment = inputs[10];
+        kycSignedMessageHash = inputs[11];
+    }
+
+    function _isBlacklisted(
+        uint24 id,
+        address _masterEOA,
+        bytes32 pubRootSpendingKey
+    ) private view returns (bool isBlaklisted, string memory err) {
+        if (isZAccountIdBlacklisted[id]) {
+            err = _formatBlackListError(err, ERR_BLACKLIST_ZACCOUNT_ID);
+        }
+        if (isMasterEoaBlacklisted[_masterEOA]) {
+            err = _formatBlackListError(err, ERR_BLACKLIST_MASTER_EOA);
+        }
+        if (isPubRootSpendingKeyBlacklisted[pubRootSpendingKey]) {
+            err = _formatBlackListError(
+                err,
+                ERR_BLACKLIST_PUB_ROOT_SPENDING_KEY
+            );
+        }
+
+        return (isBlaklisted = bytes(err).length > 0 ? true : false, err);
+    }
+
+    function _formatBlackListError(
+        string memory currentErrMsg,
+        string memory errToBeAdded
+    ) private pure returns (string memory newErrMsg) {
+        return
+            string(
+                abi.encodePacked(
+                    bytes(currentErrMsg).length > 0
+                        ? string(abi.encodePacked(currentErrMsg, ","))
+                        : "",
+                    errToBeAdded
+                )
+            );
+    }
+
+    /// @dev Concatenate the strings together and returns the result
+    function formatBlackListError(
+        string memory content,
+        string memory contentToBeAdded,
+        string memory separator
+    ) internal pure returns (string memory newErrMsg) {
+        return
+            string(
+                abi.encodePacked(
+                    bytes(content).length > 0
+                        ? string(abi.encodePacked(content, separator))
+                        : "",
+                    contentToBeAdded
+                )
+            );
     }
 }
-
-/**
-
- * pubKeyBlacklist: mapping (key => bool)
- * masterEoaBlacklist: mapping (address => bool)
- *
- * masterEoaBlacklist: on blacklist via Id/Eoa, this mapping will be updated
- * problem: by reading the mapping, we do not know which method has been used for blacklisting.
- * solution: we can read event to check if user is blacklisted by id or eoa
- *
- * 
- * Info: it was not a good idea. because:
- *  1. both `updateBlacklistForMasterEoa` and `updateBlacklistForZAccountId` updated `masterEoaBlacklist` mapping.
- *  2. We may remove the master EOA from `masterEoaBlacklist` mapping by calling `updateBlacklistForMasterEoa(address, false)`
- *  3. it means, according to `masterEoaBlacklist` mapping, the eoa is not blacklisted BUT the 
- *     id is still be in the blacklisted merkle tree.
- *     so, the contract consider the user as non-blacklisted.
- *     It's better to have 3 mapping to keep track of all the blacklisted PublicKeys, EOAs and IDs.  
- * 
- *  
- */

@@ -7,9 +7,20 @@ import "../ZAccountsRegistry.sol";
 contract MockZAccountsRegistry is ZAccountsRegistry {
     uint256 public nextId;
 
-    constructor(address pantherPool, address onboardingRewardController)
-        ZAccountsRegistry(msg.sender, pantherPool, onboardingRewardController)
-    {}
+    constructor(
+        uint8 _zAccountVersion,
+        address pantherPool,
+        address pantherStaticTree,
+        address onboardingRewardController
+    )
+        ZAccountsRegistry(
+            msg.sender,
+            _zAccountVersion,
+            pantherPool,
+            pantherStaticTree,
+            onboardingRewardController
+        )
+    {} // solhint-disable-line no-empty-blocks
 
     function mockZAccountIdTracker(uint256 _zAccountIdTracker) external {
         zAccountIdTracker = _zAccountIdTracker;
