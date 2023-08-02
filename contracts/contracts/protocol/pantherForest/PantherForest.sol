@@ -2,8 +2,9 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
+import "./interfaces/ITreeRootGetter.sol";
+import "./interfaces/ITreeRootUpdater.sol";
 import "./rootHistory/RootHistory.sol";
-import "../PantherStaticTree.sol";
 import "../../common/ImmutableOwnable.sol";
 
 /**
@@ -27,69 +28,117 @@ import "../../common/ImmutableOwnable.sol";
  * must call this contract to update the value of the leaf and the root of the
  * Forest Tree every time the "controlled" tree is updated.
  */
-abstract contract PantherForest is RootHistory, PantherStaticTree, ImmutableOwnable {
+abstract contract PantherForest is
+    RootHistory,
+    ImmutableOwnable,
+    ITreeRootGetter,
+    ITreeRootUpdater
+{
+    // solhint-disable var-name-mixedcase
 
-    enum LEAF_INDEX {
-        TAXI_TREE,
-        BUS_TREE,
-        FERRY_TREE,
-        STATIC_TREE
-    }
+    uint256 private constant NUM_LEAFS = 4;
+    uint256 private constant STATIC_TREE_LEAF = 3;
 
-    address immutable public TAXI_TREE;
-    address immutable public BUS_TREE;
-    address immutable public FERRY_TREE;
-    address immutable public STATIC_TREE;
+    address public immutable TAXI_TREE_CONTROLLER;
+    address public immutable BUS_TREE_CONTROLLER;
+    address public immutable FERRY_TREE_CONTROLLER;
+    address public immutable STATIC_TREE_CONTROLLER;
 
+    // solhint-enable var-name-mixedcase
 
+    bytes32 private _forestRoot;
 
-    bytes32 public forestRoot;
-    bytes32[4] public treeRoots;
+    bytes32[NUM_LEAFS] public leafs;
+    bytes32[256] public rootHistory;
+    uint256 private rootHistoryPointer;
+
+    bytes32[4] private _gap;
+
     // mapping from leaf index to leaf owner
-    mapping(uint8 => address) public leafOwner;
+    mapping(uint8 => address) public leafControllers;
 
-    event ForestUpdated(uint8 indexed leafIndex, bytes32 updatedLeaf, bytes32 updatedRoot);
+    constructor(
+        address _taxiTreeController,
+        address _busTreeController,
+        address _ferryTreeController,
+        address _staticTreeController
+    ) {
+        require(
+            _taxiTreeController != address(0) &&
+                _busTreeController != address(0) &&
+                _ferryTreeController != address(0) &&
+                _staticTreeController != address(0),
+            "init: zero address"
+        );
 
-
-    constructor(address _taxiTree, address _busTree, address _ferryTree){
-        require(_taxiTree != address(0) && _busTree != address(0) && _ferryTree!= address(0), 'init: zero address');
-
-        TAXI_TREE = _taxiTree;
-        BUS_TREE = _busTree;
-        FERRY_TREE = _ferryTree;
+        TAXI_TREE_CONTROLLER = _taxiTreeController;
+        BUS_TREE_CONTROLLER = _busTreeController;
+        FERRY_TREE_CONTROLLER = _ferryTreeController;
+        STATIC_TREE_CONTROLLER = _staticTreeController;
     }
 
+    function initialize() external onlyOwner {
+        require(_forestRoot == bytes32(0), "PF: Already initialized");
 
-    function initialize(bytes32[4] memory _treeRoots) external onlyOwner {
-        require(forestRoot == 0, 'Already initialized');
-
-        for(uint8 i; i <_treeRoots.length;){
-            treeRoots[i] = _treeRoots[i];
+        for (uint8 i; i < NUM_LEAFS; ) {
+            leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
             unchecked {
                 ++i;
             }
         }
-        forestRoot = hash(_treeRoots);
+
+        _forestRoot = hash(leafs);
     }
 
-    function updateForest(bytes32 curRoot, bytes32 updatedLeaf, LEAF_INDEX leafIndex) external {
-        require(msg.sender == leafOwner[uint8(leafIndex)],'unauthorized');
-
-
-        bytes32[4] memory _treeRoots = treeRoots;
-        _treeRoots[uint8(leafIndex)] = updatedLeaf;
-        forestRoot = hash(_treeRoots);
-
-        emit ForestUpdated(uint8(leafIndex), updatedLeaf, forestRoot);
-
+    function getRoot() external view returns (bytes32) {
+        return _forestRoot;
     }
 
-    function hash(bytes32[2] memory)
+    function updateRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+        require(msg.sender == _getLeafController(leafIndex), "unauthorized");
+
+        leafs[leafIndex] = updatedLeaf;
+        _forestRoot = hash(leafs);
+
+        if (leafIndex == STATIC_TREE_LEAF) {
+            _resetRootHistory(_forestRoot);
+        } else {
+            _updateRootHistory(_forestRoot);
+        }
+
+        emit RootUpdated(uint8(leafIndex), updatedLeaf, _forestRoot);
+    }
+
+    function _getLeafController(uint256 leafIndex)
         internal
-        pure
-        virtual
-        override
-        returns (bytes32);
+        view
+        returns (address)
+    {
+        require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
+        return
+            [
+                TAXI_TREE_CONTROLLER,
+                BUS_TREE_CONTROLLER,
+                FERRY_TREE_CONTROLLER,
+                STATIC_TREE_CONTROLLER
+            ][leafIndex];
+    }
 
-    function hash(bytes32[4] memory) internal pure virtual returns (bytes32);
+    function _updateRootHistory(bytes32 forestRoot) private {
+        uint256 _rootHistoryPointer = rootHistoryPointer % 256;
+        rootHistory[_rootHistoryPointer] = forestRoot;
+
+        rootHistoryPointer = _rootHistoryPointer;
+    }
+
+    function _resetRootHistory(bytes32 forestRoot) private {
+        uint256 _rootHistoryPointer = 0;
+        rootHistory[_rootHistoryPointer] = forestRoot;
+
+        rootHistoryPointer = _rootHistoryPointer;
+    }
+
+    function hash(bytes32[4] memory) internal pure returns (bytes32) {
+        return bytes32(0);
+    }
 }
