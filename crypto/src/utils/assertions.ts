@@ -27,3 +27,14 @@ export function assertInBabyJubJubSubOrder(
         `${objectDescription} is not in the BabyJubJub suborder`,
     );
 }
+
+export function assertMaxBits(
+    n: bigint,
+    max: number,
+    objectDescription: string,
+): void {
+    assert(
+        n < 1n << BigInt(max),
+        `${objectDescription} number exceeds ${max} bits`,
+    );
+}
