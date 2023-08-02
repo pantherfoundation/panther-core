@@ -4,8 +4,15 @@ pragma solidity ^0.8.16;
 
 import "../merkleTrees/BinaryUpdatableTree.sol";
 import "../zeroTrees/SixLevelZeroTree.sol";
+import "../interfaces/ITreeRootGetter.sol";
 
 // is PantherTreesZeros
-abstract contract TaxiTree is BinaryUpdatableTree, SixLevelZeroTree {
-
+abstract contract PantherTaxiTree is
+    BinaryUpdatableTree,
+    SixLevelZeroTree,
+    ITreeRootGetter
+{
+    function getRoot() external pure returns (bytes32) {
+        return bytes32(0);
+    }
 }

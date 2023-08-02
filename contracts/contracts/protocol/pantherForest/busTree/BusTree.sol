@@ -4,6 +4,7 @@ pragma solidity ^0.8.16;
 
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
+import "../interfaces/ITreeRootGetter.sol";
 import { EMPTY_BUS_TREE_ROOT } from "../zeroTrees/Constants.sol";
 import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
 
@@ -22,7 +23,7 @@ import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
  * To ease off-chain re-construction, roots of Tree's branches ("Branches") are
  * published via on-chain logs.
  */
-abstract contract BusTree is BusQueues {
+abstract contract BusTree is BusQueues, ITreeRootGetter {
     // solhint-disable var-name-mixedcase
 
     // Number of levels in every Batch (that is a binary tree)
@@ -39,7 +40,7 @@ abstract contract BusTree is BusQueues {
     uint160 public immutable CIRCUIT_ID;
     // solhint-enable var-name-mixedcase
 
-    bytes32 public busTreeRoot;
+    bytes32 private _busTreeRoot;
 
     // Number of Batches in the Bus Tree
     uint32 private _numBatchesInBusTree;
@@ -81,6 +82,10 @@ abstract contract BusTree is BusQueues {
         // new storage slots). There is no need for explicit initialization.
     }
 
+    function getRoot() external view returns (bytes32) {
+        return _busTreeRoot;
+    }
+
     function getBusTreeStats()
         external
         view
@@ -117,7 +122,7 @@ abstract contract BusTree is BusQueues {
         // `oldRoot` signal
         input[0] = nBatches == 0
             ? uint256(EMPTY_BUS_TREE_ROOT)
-            : uint256(busTreeRoot);
+            : uint256(_busTreeRoot);
         // `newRoot` signal
         input[1] = uint256(busTreeNewRoot);
         // `replacedNodeIndex` signal
@@ -157,7 +162,7 @@ abstract contract BusTree is BusQueues {
         }
 
         // Store updated Bus Tree params
-        busTreeRoot = busTreeNewRoot;
+        _busTreeRoot = busTreeNewRoot;
         // Overflow impossible as nUtxos and _numBatchesInBusTree are limited
         _numBatchesInBusTree = nBatches + 1;
         _numUtxosInBusTree += nUtxos;

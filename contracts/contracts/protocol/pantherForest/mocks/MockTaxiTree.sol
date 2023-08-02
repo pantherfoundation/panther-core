@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import "../taxiTree/TaxiTree.sol";
+import "../taxiTree/PantherTaxiTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 
-contract MockTaxiTree is TaxiTree {
+contract MockTaxiTree is PantherTaxiTree {
     function simulateUpdateLeaf(
         BinaryTree calldata tree,
         bytes32 newLeaf,
