@@ -97,7 +97,7 @@ abstract contract BlacklistedZAccountIdsTree is
     }
 
     //@dev returns the root of tree with depth 16 where each leaf is 0
-    function zeroRoot() public pure override returns (bytes32) {
+    function zeroRoot() internal pure override returns (bytes32) {
         /**
         '0x0000000000000000000000000000000000000000000000000000000000000000'   Level 0
         '0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864'   Level 1

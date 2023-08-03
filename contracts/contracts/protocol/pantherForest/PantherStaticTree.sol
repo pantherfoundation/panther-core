@@ -2,10 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import { PoseidonT6 } from "./crypto/Poseidon.sol";
-import "./pantherForest/interfaces/ITreeRootGetter.sol";
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
-import "../common/ImmutableOwnable.sol";
+import { PoseidonT6 } from "../crypto/Poseidon.sol";
+import "./interfaces/ITreeRootGetter.sol";
+import "./interfaces/ITreeRootUpdater.sol";
+import "../../common/ImmutableOwnable.sol";
+import { STATIC_TREE_FOREST_LEAF_INDEX } from "./Constant.sol";
 
 // (updating the state of the PantherForest contract on a network).
 // It's a one-level quin tree that holds the roots of the following trees:
@@ -28,6 +29,8 @@ abstract contract PantherStaticTree is
 
     uint256 private constant NUM_LEAFS = 5;
 
+    address public immutable PANTHER_FOREST;
+
     address public immutable ZASSETS_TREE_CONTROLLER;
     address public immutable ZZONES_TREE_CONTROLLER;
     address public immutable PROVIDERS_KEYS_TREE_CONTROLLER;
@@ -43,6 +46,7 @@ abstract contract PantherStaticTree is
     mapping(uint8 => address) public leafControllers;
 
     constructor(
+        address _pantherForest,
         address _zAssetsTreeController,
         address _zZnonesTreeController,
         address _providersKeysTreeController,
@@ -58,6 +62,7 @@ abstract contract PantherStaticTree is
             "init: zero address"
         );
 
+        PANTHER_FOREST = _pantherForest;
         ZASSETS_TREE_CONTROLLER = _zAssetsTreeController;
         ZZONES_TREE_CONTROLLER = _zZnonesTreeController;
         PROVIDERS_KEYS_TREE_CONTROLLER = _providersKeysTreeController;
@@ -88,6 +93,11 @@ abstract contract PantherStaticTree is
 
         leafs[leafIndex] = updatedLeaf;
         _staticTreeRoot = hash(leafs);
+
+        ITreeRootUpdater(PANTHER_FOREST).updateRoot(
+            _staticTreeRoot,
+            STATIC_TREE_FOREST_LEAF_INDEX
+        );
 
         emit RootUpdated(uint8(leafIndex), updatedLeaf, _staticTreeRoot);
     }

@@ -76,7 +76,7 @@ contract ProvidersKeys is
     bool public treeRootUpdatingAllowed;
 
     /// @notice current root of binry updatable merkle tree which has provider keys as its leaf
-    bytes32 private currentRoot;
+    bytes32 private _currentRoot;
 
     event KeyringOperatorUpdated(
         address oldOperator,
@@ -102,7 +102,7 @@ contract ProvidersKeys is
     }
 
     function getRoot() external view returns (bytes32) {
-        return currentRoot;
+        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
     }
 
     function getKeyCommitment(G1Point memory key, uint32 expiryDate)
@@ -371,18 +371,18 @@ contract ProvidersKeys is
         uint32 keyIndex,
         bytes32[] memory proofSiblings
     ) private {
-        bytes32 _currentRoot = update(
-            currentRoot,
+        bytes32 updatedRoot = update(
+            _currentRoot,
             leaf,
             newLeaf,
             keyIndex,
             proofSiblings
         );
 
-        currentRoot = _currentRoot;
+        _currentRoot = updatedRoot;
 
         PANTHER_STATIC_TREE.updateRoot(
-            _currentRoot,
+            updatedRoot,
             STATIC_TREE_LEAF_INDEX_FOR_PROVIDERS_KEYS_ROOT
         );
     }
