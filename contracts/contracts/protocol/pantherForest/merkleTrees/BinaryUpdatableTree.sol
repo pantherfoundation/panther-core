@@ -91,7 +91,7 @@ abstract contract BinaryUpdatableTree {
         return curRoot == 0 ? _hash == zeroRoot() : _hash == curRoot;
     }
 
-    function zeroRoot() public pure virtual returns (bytes32);
+    function zeroRoot() internal pure virtual returns (bytes32);
 
     function hash(bytes32[2] memory input)
         internal

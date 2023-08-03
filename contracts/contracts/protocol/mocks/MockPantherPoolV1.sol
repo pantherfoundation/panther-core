@@ -8,6 +8,7 @@ import "../interfaces/IBusTree.sol";
 import "../../common/ImmutableOwnable.sol";
 import { LockData } from "../../common/Types.sol";
 import "../pantherForest/PantherForest.sol";
+import "../pantherPool/TransactionNoteEmitter.sol";
 
 interface IMockPantherPoolV1 {
     function unlockAssetFromVault(LockData calldata data) external;
@@ -18,8 +19,8 @@ interface IMockPantherPoolV1 {
 // slither-disable unused-state
 contract MockPantherPoolV1 is
     PantherForest,
-    IMockPantherPoolV1,
-    ImmutableOwnable
+    TransactionNoteEmitter,
+    IMockPantherPoolV1
 {
     // slither-disable-next-line shadowing-state unused-state
     uint256[500 - 26] private __gap;
@@ -31,14 +32,18 @@ contract MockPantherPoolV1 is
     uint160 public zAccountRegistrationCircuitId;
 
     mapping(address => bool) public vaultAssetUnlockers;
+
     mapping(address => uint160) public circuitExecutor;
 
     constructor(
         address _owner,
         address vault,
+        address taxiTree,
         address busTree,
+        address ferryTree,
+        address staticTree,
         address verifier
-    ) ImmutableOwnable(_owner) {
+    ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
         require(
             vault != address(0) && verifier != address(0),
             "init: zero address"

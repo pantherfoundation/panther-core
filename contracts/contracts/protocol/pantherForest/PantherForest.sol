@@ -34,6 +34,8 @@ abstract contract PantherForest is
     ITreeRootGetter,
     ITreeRootUpdater
 {
+    bytes32[20] private _gap;
+
     // solhint-disable var-name-mixedcase
 
     uint256 private constant NUM_LEAFS = 4;
@@ -56,14 +58,13 @@ abstract contract PantherForest is
     // mapping from leaf index to leaf controller
     mapping(uint8 => address) public leafControllers;
 
-    bytes32[20] private _gap;
-
     constructor(
+        address _owner,
         address _taxiTreeController,
         address _busTreeController,
         address _ferryTreeController,
         address _staticTreeController
-    ) {
+    ) ImmutableOwnable(_owner) {
         require(
             _taxiTreeController != address(0) &&
                 _busTreeController != address(0) &&
@@ -133,10 +134,10 @@ abstract contract PantherForest is
     }
 
     function _resetRootHistory(bytes32 forestRoot) private {
-        uint256 _rootHistoryPointer = 0;
-        rootHistory[_rootHistoryPointer] = forestRoot;
+        uint256 rootHistoryPointer = 0;
+        rootHistory[rootHistoryPointer] = forestRoot;
 
-        _rootHistoryPointer = _rootHistoryPointer;
+        _rootHistoryPointer = rootHistoryPointer;
     }
 
     function hash(bytes32[4] memory) internal pure returns (bytes32) {

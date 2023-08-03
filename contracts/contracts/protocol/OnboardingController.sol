@@ -127,24 +127,28 @@ contract OnboardingController is ImmutableOwnable {
         emit RewardsLimtUpdated(_rewardsLimit);
     }
 
-    function grantRewards(address _user)
-        external
-        returns (uint256 _zZkpRewardAlloc)
-    {
-        require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
+    function grantRewards(
+        address _user,
+        uint8 _prevStatus,
+        uint8 _newStatus,
+        bytes memory _data
+    ) external returns (uint256 _zZkpRewardAlloc) {
+        _zZkpRewardAlloc = 1000e18;
 
-        RewardParams memory _rewardParams = rewardParams;
+        // require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
 
-        uint256 _rewardsGranted = rewardsGranted +
-            (_rewardParams.rewardsPerGrant);
+        // RewardParams memory _rewardParams = rewardParams;
 
-        if (rewardsLimit >= _rewardsGranted) {
-            _zZkpRewardAlloc = _getZzkpRewardsAllocation(_rewardParams, _user);
+        // uint256 _rewardsGranted = rewardsGranted +
+        //     (_rewardParams.rewardsPerGrant);
 
-            _increaseReserveControllerAllowance(_rewardParams);
+        // if (rewardsLimit >= _rewardsGranted) {
+        //     _zZkpRewardAlloc = _getZzkpRewardsAllocation(_rewardParams, _user);
 
-            rewardsGranted = uint128(_rewardsGranted);
-        }
+        //     _increaseReserveControllerAllowance(_rewardParams);
+
+        //     rewardsGranted = uint128(_rewardsGranted);
+        // }
     }
 
     function _getZzkpRewardsAllocation(
