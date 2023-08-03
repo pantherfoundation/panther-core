@@ -22,6 +22,8 @@ abstract contract PantherStaticTree is
     ITreeRootGetter,
     ITreeRootUpdater
 {
+    bytes32[50] private _gap;
+
     // solhint-disable var-name-mixedcase
 
     uint256 private constant NUM_LEAFS = 5;
@@ -36,8 +38,6 @@ abstract contract PantherStaticTree is
 
     bytes32 private _staticTreeRoot;
     bytes32[NUM_LEAFS] public leafs;
-
-    bytes32[4] private _gap;
 
     // mapping from leaf index to leaf owner
     mapping(uint8 => address) public leafControllers;
@@ -109,6 +109,7 @@ abstract contract PantherStaticTree is
     }
 
     function hash(bytes32[5] memory input) private pure returns (bytes32) {
+        // We trust the caller provides all input values within the SNARK field
         return PoseidonT6.poseidon(input);
     }
 }
