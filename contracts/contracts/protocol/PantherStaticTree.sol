@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import { PoseidonT6 } from "../crypto/Poseidon.sol";
-import "./interfaces/ITreeRootGetter.sol";
-import "./interfaces/ITreeRootUpdater.sol";
-import "../../common/ImmutableOwnable.sol";
-import { STATIC_TREE_FOREST_LEAF_INDEX } from "./Constant.sol";
+import { PoseidonT6 } from "./crypto/Poseidon.sol";
+import "./pantherForest/interfaces/ITreeRootGetter.sol";
+import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+import "../common/ImmutableOwnable.sol";
+import { STATIC_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constant.sol";
 
 // (updating the state of the PantherForest contract on a network).
 // It's a one-level quin tree that holds the roots of the following trees:
@@ -18,7 +18,7 @@ import { STATIC_TREE_FOREST_LEAF_INDEX } from "./Constant.sol";
 //
 // It's supposed to run on the mainnet only.
 // Bridges keepers are expected to propagate its root to other networks
-abstract contract PantherStaticTree is
+contract PantherStaticTree is
     ImmutableOwnable,
     ITreeRootGetter,
     ITreeRootUpdater
@@ -46,13 +46,14 @@ abstract contract PantherStaticTree is
     mapping(uint8 => address) public leafControllers;
 
     constructor(
+        address _owner,
         address _pantherForest,
         address _zAssetsTreeController,
         address _zZnonesTreeController,
         address _providersKeysTreeController,
         address _zAccountsBlacklistedTreeController,
         address _zNetworksTreeController
-    ) {
+    ) ImmutableOwnable(_owner) {
         require(
             _zAssetsTreeController != address(0) &&
                 _zZnonesTreeController != address(0) &&

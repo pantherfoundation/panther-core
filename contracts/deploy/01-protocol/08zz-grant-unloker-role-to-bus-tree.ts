@@ -12,7 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const busTreeAddress = await getContractAddress(
         hre,
-        'MockBusTree',
+        'MockBusTree_Proxy',
         'BUS_TREE',
     );
     const poolV1Address = await getContractAddress(

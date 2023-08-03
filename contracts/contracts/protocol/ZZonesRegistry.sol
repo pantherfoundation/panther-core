@@ -4,7 +4,7 @@ pragma solidity 0.8.16;
 
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 
-contract ZZoneRegistry is ITreeRootGetter {
+contract ZZonesRegistry is ITreeRootGetter {
     /**
      * ZZone tree root generation
      * This tree consists of 1 leaf:

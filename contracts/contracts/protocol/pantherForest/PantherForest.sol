@@ -6,6 +6,7 @@ import "./interfaces/ITreeRootGetter.sol";
 import "./interfaces/ITreeRootUpdater.sol";
 import "./rootHistory/RootHistory.sol";
 import "../../common/ImmutableOwnable.sol";
+import { PoseidonT5 } from "../crypto/Poseidon.sol";
 
 /**
  * @title PantherForest
@@ -140,7 +141,11 @@ abstract contract PantherForest is
         _rootHistoryPointer = rootHistoryPointer;
     }
 
-    function hash(bytes32[4] memory) internal pure returns (bytes32) {
-        return bytes32(0);
+    function hash(bytes32[NUM_LEAFS] memory _leafs)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return PoseidonT5.poseidon(_leafs);
     }
 }

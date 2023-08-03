@@ -11,6 +11,8 @@ import {
 import {
     getPoseidonT3Contract,
     getPoseidonT4Contract,
+    getPoseidonT5Contract,
+    getPoseidonT6Contract,
 } from '../../lib/poseidonBuilder';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -50,6 +52,42 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             autoMine: true,
         });
     }
+
+    if (!reuseEnvAddress(hre, 'POSEIDON_T5')) {
+        const PoseidonT5 = await getPoseidonT5Contract();
+        await deploy('PoseidonT5', {
+            contract: {
+                abi: PoseidonT5.interface.format('json'),
+                bytecode: PoseidonT5.bytecode,
+            },
+            from: deployer,
+            args: [],
+            libraries: {},
+            log: true,
+            autoMine: true,
+        });
+    }
+
+    if (!reuseEnvAddress(hre, 'POSEIDON_T6')) {
+        const PoseidonT6 = await getPoseidonT6Contract();
+        await deploy('PoseidonT6', {
+            contract: {
+                abi: PoseidonT6.interface.format('json'),
+                bytecode: PoseidonT6.bytecode,
+            },
+            from: deployer,
+            args: [],
+            libraries: {},
+            log: true,
+            autoMine: true,
+        });
+    }
+
+    await deploy('BabyJubJub', {
+        from: deployer,
+        log: true,
+        autoMine: true,
+    });
 };
 export default func;
 

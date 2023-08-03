@@ -4,6 +4,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     getContractEnvAddress,
     verifyUserConsentOnProd,
+    getContractAddress,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -19,28 +20,46 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await getNamedAccounts()).multisig ||
         deployer;
 
-    const PoseidonT3 =
+    const pantherPool = await getContractAddress(
+        hre,
+        'PantherPoolV1_Proxy',
+        'PANTHER_POOL_V1_PROXY',
+    );
+
+    const staticTree = await getContractAddress(
+        hre,
+        'PantherStaticTree_Proxy',
+        '',
+    );
+    const onboardingController = await getContractAddress(
+        hre,
+        'OnboardingController',
+        '',
+    );
+
+    const babyJubJub = await getContractAddress(hre, 'BabyJubJub', '');
+    const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
 
-    const PoseidonT4 =
-        getContractEnvAddress(hre, 'POSEIDON_T4') ||
-        (await get('PoseidonT4')).address;
-
-    const poolV1 = await deploy('MockPantherPoolV1', {
-        from: deployer,
-        log: true,
-        autoMine: true,
-    });
-
-    const constructorArgs = [multisig, poolV1.address];
+    const constructorArgs = [
+        multisig,
+        1,
+        pantherPool,
+        staticTree,
+        onboardingController,
+    ];
 
     await deploy('ZAccountsRegistry', {
         from: deployer,
         args: constructorArgs,
+        proxy: {
+            proxyContract: 'EIP173Proxy',
+            owner: multisig,
+        },
         libraries: {
-            PoseidonT3,
-            PoseidonT4,
+            PoseidonT3: poseidonT3,
+            BabyJubJub: babyJubJub,
         },
         log: true,
         autoMine: true,
@@ -50,4 +69,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['account-registry', 'protocol'];
-func.dependencies = ['check-params', 'crypto-libs'];
+func.dependencies = ['check-params'];

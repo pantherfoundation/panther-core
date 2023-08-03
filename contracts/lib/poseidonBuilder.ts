@@ -12,8 +12,14 @@ import {ethers} from 'hardhat';
 
 const getPoseidonT3Contract = getPoseidonContract(2);
 const getPoseidonT4Contract = getPoseidonContract(3);
+const getPoseidonT5Contract = getPoseidonContract(4);
 const getPoseidonT6Contract = getPoseidonContract(5);
-export {getPoseidonT3Contract, getPoseidonT4Contract, getPoseidonT6Contract};
+export {
+    getPoseidonT3Contract,
+    getPoseidonT4Contract,
+    getPoseidonT5Contract,
+    getPoseidonT6Contract,
+};
 
 function getPoseidonContract(n: number) {
     // @ts-ignore
