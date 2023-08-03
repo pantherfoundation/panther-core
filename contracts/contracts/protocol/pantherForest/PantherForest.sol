@@ -38,6 +38,7 @@ abstract contract PantherForest is
 
     uint256 private constant NUM_LEAFS = 4;
     uint256 private constant STATIC_TREE_LEAF = 3;
+    uint256 private constant HISTORY_SIZE = 256;
 
     address public immutable TAXI_TREE_CONTROLLER;
     address public immutable BUS_TREE_CONTROLLER;
@@ -49,13 +50,13 @@ abstract contract PantherForest is
     bytes32 private _forestRoot;
 
     bytes32[NUM_LEAFS] public leafs;
-    bytes32[256] public rootHistory;
-    uint256 private rootHistoryPointer;
+    bytes32[HISTORY_SIZE] public rootHistory;
+    uint256 private _rootHistoryPointer;
 
-    bytes32[4] private _gap;
-
-    // mapping from leaf index to leaf owner
+    // mapping from leaf index to leaf controller
     mapping(uint8 => address) public leafControllers;
+
+    bytes32[20] private _gap;
 
     constructor(
         address _taxiTreeController,
@@ -125,17 +126,17 @@ abstract contract PantherForest is
     }
 
     function _updateRootHistory(bytes32 forestRoot) private {
-        uint256 _rootHistoryPointer = rootHistoryPointer % 256;
-        rootHistory[_rootHistoryPointer] = forestRoot;
+        uint256 rootHistoryPointer = _rootHistoryPointer % HISTORY_SIZE;
+        rootHistory[rootHistoryPointer] = forestRoot;
 
-        rootHistoryPointer = _rootHistoryPointer;
+        _rootHistoryPointer = rootHistoryPointer;
     }
 
     function _resetRootHistory(bytes32 forestRoot) private {
         uint256 _rootHistoryPointer = 0;
         rootHistory[_rootHistoryPointer] = forestRoot;
 
-        rootHistoryPointer = _rootHistoryPointer;
+        _rootHistoryPointer = _rootHistoryPointer;
     }
 
     function hash(bytes32[4] memory) internal pure returns (bytes32) {
