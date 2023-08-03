@@ -15,7 +15,7 @@ import {
     deriveChildPubKeyFromRootPubKey,
     isChildPubKeyValid,
 } from '../base/keypairs';
-import {Keypair, WalletKeypairs, PrivateKey} from '../types/keypair';
+import {Keypair, WalletKeypairs, PrivateKey, PublicKey} from '../types/keypair';
 import {assertInBabyJubJubSubOrder, assert} from '../utils/assertions';
 
 // generateSpendingChildKeypair generates child spending keypair (s', S')
@@ -29,6 +29,13 @@ export function generateSpendingChildKeypair(
         r,
     );
     return deriveKeypairFromSeed(spendingChildPrivKey);
+}
+
+export function generateChildSpendingPublicKey(
+    rootSpendingPubKey: PublicKey,
+    r: bigint,
+): PublicKey {
+    return deriveChildPubKeyFromRootPubKey(rootSpendingPubKey, r);
 }
 
 export const extractSecretsPair = (
