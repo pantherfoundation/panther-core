@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const token = await ethers.getContractAt(abi, pzkp);
 
-    const vaultBalance = process.env.VAULT_BALANCE;
+    const vaultBalance = process.env.VAULT_BALANCE as string;
     const deployerBalance = await token.balanceOf(deployer);
 
     if (ethers.BigNumber.from(vaultBalance).gt(deployerBalance)) {

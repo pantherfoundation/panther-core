@@ -1,11 +1,7 @@
-// SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
-
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
-    reuseEnvAddress,
     getContractAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
@@ -17,23 +13,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     } = hre;
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
-    if (reuseEnvAddress(hre, 'VAULT_IMP')) return;
 
-    const pantherPool = await getContractAddress(
+    const zAccountRegistryProxy = await getContractAddress(
         hre,
-        'PantherPoolV1_Proxy',
-        'PANTHER_POOL_V1_PROXY',
+        'ZAccountsRegistry',
+        '',
     );
 
-    await deploy('Vault_Implementation', {
-        contract: 'Vault',
+    await deploy('ZAccountsStatusResolver', {
         from: deployer,
-        args: [pantherPool],
+        args: [zAccountRegistryProxy],
         log: true,
         autoMine: true,
     });
 };
 export default func;
 
-func.tags = ['vault-impl', 'protocol'];
-func.dependencies = ['check-params'];
+func.tags = ['z-accounts-resolver', 'forest', 'protocol'];
+// func.dependencies = ['z-accounts-registry-imp'];

@@ -5,12 +5,12 @@ pragma solidity 0.8.16;
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 
 /**
- * @title ZAssetsRegistry
+ * @title ZAssetsRegistryV1
  * @author Pantherprotocol Contributors
  * @notice Registry and whitelist of assets (tokens) supported by the Panther
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
-contract ZAssetsRegistry is ITreeRootGetter {
+contract ZAssetsRegistryV1 is ITreeRootGetter {
     /**
      * ZAssets tree root generation
      * This tree consists of a single leaf yet: testZKP on Mumbai

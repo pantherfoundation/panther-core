@@ -1,39 +1,34 @@
-// SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
-
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     reuseEnvAddress,
-    getContractAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
+        ethers,
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
-    if (reuseEnvAddress(hre, 'VAULT_IMP')) return;
+    if (reuseEnvAddress(hre, 'MOCK_BUS_TREE_PROXY')) return;
 
-    const pantherPool = await getContractAddress(
-        hre,
-        'PantherPoolV1_Proxy',
-        'PANTHER_POOL_V1_PROXY',
-    );
-
-    await deploy('Vault_Implementation', {
-        contract: 'Vault',
+    await deploy('MockBusTree_Proxy', {
+        contract: 'EIP173Proxy',
         from: deployer,
-        args: [pantherPool],
+        args: [
+            ethers.constants.AddressZero, // implementation will be changed
+            deployer, // owner will be changed
+            [], // data
+        ],
         log: true,
         autoMine: true,
     });
 };
 export default func;
 
-func.tags = ['vault-impl', 'protocol'];
+func.tags = ['bus-tree-proxy', 'protocol'];
 func.dependencies = ['check-params'];

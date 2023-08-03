@@ -36,15 +36,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
 
     if (pointer) {
-        await deploy('MockBusTree', {
+        await deploy('MockBusTree_Implementation', {
+            contract: 'MockBusTree',
             from: deployer,
             args: [deployer, pzkp, pantherPool, pantherVerifier, pointer],
             libraries: {
                 PoseidonT3: poseidonT3,
-            },
-            proxy: {
-                proxyContract: 'EIP173Proxy',
-                owner: deployer,
             },
             log: true,
             autoMine: true,
@@ -53,5 +50,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['bus-tree', 'forest', 'protocol'];
-func.dependencies = ['crypto-libs', 'verifier', 'add-verification-key'];
+func.tags = ['bus-tree-imp', 'forest', 'protocol'];
+func.dependencies = [
+    'crypto-libs',
+    'pool-v1',
+    'verifier',
+    'add-verification-key',
+];

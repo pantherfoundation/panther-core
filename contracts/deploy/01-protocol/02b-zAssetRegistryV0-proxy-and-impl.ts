@@ -12,6 +12,7 @@ import {
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    return;
     const {
         deployments: {deploy},
         getNamedAccounts,

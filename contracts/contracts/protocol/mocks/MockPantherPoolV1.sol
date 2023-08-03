@@ -23,7 +23,7 @@ contract MockPantherPoolV1 is
     IMockPantherPoolV1
 {
     // slither-disable-next-line shadowing-state unused-state
-    uint256[500 - 26] private __gap;
+    uint256[500 - 290] private __gap;
 
     IVault public immutable VAULT;
     IBusTree public immutable BUS_TREE;
