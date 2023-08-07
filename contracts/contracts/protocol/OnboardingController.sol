@@ -127,7 +127,7 @@ contract OnboardingController is ImmutableOwnable {
         emit RewardsLimtUpdated(_rewardsLimit);
     }
 
-    //TODO implement grantRewards
+    // TODO: review/update OnboardingController.grantRewards
     // solhint-disable no-unused-vars
     function grantRewards(
         address _user,
