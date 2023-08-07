@@ -3,7 +3,6 @@
 pragma solidity ^0.8.16;
 
 /// @dev Leaf zero value (`keccak256("Pantherprotocol")%FIELD_SIZE`)
-// TODO: remove duplications of ZERO_LEAF across ../../
 bytes32 constant ZERO_VALUE = bytes32(
     uint256(0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d)
 );
@@ -38,7 +37,6 @@ uint256 constant SIXTEEN_LEVELS = 16;
 // Level 13: 0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d
 // Level 14: 0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55
 // Level 15: 0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c
-// TODO: remove duplications of SIXTEEN_LEVEL_EMPTY_TREE_ROOT value cross ../../
 bytes32 constant SIXTEEN_LEVEL_EMPTY_TREE_ROOT = bytes32(
     uint256(0x0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9)
 );
@@ -64,7 +62,7 @@ bytes32 constant TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT = bytes32(
     uint256(0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6)
 );
 
-// TODO: replace duplicated BUS_TREE_LEVELS and EMPTY_BUS_TREE_ROOT constants
+// TODO: replace duplicated BUS_TREE_LEVELS
 /// @dev Number of levels (bellow the root, but including leafs) in the BusTree
 uint256 constant BUS_TREE_LEVELS = 26;
 bytes32 constant EMPTY_BUS_TREE_ROOT = bytes32(
