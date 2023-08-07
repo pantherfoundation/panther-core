@@ -10,7 +10,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
     bytes32 internal constant REGISTRATION_TYPEHASH =
         keccak256(
             bytes(
-                "Registration(bytes32 pubRootSpendingKey,uint32 expiryDate,uint256 version)"
+                "Registration(uint23 keyringId,bytes32 pubRootSpendingKey,uint32 expiryDate,uint256 version)"
             )
         );
 
@@ -23,6 +23,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
     }
 
     function getRegistrationDataHash(
+        uint32 _keyringId,
         bytes32 _pubRootSpendingKey,
         uint32 _expiryDate
     ) internal view returns (bytes32) {
@@ -30,6 +31,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
             keccak256(
                 abi.encode(
                     REGISTRATION_TYPEHASH,
+                    _keyringId,
                     _pubRootSpendingKey,
                     _expiryDate,
                     uint256(KEYRING_VERSION)
@@ -38,6 +40,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
     }
 
     function recoverOperator(
+        uint32 _keyringId,
         bytes32 _pubRootSpendingKey,
         uint32 _expiryDate,
         uint8 v,
@@ -45,6 +48,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
         bytes32 s
     ) internal view returns (address) {
         bytes32 registrationDataHash = getRegistrationDataHash(
+            _keyringId,
             _pubRootSpendingKey,
             _expiryDate
         );

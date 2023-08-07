@@ -4,23 +4,23 @@ pragma solidity ^0.8.16;
 
 string constant ERR_INIT_CONTRACT = "PK:init";
 
-string constant ERR_ONLY_OWNER_OR_KEYRING_OPERATOR = "PK:E1";
+string constant ERR_NOT_IN_FIELD = "PK:E01";
+string constant ERR_INCORRECT_SIBLINGS_SIZE = "PK:E02";
 
-string constant ERR_KEYRING_ALREADY_EXISTS = "PK:E2";
-string constant ERR_KEYRING_ALREADY_ACTIVATED = "PK:E3";
-string constant ERR_KEYRING_NOT_EXISTS = "PK:E4";
-string constant ERR_KEYRING_NOT_ACTIVATED = "PK:E5";
+string constant ERR_TREE_LOCK_ALREADY_UPDATED = "ZAR:E05";
+string constant ERR_TREE_IS_LOCKED = "PK:E06";
 
-string constant ERR_ZERO_KEYRING_OPERATOR = "PK:E6";
-string constant ERR_REPETITIVE_KEYRING_OPERATOR = "PK:E7";
-string constant ERR_INVALID_KEY_EXPIRY_DATE = "PK:E8";
-string constant ERR_REVOKED_KEY = "PK:E9";
-string constant ERR_UNAUTHORIZED_KEY_OWNER = "PK:E10";
+string constant ERR_INSUFFICIENT_ALLOCATION = "PK:E10";
+string constant ERR_TOO_HIGH_ALLOCATION = "PK:E11";
 
-string constant ERR_INSUFFICIENT_KEY_ALLOCATION = "PK:E11";
-string constant ERR_TOO_HIGH_KEY_ALLOCATION = "PK:E12";
+string constant ERR_KEYRING_ALREADY_ACTIVATED = "PK:15";
+string constant ERR_KEYRING_NOT_EXISTS = "PK:E16";
+string constant ERR_KEYRING_NOT_ACTIVATED = "PK:E17";
 
-string constant ERR_REPETITIVE_TREE_ROOT_UPDATING_STATUS = "ZAR:E13";
-string constant ERR_TREE_ROOT_UPDATING_NOT_ALLOWED = "PK:E14";
+string constant ERR_UNAUTHORIZED_OPERATOR = "PK:E20";
+string constant ERR_ZERO_OPERATOR_ADDRESS = "PK:E21";
+string constant ERR_SAME_OPERATOR = "PK:E22";
 
-string constant ERR_TOO_LARGE_LEAF_INPUTS = "PK:E15";
+string constant ERR_REVOKED_KEY = "PK:E25";
+string constant ERR_INVALID_KEY_EXPIRY = "PK:E26";
+string constant ERR_KEY_IS_NOT_IN_KEYRING = "PK:E27";
