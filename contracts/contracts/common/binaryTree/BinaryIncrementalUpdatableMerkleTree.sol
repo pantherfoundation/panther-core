@@ -20,7 +20,7 @@ abstract contract BinaryIncrementalUpdatableMerkleTree is
     // The nodes of the subtrees used in the last addition of a leaf (level -> [left node, right node])
     mapping(uint256 => bytes32[2]) internal _filledSubtrees;
 
-    uint256 public constant LEAVES_NUM = 2 ** TREE_DEPTH;
+    uint256 public constant LEAVES_NUM = 2**TREE_DEPTH;
 
     bytes32 public currentRoot;
 
@@ -92,7 +92,7 @@ abstract contract BinaryIncrementalUpdatableMerkleTree is
         _hash = newLeaf;
         uint256 updateIndex;
 
-        for (uint i = 0; i < TREE_DEPTH; ) {
+        for (uint256 i = 0; i < TREE_DEPTH; ) {
             updateIndex |= uint256(proofPathIndices[i]) << uint256(i);
 
             if (proofPathIndices[i] == 0) {
@@ -139,7 +139,7 @@ abstract contract BinaryIncrementalUpdatableMerkleTree is
 
         bytes32 _hash = leaf;
 
-        for (uint i = 0; i < TREE_DEPTH; ) {
+        for (uint256 i = 0; i < TREE_DEPTH; ) {
             require(
                 proofPathIndices[i] == 1 || proofPathIndices[i] == 0,
                 "IncrementalBinaryTree: path index is neither 0 nor 1"

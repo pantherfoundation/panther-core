@@ -1,10 +1,7 @@
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import {expect} from 'chai';
-import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {revertSnapshot, takeSnapshot} from '../../lib/hardhat';
-import {toBN} from '../../lib/units-shortcuts';
 import {MockBinaryIncrementalUpdatableMerkleTree} from '../../types/contracts';
 
 import {getPoseidonT3Contract} from './../../lib/poseidonBuilder';

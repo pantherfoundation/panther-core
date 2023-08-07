@@ -11,7 +11,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
 
     const {artifacts, ethers} = hre;
-    const {deployer} = await getNamedAccounts();
 
     const pantherPoolAddress = await getContractAddress(
         hre,
