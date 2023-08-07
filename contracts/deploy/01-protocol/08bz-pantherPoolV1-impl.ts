@@ -11,8 +11,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy, get},
         getNamedAccounts,
-        artifacts,
-        ethers,
     } = hre;
 
     const {deployer} = await getNamedAccounts();

@@ -1,7 +1,7 @@
+// eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {fromRpcSig} from 'ethereumjs-util';
-import {utils} from 'ethers';
 import {task} from 'hardhat/config';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
