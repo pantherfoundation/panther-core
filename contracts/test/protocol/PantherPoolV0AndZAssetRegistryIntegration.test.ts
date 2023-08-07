@@ -26,7 +26,7 @@ import {TriadMerkleTree} from '../../lib/tree';
 import {toBytes32, PathElementsType, Pair} from '../../lib/utilities';
 import {
     PantherPoolV0AndZAssetRegistryTester,
-    ZAssetsRegistry,
+    ZAssetsRegistryV0,
 } from '../../types/contracts';
 
 import {getExitCommitment} from './data/depositAndFakeExitSample';
@@ -40,15 +40,15 @@ import {deployPantherPoolV0AndZAssetRegistryTester} from './helpers/pantherPoolV
 
 describe('PantherPoolV0', () => {
     let poolV0: PantherPoolV0AndZAssetRegistryTester;
-    let registry: ZAssetsRegistry;
+    let registry: ZAssetsRegistryV0;
     let snapshot: number;
 
     before(async () => {
         poolV0 = await deployPantherPoolV0AndZAssetRegistryTester();
-        const Registry = await ethers.getContractFactory('ZAssetsRegistry');
+        const Registry = await ethers.getContractFactory('ZAssetsRegistryV0');
         registry = Registry.attach(
             await poolV0.ASSET_REGISTRY(),
-        ) as ZAssetsRegistry;
+        ) as ZAssetsRegistryV0;
     });
 
     describe('Test GenerateDeposits & Exit with all token-types', () => {
