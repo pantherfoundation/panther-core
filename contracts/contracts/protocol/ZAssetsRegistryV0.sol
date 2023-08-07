@@ -9,7 +9,7 @@ import { ZAsset } from "../common/Types.sol";
 import "./interfaces/IZAssetsRegistry.sol";
 
 /**
- * @title ZAssetsRegistry
+ * @title ZAssetsRegistryV0
  * @author Pantherprotocol Contributors
  * @notice Registry and whitelist of assets (tokens) supported by the Panther
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
