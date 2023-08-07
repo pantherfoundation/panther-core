@@ -50,10 +50,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             deployer,
             pantherPool,
             zAssetsRegistryV1,
-            zZonesRegistry,
-            providersKeys,
             zAccountsRegistry,
             zNetworksRegistry,
+            zZonesRegistry,
+            providersKeys,
         ],
         libraries: {
             PoseidonT6: poseidonT6,
@@ -65,9 +65,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['static-tree-imp', 'forest', 'protocol'];
-func.dependencies = [
-    'crypto-libs',
-    'pool-v1',
-    'verifier',
-    'add-verification-key',
-];
+// func.dependencies = [
+//     'crypto-libs',
+//     'pool-v1',
+//     'verifier',
+//     'add-verification-key',
+// ];
