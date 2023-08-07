@@ -30,6 +30,7 @@ contract MockPantherPoolV1 is
     IVault public immutable VAULT;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
+    uint16 public constant UNDEFINED_ROOT_INDEX = 0xFFFF;
 
     uint160 public zAccountRegistrationCircuitId;
 
@@ -79,7 +80,8 @@ contract MockPantherPoolV1 is
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory secretMessage
+        bytes memory secretMessage,
+        uint16 forestHistoryRootIndex
     )
         external
         returns (
@@ -88,6 +90,10 @@ contract MockPantherPoolV1 is
     {
         require(zAccountRegistrationCircuitId != 0, "undefined circuit");
         require(inputs[5] >= block.timestamp, "low zAccount creation time");
+        require(
+            _isForestRootExists(bytes32(inputs[12]), forestHistoryRootIndex),
+            "forest root not found"
+        );
 
         require(
             VERIFIER.verify(zAccountRegistrationCircuitId, inputs, proof),
@@ -100,13 +106,10 @@ contract MockPantherPoolV1 is
             commitment
         );
 
-        uint32 creationType = 1;
-
-        // TODO: require `secretMessage` to start with 0x06 and it's length >= 96 bytes ("zAccount UTXO opening values" msg type)
         bytes memory transactionNoteContent = abi.encodePacked(
             // First public message
             uint8(0x60),
-            creationType,
+            inputs[5],
             // Seconds public message
             uint8(0x62),
             inputs[11], // zAccountCommitment
@@ -119,5 +122,31 @@ contract MockPantherPoolV1 is
         emit TransactionNote(0x01, transactionNoteContent);
 
         return 0;
+    }
+
+    function _isForestRootExists(bytes32 _root, uint16 _rootIndex)
+        private
+        view
+        returns (bool rootExists)
+    {
+        if (_rootIndex != UNDEFINED_ROOT_INDEX) {
+            // Only checking the root index which has been defined by user
+            rootExists = rootHistory[_rootIndex] == _root;
+        } else {
+            // User does not provided the index.
+            // Iterating in history, starting from the latest index:
+            uint8 depth = _historyDepth;
+
+            while (!rootExists) {
+                if (rootHistory[depth] == _root) rootExists = true;
+
+                if (depth == 0) break;
+                else {
+                    unchecked {
+                        depth--;
+                    }
+                }
+            }
+        }
     }
 }

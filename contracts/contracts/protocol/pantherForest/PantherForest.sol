@@ -54,7 +54,9 @@ abstract contract PantherForest is
 
     bytes32[NUM_LEAFS] public leafs;
     bytes32[HISTORY_SIZE] public rootHistory;
-    uint256 private _rootHistoryPointer;
+    uint64 private _savedRootsCounter;
+    uint64 private _historyStartPos;
+    uint8 internal _historyDepth;
 
     // mapping from leaf index to leaf controller
     mapping(uint8 => address) public leafControllers;
@@ -102,11 +104,11 @@ abstract contract PantherForest is
 
         leafs[leafIndex] = updatedLeaf;
         _forestRoot = hash(leafs);
-
+        uint64 _rootHistoryIndex;
         if (leafIndex == STATIC_TREE_LEAF) {
-            _resetRootHistory(_forestRoot);
+            _rootHistoryIndex = _resetRootHistory(_forestRoot);
         } else {
-            _updateRootHistory(_forestRoot);
+            _rootHistoryIndex = _updateRootHistory(_forestRoot);
         }
 
         emit RootUpdated(uint8(leafIndex), updatedLeaf, _forestRoot);
@@ -127,18 +129,29 @@ abstract contract PantherForest is
             ][leafIndex];
     }
 
-    function _updateRootHistory(bytes32 forestRoot) private {
-        uint256 rootHistoryPointer = _rootHistoryPointer % HISTORY_SIZE;
-        rootHistory[rootHistoryPointer] = forestRoot;
+    function _updateRootHistory(bytes32 forestRoot)
+        private
+        returns (uint64 _rootHistoryIndex)
+    {
+        uint64 savedRootsCounter = _savedRootsCounter;
 
-        _rootHistoryPointer = rootHistoryPointer;
+        if (_historyDepth < HISTORY_SIZE) _historyDepth++;
+
+        // `& 0xFF` is a cheaper equivalent of `% 256`
+        _rootHistoryIndex = (savedRootsCounter - _historyStartPos) & 0xFF;
+        rootHistory[_rootHistoryIndex] = forestRoot;
+
+        _savedRootsCounter = savedRootsCounter++;
     }
 
-    function _resetRootHistory(bytes32 forestRoot) private {
-        uint256 rootHistoryPointer = 0;
-        rootHistory[rootHistoryPointer] = forestRoot;
-
-        _rootHistoryPointer = rootHistoryPointer;
+    function _resetRootHistory(bytes32 forestRoot)
+        private
+        returns (uint64 _rootHistoryIndex)
+    {
+        _historyStartPos = _savedRootsCounter;
+        _historyDepth = 0;
+        _rootHistoryIndex = 0;
+        rootHistory[_rootHistoryIndex] = forestRoot;
     }
 
     function hash(bytes32[NUM_LEAFS] memory _leafs)
