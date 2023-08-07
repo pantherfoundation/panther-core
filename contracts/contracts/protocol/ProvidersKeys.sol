@@ -12,7 +12,7 @@ import "./crypto/PoseidonHashers.sol";
 
 import "./providersKeys/ProvidersKeysSignatureVerifier.sol";
 import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
-import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherForest/Constant.sol";
+import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
 import { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "./pantherForest/zeroTrees/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";

@@ -13,7 +13,7 @@ import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Types.sol";
-import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constant.sol";
+import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
 
 /**
  * @title ZAccountsRegistry
