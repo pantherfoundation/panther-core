@@ -6,7 +6,7 @@ import { PoseidonT6 } from "./crypto/Poseidon.sol";
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 import "../common/ImmutableOwnable.sol";
-import { STATIC_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constant.sol";
+import "./pantherForest/Constants.sol";
 
 // TODO: write PantherStaticTree 'title' and 'notice' (description) similarly to the contracts have
 // (updating the state of the PantherForest contract on a network).
@@ -50,26 +50,27 @@ contract PantherStaticTree is
         address _owner,
         address _pantherForest,
         address _zAssetsTreeController,
-        address _zZnonesTreeController,
-        address _providersKeysTreeController,
         address _zAccountsBlacklistedTreeController,
-        address _zNetworksTreeController
+        address _zNetworksTreeController,
+        address _zZnonesTreeController,
+        address _providersKeysTreeController
     ) ImmutableOwnable(_owner) {
         require(
             _zAssetsTreeController != address(0) &&
-                _zZnonesTreeController != address(0) &&
-                _providersKeysTreeController != address(0) &&
                 _zAccountsBlacklistedTreeController != address(0) &&
-                _zNetworksTreeController != address(0),
+                _zNetworksTreeController != address(0) &&
+                _zZnonesTreeController != address(0) &&
+                _providersKeysTreeController != address(0),
             "init: zero address"
         );
 
         PANTHER_FOREST = _pantherForest;
+
         ZASSETS_TREE_CONTROLLER = _zAssetsTreeController;
-        ZZONES_TREE_CONTROLLER = _zZnonesTreeController;
-        PROVIDERS_KEYS_TREE_CONTROLLER = _providersKeysTreeController;
         ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER = _zAccountsBlacklistedTreeController;
         ZNETWORKS_TREE_CONTROLLER = _zNetworksTreeController;
+        ZZONES_TREE_CONTROLLER = _zZnonesTreeController;
+        PROVIDERS_KEYS_TREE_CONTROLLER = _providersKeysTreeController;
     }
 
     function initialize() external onlyOwner {
@@ -116,21 +117,26 @@ contract PantherStaticTree is
         emit RootUpdated(uint8(leafIndex), updatedLeaf, _staticTreeRoot);
     }
 
-    // TODO: refactor _getLeafController to use indexes (constants) defined in pantherForest/Constant.sol
     function _getLeafController(uint256 leafIndex)
         internal
         view
-        returns (address)
+        returns (address leafController)
     {
         require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
-        return
-            [
-                ZASSETS_TREE_CONTROLLER,
-                ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER,
-                ZNETWORKS_TREE_CONTROLLER,
-                ZZONES_TREE_CONTROLLER,
-                PROVIDERS_KEYS_TREE_CONTROLLER
-            ][leafIndex];
+        if (leafIndex == ZASSET_STATIC_LEAF_INDEX)
+            leafController = ZASSETS_TREE_CONTROLLER;
+
+        if (leafIndex == ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX)
+            leafController = ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER;
+
+        if (leafIndex == ZNETWORK_STATIC_LEAF_INDEX)
+            leafController = ZNETWORKS_TREE_CONTROLLER;
+
+        if (leafIndex == ZZONE_STATIC_LEAF_INDEX)
+            leafController = ZZONES_TREE_CONTROLLER;
+
+        if (leafIndex == PROVIDERS_KEYS_STATIC_LEAF_INDEX)
+            leafController = PROVIDERS_KEYS_TREE_CONTROLLER;
     }
 
     function hash(bytes32[5] memory input) private pure returns (bytes32) {

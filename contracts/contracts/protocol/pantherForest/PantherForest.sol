@@ -7,6 +7,7 @@ import "./interfaces/ITreeRootUpdater.sol";
 import "./rootHistory/RootHistory.sol";
 import "../../common/ImmutableOwnable.sol";
 import { PoseidonT5 } from "../crypto/Poseidon.sol";
+import "./Constants.sol";
 
 /**
  * @title PantherForest
@@ -117,16 +118,20 @@ abstract contract PantherForest is
     function _getLeafController(uint256 leafIndex)
         internal
         view
-        returns (address)
+        returns (address leafController)
     {
         require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
-        return
-            [
-                TAXI_TREE_CONTROLLER,
-                BUS_TREE_CONTROLLER,
-                FERRY_TREE_CONTROLLER,
-                STATIC_TREE_CONTROLLER
-            ][leafIndex];
+        if (leafIndex == TAXI_TREE_FOREST_LEAF_INDEX)
+            leafController = TAXI_TREE_CONTROLLER;
+
+        if (leafIndex == BUS_TREE_FOREST_LEAF_INDEX)
+            leafController = BUS_TREE_CONTROLLER;
+
+        if (leafIndex == FERRY_TREE_FOREST_LEAF_INDEX)
+            leafController = FERRY_TREE_CONTROLLER;
+
+        if (leafIndex == STATIC_TREE_FOREST_LEAF_INDEX)
+            leafController = STATIC_TREE_CONTROLLER;
     }
 
     function _updateRootHistory(bytes32 forestRoot)
