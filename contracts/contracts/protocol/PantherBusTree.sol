@@ -2,18 +2,17 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import "../../interfaces/IPantherPoolV1.sol";
+import "./interfaces/IPantherPoolV1.sol";
 
-import "../busTree/BusTree.sol";
-import { PoseidonT3 } from "../../crypto/Poseidon.sol";
-import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
-import { DEAD_CODE_ADDRESS, ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
-import { LockData } from "../../../common/Types.sol";
-import "../../../common/ImmutableOwnable.sol";
-import "../../mocks/LocalDevEnv.sol";
+import "./pantherForest/busTree/BusTree.sol";
+import { PoseidonT3 } from "./crypto/Poseidon.sol";
+import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
+import { DEAD_CODE_ADDRESS, ERC20_TOKEN_TYPE } from "../common/Constants.sol";
+import { LockData } from "../common/Types.sol";
+import "../common/ImmutableOwnable.sol";
+import "./mocks/LocalDevEnv.sol";
 
-// TODO: rename it to PantherBusTree.sol and move it to the contracts/protocol folder
-contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
+contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
