@@ -8,12 +8,13 @@ import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 import "../common/ImmutableOwnable.sol";
 import { STATIC_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constant.sol";
 
+// TODO: write PantherStaticTree 'title' and 'notice' (description) similarly to the contracts have
 // (updating the state of the PantherForest contract on a network).
 // It's a one-level quin tree that holds the roots of the following trees:
 // - ZAssetsTree,
 // - ZZonesTree,
-// - ProvidersKeysList,
-// - ZAccountsBlacklist,
+// - ProvidersKeys tree,
+// - ZAccountsBlacklist tree,
 // - ZNetworksTree
 //
 // It's supposed to run on the mainnet only.
@@ -115,6 +116,7 @@ contract PantherStaticTree is
         emit RootUpdated(uint8(leafIndex), updatedLeaf, _staticTreeRoot);
     }
 
+    // TODO: refactor _getLeafController to use indexes (constants) defined in pantherForest/Constant.sol
     function _getLeafController(uint256 leafIndex)
         internal
         view
