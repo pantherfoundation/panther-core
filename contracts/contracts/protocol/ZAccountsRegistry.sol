@@ -174,7 +174,7 @@ contract ZAccountsRegistry is
         uint256[] calldata inputs,
         bytes memory secretMessage,
         SnarkProof calldata proof,
-        uint8 forestHistoryRootIndex
+        uint16 forestHistoryRootIndex
     ) external {
         (
             bytes32 extraInputsHash,
@@ -349,7 +349,7 @@ contract ZAccountsRegistry is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory secretMessage,
-        uint8 forestHistoryRootIndex
+        uint16 forestHistoryRootIndex
     ) private returns (uint256) {
         // Pool is supposed to revert in case of any error
         try

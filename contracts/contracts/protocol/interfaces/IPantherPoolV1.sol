@@ -9,6 +9,6 @@ interface IPantherPoolV1 {
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory secretMessage,
-        uint8 forestHistoryRootIndex
+        uint16 forestHistoryRootIndex
     ) external returns (uint256);
 }
