@@ -6,6 +6,7 @@ import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import "../interfaces/ITreeRootGetter.sol";
 import { EMPTY_BUS_TREE_ROOT } from "../zeroTrees/Constants.sol";
+// TODO: remove MAGICAL_CONSTRAINT as a constant and make it a pub input var
 import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constant.sol";
 import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
 import "../interfaces/ITreeRootUpdater.sol";
