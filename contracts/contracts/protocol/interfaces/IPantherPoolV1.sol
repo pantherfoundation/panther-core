@@ -6,8 +6,9 @@ import { SnarkProof } from "../../common/Types.sol";
 
 interface IPantherPoolV1 {
     function createZAccountUtxo(
-        uint256[15] calldata inputs,
+        uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory secretMessage
+        bytes memory secretMessage,
+        uint8 forestHistoryRootIndex
     ) external returns (uint256);
 }

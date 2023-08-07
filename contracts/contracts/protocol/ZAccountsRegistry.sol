@@ -171,9 +171,10 @@ contract ZAccountsRegistry is
     }
 
     function activateZAccount(
-        uint256[15] calldata inputs,
+        uint256[] calldata inputs,
         bytes memory secretMessage,
-        SnarkProof calldata proof
+        SnarkProof calldata proof,
+        uint8 forestHistoryRootIndex
     ) external {
         (
             bytes32 extraInputsHash,
@@ -186,49 +187,55 @@ contract ZAccountsRegistry is
             ,
 
         ) = _destructPublicInputs(inputs);
+        {
+            require(
+                extraInputsHash == keccak256(secretMessage),
+                ERR_INVALID_EXTRA_INPUT_HASH
+            );
+            require(
+                masterEOAs[zAccountId] == zAccountMasterEOA,
+                ERR_UNKNOWN_ZACCOUNT
+            );
 
-        require(
-            extraInputsHash == keccak256(secretMessage),
-            ERR_INVALID_EXTRA_INPUT_HASH
-        );
-        require(
-            masterEOAs[zAccountId] == zAccountMasterEOA,
-            ERR_UNKNOWN_ZACCOUNT
-        );
+            (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
+                zAccountId,
+                zAccountMasterEOA,
+                zAccountRootSpendPubKey
+            );
+            require(!isBlacklisted, errMsg);
 
-        (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
-            zAccountId,
-            zAccountMasterEOA,
-            zAccountRootSpendPubKey
-        );
-        require(!isBlacklisted, errMsg);
+            // Prevent activating twice for same zone or same network
+            require(
+                zoneZAccountNullifiers[zAccountNullifier] == 0,
+                ERR_DUPLICATED_NULLIFIER
+            );
 
-        // Prevent activating twice for same zone or same network
-        require(
-            zoneZAccountNullifiers[zAccountNullifier] == 0,
-            ERR_DUPLICATED_NULLIFIER
-        );
+            zoneZAccountNullifiers[zAccountNullifier] = block.number;
 
-        zoneZAccountNullifiers[zAccountNullifier] = block.number;
+            ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
 
-        ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
+            // if the status is registered, then change it to activate.
+            // If status is already activated, it means  Zaccount is activated at least in 1 zone.
+            if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
+                zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;
+            }
 
-        // if the status is registered, then change it to activate.
-        // If status is already activated, it means  Zaccount is activated at least in 1 zone.
-        if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
-            zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;
+            uint256 _zkpRewards = _notifyOnboardingController(
+                zAccountMasterEOA,
+                uint8(userPrevStatus),
+                uint8(ZACCOUNT_STATUS.ACTIVATED),
+                new bytes(0)
+            );
+
+            require(_zkpRewards == zkpAmount, ERR_LOW_ZKP_AMOUNT);
         }
 
-        uint256 _zkpRewards = _notifyOnboardingController(
-            zAccountMasterEOA,
-            uint8(userPrevStatus),
-            uint8(ZACCOUNT_STATUS.ACTIVATED),
-            new bytes(0)
+        _createZAccountUTXO(
+            inputs,
+            proof,
+            secretMessage,
+            forestHistoryRootIndex
         );
-
-        require(_zkpRewards == zkpAmount, ERR_LOW_ZKP_AMOUNT);
-
-        _createZAccountUTXO(inputs, proof, secretMessage);
 
         emit ZAccountActivated(zAccountId);
     }
@@ -339,13 +346,19 @@ contract ZAccountsRegistry is
     }
 
     function _createZAccountUTXO(
-        uint256[15] calldata inputs,
+        uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory secretMessage
+        bytes memory secretMessage,
+        uint8 forestHistoryRootIndex
     ) private returns (uint256) {
         // Pool is supposed to revert in case of any error
         try
-            PANTHER_POOL.createZAccountUtxo(inputs, proof, secretMessage)
+            PANTHER_POOL.createZAccountUtxo(
+                inputs,
+                proof,
+                secretMessage,
+                forestHistoryRootIndex
+            )
         returns (uint256 result) {
             return result;
         } catch Error(string memory reason) {
@@ -382,7 +395,7 @@ contract ZAccountsRegistry is
     // forestMerkleRoot,                      // [13]
     // saltHash,                              // [14]
     // magicalConstraint                      // [15]
-    function _destructPublicInputs(uint256[15] memory inputs)
+    function _destructPublicInputs(uint256[] memory inputs)
         private
         pure
         returns (

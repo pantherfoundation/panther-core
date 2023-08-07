@@ -133,7 +133,7 @@ contract OnboardingController is ImmutableOwnable {
         uint8 _newStatus,
         bytes memory _data
     ) external returns (uint256 _zZkpRewardAlloc) {
-        _zZkpRewardAlloc = 1000e18;
+        _zZkpRewardAlloc = 100e18;
 
         // require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
 
