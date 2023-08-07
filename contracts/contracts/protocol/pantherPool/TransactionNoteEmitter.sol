@@ -5,14 +5,15 @@ pragma solidity ^0.8.16;
 
 abstract contract TransactionNoteEmitter {
     // solhint-disable var-name-mixedcase
-    uint8 private unused = 0x00;
-    uint8 private constant ZACCOUNT_ACTIVATION = 0x01;
-    uint240 private _txTypeReserves;
+    // Transaction Types
+    uint8 internal constant TT_ZACCOUNT_ACTIVATION = 0x01;
 
     // Message Types
-    uint8 private constant NO_CONTENT = 0x00;
+    uint8 internal constant MT_VOID = 0x00;
+    uint8 internal constant MT_UTXO_CREATION_TIME = 0x60;
+    uint8 internal constant MT_UTXO_BUSTREE_UTXO = 0x62;
 
     // solhint-enable var-name-mixedcase
 
-    event TransactionNote(bytes1 txType, bytes content);
+    event TransactionNote(uint8 txType, bytes content);
 }

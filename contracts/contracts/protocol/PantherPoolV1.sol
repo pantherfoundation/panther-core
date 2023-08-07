@@ -103,10 +103,10 @@ contract PantherPoolV1 is
 
         bytes memory transactionNoteContent = abi.encodePacked(
             // First public message
-            uint8(0x60),
-            inputs[5],
+            MT_UTXO_CREATION_TIME,
+            inputs[5], // creationTime
             // Seconds public message
-            uint8(0x62),
+            MT_UTXO_BUSTREE_UTXO,
             inputs[11], // zAccountCommitment
             queueId,
             indexInQueue,
@@ -114,7 +114,7 @@ contract PantherPoolV1 is
             secretMessage
         );
 
-        emit TransactionNote(0x01, transactionNoteContent);
+        emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
 
         return 0;
     }
