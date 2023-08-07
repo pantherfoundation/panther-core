@@ -12,6 +12,7 @@ import { LockData } from "../../../common/Types.sol";
 import "../../../common/ImmutableOwnable.sol";
 import "../../mocks/LocalDevEnv.sol";
 
+// TODO: rename it to PantherBusTree.sol and move it to the contracts/protocol folder
 contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
