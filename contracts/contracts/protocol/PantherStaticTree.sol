@@ -32,10 +32,10 @@ contract PantherStaticTree is
     address public immutable PANTHER_FOREST;
 
     address public immutable ZASSETS_TREE_CONTROLLER;
-    address public immutable ZZONES_TREE_CONTROLLER;
-    address public immutable PROVIDERS_KEYS_TREE_CONTROLLER;
     address public immutable ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER;
     address public immutable ZNETWORKS_TREE_CONTROLLER;
+    address public immutable ZZONES_TREE_CONTROLLER;
+    address public immutable PROVIDERS_KEYS_TREE_CONTROLLER;
 
     // solhint-enable var-name-mixedcase
 
@@ -85,6 +85,18 @@ contract PantherStaticTree is
         _staticTreeRoot = hash(leafs);
     }
 
+    function setDebugRoot() external onlyOwner {
+        for (uint8 i; i < NUM_LEAFS; ) {
+            leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        _staticTreeRoot = hash(leafs);
+    }
+
     function getRoot() external view returns (bytes32) {
         return _staticTreeRoot;
     }
@@ -112,10 +124,10 @@ contract PantherStaticTree is
         return
             [
                 ZASSETS_TREE_CONTROLLER,
-                ZZONES_TREE_CONTROLLER,
-                PROVIDERS_KEYS_TREE_CONTROLLER,
                 ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER,
-                ZNETWORKS_TREE_CONTROLLER
+                ZNETWORKS_TREE_CONTROLLER,
+                ZZONES_TREE_CONTROLLER,
+                PROVIDERS_KEYS_TREE_CONTROLLER
             ][leafIndex];
     }
 

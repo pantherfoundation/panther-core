@@ -6,7 +6,9 @@ import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import "../interfaces/ITreeRootGetter.sol";
 import { EMPTY_BUS_TREE_ROOT } from "../zeroTrees/Constants.sol";
+import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constant.sol";
 import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
+import "../interfaces/ITreeRootUpdater.sol";
 
 /**
  * @dev The Bus Tree ("Tree") is an incremental binary Merkle tree that stores
@@ -38,6 +40,9 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
 
     IPantherVerifier public immutable VERIFIER;
     uint160 public immutable CIRCUIT_ID;
+
+    // address of panther pool
+    address public immutable PANTHER_POOL;
     // solhint-enable var-name-mixedcase
 
     bytes32 private _busTreeRoot;
@@ -68,7 +73,12 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     );
 
     // @dev It is "proxy-friendly" as it does not change the storage
-    constructor(address _verifier, uint160 _circuitId) {
+    constructor(
+        address _verifier,
+        uint160 _circuitId,
+        address _pantherPool
+    ) {
+        require(_pantherPool != address(0), "init: zero address");
         require(
             IPantherVerifier(_verifier).getVerifyingKey(_circuitId).ic.length >=
                 1,
@@ -80,10 +90,12 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         // `busTreeRoot = EMPTY_BUS_TREE_ROOT`.
         // Initial value of storage variables is 0 (which is implicitly set in
         // new storage slots). There is no need for explicit initialization.
+
+        PANTHER_POOL = _pantherPool;
     }
 
     function getRoot() external view returns (bytes32) {
-        return _busTreeRoot;
+        return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
     }
 
     function getBusTreeStats()
@@ -160,6 +172,11 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
                 }
             }
         }
+
+        ITreeRootUpdater(PANTHER_POOL).updateRoot(
+            busTreeNewRoot,
+            BUS_TREE_FOREST_LEAF_INDEX
+        );
 
         // Store updated Bus Tree params
         _busTreeRoot = busTreeNewRoot;

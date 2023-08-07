@@ -26,9 +26,6 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // address of reward token
     address public immutable REWARD_TOKEN;
 
-    // address of panther pool
-    address public immutable PANTHER_POOL;
-
     // solhint-enable var-name-mixedcase
 
     // avg number of utxos which can be added per minute
@@ -45,19 +42,15 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     constructor(
         address owner,
         address rewardToken,
-        address pantherPool,
+        address _pantherPool,
         address _verifier,
         uint160 _circuitId
-    ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId) {
-        require(
-            rewardToken != address(0) && pantherPool != address(0),
-            "init: zero address"
-        );
+    ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId, _pantherPool) {
+        require(rewardToken != address(0), "init: zero address");
 
         START_TIME = block.timestamp;
 
         REWARD_TOKEN = rewardToken;
-        PANTHER_POOL = pantherPool;
     }
 
     function updateParams(
@@ -124,7 +117,7 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = utxo;
 
-        queueId = _nextQueueId - 1;
+        queueId = _nextQueueId == 0 ? 0 : _nextQueueId - 1;
         BusQueue memory busQueue = _busQueues[queueId];
         indexInQueue = busQueue.nUtxos;
 
