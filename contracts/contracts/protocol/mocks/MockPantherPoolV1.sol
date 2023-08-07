@@ -10,10 +10,12 @@ import { LockData } from "../../common/Types.sol";
 import "../pantherForest/PantherForest.sol";
 import "../pantherPool/TransactionNoteEmitter.sol";
 
+// TODO: make a separate file in interfaces/
 interface IMockPantherPoolV1 {
     function unlockAssetFromVault(LockData calldata data) external;
 }
 
+// TODO: rename it to PantherPoolV1.sol and move it to the contracts/protocol folder
 // solhint-disable var-name-mixedcase
 // slither-disable shadowing-state
 // slither-disable unused-state
@@ -100,6 +102,7 @@ contract MockPantherPoolV1 is
 
         uint32 creationType = 1;
 
+        // TODO: require `secretMessage` to start with 0x06 and it's length >= 96 bytes ("zAccount UTXO opening values" msg type)
         bytes memory transactionNoteContent = abi.encodePacked(
             // First public message
             uint8(0x60),
