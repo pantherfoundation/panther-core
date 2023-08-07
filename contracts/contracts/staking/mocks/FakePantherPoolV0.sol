@@ -4,14 +4,11 @@ pragma solidity ^0.8.16;
 import { CIPHERTEXT1_WORDS, OUT_MAX_UTXOs, PATH_ELEMENTS_NUM } from "../../common/Constants.sol";
 import { G1Point } from "../../common/Types.sol";
 import "../interfaces/IPantherPoolV0.sol";
+import { FIELD_SIZE } from "../../protocol/crypto/SnarkConstants.sol";
 
 /// @dev It simulates (but not precisely!!!) `IPantherPoolV0`. See an example bellow.
 contract FakePantherPoolV0 is IPantherPoolV0 {
     // solhint-disable var-name-mixedcase
-
-    // Snark field size
-    uint256 private constant FIELD_SIZE =
-        21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
     // Leaf zero value (`keccak256("Pantherprotocol")%FIELD_SIZE`)
     bytes32 internal constant ZERO_VALUE =
