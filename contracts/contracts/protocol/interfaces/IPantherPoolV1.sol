@@ -3,6 +3,7 @@
 pragma solidity ^0.8.16;
 
 import { SnarkProof } from "../../common/Types.sol";
+import { LockData } from "../../common/Types.sol";
 
 interface IPantherPoolV1 {
     function createZAccountUtxo(
@@ -11,4 +12,6 @@ interface IPantherPoolV1 {
         bytes memory secretMessage,
         uint16 forestHistoryRootIndex
     ) external returns (uint256);
+
+    function unlockAssetFromVault(LockData calldata data) external;
 }
