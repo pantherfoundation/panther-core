@@ -5,7 +5,7 @@ import {smock, FakeContract} from '@defi-wonderland/smock';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
-import {MockPantherPoolV0, ZAssetsRegistry} from '../../types/contracts';
+import {MockPantherPoolV0, ZAssetsRegistryV0} from '../../types/contracts';
 
 import {
     anotherFakeExitCommitment,
@@ -25,7 +25,7 @@ import {deployPantherPoolV0} from './helpers/pantherPoolV0';
 
 describe('PantherPoolV0', () => {
     let poolV0: MockPantherPoolV0;
-    let zAssetsRegistry: FakeContract<ZAssetsRegistry>;
+    let zAssetsRegistry: FakeContract<ZAssetsRegistryV0>;
     let msgSenderAddress: string;
     let snapshot: number;
 
@@ -33,7 +33,7 @@ describe('PantherPoolV0', () => {
         msgSenderAddress = (await ethers.getSigners())[0].address;
         poolV0 = await deployPantherPoolV0();
 
-        zAssetsRegistry = await smock.fake('ZAssetsRegistry', {
+        zAssetsRegistry = await smock.fake('ZAssetsRegistryV0', {
             address: await poolV0.ASSET_REGISTRY(),
         });
     });
