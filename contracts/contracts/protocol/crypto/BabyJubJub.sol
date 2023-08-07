@@ -32,6 +32,8 @@ library BabyJubJub {
     uint256 public constant PM1D2 =
         10944121435919637611123202872628637544274182200208017171849102093287904247808;
 
+    // TODO: make BabyJubJub.pointPack internal
+    // TODO: remove dependency on BabyJubJub as a standalone contract
     function pointPack(G1Point memory point)
         external
         pure
