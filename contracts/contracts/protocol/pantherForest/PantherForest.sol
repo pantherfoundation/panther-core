@@ -59,9 +59,6 @@ abstract contract PantherForest is
     uint64 private _historyStartPos;
     uint8 internal _historyDepth;
 
-    // mapping from leaf index to leaf controller
-    mapping(uint8 => address) public leafControllers;
-
     constructor(
         address _owner,
         address _taxiTreeController,
