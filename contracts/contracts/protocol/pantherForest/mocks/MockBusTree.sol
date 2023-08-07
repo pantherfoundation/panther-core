@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import { IMockPantherPoolV1 } from "../../mocks/MockPantherPoolV1.sol";
+import "../../interfaces/IPantherPoolV1.sol";
 
 import "../busTree/BusTree.sol";
 import { PoseidonT3 } from "../../crypto/Poseidon.sol";
@@ -80,7 +80,7 @@ contract MockBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
             extAmount: uint96(reward)
         });
 
-        IMockPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
+        IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
 
         emit MinerRewarded(miner, reward);
     }

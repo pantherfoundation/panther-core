@@ -2,27 +2,22 @@
 // SPDX-FileCopyrightText: Copyright 2023s Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import "../interfaces/IVault.sol";
-import "../interfaces/IPantherVerifier.sol";
-import "../interfaces/IBusTree.sol";
-import "../../common/ImmutableOwnable.sol";
-import { LockData } from "../../common/Types.sol";
-import "../pantherForest/PantherForest.sol";
-import "../pantherPool/TransactionNoteEmitter.sol";
+import "./interfaces/IVault.sol";
+import "./interfaces/IPantherVerifier.sol";
+import "./interfaces/IBusTree.sol";
+import "./../common/ImmutableOwnable.sol";
+import { LockData } from "./../common/Types.sol";
+import "./pantherForest/PantherForest.sol";
+import "./pantherPool/TransactionNoteEmitter.sol";
+import "./interfaces/IPantherPoolV1.sol";
 
-// TODO: make a separate file in interfaces/
-interface IMockPantherPoolV1 {
-    function unlockAssetFromVault(LockData calldata data) external;
-}
-
-// TODO: rename it to PantherPoolV1.sol and move it to the contracts/protocol folder
 // solhint-disable var-name-mixedcase
 // slither-disable shadowing-state
 // slither-disable unused-state
-contract MockPantherPoolV1 is
+contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
-    IMockPantherPoolV1
+    IPantherPoolV1
 {
     // slither-disable-next-line shadowing-state unused-state
     uint256[500 - 290] private __gap;
