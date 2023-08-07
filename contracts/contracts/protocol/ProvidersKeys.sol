@@ -5,13 +5,15 @@ pragma solidity 0.8.16;
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 
+import "../common/UtilsLib.sol";
 import "./errMsgs/ProvidersKeysErrMsgs.sol";
 import "./crypto/BabyJubJub.sol";
-import { PoseidonT3, PoseidonT4 } from "./crypto/Poseidon.sol";
+import "./crypto/PoseidonHashers.sol";
 
 import "./providersKeys/ProvidersKeysSignatureVerifier.sol";
 import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
-import { ZERO_VALUE } from "./pantherForest/zeroTrees/Constants.sol";
+import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherForest/Constant.sol";
+import { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "./pantherForest/zeroTrees/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import { G1Point } from "../common/Types.sol";
@@ -19,10 +21,21 @@ import { G1Point } from "../common/Types.sol";
 /**
  * @title ProvidersKeys
  * @author Pantherprotocol Contributors
- * @notice The contract registers public keys for providers, such as KYC/KYT attesters,
- * zone operators, and data escrow (or "data safe") operators. Contract owner (Multisig wallet)
- * is able to allocate empty leafs to each provider, so that the provider has a keyring to put
- * the keys maximum up to the given allocation.
+ * @notice It registers public keys of providers, such as KYC/KYT attesters,
+ * zone operators, data escrow (or "data safe") operators.
+ * Each public key is stored as a leaf of a binary merkle tree. Every time the
+ * tree is updated, this contract calls `PantherStaticTree` smart contract to
+ * notify on update of the tree root.
+ * The contract owner allocates leafs ("keyring") to a provider and authorizes
+ * an address that may register provider's keys.
+ * This way a provider gets the "keyring" where the provider may put that many
+ * keys as the owner allocated.
+ * @dev Public keys are points in the BabyJubjub elliptic curve. The contract
+ * does not check, however, if the key is a valid curve point.
+ * Since the off-chain computation of the tree updates proved by the SNARK will
+ * replace the on-chain computation in the next version, the "incremental tree"
+ * algorithm is not applied ("incremental tree" is easier for operators since
+ * `proofSiblings` unneeded as input params on tree leafs insertions/updates).
  */
 contract ProvidersKeys is
     ProvidersKeysSignatureVerifier,
@@ -32,8 +45,11 @@ contract ProvidersKeys is
 {
     // solhint-disable var-name-mixedcase
 
-    uint32 private constant MAX_KEYS = 65536;
-    uint256 private constant STATIC_TREE_LEAF_INDEX_FOR_PROVIDERS_KEYS_ROOT = 2;
+    uint256 private KEYS_TREE_DEPTH = SIXTEEN_LEVELS;
+    uint16 private constant MAX_KEYS = uint16(2**SIXTEEN_LEVELS - 1);
+
+    uint32 private REVOKED_KEY_EXPIRY = 0;
+    uint256 private MAX_TREE_LOCK_PERIOD = 30 days;
 
     ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
 
@@ -49,95 +65,157 @@ contract ProvidersKeys is
     /// @notice keyring parameters
     struct Keyring {
         address operator;
-        uint8 id;
         STATUS status;
-        uint16 usedKeys;
-        uint16 allocKeys;
-        uint32 registrationBlockNum;
-        uint16 _unused;
+        uint16 numKeys;
+        uint16 numAllocKeys;
+        uint32 registrationBlock;
+        uint24 _unused;
     }
 
-    /// @notice keyring ID -> key index in the merkle tree
-    mapping(uint32 => uint8) public keyOwners;
+    /// @notice Mapping from keyring ID to Keyring data
+    mapping(uint16 => Keyring) public keyrings;
 
-    /// @notice Mapping from operator to `Keyring`
-    mapping(address => Keyring) public keyrings;
+    /// @notice Mapping from key index to keyring ID
+    mapping(uint16 => uint16) public keyringIds;
 
-    /// @notice Total number of keyring which has been added
-    uint16 private _keyringCounter;
+    /// @dev Number of keyrings added (created) so far
+    uint16 private _numKeyrings;
 
-    /// @notice Total number of keys which has been added in every keyring
-    uint32 private _totalUsedKeys;
+    /// @dev Number of public keys registered so far
+    uint16 private _totalNumRegisteredKeys;
 
-    /// @notice Total number of keys which has been reserved but not used yet
-    uint32 private _totalAllocatedKeys;
+    /// @dev Number of leafs reserved for public keys so far
+    uint16 private _totalNumAllocatedKeys;
 
-    /// @notice flag to pause/unpause key registration, revocation and updating key expiry date
-    bool public treeRootUpdatingAllowed;
+    /// @dev (UNIX) time till when operators can't register/revoke/extend keys
+    /// @dev Owner may temporally disable the tree changes by operators to avoid
+    /// the "race condition" (if multiple parties try to update simultaneously)
+    uint32 private _treeLockedTillTime;
 
-    /// @notice current root of binry updatable merkle tree which has provider keys as its leaf
-    bytes32 private _currentRoot;
+    /// @dev Root of the merkle tree with registered keys
+    bytes32 private _treeRoot;
 
-    event KeyringOperatorUpdated(
-        address oldOperator,
-        address newOperator,
-        STATUS status
+    event KeyRegistered(
+        uint16 indexed keyringId,
+        uint16 indexed keyIndex,
+        bytes32 packedPubKey,
+        uint32 expiry
     );
-    event KeyRegistered(uint8 id, uint256 keyIndex, G1Point key);
-    event TreeRootUpdatingAllowedStatusChanged(bool status); //TODO
+    event KeyExtended(
+        uint16 indexed keyringId,
+        uint16 indexed keyIndex,
+        uint32 newExpiry
+    );
+    event KeyRevoked(uint16 indexed keyringId, uint16 indexed keyIndex);
+
+    event KeyringUpdated(
+        uint16 indexed keyringId,
+        address operator,
+        STATUS status,
+        uint16 numAllocKeys
+    );
+
+    event TreeLockUpdated(uint32 tillTime);
 
     constructor(
         address _owner,
-        uint8 _keyringVersion,
+        uint8 keyringVersion,
         address pantherStaticTree
-    ) ImmutableOwnable(_owner) ProvidersKeysSignatureVerifier(_keyringVersion) {
+    ) ImmutableOwnable(_owner) ProvidersKeysSignatureVerifier(keyringVersion) {
         require(pantherStaticTree != address(0), ERR_INIT_CONTRACT);
 
+        // trusted contract - no reentrancy guard needed
+        // slither-disable-next-line unchecked-transfer,reentrancy-events
         PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);
     }
 
-    modifier isTreeRootUpdatingAllowed() {
-        require(treeRootUpdatingAllowed, ERR_TREE_ROOT_UPDATING_NOT_ALLOWED);
+    modifier whenTreeUnlocked() {
+        _requireTreeIsUnlocked();
         _;
     }
 
-    function getRoot() external view returns (bytes32) {
-        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+    modifier keyInKeyring(uint16 keyIndex, uint16 keyringId) {
+        require(keyringIds[keyIndex] == keyringId, ERR_KEY_IS_NOT_IN_KEYRING);
+        _;
     }
 
-    function getKeyCommitment(G1Point memory key, uint32 expiryDate)
+    function getStatistics()
+        external
+        view
+        returns (
+            uint16 numKeyrings,
+            uint16 totalNumRegisteredKeys,
+            uint16 totalNumAllocatedKeys,
+            uint32 treeLockedTillTime
+        )
+    {
+        numKeyrings = _numKeyrings;
+        totalNumRegisteredKeys = _totalNumRegisteredKeys;
+        totalNumAllocatedKeys = _totalNumAllocatedKeys;
+        treeLockedTillTime = _treeLockedTillTime;
+    }
+
+    function getRoot() external view returns (bytes32) {
+        return _treeRoot == bytes32(0) ? zeroRoot() : _treeRoot;
+    }
+
+    // @dev It does NOT check if the pubKey is a point on the BabyJubJub curve
+    function packPubKey(G1Point memory pubKey) public pure returns (bytes32) {
+        // Coordinates must be in the SNARK field
+        require(
+            BabyJubJub.isG1PointLowerThanFieldSize([pubKey.x, pubKey.y]),
+            ERR_NOT_IN_FIELD
+        );
+        return BabyJubJub.pointPack(pubKey);
+    }
+
+    function getKeyCommitment(G1Point memory pubKey, uint32 expiry)
         public
         pure
         returns (bytes32 commitment)
     {
-        commitment = PoseidonT4.poseidon(
-            [bytes32(key.x), bytes32(key.y), bytes32(uint256(expiryDate))]
+        // Next call reverts if the input is not in the SNARK field
+        commitment = PoseidonHashers.poseidonT4(
+            [bytes32(pubKey.x), bytes32(pubKey.y), bytes32(uint256(expiry))]
         );
     }
 
+    /// @notice Register a public key. Only the keyring operator may call.
     function registerKey(
-        G1Point memory key,
-        uint32 expiryDate,
+        uint16 keyringId,
+        G1Point memory pubKey,
+        uint32 expiry,
         bytes32[] memory proofSiblings,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external isTreeRootUpdatingAllowed {
-        bytes32 keyPacked = BabyJubJub.pointPack(key);
-        address operator = recoverOperator(keyPacked, expiryDate, v, r, s);
+    ) external whenTreeUnlocked returns (uint16 keyIndex) {
+        require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);
 
-        Keyring memory _keyring = _getActivateKeyringOrRevert(operator);
+        bytes32 keyPacked = BabyJubJub.pointPack(pubKey);
+        address operator = recoverOperator(
+            keyringId,
+            keyPacked,
+            expiry,
+            v,
+            r,
+            s
+        );
+
+        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+            keyringId,
+            operator
+        );
 
         require(
-            _keyring.allocKeys >= _keyring.usedKeys,
-            ERR_INSUFFICIENT_KEY_ALLOCATION
+            keyring.numAllocKeys >= keyring.numKeys,
+            ERR_INSUFFICIENT_ALLOCATION
         );
-        require(expiryDate > block.timestamp, ERR_INVALID_KEY_EXPIRY_DATE);
 
-        bytes32 commitment = getKeyCommitment(key, expiryDate);
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
 
-        uint32 keyIndex = _totalUsedKeys;
-        keyOwners[keyIndex] = _keyring.id;
+        keyIndex = _totalNumRegisteredKeys;
+        keyringIds[keyIndex] = keyringId;
 
         _updateProvidersKeysAndStaticTreeRoots(
             ZERO_VALUE,
@@ -146,29 +224,31 @@ contract ProvidersKeys is
             proofSiblings
         );
 
-        keyIndex++;
-        _totalUsedKeys = keyIndex;
+        _totalNumRegisteredKeys = ++keyIndex;
 
-        _keyring.usedKeys++;
-        keyrings[msg.sender] = _keyring;
+        keyring.numKeys++;
+        keyrings[keyringId] = keyring;
 
-        emit KeyRegistered(_keyring.id, keyIndex, key);
+        emit KeyRegistered(keyringId, keyIndex, keyPacked, expiry);
     }
 
-    function extendKeyExpiryDate(
-        G1Point memory key,
-        uint32 expiryDate,
-        uint32 newExpiryDate,
-        uint32 keyIndex,
+    /// @notice Extend the key expiry time. Only the keyring operator may call.
+    function extendKeyExpiry(
+        G1Point memory pubKey,
+        uint32 expiry,
+        uint32 newExpiry,
+        uint16 keyIndex,
         bytes32[] memory proofSiblings
-    ) external isTreeRootUpdatingAllowed {
-        Keyring memory _keyring = _getActivateKeyringOrRevert(msg.sender);
+    ) external whenTreeUnlocked {
+        require(
+            newExpiry > _timeNow() && newExpiry > expiry,
+            ERR_INVALID_KEY_EXPIRY
+        );
+        uint16 keyringId = keyringIds[keyIndex];
+        _getOperatorActiveKeyringOrRevert(keyringId, msg.sender);
 
-        require(keyIndex == keyOwners[_keyring.id], ERR_UNAUTHORIZED_KEY_OWNER);
-        require(expiryDate > 0, ERR_REVOKED_KEY);
-
-        bytes32 commitment = getKeyCommitment(key, expiryDate);
-        bytes32 newCommitment = getKeyCommitment(key, newExpiryDate);
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+        bytes32 newCommitment = getKeyCommitment(pubKey, newExpiry);
 
         _updateProvidersKeysAndStaticTreeRoots(
             commitment,
@@ -176,158 +256,209 @@ contract ProvidersKeys is
             keyIndex,
             proofSiblings
         );
+
+        emit KeyExtended(keyringId, keyIndex, newExpiry);
     }
 
-    function updateKeyringOperator(address newOperator) external {
-        require(newOperator != address(0), ERR_ZERO_KEYRING_OPERATOR);
+    /// @notice Update keyring operator. Only the (current) operator may call.
+    function updateKeyringOperator(uint16 keyringId, address newOperator)
+        external
+    {
+        require(newOperator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
 
-        Keyring memory _keyring = _getActivateKeyringOrRevert(msg.sender);
-        address oldOperator = _keyring.operator;
-        require(newOperator != oldOperator, ERR_REPETITIVE_KEYRING_OPERATOR);
+        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+            keyringId,
+            msg.sender
+        );
+        require(newOperator != msg.sender, ERR_SAME_OPERATOR);
 
-        keyrings[newOperator] = _keyring;
-        keyrings[msg.sender] = _resetKeyring(_keyring);
+        keyring.operator = newOperator;
+        keyrings[keyringId] = keyring;
 
-        emit KeyringOperatorUpdated(oldOperator, newOperator, STATUS.ACTIVE);
+        emit KeyringUpdated(
+            keyringId,
+            keyring.operator,
+            keyring.status,
+            keyring.numAllocKeys
+        );
+    }
+
+    /// @notice Revoke registered key. Either the operator or the owner may call.
+    /// @dev It sets the `expiry` to 0, which is an indicator of a revoked key.
+    function revokeKey(
+        uint16 keyringId,
+        uint16 keyIndex,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] calldata proofSiblings
+    ) external keyInKeyring(keyIndex, keyringId) {
+        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
+
+        if (keyring.operator == msg.sender) {
+            _requireTreeIsUnlocked();
+        } else {
+            require(OWNER == msg.sender, ERR_UNAUTHORIZED_OPERATOR);
+        }
+
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+
+        bytes32 newCommitment = getKeyCommitment(pubKey, REVOKED_KEY_EXPIRY);
+
+        _updateProvidersKeysAndStaticTreeRoots(
+            commitment,
+            newCommitment,
+            keyIndex,
+            proofSiblings
+        );
+
+        emit KeyRevoked(keyringId, keyIndex);
     }
 
     /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
-    function addKeyring(address operator, uint16 allocKeys) external onlyOwner {
-        Keyring memory _keyring = keyrings[operator];
-        require(_keyring.id == 0, ERR_KEYRING_ALREADY_EXISTS);
-        uint32 totalAllocatedKeys = _totalAllocatedKeys;
+    function addKeyring(address operator, uint16 numAllocKeys)
+        external
+        onlyOwner
+    {
+        require(operator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
 
-        totalAllocatedKeys += allocKeys;
-        require(MAX_KEYS >= totalAllocatedKeys, ERR_TOO_HIGH_KEY_ALLOCATION);
+        uint16 numAllocatedKeys = _totalNumAllocatedKeys;
+        numAllocatedKeys += numAllocKeys;
+        require(MAX_KEYS >= numAllocatedKeys, ERR_TOO_HIGH_ALLOCATION);
 
         uint16 keyringId = _getNextKeyringId();
-
-        _keyring = Keyring({
+        keyrings[keyringId] = Keyring({
             operator: operator,
-            id: uint8(keyringId),
             status: STATUS.ACTIVE,
-            usedKeys: 0,
-            allocKeys: uint16(allocKeys),
-            registrationBlockNum: uint32(block.number),
+            numKeys: 0,
+            numAllocKeys: numAllocKeys,
+            registrationBlock: UtilsLib.safe32BlockNow(),
             _unused: 0
         });
 
-        keyrings[operator] = _keyring;
-        _keyringCounter = keyringId;
-        _totalAllocatedKeys = totalAllocatedKeys;
+        _numKeyrings = keyringId;
+        _totalNumAllocatedKeys = numAllocatedKeys;
 
-        emit KeyringOperatorUpdated(address(0), operator, STATUS.ACTIVE);
+        emit KeyringUpdated(keyringId, operator, STATUS.ACTIVE, numAllocKeys);
     }
 
-    function suspendKeyring(address account) external onlyOwner {
-        Keyring memory _keyring = _getActivateKeyringOrRevert(account);
+    function suspendKeyring(uint16 keyringId) external onlyOwner {
+        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
 
-        _totalAllocatedKeys -= _getkeyringUnusedKeys(_keyring);
+        _totalNumAllocatedKeys -= _getUnusedKeyringAllocation(keyring);
 
-        keyrings[account] = _suspendKeyring(_keyring);
+        keyrings[keyringId] = _suspendKeyring(keyring);
 
-        emit KeyringOperatorUpdated(account, account, STATUS.SUSPENDED);
+        emit KeyringUpdated(
+            keyringId,
+            keyring.operator,
+            keyring.status,
+            keyring.numAllocKeys
+        );
     }
 
-    function reactivateKeyring(address operator) external onlyOwner {
-        Keyring memory _keyring = keyrings[operator];
+    function reactivateKeyring(uint16 keyringId) external onlyOwner {
+        Keyring memory keyring = keyrings[keyringId];
         require(
-            _keyring.status == STATUS.SUSPENDED,
+            keyring.status == STATUS.SUSPENDED,
             ERR_KEYRING_ALREADY_ACTIVATED
         );
 
-        uint32 totalAllocatedKeys = _totalAllocatedKeys;
-        // Unused allocation before suspanding. To be allocated again.
-        uint32 keyringUnUsedKeys = _getkeyringUnusedKeys(_keyring);
-        totalAllocatedKeys += keyringUnUsedKeys;
+        uint16 numAllocatedKeys = _totalNumAllocatedKeys;
+        // Unused allocation before suspending. To be allocated again.
+        uint16 keyringUnusedKeys = _getUnusedKeyringAllocation(keyring);
+        numAllocatedKeys += keyringUnusedKeys;
 
         // When there is not enough empty keys to give back to keyring
-        if (totalAllocatedKeys > MAX_KEYS) {
-            keyringUnUsedKeys =
+        if (numAllocatedKeys > MAX_KEYS) {
+            keyringUnusedKeys =
                 MAX_KEYS -
-                (totalAllocatedKeys - keyringUnUsedKeys);
+                (numAllocatedKeys - keyringUnusedKeys);
 
-            totalAllocatedKeys = MAX_KEYS;
+            numAllocatedKeys = MAX_KEYS;
         }
 
-        keyrings[operator].status = STATUS.ACTIVE;
-        _totalAllocatedKeys = totalAllocatedKeys;
+        keyrings[keyringId].status = STATUS.ACTIVE;
+        _totalNumAllocatedKeys = numAllocatedKeys;
 
-        emit KeyringOperatorUpdated(operator, operator, STATUS.ACTIVE);
+        emit KeyringUpdated(
+            keyringId,
+            keyring.operator,
+            keyring.status,
+            keyring.numAllocKeys
+        );
     }
 
-    function extendKeyringKeyAllocation(address account, uint16 allocation)
+    function increaseKeyringKeyAllocation(uint16 keyringId, uint16 allocation)
         external
         onlyOwner
     {
-        Keyring memory _keyring = _getActivateKeyringOrRevert(account);
-        uint32 totalAllocatedKeys = _totalAllocatedKeys;
-        totalAllocatedKeys += allocation;
-        require(MAX_KEYS >= totalAllocatedKeys, ERR_TOO_HIGH_KEY_ALLOCATION);
+        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
+        uint16 numAllocatedKeys = _totalNumAllocatedKeys;
+        numAllocatedKeys += allocation;
+        require(MAX_KEYS >= numAllocatedKeys, ERR_TOO_HIGH_ALLOCATION);
 
-        uint16 newKeyringAllocation = _keyring.allocKeys + allocation;
+        uint16 newKeyringAllocation = keyring.numAllocKeys + allocation;
 
-        keyrings[account].allocKeys = newKeyringAllocation;
-        _totalAllocatedKeys = totalAllocatedKeys;
-    }
+        keyrings[keyringId].numAllocKeys = newKeyringAllocation;
+        _totalNumAllocatedKeys = numAllocatedKeys;
 
-    function revokeKey(
-        G1Point memory key,
-        address operator,
-        uint32 expiryDate,
-        uint32 keyIndex,
-        bytes32[] calldata proofSiblings
-    ) external {
-        Keyring memory _keyring = _getActivateKeyringOrRevert(operator);
-
-        require(
-            OWNER == msg.sender || _keyring.operator == msg.sender,
-            ERR_ONLY_OWNER_OR_KEYRING_OPERATOR
-        );
-
-        bytes32 commitment = getKeyCommitment(key, expiryDate);
-
-        bytes32 newCommitment = getKeyCommitment(key, 0);
-
-        _updateProvidersKeysAndStaticTreeRoots(
-            commitment,
-            newCommitment,
-            keyIndex,
-            proofSiblings
+        emit KeyringUpdated(
+            keyringId,
+            keyring.operator,
+            keyring.status,
+            keyring.numAllocKeys
         );
     }
 
-    function updateTreeRootUpdatingAllowedStatus(bool status)
-        external
-        onlyOwner
-    {
+    function updateTreeLock(uint32 lockPeriod) external onlyOwner {
         require(
-            status != treeRootUpdatingAllowed,
-            ERR_REPETITIVE_TREE_ROOT_UPDATING_STATUS
+            lockPeriod <= MAX_TREE_LOCK_PERIOD,
+            ERR_TREE_LOCK_ALREADY_UPDATED
         );
-        treeRootUpdatingAllowed = status;
+        uint32 timestamp = UtilsLib.safe32(_timeNow() + lockPeriod);
+        _treeLockedTillTime = timestamp;
 
-        emit TreeRootUpdatingAllowedStatusChanged(status);
+        emit TreeLockUpdated(timestamp);
     }
 
     /* ========== INTERNAL & PRIVATE FUNCTIONS ========== */
 
-    function _getNextKeyringId() private view returns (uint16) {
-        return _keyringCounter + 1;
+    function hash(bytes32[2] memory input)
+        internal
+        pure
+        override
+        returns (bytes32)
+    {
+        // Next call reverts if the input is not in the SNARK field
+        return PoseidonHashers.poseidonT3(input);
     }
 
-    function _getActivateKeyringOrRevert(address operator)
+    function zeroRoot() internal pure override returns (bytes32) {
+        return SIXTEEN_LEVEL_EMPTY_TREE_ROOT;
+    }
+
+    function _getNextKeyringId() private view returns (uint16) {
+        return _numKeyrings + 1;
+    }
+
+    function _getActiveKeyringOrRevert(uint16 keyringId)
         private
         view
-        returns (Keyring memory)
+        returns (Keyring memory keyring)
     {
-        Keyring memory _keyring = keyrings[operator];
+        keyring = keyrings[keyringId];
 
-        require(_keyring.id > 0, ERR_KEYRING_NOT_EXISTS);
-        require(_keyring.status == STATUS.ACTIVE, ERR_KEYRING_NOT_ACTIVATED);
+        require(keyring.operator != address(0), ERR_KEYRING_NOT_EXISTS);
+        require(keyring.status == STATUS.ACTIVE, ERR_KEYRING_NOT_ACTIVATED);
+    }
 
-        return _keyring;
+    function _getOperatorActiveKeyringOrRevert(
+        uint16 keyringId,
+        address operator
+    ) private view returns (Keyring memory keyring) {
+        keyring = _getActiveKeyringOrRevert(keyringId);
+        require(keyring.operator == operator, ERR_UNAUTHORIZED_OPERATOR);
     }
 
     function _suspendKeyring(Keyring memory keyring)
@@ -339,91 +470,50 @@ contract ProvidersKeys is
         return keyring;
     }
 
-    function _resetKeyring(Keyring memory keyring)
-        private
-        pure
-        returns (Keyring memory)
-    {
-        keyring = Keyring({
-            operator: address(0),
-            id: 0,
-            status: STATUS.UNDEFINED,
-            usedKeys: 0,
-            allocKeys: 0,
-            registrationBlockNum: 0,
-            _unused: 0
-        });
-
-        return keyring;
-    }
-
-    function _getkeyringUnusedKeys(Keyring memory keyring)
+    function _getUnusedKeyringAllocation(Keyring memory keyring)
         private
         pure
         returns (uint16)
     {
-        return keyring.allocKeys - keyring.usedKeys;
+        return keyring.numAllocKeys - keyring.numKeys;
     }
 
     function _updateProvidersKeysAndStaticTreeRoots(
         bytes32 leaf,
         bytes32 newLeaf,
-        uint32 keyIndex,
+        uint16 keyIndex,
         bytes32[] memory proofSiblings
     ) private {
+        require(
+            proofSiblings.length == KEYS_TREE_DEPTH,
+            ERR_INCORRECT_SIBLINGS_SIZE
+        );
+
         bytes32 updatedRoot = update(
-            _currentRoot,
+            _treeRoot,
             leaf,
             newLeaf,
             keyIndex,
             proofSiblings
         );
 
-        _currentRoot = updatedRoot;
+        _treeRoot = updatedRoot;
 
+        // trusted contract - no reentrancy guard needed
+        // slither-disable-next-line unchecked-transfer,reentrancy-events
         PANTHER_STATIC_TREE.updateRoot(
             updatedRoot,
-            STATIC_TREE_LEAF_INDEX_FOR_PROVIDERS_KEYS_ROOT
+            PROVIDERS_KEYS_STATIC_LEAF_INDEX
         );
     }
 
-    function hash(bytes32[2] memory input)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
-        require(
-            BabyJubJub.isG1PointLowerThanFieldSize(
-                [uint256(input[0]), uint256(input[1])]
-            ),
-            ERR_TOO_LARGE_LEAF_INPUTS
-        );
-        return PoseidonT3.poseidon(input);
+    function _requireTreeIsUnlocked() private view {
+        require(_timeNow() >= _treeLockedTillTime, ERR_TREE_IS_LOCKED);
     }
 
-    // The root of zero merkle tree with depth 16 where each leaf is equal to
-    // 0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d
-    function zeroRoot() internal pure override returns (bytes32) {
-        // Level 0: 0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d
-        // Level 1: 0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4
-        // Level 2: 0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8
-        // Level 3: 0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c
-        // Level 4: 0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800
-        // Level 5: 0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f
-        // Level 6: 0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69
-        // Level 7: 0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f
-        // Level 8: 0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7
-        // Level 9: 0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718
-        // Level 10: 0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58
-        // Level 11: 0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f
-        // Level 12: 0x28ad970560de01e93b613aabc930fcaf087114743909783e3770a1ed07c2cde6
-        // Level 13: 0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d
-        // Level 14: 0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55
-        // Level 15: 0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c
-
-        // Root: 0x0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9
-        return
-            0x0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9;
+    function _timeNow() private view returns (uint32) {
+        // Time comparison accuracy is acceptable
+        // slither-disable-next-line timestamp
+        return UtilsLib.safe32TimeNow();
     }
 }
