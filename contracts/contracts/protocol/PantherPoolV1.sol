@@ -20,7 +20,7 @@ contract PantherPoolV1 is
     IPantherPoolV1
 {
     // slither-disable-next-line shadowing-state unused-state
-    uint256[500 - 290] private __gap;
+    uint256[500 - 282] private __gap;
 
     IVault public immutable VAULT;
     IBusTree public immutable BUS_TREE;
