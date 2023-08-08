@@ -3,7 +3,7 @@
 pragma solidity ^0.8.16;
 
 import "../taxiTree/PantherTaxiTree.sol";
-import { PoseidonT3 } from "../../crypto/Poseidon.sol";
+import "../../crypto/PoseidonHashers.sol";
 import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 
 contract MockTaxiTree is PantherTaxiTree {
@@ -18,10 +18,6 @@ contract MockTaxiTree is PantherTaxiTree {
     // }
 
     function hash(bytes32[2] memory input) internal pure returns (bytes32) {
-        require(
-            uint256(input[0]) < FIELD_SIZE && uint256(input[1]) < FIELD_SIZE,
-            "TT:TOO_LARGE_LEAF_INPUT"
-        );
-        return PoseidonT3.poseidon(input);
+        return PoseidonHashers.poseidonT3(input);
     }
 }

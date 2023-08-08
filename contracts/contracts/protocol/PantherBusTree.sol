@@ -11,6 +11,7 @@ import { DEAD_CODE_ADDRESS, ERC20_TOKEN_TYPE } from "../common/Constants.sol";
 import { LockData } from "../common/Types.sol";
 import "../common/ImmutableOwnable.sol";
 import "./mocks/LocalDevEnv.sol";
+import "./crypto/PoseidonHashers.sol";
 
 contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
@@ -90,11 +91,7 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         override
         returns (bytes32)
     {
-        require(
-            uint256(left) < FIELD_SIZE && uint256(right) < FIELD_SIZE,
-            "BT:TOO_LARGE_LEAF_INPUT"
-        );
-        return PoseidonT3.poseidon([left, right]);
+        return PoseidonHashers.poseidonT3([left, right]);
     }
 
     function getAllowedUtxosAt(uint256 _timestamp, uint256 _utxoCounter)

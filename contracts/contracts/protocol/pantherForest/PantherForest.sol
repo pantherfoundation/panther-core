@@ -4,9 +4,11 @@ pragma solidity ^0.8.16;
 
 import "./interfaces/ITreeRootGetter.sol";
 import "./interfaces/ITreeRootUpdater.sol";
+
 import "./rootHistory/RootHistory.sol";
+
 import "../../common/ImmutableOwnable.sol";
-import { PoseidonT5 } from "../crypto/Poseidon.sol";
+import "../crypto/PoseidonHashers.sol";
 import "./Constants.sol";
 
 /**
@@ -161,6 +163,6 @@ abstract contract PantherForest is
         pure
         returns (bytes32)
     {
-        return PoseidonT5.poseidon(_leafs);
+        return PoseidonHashers.poseidonT5(_leafs);
     }
 }
