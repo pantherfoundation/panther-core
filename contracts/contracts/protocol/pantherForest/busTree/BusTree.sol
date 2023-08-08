@@ -27,6 +27,8 @@ import "../interfaces/ITreeRootUpdater.sol";
  * published via on-chain logs.
  */
 abstract contract BusTree is BusQueues, ITreeRootGetter {
+    // TODO: adding gap to the beginning and end of the storage
+
     // solhint-disable var-name-mixedcase
 
     // Number of levels in every Batch (that is a binary tree)

@@ -20,18 +20,18 @@ contract PantherPoolV1 is
     IPantherPoolV1
 {
     // slither-disable-next-line shadowing-state unused-state
-    uint256[500 - 282] private __gap;
+    uint256[218] private __gap; // initialGap - pantherForest slots => 500 - 282
 
     IVault public immutable VAULT;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
     uint16 public constant UNDEFINED_ROOT_INDEX = 0xFFFF;
 
-    uint160 public zAccountRegistrationCircuitId;
-
     mapping(address => bool) public vaultAssetUnlockers;
 
     mapping(address => uint160) public circuitExecutor;
+
+    uint160 public zAccountRegistrationCircuitId;
 
     constructor(
         address _owner,
