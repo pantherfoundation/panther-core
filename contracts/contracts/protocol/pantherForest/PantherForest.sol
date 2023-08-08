@@ -38,7 +38,7 @@ abstract contract PantherForest is
     ITreeRootGetter,
     ITreeRootUpdater
 {
-    bytes32[20] private _gap;
+    bytes32[10] private _startGap;
 
     // solhint-disable var-name-mixedcase
 
@@ -60,6 +60,8 @@ abstract contract PantherForest is
     uint64 private _savedRootsCounter;
     uint64 private _historyStartPos;
     uint8 internal _historyDepth;
+
+    bytes32[10] private _endGap;
 
     constructor(
         address _owner,
