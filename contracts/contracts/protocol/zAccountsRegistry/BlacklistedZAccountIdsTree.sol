@@ -7,7 +7,7 @@ import "../pantherForest/interfaces/ITreeRootGetter.sol";
 import "../pantherForest/merkleTrees/BinaryUpdatableTree.sol";
 import "../errMsgs/ZAccountsRegistryErrMsgs.sol";
 
-import { PoseidonT3 } from "../crypto/Poseidon.sol";
+import "../crypto/PoseidonHashers.sol";
 import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 
 abstract contract BlacklistedZAccountIdsTree is
@@ -89,11 +89,7 @@ abstract contract BlacklistedZAccountIdsTree is
         override
         returns (bytes32)
     {
-        require(
-            uint256(input[0]) < FIELD_SIZE && uint256(input[1]) < FIELD_SIZE,
-            ERR_TOO_LARGE_LEAF_INPUTS
-        );
-        return PoseidonT3.poseidon(input);
+        return PoseidonHashers.poseidonT3(input);
     }
 
     //@dev returns the root of tree with depth 16 where each leaf is 0

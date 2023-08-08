@@ -2,11 +2,12 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import { PoseidonT6 } from "./crypto/Poseidon.sol";
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
-import "../common/ImmutableOwnable.sol";
 import "./pantherForest/Constants.sol";
+
+import "../common/ImmutableOwnable.sol";
+import "./crypto/PoseidonHashers.sol";
 
 // TODO: write PantherStaticTree 'title' and 'notice' (description) similarly to the contracts have
 // (updating the state of the PantherForest contract on a network).
@@ -141,6 +142,6 @@ contract PantherStaticTree is
 
     function hash(bytes32[5] memory input) private pure returns (bytes32) {
         // We trust the caller provides all input values within the SNARK field
-        return PoseidonT6.poseidon(input);
+        return PoseidonHashers.poseidonT6(input);
     }
 }
