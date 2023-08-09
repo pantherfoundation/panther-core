@@ -16,8 +16,9 @@ contract PantherPoolV1 is
     TransactionNoteEmitter,
     IPantherPoolV1
 {
+    // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
-    uint256[218] private __gap; // initialGap - pantherForest slots => 500 - 282
+    uint256[453] private __gap;
 
     // solhint-disable var-name-mixedcase
     IVault public immutable VAULT;
