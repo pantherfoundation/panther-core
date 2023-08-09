@@ -153,6 +153,8 @@ contract OnboardingController is ImmutableOwnable {
         // }
     }
 
+    // solhint-enable no-unused-vars
+
     function _getZzkpRewardsAllocation(
         RewardParams memory _rewardParams,
         address _user
