@@ -13,6 +13,7 @@ import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Types.sol";
+import "../common/UtilsLib.sol";
 import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
 
 /**
@@ -174,8 +175,8 @@ contract ZAccountsRegistry is
         uint256[] calldata inputs,
         bytes memory secretMessage,
         SnarkProof calldata proof,
-        uint16 forestHistoryRootIndex
-    ) external {
+        uint256 cachedForestRootIndex
+    ) external returns (uint256 utxoBusQueuePos) {
         (
             bytes32 extraInputsHash,
             uint256 zkpAmount,
@@ -189,7 +190,10 @@ contract ZAccountsRegistry is
         ) = _destructPublicInputs(inputs);
         {
             require(
-                extraInputsHash == keccak256(secretMessage),
+                extraInputsHash ==
+                    keccak256(
+                        abi.encodePacked(secretMessage, cachedForestRootIndex)
+                    ),
                 ERR_INVALID_EXTRA_INPUT_HASH
             );
             require(
@@ -230,11 +234,11 @@ contract ZAccountsRegistry is
             require(_zkpRewards == zkpAmount, ERR_LOW_ZKP_AMOUNT);
         }
 
-        _createZAccountUTXO(
+        utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
             secretMessage,
-            forestHistoryRootIndex
+            cachedForestRootIndex
         );
 
         emit ZAccountActivated(zAccountId);
@@ -328,6 +332,7 @@ contract ZAccountsRegistry is
 
         isZAccountIdBlacklisted[zAccountId] = isBlacklisted;
 
+        // Trusted contract - no reentrancy guard needed
         PANTHER_STATIC_TREE.updateRoot(
             blacklistedZAccountIdsTreeRoot,
             ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX
@@ -349,18 +354,20 @@ contract ZAccountsRegistry is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory secretMessage,
-        uint16 forestHistoryRootIndex
-    ) private returns (uint256) {
+        uint256 cachedForestRootIndex
+    ) private returns (uint256 utxoBusQueuePos) {
+        utxoBusQueuePos = 0;
         // Pool is supposed to revert in case of any error
         try
+            // Trusted contract - no reentrancy guard needed
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
                 secretMessage,
-                forestHistoryRootIndex
+                cachedForestRootIndex
             )
         returns (uint256 result) {
-            return result;
+            utxoBusQueuePos = result;
         } catch Error(string memory reason) {
             revert(reason);
         }
@@ -372,6 +379,7 @@ contract ZAccountsRegistry is
         uint8 _newStatus,
         bytes memory _data
     ) private returns (uint256 _zkpRewards) {
+        // Trusted contract - no reentrancy guard needed
         _zkpRewards = ONBOARDING_CONTROLLER.grantRewards(
             _user,
             _prevStatus,
@@ -380,21 +388,21 @@ contract ZAccountsRegistry is
         );
     }
 
-    // extraInputsHash,                       // [1]
-    // zkpAmount,                             // [2]
-    // zkpChange,                             // [3]
-    // zAccountId,                            // [4]
-    // zAccountPrpAmount,                     // [5]
-    // zAccountCreateTime,                    // [6]
-    // zAccountRootSpendPubKeyX,              // [7]
-    // zAccountRootSpendPubKeyY,              // [8]
-    // zAccountMasterEOA,                     // [9]
-    // zAccountNullifier,                     // [10]
-    // zAccountCommitment,                    // [12]
-    // kycSignedMessageHash,                  // [12]
-    // forestMerkleRoot,                      // [13]
-    // saltHash,                              // [14]
-    // magicalConstraint                      // [15]
+    // inputs[0]  - extraInputsHash
+    // inputs[1]  - zkpAmount
+    // inputs[2]  - zkpChange
+    // inputs[3]  - zAccountId
+    // inputs[4]  - zAccountPrpAmount
+    // inputs[5]  - zAccountCreateTime
+    // inputs[6]  - zAccountRootSpendPubKeyX
+    // inputs[7]  - zAccountRootSpendPubKeyY
+    // inputs[8]  - zAccountMasterEOA
+    // inputs[9]  - zAccountNullifier
+    // inputs[10] - zAccountCommitment
+    // inputs[11] - kycSignedMessageHash
+    // inputs[12] - forestMerkleRoot
+    // inputs[13] - saltHash
+    // inputs[14] - magicalConstraint
     function _destructPublicInputs(uint256[] memory inputs)
         private
         pure
@@ -412,7 +420,7 @@ contract ZAccountsRegistry is
     {
         extraInputsHash = bytes32(inputs[0]);
         zkpAmount = inputs[1];
-        zAccountId = uint24(inputs[3]);
+        zAccountId = UtilsLib.safe24(inputs[3]);
         zAccountPrpAmount = inputs[4];
 
         zAccountRootSpendPubKey = BabyJubJub.pointPack(
