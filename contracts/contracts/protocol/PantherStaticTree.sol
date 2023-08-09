@@ -47,6 +47,12 @@ contract PantherStaticTree is
     // mapping from leaf index to leaf owner
     mapping(uint8 => address) public leafControllers;
 
+    event RootUpdated(
+        uint256 indexed leafIndex,
+        bytes32 updatedLeaf,
+        bytes32 updatedRoot
+    );
+
     constructor(
         address _owner,
         address _pantherForest,
@@ -115,7 +121,7 @@ contract PantherStaticTree is
             STATIC_TREE_FOREST_LEAF_INDEX
         );
 
-        emit RootUpdated(uint8(leafIndex), updatedLeaf, _staticTreeRoot);
+        emit RootUpdated(leafIndex, updatedLeaf, _staticTreeRoot);
     }
 
     function _getLeafController(uint256 leafIndex)
