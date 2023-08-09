@@ -10,7 +10,7 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
     bytes32 internal constant REGISTRATION_TYPEHASH =
         keccak256(
             bytes(
-                "Registration(uint23 keyringId,bytes32 pubRootSpendingKey,uint32 expiryDate,uint256 version)"
+                "Registration(uint32 keyringId,bytes32 pubRootSpendingKey,uint32 expiryDate,uint256 version)"
             )
         );
 
