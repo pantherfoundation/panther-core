@@ -5,7 +5,7 @@ pragma solidity ^0.8.16;
 import "./interfaces/ITreeRootGetter.sol";
 import "./interfaces/ITreeRootUpdater.sol";
 
-import "./rootHistory/RootHistory.sol";
+import "./cachedRoots/CachedRoots.sol";
 
 import "../../common/ImmutableOwnable.sol";
 import "../crypto/PoseidonHashers.sol";
@@ -31,9 +31,11 @@ import "./Constants.sol";
  * Every of 4 trees are controlled by "tree" smart contracts. A "tree" contract
  * must call this contract to update the value of the leaf and the root of the
  * Forest Tree every time the "controlled" tree is updated.
+ * It supports a "history" of recent roots, so that users may refer not only to
+ * the latest root, but on former roots cached in the history.
  */
 abstract contract PantherForest is
-    RootHistory,
+    CachedRoots,
     ImmutableOwnable,
     ITreeRootGetter,
     ITreeRootUpdater
@@ -44,7 +46,6 @@ abstract contract PantherForest is
 
     uint256 private constant NUM_LEAFS = 4;
     uint256 private constant STATIC_TREE_LEAF = 3;
-    uint256 private constant HISTORY_SIZE = 256;
 
     address public immutable TAXI_TREE_CONTROLLER;
     address public immutable BUS_TREE_CONTROLLER;
@@ -56,10 +57,13 @@ abstract contract PantherForest is
     bytes32 private _forestRoot;
 
     bytes32[NUM_LEAFS] public leafs;
-    bytes32[HISTORY_SIZE] public rootHistory;
-    uint64 private _savedRootsCounter;
-    uint64 private _historyStartPos;
-    uint8 internal _historyDepth;
+
+    event RootUpdated(
+        uint256 indexed leafIndex,
+        bytes32 updatedLeaf,
+        bytes32 updatedRoot,
+        uint256 cacheIndex
+    );
 
     bytes32[10] private _endGap;
 
@@ -105,15 +109,16 @@ abstract contract PantherForest is
         require(msg.sender == _getLeafController(leafIndex), "unauthorized");
 
         leafs[leafIndex] = updatedLeaf;
-        _forestRoot = hash(leafs);
-        uint64 _rootHistoryIndex;
+        bytes32 forestRoot = hash(leafs);
+        uint256 cacheIndex;
         if (leafIndex == STATIC_TREE_LEAF) {
-            _rootHistoryIndex = _resetRootHistory(_forestRoot);
+            cacheIndex = resetThenCacheNewRoot(forestRoot);
         } else {
-            _rootHistoryIndex = _updateRootHistory(_forestRoot);
+            cacheIndex = cacheNewRoot(forestRoot);
         }
 
-        emit RootUpdated(uint8(leafIndex), updatedLeaf, _forestRoot);
+        _forestRoot = forestRoot;
+        emit RootUpdated(leafIndex, updatedLeaf, forestRoot, cacheIndex);
     }
 
     function _getLeafController(uint256 leafIndex)
@@ -133,31 +138,6 @@ abstract contract PantherForest is
 
         if (leafIndex == STATIC_TREE_FOREST_LEAF_INDEX)
             leafController = STATIC_TREE_CONTROLLER;
-    }
-
-    function _updateRootHistory(bytes32 forestRoot)
-        private
-        returns (uint64 _rootHistoryIndex)
-    {
-        uint64 savedRootsCounter = _savedRootsCounter;
-
-        if (_historyDepth < HISTORY_SIZE) _historyDepth++;
-
-        // `& 0xFF` is a cheaper equivalent of `% 256`
-        _rootHistoryIndex = (savedRootsCounter - _historyStartPos) & 0xFF;
-        rootHistory[_rootHistoryIndex] = forestRoot;
-
-        _savedRootsCounter = savedRootsCounter++;
-    }
-
-    function _resetRootHistory(bytes32 forestRoot)
-        private
-        returns (uint64 _rootHistoryIndex)
-    {
-        _historyStartPos = _savedRootsCounter;
-        _historyDepth = 0;
-        _rootHistoryIndex = 0;
-        rootHistory[_rootHistoryIndex] = forestRoot;
     }
 
     function hash(bytes32[NUM_LEAFS] memory _leafs)
