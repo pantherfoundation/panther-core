@@ -378,7 +378,8 @@ contract ProvidersKeys is
             numAllocatedKeys = MAX_KEYS;
         }
 
-        keyrings[keyringId].status = STATUS.ACTIVE;
+        keyring.status = STATUS.ACTIVE;
+        keyrings[keyringId] = keyring;
         _totalNumAllocatedKeys = numAllocatedKeys;
 
         emit KeyringUpdated(
