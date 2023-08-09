@@ -11,9 +11,6 @@ import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 import "./interfaces/IPantherPoolV1.sol";
 
-// solhint-disable var-name-mixedcase
-// slither-disable shadowing-state
-// slither-disable unused-state
 contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
@@ -22,14 +19,14 @@ contract PantherPoolV1 is
     // slither-disable-next-line shadowing-state unused-state
     uint256[218] private __gap; // initialGap - pantherForest slots => 500 - 282
 
+    // solhint-disable var-name-mixedcase
     IVault public immutable VAULT;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
-    uint16 public constant UNDEFINED_ROOT_INDEX = 0xFFFF;
+    address public immutable ZACCOUNT_REGISTRY;
+    // solhint-enable var-name-mixedcase
 
     mapping(address => bool) public vaultAssetUnlockers;
-
-    mapping(address => uint160) public circuitExecutor;
 
     uint160 public zAccountRegistrationCircuitId;
 
@@ -40,16 +37,24 @@ contract PantherPoolV1 is
         address busTree,
         address ferryTree,
         address staticTree,
-        address verifier
+        address verifier,
+        address zAccountRegistry
     ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
         require(
-            vault != address(0) && verifier != address(0),
+            vault != address(0) &&
+                taxiTree != address(0) &&
+                busTree != address(0) &&
+                ferryTree != address(0) &&
+                staticTree != address(0) &&
+                verifier != address(0) &&
+                zAccountRegistry != address(0),
             "init: zero address"
         );
 
         VAULT = IVault(vault);
         BUS_TREE = IBusTree(busTree);
         VERIFIER = IPantherVerifier(verifier);
+        ZACCOUNT_REGISTRY = zAccountRegistry;
     }
 
     function updateVaultAssetUnlocker(address _unlocker, bool _status)
@@ -69,6 +74,7 @@ contract PantherPoolV1 is
     function unlockAssetFromVault(LockData calldata data) external {
         require(vaultAssetUnlockers[msg.sender], "mockPoolV1: unauthorized");
 
+        // Trusted contract - no reentrancy guard needed
         VAULT.unlockAsset(data);
     }
 
@@ -76,20 +82,17 @@ contract PantherPoolV1 is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory secretMessage,
-        uint16 forestHistoryRootIndex
-    )
-        external
-        returns (
-            uint256 /*_res*/
-        )
-    {
+        uint256 cachedForestRootIndex
+    ) external returns (uint256 utxoBusQueuePos) {
+        require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
         require(zAccountRegistrationCircuitId != 0, "undefined circuit");
         require(inputs[5] >= block.timestamp, "low zAccount creation time");
         require(
-            _isForestRootExists(bytes32(inputs[12]), forestHistoryRootIndex),
+            isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
             "forest root not found"
         );
 
+        // Trusted contract - no reentrancy guard needed
         require(
             VERIFIER.verify(zAccountRegistrationCircuitId, inputs, proof),
             "BT:FAILED_PROOF"
@@ -97,9 +100,11 @@ contract PantherPoolV1 is
 
         bytes32 commitment = bytes32(inputs[9]);
 
+        // Trusted contract - no reentrancy guard needed
         (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
             commitment
         );
+        utxoBusQueuePos = (uint256(queueId) << 8) | uint256(indexInQueue);
 
         bytes memory transactionNoteContent = abi.encodePacked(
             // First public message
@@ -115,33 +120,5 @@ contract PantherPoolV1 is
         );
 
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
-
-        return 0;
-    }
-
-    function _isForestRootExists(bytes32 _root, uint16 _rootIndex)
-        private
-        view
-        returns (bool rootExists)
-    {
-        if (_rootIndex != UNDEFINED_ROOT_INDEX) {
-            // Only checking the root index which has been defined by user
-            rootExists = rootHistory[_rootIndex] == _root;
-        } else {
-            // User does not provided the index.
-            // Iterating in history, starting from the latest index:
-            uint8 depth = _historyDepth;
-
-            while (!rootExists) {
-                if (rootHistory[depth] == _root) rootExists = true;
-
-                if (depth == 0) break;
-                else {
-                    unchecked {
-                        depth--;
-                    }
-                }
-            }
-        }
     }
 }

@@ -10,7 +10,7 @@ interface IPantherPoolV1 {
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory secretMessage,
-        uint16 forestHistoryRootIndex
+        uint256 cachedForestRootIndex
     ) external returns (uint256);
 
     function unlockAssetFromVault(LockData calldata data) external;
