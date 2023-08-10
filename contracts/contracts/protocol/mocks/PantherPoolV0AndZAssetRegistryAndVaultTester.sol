@@ -6,7 +6,7 @@ import "../PantherPoolV0.sol";
 import "../Vault.sol";
 import "../../common/Types.sol";
 import "./MockPantherPoolV0.sol";
-import "../ZAssetsRegistry.sol";
+import "../ZAssetsRegistryV0.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -52,7 +52,7 @@ contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
         MockPantherPoolV0(
             address(this),
             // This mock is the owner of ZAssetsRegistry and Vault
-            registry = address(new ZAssetsRegistry(address(this))),
+            registry = address(new ZAssetsRegistryV0(address(this))),
             address(new Vault(address(this)))
         )
     {
@@ -64,7 +64,7 @@ contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
             z.scale = 0;
             z.token = address(Tokens[i]);
             z.status = zASSET_ENABLED;
-            ZAssetsRegistry(registry).addZAsset(z);
+            ZAssetsRegistryV0(registry).addZAsset(z);
         }
         exitTime = safe32TimeNow() + 1;
     }
@@ -75,7 +75,7 @@ contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
         returns (uint160)
     {
         return
-            ZAssetsRegistry(registry).getZAssetId(
+            ZAssetsRegistryV0(registry).getZAssetId(
                 address(uint160(token)),
                 tokenId
             );

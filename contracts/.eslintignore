@@ -1,3 +1,4 @@
+test/protocol/data/busTreeScenario.js
 contracts/common/proxy/
 artifacts/
 build/
@@ -8,6 +9,7 @@ coverage/
 node_modules/
 staging/
 tmp/
+test/protocol/data/wasm/
 testing/**/*.cli.js
 typings/
 types/

@@ -16,11 +16,11 @@ struct G2Point {
 
 // Verification key for SNARK
 struct VerifyingKey {
-    G1Point alpha1;
+    G1Point alfa1;
     G2Point beta2;
     G2Point gamma2;
     G2Point delta2;
-    G1Point[2] ic;
+    G1Point[] ic;
 }
 
 struct SnarkProof {

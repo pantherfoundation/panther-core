@@ -9,12 +9,12 @@ import { ZAsset } from "../common/Types.sol";
 import "./interfaces/IZAssetsRegistry.sol";
 
 /**
- * @title ZAssetsRegistry
+ * @title ZAssetsRegistryV0
  * @author Pantherprotocol Contributors
  * @notice Registry and whitelist of assets (tokens) supported by the Panther
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
-contract ZAssetsRegistry is ImmutableOwnable, IZAssetsRegistry {
+contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
     /**
     "zAsset" - abstraction of a token for representation in the MASP.
     ZK-circuits "treat" each zAsset as a unique (independent) token.

@@ -21,6 +21,9 @@ contracts/staging/
 contracts/scripts/slither.patch
 contracts/tenderly.yaml
 contracts/test/advanced-staking/assets/*.ods
+contracts/test/protocol/data/wasm
+contracts/test/protocol/data/verificationKeys
+contracts/test/protocol/data/provingKeys
 contracts/testing/**/*.cli.js
 contracts/testing/**/data
 contracts/typechain/

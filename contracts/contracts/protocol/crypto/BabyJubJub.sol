@@ -4,6 +4,7 @@
 // Link to the implementation - https://github.com/yondonfu/sol-baby-jubjub/blob/master/contracts/CurveBabyJubJub.sol
 pragma solidity ^0.8.16;
 import "../../common/Types.sol";
+import { FIELD_SIZE } from "./SnarkConstants.sol";
 
 library BabyJubJub {
     // Curve parameters
@@ -25,6 +26,27 @@ library BabyJubJub {
     // slither-disable-next-line too-many-digits
     uint256 public constant BASE8_Y =
         16950150798460657717958625567821834550301663161624707787222815936182638968203;
+
+    // pm1d2 = (SNARK_FIELD - 1) >> 1 // same as `negative_one / 2
+    // slither-disable-next-line too-many-digits
+    uint256 public constant PM1D2 =
+        10944121435919637611123202872628637544274182200208017171849102093287904247808;
+
+    // TODO: remove dependency on BabyJubJub as a standalone contract
+    function pointPack(G1Point memory point)
+        internal
+        pure
+        returns (bytes32 _packed)
+    {
+        _packed = bytes32(point.y);
+
+        if (point.x > PM1D2) {
+            _packed = bytes32(
+                point.y |
+                    0x8000000000000000000000000000000000000000000000000000000000000000
+            );
+        }
+    }
 
     /**
      * @dev Add 2 points on baby jubjub curve
@@ -138,5 +160,13 @@ library BabyJubJub {
         r.y = r.y % Q;
 
         return r;
+    }
+
+    function isG1PointLowerThanFieldSize(uint256[2] memory point)
+        internal
+        pure
+        returns (bool)
+    {
+        return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;
     }
 }
