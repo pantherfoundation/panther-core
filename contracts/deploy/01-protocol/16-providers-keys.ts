@@ -44,5 +44,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['taxi-tree', 'forest', 'protocol'];
+func.tags = ['providers-keys', 'forest', 'protocol'];
 func.dependencies = ['crypto-libs'];

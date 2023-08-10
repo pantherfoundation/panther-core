@@ -50,13 +50,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         onboardingController,
     ];
 
-    await deploy('ZAccountsRegistry', {
+    await deploy('ZAccountsRegistry_Implementation', {
+        contract: 'ZAccountsRegistry',
         from: deployer,
         args: constructorArgs,
-        proxy: {
-            proxyContract: 'EIP173Proxy',
-            owner: multisig,
-        },
         libraries: {
             PoseidonT3: poseidonT3,
             BabyJubJub: babyJubJub,
@@ -68,5 +65,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['account-registry', 'protocol'];
+func.tags = ['z-accounts-registry-imp', 'protocol'];
 func.dependencies = ['check-params'];

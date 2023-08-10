@@ -9,7 +9,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await getNamedAccounts()).multisig ||
         deployer;
 
-    const busTreeProxy = await ethers.getContract('MockBusTree_Proxy');
+    const busTreeProxy = await ethers.getContract('PantherBusTree_Proxy');
 
     const oldOwner = await busTreeProxy.owner();
     if (oldOwner.toLowerCase() == multisig.toLowerCase()) {

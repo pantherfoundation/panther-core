@@ -19,4 +19,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['z-assets-registry', 'forest', 'protocol'];
+func.tags = ['z-zones-registry', 'forest', 'protocol'];

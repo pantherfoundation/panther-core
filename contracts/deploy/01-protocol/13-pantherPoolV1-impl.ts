@@ -28,22 +28,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     const taxiTree = await getContractAddress(hre, 'MockTaxiTree', '');
-    const busTreeProxy = await getContractAddress(hre, 'MockBusTree_Proxy', '');
+    const busTreeProxy = await getContractAddress(
+        hre,
+        'PantherBusTree_Proxy',
+        '',
+    );
     const ferryTree = await getContractAddress(hre, 'PantherFerryTree', '');
     const staticTreeProxy = await getContractAddress(
         hre,
         'PantherStaticTree_Proxy',
         '',
     );
-
-    // const {abi} = await artifacts.readArtifact('ITreeRootGetter');
-
-    // const addresses = [taxiTree, busTreeProxy, ferryTree, staticTreeProxy];
-    // for (let index = 0; index < addresses.length; index++) {
-    //     const tree = await ethers.getContractAt(abi, addresses[index]);
-    //     const root = await tree.getRoot();
-    //     console.log({root});
-    // }
+    const zAccountsRegistryProxy = await getContractAddress(
+        hre,
+        'ZAccountsRegistry_Proxy',
+        '',
+    );
 
     const pantherVerifier = await getContractAddress(
         hre,
@@ -56,15 +56,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await get('PoseidonT5')).address;
 
     await deploy('PantherPoolV1_Implementation', {
-        contract: 'MockPantherPoolV1',
+        contract: 'PantherPoolV1',
         from: deployer,
         args: [
             multisig,
-            vaultProxy,
             taxiTree,
             busTreeProxy,
             ferryTree,
             staticTreeProxy,
+            vaultProxy,
+            zAccountsRegistryProxy,
             pantherVerifier,
         ],
         libraries: {
@@ -77,5 +78,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['forest', 'protocol', 'ff'];
+func.tags = ['pool-v1', 'forest', 'protocol'];
 func.dependencies = ['check-params'];

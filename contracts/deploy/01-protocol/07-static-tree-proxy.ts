@@ -6,14 +6,13 @@ import {verifyUserConsentOnProd} from '../../lib/deploymentHelpers';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
-        getNamedAccounts,
         ethers,
+        getNamedAccounts,
     } = hre;
-
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
 
-    await deploy('PantherPoolV1_Proxy', {
+    await deploy('PantherStaticTree_Proxy', {
         contract: 'EIP173Proxy',
         from: deployer,
         args: [
@@ -25,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         autoMine: true,
     });
 };
-
 export default func;
 
-func.tags = ['pool-v1-proxy', 'protocol'];
+func.tags = ['static-tree-proxy', 'forest', 'protocol'];
+func.dependencies = ['crypto-libs'];

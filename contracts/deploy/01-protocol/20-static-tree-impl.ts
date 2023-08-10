@@ -34,7 +34,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const providersKeys = await getContractAddress(hre, 'ProvidersKeys', '');
     const zAccountsRegistry = await getContractAddress(
         hre,
-        'ZAccountsRegistry',
+        'ZAccountsRegistry_Proxy',
         '',
     );
     const zNetworksRegistry = await getContractAddress(
@@ -65,9 +65,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['static-tree-imp', 'forest', 'protocol'];
-// func.dependencies = [
-//     'crypto-libs',
-//     'pool-v1',
-//     'verifier',
-//     'add-verification-key',
-// ];
+func.dependencies = ['crypto-libs'];

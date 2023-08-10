@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await verifyUserConsentOnProd(hre, deployer);
     if (reuseEnvAddress(hre, 'MOCK_BUS_TREE_PROXY')) return;
 
-    await deploy('MockBusTree_Proxy', {
+    await deploy('PantherBusTree_Proxy', {
         contract: 'EIP173Proxy',
         from: deployer,
         args: [
@@ -30,5 +30,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['bus-tree-proxy', 'protocol'];
+func.tags = ['bus-tree-proxy', 'forest', 'protocol'];
 func.dependencies = ['check-params'];

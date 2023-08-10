@@ -1,33 +1,31 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getContractAddress,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {verifyUserConsentOnProd} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
         getNamedAccounts,
+        ethers,
     } = hre;
+
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
 
-    const zAccountRegistryProxy = await getContractAddress(
-        hre,
-        'ZAccountsRegistry',
-        '',
-    );
-
-    await deploy('ZAccountsStatusResolver', {
+    await deploy('ZAccountsRegistry_Proxy', {
+        contract: 'EIP173Proxy',
         from: deployer,
-        args: [zAccountRegistryProxy],
+        args: [
+            ethers.constants.AddressZero, // implementation will be changed
+            deployer, // owner will be changed
+            [], // data
+        ],
         log: true,
         autoMine: true,
     });
 };
+
 export default func;
 
-func.tags = ['z-accounts-resolver', 'forest', 'protocol'];
-// func.dependencies = ['z-accounts-registry-imp'];
+func.tags = ['z-accounts-registry-proxy', 'protocol'];

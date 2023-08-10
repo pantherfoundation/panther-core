@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PANTHER_POOL_V1_PROXY',
     );
 
-    const {abi} = await artifacts.readArtifact('MockPantherPoolV1');
+    const {abi} = await artifacts.readArtifact('PantherPoolV1');
     const pantherPool = await ethers.getContractAt(abi, pantherPoolAddress);
 
     console.log('Adding zAccount registration key to panther pool');
