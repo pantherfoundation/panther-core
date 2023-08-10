@@ -33,20 +33,16 @@ contract PantherPoolV1 is
 
     constructor(
         address _owner,
-        address vault,
         address taxiTree,
         address busTree,
         address ferryTree,
         address staticTree,
-        address verifier,
-        address zAccountRegistry
+        address vault,
+        address zAccountRegistry,
+        address verifier
     ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
         require(
             vault != address(0) &&
-                taxiTree != address(0) &&
-                busTree != address(0) &&
-                ferryTree != address(0) &&
-                staticTree != address(0) &&
                 verifier != address(0) &&
                 zAccountRegistry != address(0),
             "init: zero address"
