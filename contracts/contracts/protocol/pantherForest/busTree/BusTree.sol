@@ -5,7 +5,7 @@ pragma solidity ^0.8.16;
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import "../interfaces/ITreeRootGetter.sol";
-import { EMPTY_BUS_TREE_ROOT } from "../zeroTrees/Constants.sol";
+import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "../zeroTrees/Constants.sol";
 // TODO: remove MAGICAL_CONSTRAINT as a constant and make it a pub input var
 import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constants.sol";
 import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
@@ -30,6 +30,8 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     // TODO: adding gap to the beginning and end of the storage
 
     // solhint-disable var-name-mixedcase
+    bytes32 internal constant EMPTY_BUS_TREE_ROOT =
+        TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
 
     // Number of levels in every Batch (that is a binary tree)
     uint256 internal constant BATCH_LEVELS = QUEUE_MAX_LEVELS;
@@ -89,7 +91,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         );
         VERIFIER = IPantherVerifier(_verifier);
         CIRCUIT_ID = _circuitId;
-        // Code of `function onboardQueue` let avoid explicit initialization:
+        // Code of `function getRoot` let avoid explicit initialization:
         // `busTreeRoot = EMPTY_BUS_TREE_ROOT`.
         // Initial value of storage variables is 0 (which is implicitly set in
         // new storage slots). There is no need for explicit initialization.
@@ -97,7 +99,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         PANTHER_POOL = _pantherPool;
     }
 
-    function getRoot() external view returns (bytes32) {
+    function getRoot() public view returns (bytes32) {
         return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
     }
 
@@ -135,9 +137,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         // Circuit public input signals
         uint256[] memory input = new uint256[](9);
         // `oldRoot` signal
-        input[0] = nBatches == 0
-            ? uint256(EMPTY_BUS_TREE_ROOT)
-            : uint256(_busTreeRoot);
+        input[0] = uint256(getRoot());
         // `newRoot` signal
         input[1] = uint256(busTreeNewRoot);
         // `replacedNodeIndex` signal

@@ -62,13 +62,6 @@ bytes32 constant TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT = bytes32(
     uint256(0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6)
 );
 
-// TODO: replace duplicated BUS_TREE_LEVELS
-/// @dev Number of levels (bellow the root, but including leafs) in the BusTree
-uint256 constant BUS_TREE_LEVELS = 26;
-bytes32 constant EMPTY_BUS_TREE_ROOT = bytes32(
-    uint256(0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6)
-);
-
 uint256 constant THIRTY_TWO_LEVELS = 32;
 /// @dev Root of the binary merkle THIRTY_TWO_LEVELS tree with ZERO_VALUE leafs
 // Level 26: TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT
