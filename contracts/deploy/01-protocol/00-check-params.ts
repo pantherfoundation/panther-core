@@ -5,10 +5,18 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isLocal} from '../../lib/checkNetwork';
-import {fulfillLocalAddress} from '../../lib/deploymentHelpers';
+import {
+    fulfillLocalAddress,
+    fulfillExistingContractAddresses,
+} from '../../lib/deploymentHelpers';
+
+const scaledConvertibleZkp = 1e6;
+const scaledVaultBalance = 1e6;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts, network} = hre;
+
+    fulfillExistingContractAddresses(hre);
 
     console.log(`Deploying on ${network.name}...`);
 
@@ -29,6 +37,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             throw 'POOL_EXIT_TIME is less than current time';
         }
     }
+
+    process.env['VAULT_BALANCE'] = hre.ethers.utils.parseEther(
+        scaledVaultBalance.toString(),
+    );
+    process.env['CONVERTIBLE_ZKP'] = hre.ethers.utils.parseEther(
+        scaledConvertibleZkp.toString(),
+    );
 };
 
 export default func;

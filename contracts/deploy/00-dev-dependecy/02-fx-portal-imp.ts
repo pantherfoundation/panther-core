@@ -4,36 +4,31 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    reuseEnvAddress,
-    getContractAddress,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {isProd} from '../../lib/checkNetwork';
+import {getContractAddress} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    if (isProd(hre)) return;
+
     const {
         deployments: {deploy},
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
-    if (reuseEnvAddress(hre, 'VAULT_IMP')) return;
 
-    const pantherPool = await getContractAddress(
-        hre,
-        'PantherPoolV0_Proxy',
-        'PANTHER_POOL_V0_PROXY',
-    );
+    const zkp = await getContractAddress(hre, 'Zkp_token', '');
+    const pzkp = await getContractAddress(hre, 'PZkp_token', '');
 
-    await deploy('Vault_Implementation', {
-        contract: 'Vault',
+    await deploy('MockFxPortal_Implementation', {
+        contract: 'MockFxPortal',
         from: deployer,
-        args: [pantherPool],
+        args: [deployer, zkp, pzkp],
         log: true,
         autoMine: true,
     });
 };
+
 export default func;
 
-func.tags = ['vault-impl', 'protocol'];
-func.dependencies = ['check-params', 'pool'];
+func.tags = ['fx-portal', 'fx-portal-imp', 'dev-dependency'];
+func.dependencies = ['zkp-imp', 'pzkp-token'];

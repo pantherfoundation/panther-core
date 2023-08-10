@@ -17,6 +17,7 @@ import 'solidity-coverage';
 
 import './tasks/protocol/grant-issue';
 import './tasks/protocol/pool-time-update.ts';
+import './tasks/protocol/pubkey-register';
 import './tasks/protocol/zAsset-add';
 import './tasks/staking/commitments-list';
 import './tasks/staking/matic-reward-pool-init';
