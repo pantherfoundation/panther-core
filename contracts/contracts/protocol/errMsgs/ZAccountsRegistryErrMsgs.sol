@@ -20,4 +20,7 @@ string constant ERR_INVALID_ZACCOUNT_FLAG_POSITION = "ZAR:E9";
 string constant ERR_TOO_LARGE_LEAF_INPUTS = "ZAR:E10";
 
 string constant ERR_INVALID_EXTRA_INPUT_HASH = "ZAR:E11";
-string constant ERR_LOW_ZKP_AMOUNT = "ZAR:E12";
+string constant ERR_UNEXPECTED_ZKP_AMOUNT = "ZAR:E12";
+string constant ERR_UNEXPECTED_PRP_AMOUNT = "ZAR:E13";
+string constant ERR_ZERO_ZACCOUNT_COMMIT = "ZAR:E14";
+string constant ERR_ZERO_KYC_MSG_HASH = "ZAR:E15";
