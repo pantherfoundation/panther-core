@@ -331,7 +331,7 @@ export function unpackAndDecryptZAccountUTXOMessage(
 
     // additional checks to make sure that values have correct range
     // TODO: extract these checks in separate assert functions
-    if (networkId > 1n) {
+    if (networkId > 2n) {
         throw new Error('Failed to get secret random. Incorrect networkId');
     }
 
