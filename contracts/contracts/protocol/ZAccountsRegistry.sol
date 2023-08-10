@@ -7,6 +7,7 @@ import "./interfaces/IPantherPoolV1.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 
 import "./crypto/BabyJubJub.sol";
+import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
 
 import "./zAccountsRegistry/BlacklistedZAccountIdsTree.sol";
 import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
@@ -171,67 +172,100 @@ contract ZAccountsRegistry is
         emit ZAccountRegistered(masterEoa, _zAccount);
     }
 
+    /// @param inputs[0]  - extraInputsHash
+    /// @param inputs[1]  - zkpAmount
+    /// @param inputs[2]  - zkpChange (passed w/o checks)
+    /// @param inputs[3]  - zAccountId
+    /// @param inputs[4]  - zAccountPrpAmount
+    /// @param inputs[5]  - zAccountCreateTime (passed w/o checks)
+    /// @param inputs[6]  - zAccountRootSpendPubKeyX
+    /// @param inputs[7]  - zAccountRootSpendPubKeyY
+    /// @param inputs[8]  - zAccountMasterEOA
+    /// @param inputs[9]  - zAccountNullifier
+    /// @param inputs[10] - zAccountCommitment
+    /// @param inputs[11] - kycSignedMessageHash
+    /// @param inputs[12] - forestMerkleRoot (passed w/o checks)
+    /// @param inputs[13] - saltHash (passed w/o checks)
+    /// @param inputs[14] - magicalConstraint (passed w/o checks)
     function activateZAccount(
         uint256[] calldata inputs,
         bytes memory secretMessage,
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
-        (
-            bytes32 extraInputsHash,
-            uint256 zkpAmount,
-            uint24 zAccountId,
-            ,
-            bytes32 zAccountRootSpendPubKey,
-            address zAccountMasterEOA,
-            bytes32 zAccountNullifier,
-            ,
-
-        ) = _destructPublicInputs(inputs);
         {
+            uint256 extraInputsHash = inputs[0];
+            bytes memory extraInp = abi.encodePacked(
+                secretMessage,
+                cachedForestRootIndex
+            );
             require(
-                extraInputsHash ==
-                    keccak256(
-                        abi.encodePacked(secretMessage, cachedForestRootIndex)
-                    ),
+                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
                 ERR_INVALID_EXTRA_INPUT_HASH
             );
-            require(
-                masterEOAs[zAccountId] == zAccountMasterEOA,
-                ERR_UNKNOWN_ZACCOUNT
-            );
+        }
+        {
+            uint256 zAccountPrpAmount = inputs[4];
+            // No PRP rewards provided on zAccount activation
+            require(zAccountPrpAmount == 0, ERR_UNEXPECTED_PRP_AMOUNT);
+        }
+        // TODO: review if some of pub signals checks should be moved to PantherPoolV1
+        {
+            uint256 zAccountCommitment = inputs[10];
+            require(zAccountCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
+        }
+        {
+            uint256 kycSignedMessageHash = inputs[11];
+            require(kycSignedMessageHash != 0, ERR_ZERO_KYC_MSG_HASH);
+        }
 
+        uint24 zAccountId = UtilsLib.safe24(inputs[3]);
+        address zAccountMasterEOA = address(uint160(inputs[8]));
+
+        require(
+            masterEOAs[zAccountId] == zAccountMasterEOA,
+            ERR_UNKNOWN_ZACCOUNT
+        );
+
+        {
+            bytes32 zAccountRootSpendPubKey = BabyJubJub.pointPack(
+                G1Point({ x: inputs[6], y: inputs[7] })
+            );
             (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
                 zAccountId,
                 zAccountMasterEOA,
                 zAccountRootSpendPubKey
             );
             require(!isBlacklisted, errMsg);
-
-            // Prevent activating twice for same zone or same network
+        }
+        {
+            // Prevent double-activation for the same zone and network
+            bytes32 zAccountNullifier = bytes32(inputs[9]);
             require(
                 zoneZAccountNullifiers[zAccountNullifier] == 0,
                 ERR_DUPLICATED_NULLIFIER
             );
 
             zoneZAccountNullifiers[zAccountNullifier] = block.number;
+        }
 
-            ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
+        ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
 
-            // if the status is registered, then change it to activate.
-            // If status is already activated, it means  Zaccount is activated at least in 1 zone.
-            if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
-                zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;
-            }
+        // if the status is registered, then change it to activate.
+        // If status is already activated, it means  Zaccount is activated at least in 1 zone.
+        if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
+            zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;
+        }
 
+        {
             uint256 _zkpRewards = _notifyOnboardingController(
                 zAccountMasterEOA,
                 uint8(userPrevStatus),
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
                 new bytes(0)
             );
-
-            require(_zkpRewards == zkpAmount, ERR_LOW_ZKP_AMOUNT);
+            uint256 zkpAmount = inputs[1];
+            require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);
         }
 
         utxoBusQueuePos = _createZAccountUTXO(
@@ -386,51 +420,6 @@ contract ZAccountsRegistry is
             _newStatus,
             _data
         );
-    }
-
-    // inputs[0]  - extraInputsHash
-    // inputs[1]  - zkpAmount
-    // inputs[2]  - zkpChange
-    // inputs[3]  - zAccountId
-    // inputs[4]  - zAccountPrpAmount
-    // inputs[5]  - zAccountCreateTime
-    // inputs[6]  - zAccountRootSpendPubKeyX
-    // inputs[7]  - zAccountRootSpendPubKeyY
-    // inputs[8]  - zAccountMasterEOA
-    // inputs[9]  - zAccountNullifier
-    // inputs[10] - zAccountCommitment
-    // inputs[11] - kycSignedMessageHash
-    // inputs[12] - forestMerkleRoot
-    // inputs[13] - saltHash
-    // inputs[14] - magicalConstraint
-    function _destructPublicInputs(uint256[] memory inputs)
-        private
-        pure
-        returns (
-            bytes32 extraInputsHash,
-            uint256 zkpAmount,
-            uint24 zAccountId,
-            uint256 zAccountPrpAmount,
-            bytes32 zAccountRootSpendPubKey,
-            address zAccountMasterEOA,
-            bytes32 zAccountNullifier,
-            uint256 zAccountCommitment,
-            uint256 kycSignedMessageHash
-        )
-    {
-        extraInputsHash = bytes32(inputs[0]);
-        zkpAmount = inputs[1];
-        zAccountId = UtilsLib.safe24(inputs[3]);
-        zAccountPrpAmount = inputs[4];
-
-        zAccountRootSpendPubKey = BabyJubJub.pointPack(
-            G1Point({ x: inputs[6], y: inputs[7] })
-        );
-
-        zAccountMasterEOA = address(uint160(inputs[8]));
-        zAccountNullifier = bytes32(inputs[9]);
-        zAccountCommitment = inputs[10];
-        kycSignedMessageHash = inputs[11];
     }
 
     function _isBlacklisted(
