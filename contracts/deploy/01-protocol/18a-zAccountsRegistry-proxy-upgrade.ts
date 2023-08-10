@@ -10,23 +10,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts} = hre;
     const {deployer} = await getNamedAccounts();
 
-    const vaultProxy = await getContractAddress(hre, 'MockBusTree_Proxy', '');
-    const vaultImpl = await getContractAddress(
+    const zAccountRegistryProxy = await getContractAddress(
         hre,
-        'MockBusTree_Implementation',
+        'ZAccountsRegistry_Proxy',
+        '',
+    );
+    const zAccountRegistryImpl = await getContractAddress(
+        hre,
+        'ZAccountsRegistry_Implementation',
         '',
     );
 
     await upgradeEIP1967Proxy(
         hre,
         deployer,
-        vaultProxy,
-        vaultImpl,
-        'mock bus tree',
+        zAccountRegistryProxy,
+        zAccountRegistryImpl,
+        'zAccountRegistry',
     );
 };
 
 export default func;
 
-func.tags = ['bus-tree-upgrade', 'protocol'];
-func.dependencies = ['check-params', 'bus-tree-impl'];
+func.tags = ['z-accounts-registry-upgrade', 'protocol'];

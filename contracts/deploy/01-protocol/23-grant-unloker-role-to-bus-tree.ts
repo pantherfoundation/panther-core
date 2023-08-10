@@ -12,7 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const busTreeAddress = await getContractAddress(
         hre,
-        'MockBusTree_Proxy',
+        'PantherBusTree_Proxy',
         'BUS_TREE',
     );
     const poolV1Address = await getContractAddress(
@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PantherPoolV1_Proxy',
         'PANTHER_POOL_V1_PROXY',
     );
-    const {abi} = await artifacts.readArtifact('MockPantherPoolV1');
+    const {abi} = await artifacts.readArtifact('PantherPoolV1');
 
     const poolV1 = await ethers.getContractAt(abi, poolV1Address);
 

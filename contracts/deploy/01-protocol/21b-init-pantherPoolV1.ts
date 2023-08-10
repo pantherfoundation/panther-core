@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         '',
     );
 
-    const {abi} = await artifacts.readArtifact('MockPantherPoolV1');
+    const {abi} = await artifacts.readArtifact('PantherPoolV1');
     const pantherPool = await ethers.getContractAt(abi, pantherPoolAddress);
 
     const root = await pantherPool.getRoot();

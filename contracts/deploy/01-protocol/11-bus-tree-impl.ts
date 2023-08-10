@@ -36,8 +36,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
 
     if (pointer) {
-        await deploy('MockBusTree_Implementation', {
-            contract: 'MockBusTree',
+        await deploy('PantherBusTree_Implementation', {
+            contract: 'PantherBusTree',
             from: deployer,
             args: [deployer, pzkp, pantherPool, pantherVerifier, pointer],
             libraries: {

@@ -32,5 +32,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['protocol'];
+func.tags = ['pool-v1-upgrade', 'protocol'];
 func.dependencies = ['check-params'];

@@ -1,7 +1,10 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {verifyUserConsentOnProd} from '../../lib/deploymentHelpers';
+import {
+    getContractAddress,
+    verifyUserConsentOnProd,
+} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -11,13 +14,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
 
-    await deploy('ZNetworksRegistry', {
+    const zAccountRegistryProxy = await getContractAddress(
+        hre,
+        'ZAccountsRegistry_Proxy',
+        '',
+    );
+
+    await deploy('ZAccountsStatusResolver', {
         from: deployer,
+        args: [zAccountRegistryProxy],
         log: true,
         autoMine: true,
     });
 };
 export default func;
 
-func.tags = ['taxi-tree', 'forest', 'protocol'];
-func.dependencies = ['crypto-libs'];
+func.tags = ['z-accounts-resolver', 'forest', 'protocol'];
