@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 // eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';

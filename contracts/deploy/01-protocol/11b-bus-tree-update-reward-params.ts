@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 import {BigNumberish} from '@ethersproject/bignumber/lib/bignumber';
 import {BigNumber, Contract} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
