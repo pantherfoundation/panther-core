@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
 // import {smock, FakeContract} from '@defi-wonderland/smock';
 // import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
 // // @ts-ignore
