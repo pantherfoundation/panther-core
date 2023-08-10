@@ -7,10 +7,11 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
 import {ProvidersKeys} from '../../types/contracts/ProvidersKeys';
 
-const TASK_ZACCOUNT_REGISTER = 'key:register';
+const TASK_KEY_REGISTER = 'key:register';
 
 async function genSignature(
     hre: HardhatRuntimeEnvironment,
+    keyringId: string,
     providersKeys: ProvidersKeys,
     pubRootSpendingKey: string,
     expiryDate: string,
@@ -39,6 +40,7 @@ async function genSignature(
 
     const types = {
         Registration: [
+            {name: 'keyringId', type: 'uint32'},
             {name: 'pubRootSpendingKey', type: 'bytes32'},
             {name: 'expiryDate', type: 'uint32'},
             {name: 'version', type: 'uint256'},
@@ -46,6 +48,7 @@ async function genSignature(
     };
 
     const value = {
+        keyringId,
         pubRootSpendingKey,
         expiryDate,
         version: providersKeysVersion,
@@ -84,7 +87,7 @@ function getSiblings() {
     ];
 }
 
-task(TASK_ZACCOUNT_REGISTER, 'Update the panther pool exit time')
+task(TASK_KEY_REGISTER, 'Add and register purify key')
     .addParam('contract', 'Z Account registry address') // 0xc6B27Ad7D1a33777F2d9C114f3e3e318CB455cC3
 
     .setAction(async (taskArgs, hre: HardhatRuntimeEnvironment) => {
@@ -95,19 +98,19 @@ task(TASK_ZACCOUNT_REGISTER, 'Update the panther pool exit time')
             taskArgs.contract,
         )) as ProvidersKeys;
 
-        await providersKeys.updateTreeRootUpdatingAllowedStatus(true);
-
         // console.log('adding keyring');
-        // const addTx = await providersKeys.addKeyring(signer.address, 10);
+        // const addTx = await providersKeys.addKeyring(signer.address, 20);
         // const addRes = await addTx.wait();
         // console.log('Transaction is confirmed.', addRes);
 
+        const keyringId = '1';
         const pubKeyPacked =
             '0x2cf8bc5fc9c122f6cc883988fd57e45ad086ec2785d2dfbfa85032373f90aca2';
         const expiryDate = '1735689600';
 
         const {v, r, s} = await genSignature(
             hre,
+            keyringId,
             providersKeys,
             pubKeyPacked,
             expiryDate,
@@ -120,6 +123,7 @@ task(TASK_ZACCOUNT_REGISTER, 'Update the panther pool exit time')
         };
 
         const tx = await providersKeys.registerKey(
+            keyringId,
             pubKey,
             expiryDate,
             getSiblings(),
