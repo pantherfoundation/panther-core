@@ -8,7 +8,3 @@ uint256 constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416
 
 // @dev Field prime of alt_bn128
 uint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
-
-// FIXME: make MAGICAL_CONSTRAINT the public input (var, not const) - it MUST have random value on every invocation
-// @dev Circuit extra public input as work-around for recently found groth16 vulnerability
-uint256 constant MAGICAL_CONSTRAINT = 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00;
