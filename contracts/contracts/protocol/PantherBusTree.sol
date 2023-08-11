@@ -5,15 +5,14 @@ pragma solidity ^0.8.16;
 import "./interfaces/IPantherPoolV1.sol";
 
 import "./pantherForest/busTree/BusTree.sol";
-import { PoseidonT3 } from "./crypto/Poseidon.sol";
 import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
-import { DEAD_CODE_ADDRESS, ERC20_TOKEN_TYPE } from "../common/Constants.sol";
+import { ERC20_TOKEN_TYPE } from "../common/Constants.sol";
 import { LockData } from "../common/Types.sol";
 import "../common/ImmutableOwnable.sol";
-import "./mocks/LocalDevEnv.sol";
 import "./crypto/PoseidonHashers.sol";
+import "./errMsgs/PantherBusTreeErrMsgs.sol";
 
-contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
+contract PantherBusTree is BusTree, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -47,13 +46,14 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         address _verifier,
         uint160 _circuitId
     ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId, _pantherPool) {
-        require(rewardToken != address(0), "init: zero address");
+        require(rewardToken != address(0), ERR_INIT);
 
         START_TIME = block.timestamp;
 
         REWARD_TOKEN = rewardToken;
     }
 
+    // TODO: Remove _perMinuteUtxosLimit after Testnet (required for Stage #0..2 only)
     function updateParams(
         uint16 _perMinuteUtxosLimit,
         uint96 _basePerUtxoReward,
@@ -65,7 +65,7 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
 
         require(
             _perMinuteUtxosLimit > 0 && _basePerUtxoReward > 0,
-            "updateParams: zero value"
+            ERR_ZERO_REWARD_PARAMS
         );
         perMinuteUtxosLimit = _perMinuteUtxosLimit;
         basePerUtxoReward = _basePerUtxoReward;
@@ -109,7 +109,7 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         external
         returns (uint32 queueId, uint8 indexInQueue)
     {
-        require(msg.sender == PANTHER_POOL, "BT:UNAUTH_ZACCOUNT_UTXO_SENDER");
+        require(msg.sender == PANTHER_POOL, ERR_UNAUTHORIZED);
 
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = utxo;
@@ -121,6 +121,7 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         addUtxosToBusQueue(utxos, uint96(basePerUtxoReward));
     }
 
+    // TODO: Remove simulateAddUtxosToBusQueue after Testnet (required for Stage #0..2 only)
     function simulateAddUtxosToBusQueue() external {
         uint256 _counter = uint256(utxoCounter);
 
@@ -156,31 +157,5 @@ contract PantherBusTree is BusTree, LocalDevEnv, ImmutableOwnable {
         uint256 reward = uint256(basePerUtxoReward) * length;
 
         addUtxosToBusQueue(utxos, uint96(reward));
-    }
-
-    function simulateAddGivenUtxosToBusQueue(
-        bytes32[] memory utxos,
-        uint96 reward
-    ) external onlyLocalDevEnv {
-        addUtxosToBusQueue(utxos, reward);
-    }
-
-    function simulateAddBusQueueReward(uint32 queueId, uint96 extraReward)
-        external
-        onlyLocalDevEnv
-    {
-        addBusQueueReward(queueId, extraReward);
-    }
-
-    function simulateSetBusQueueAsProcessed(uint32 queueId)
-        external
-        onlyLocalDevEnv
-        returns (
-            bytes32 commitment,
-            uint8 nUtxos,
-            uint96 reward
-        )
-    {
-        return setBusQueueAsProcessed(queueId);
     }
 }
