@@ -5,7 +5,7 @@
 Feedback on the code is very welcome; please first check that your bug
 / issue / enhancement request is not already listed here:
 
-*   https://github.com/pantherprotocol/panther-core/issues
+- https://github.com/pantherprotocol/panther-core/issues
 
 and if not then [file a new issue](https://github.com/pantherprotocol/panther-core/issues/new).
 
