@@ -11,11 +11,11 @@ pragma solidity ^0.8.16;
  * The Transaction Note contains one or a few "messages", which may be "public"
  * or "private".
  * Public messages contain publicly seen on-chain data. Smart contracts, rather
- * than user (the DApp), compose public messages.
+ * than users (the DApp), compose public messages.
  * As the name assumes, private messages contain private data, and user (DApp)
  * prepares and encrypts these messages to pass them to smart contracts.
  * Every private message is encrypted with the reading key of a receiver, who
- * may be a recipient af an UTXO, or the user that spends UTXOs ("messages to
+ * may be a recipient of an UTXO, or the user that spends UTXOs ("messages to
  * the future"), or even a user not involved in spending/creating UTXOs.
  * Smart contracts don't parse private messages but rather copy private messages
  * "as is" into Transaction Notes.
@@ -26,15 +26,15 @@ pragma solidity ^0.8.16;
  * Data fields of the "free-content" are unspecified, unlike the content size.
  * Public messages always have fixed content. Private messages may have fixed or
  * free content.
- * For fixed-content private messages, the protocol specifies also the content
+ * For fixed-content private messages, the protocol also specifies the content
  * of the preimage and the cipher to apply.
  * Every MASP transaction belongs to one of a few "transaction types".
- * For every transaction type, the protocol specifies "mandatory" messages, which
- * MUST be included into the Transaction Note. Users (DApp) may append "optional"
- * messages to mandatory messages in the Transaction Note.
- * There is also a special "void" message w/o content. It MAY replace mandatory
- * message when on-chain data is undefined/irrelevant, if public knowledge that
- * data is missing/undefined/irrelevant does not leak privacy.
+ * For every transaction type, the protocol specifies "mandatory" messages which
+ * MUST be included in the Transaction Note.
+ * Users (DApp) may append "optional" messages to mandatory messages.
+ * There is also a special "void" message that has no content. It MAY replace a
+ * mandatory message when data is missing/undefined/irrelevant, providing public
+ * knowledge of this fact does not leak privacy.
  */
 abstract contract TransactionNoteEmitter {
     // @notice Transaction Note, emitted with every MASP transaction
@@ -88,6 +88,10 @@ abstract contract TransactionNoteEmitter {
     // solhint-disable var-name-mixedcase
 
     uint8 internal constant TT_ZACCOUNT_ACTIVATION = 0x01;
+    // TransactionNote for this tx type MUST include in the specified sequence:
+    // - MT_UTXO_CREATE_TIME
+    // - MT_UTXO_BUSTREE_IDS
+    // - MT_UTXO_ZACCOUNT
 
     // **** Message Types
 
