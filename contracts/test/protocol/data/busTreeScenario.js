@@ -4,6 +4,8 @@
  * and writes the scenario to the file `__dirname/busTreeScenario_XX_steps.json`.
  */
 
+if (!process.env.BUSTREE_SCENARIO) return;
+
 /* eslint @typescript-eslint/no-var-requires: 0 */
 const assert = require('assert');
 const {readFileSync, writeFileSync} = require('fs');
