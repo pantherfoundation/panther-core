@@ -28,6 +28,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
 
     // solhint-enable var-name-mixedcase
 
+    // TODO: Remove perMinuteUtxosLimit after Testnet (required for Stage #0..2 only)
     // avg number of utxos which can be added per minute
     uint16 public perMinuteUtxosLimit;
 
@@ -53,7 +54,11 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         REWARD_TOKEN = rewardToken;
     }
 
-    // TODO: Remove _perMinuteUtxosLimit after Testnet (required for Stage #0..2 only)
+    modifier onlyPantherPool() {
+        require(msg.sender == PANTHER_POOL, ERR_UNAUTHORIZED);
+        _;
+    }
+
     function updateParams(
         uint16 _perMinuteUtxosLimit,
         uint96 _basePerUtxoReward,
@@ -94,6 +99,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         return PoseidonHashers.poseidonT3([left, right]);
     }
 
+    // TODO: Remove getAllowedUtxosAt after Testnet (required for Stage #0..2 only)
     function getAllowedUtxosAt(uint256 _timestamp, uint256 _utxoCounter)
         public
         view
@@ -105,20 +111,38 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         allowedUtxos = (secs * perMinuteUtxosLimit) / 60 seconds - _utxoCounter;
     }
 
+    // TODO: add `reward` as a param of `function addUtxoToBusQueue`
     function addUtxoToBusQueue(bytes32 utxo)
         external
+        onlyPantherPool
         returns (uint32 queueId, uint8 indexInQueue)
     {
-        require(msg.sender == PANTHER_POOL, ERR_UNAUTHORIZED);
-
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = utxo;
 
-        queueId = _nextQueueId == 0 ? 0 : _nextQueueId - 1;
-        BusQueue memory busQueue = _busQueues[queueId];
-        indexInQueue = busQueue.nUtxos;
+        (queueId, indexInQueue) = addUtxos(utxos, basePerUtxoReward);
+    }
 
-        addUtxosToBusQueue(utxos, uint96(basePerUtxoReward));
+    /// @return firstUtxoQueueId ID of the queue which `utxos[0]` was added to
+    /// @return firstUtxoIndexInQueue Index of `utxos[0]` in the queue
+    /// @dev If the current queue has no space left to add all UTXOs, a part of
+    /// UTXOs only are added to the current queue until it gets full, then the
+    /// remaining UTXOs are added to a new queue.
+    /// Index of any UTXO (not just the 1st one) may be computed as follows:
+    /// - index of UTXO in a queue increments by +1 with every new UTXO added,
+    ///   (from 0 for the 1st UTXO in a queue up to `QUEUE_MAX_SIZE - 1`)
+    /// - number of UTXOs added to the new queue (if there are such) equals to
+    ///   `firstUtxoIndexInQueue + utxos[0].length - QUEUE_MAX_SIZE`
+    /// - new queue (if created) has ID equal to `firstUtxoQueueId + 1`
+    function addUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
+        external
+        onlyPantherPool
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
+    {
+        require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
+        _checkReward(reward, utxos.length);
+
+        (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);
     }
 
     // TODO: Remove simulateAddUtxosToBusQueue after Testnet (required for Stage #0..2 only)
@@ -156,6 +180,11 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         utxoCounter = uint32(_counter);
         uint256 reward = uint256(basePerUtxoReward) * length;
 
-        addUtxosToBusQueue(utxos, uint96(reward));
+        addUtxos(utxos, uint96(reward));
+    }
+
+    function _checkReward(uint96 reward, uint256 nUtxos) private view {
+        uint96 minReward = basePerUtxoReward * uint96(nUtxos);
+        require(reward >= minReward, ERR_TOO_SMALL_REWARD);
     }
 }

@@ -5,6 +5,7 @@ pragma solidity ^0.8.16;
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import "../interfaces/ITreeRootGetter.sol";
+import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "../zeroTrees/Constants.sol";
 import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constants.sol";
 import "../interfaces/ITreeRootUpdater.sol";
@@ -128,7 +129,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
     /// @param inputs[5] - batchRoot (Root of the batch to insert)
     /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
-    /// @param inputs[7] - extraInput (must equal to the miner address)
+    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
     /// @param inputs[8] - magicalConstraint (non-zero random number)
     function onboardQueue(
         address miner,
@@ -141,9 +142,10 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
             require(oldRoot == getRoot(), ERR_INVALID_BUS_TREE_ROOT);
         }
         {
-            uint256 extraInput = inputs[7];
+            bytes memory extraInput = abi.encodePacked(miner, queueId);
+            uint256 extraInputHash = inputs[7];
             require(
-                extraInput == uint256(uint160(miner)),
+                extraInputHash == uint256(keccak256(extraInput)) % FIELD_SIZE,
                 ERR_INVALID_EXTRA_INP
             );
         }
