@@ -4,7 +4,22 @@
  * and writes the scenario to the file `__dirname/busTreeScenario_XX_steps.json`.
  */
 
-if (!process.env.BUSTREE_SCENARIO) return;
+if (!process.env.BUSTREE_SCENARIO) {
+    console.log(
+        'BUSTREE_SCENARIO env param unset. Skipping BusTree Scenario generation.',
+    );
+    return;
+}
+// The number of Queues (Batches) to generate for the test
+const nBatches = parseInt(process.env.NUM_BATCHES || '10');
+console.info(`Generating scenario with ${nBatches} Batches`);
+
+const minerAddress =
+    process.env.BUSTREE_SCENARIO_MINER ||
+    '0x7BAe1c04e5Cef0E5d635ccC0D782A21aCB920BeB';
+const rewardPerUtxo = BigInt(
+    process.env.BUSTREE_SCENARIO_REWARD || '100000000000000000',
+);
 
 /* eslint @typescript-eslint/no-var-requires: 0 */
 const assert = require('assert');
@@ -13,10 +28,6 @@ const {join} = require('path');
 
 const {poseidon} = require('circomlibjs');
 const ethers = require('ethers');
-
-// The number of Queues (Batches) to generate for the test
-const nBatches = parseInt(process.env.NUM_BATCHES || '10');
-console.info(`Generating scenario with ${nBatches} Batches`);
 
 /**** 0. Let's define some helpers and constants ***/
 const numToBytes32 = n => ethers.utils.hexZeroPad('0x' + n.toString(16), 32);
@@ -68,6 +79,9 @@ const getEmptyNodeAtGivenNumLevelsAboveBranchRoots = numLevelsAbove =>
         emptyBusTreeRoot,
     ][numLevelsAbove];
 
+const SNARK_FIELD =
+    21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+
 /**** 1. Generate Queues and Batches from them ***/
 
 function generateBatchData(queueId) {
@@ -101,7 +115,13 @@ function generateBatchData(queueId) {
     const [batchRoot] = nodes;
 
     // Return Batch data
-    return {newLeafs, nNonEmptyNewLeafs, newLeafsCommitment, batchRoot};
+    return {
+        queueId,
+        newLeafs,
+        nNonEmptyNewLeafs,
+        newLeafsCommitment,
+        batchRoot,
+    };
 }
 console.info(`1 (of 6). Generating ${nBatches} queues (and batches)`);
 
@@ -325,10 +345,13 @@ const inBranchTreeInserts = insertedBatches.map((v, i) =>
 );
 
 const inBusTreeInserts = insertedBatches.map((v, i) =>
-    insertLeaf(busTree, inBranchTreeInserts[i].newRoot, i >> 10),
+    Object.assign(
+        {queueId: v},
+        insertLeaf(busTree, inBranchTreeInserts[i].newRoot, i >> 10),
+    ),
 );
 
-/**** 4. Aggregate input for SNARK-proof ***/
+/**** 4. Aggregate public input signals for SNARK-proof ***/
 const proofInputs = inBusTreeInserts.map((v, i) => ({
     oldRoot: v.oldRoot,
     newRoot: v.newRoot,
@@ -339,8 +362,20 @@ const proofInputs = inBusTreeInserts.map((v, i) => ({
     newLeafs: batches[insertedBatches[i]].newLeafs,
     batchRoot: batches[insertedBatches[i]].batchRoot,
     branchRoot: inBranchTreeInserts[i].newRoot,
-    extraInput: '0x7BAe1c04e5Cef0E5d635ccC0D782A21aCB920BeB',
-    magicalConstraint: '0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00',
+    extraInput: numToBytes32(
+        BigInt(
+            ethers.utils.keccak256(
+                ethers.utils.solidityPack(
+                    ['uint160', 'uint32'],
+                    [minerAddress, v.queueId],
+                ),
+            ),
+        ) % SNARK_FIELD,
+    ),
+    // Quasi-random value
+    magicalConstraint: numToBytes32(
+        (BigInt(v.oldRoot) ^ BigInt(v.newRoot)) % SNARK_FIELD,
+    ),
 }));
 
 /*** 5. Define SNARK-proof generator ***/
@@ -358,6 +393,7 @@ async function generateProofs(proofInputs) {
     );
 
     const proofs = [];
+    const publicInputs = [];
     let counter = 1;
     for await (const input of proofInputs) {
         console.info(`- proof ${counter++} out of ${proofInputs.length}`);
@@ -377,13 +413,14 @@ async function generateProofs(proofInputs) {
             replica.pi_c.slice(0, 2),
         ])(JSON.parse(JSON.stringify(lProof)));
         proofs.push(solProof);
+        publicInputs.push(publicSignals);
     }
-    return proofs;
+    return {proofs, publicInputs};
 }
 
 /*** 6. Define scenario compiler ***/
 
-const compileScenario = proofs =>
+const compileScenario = (proofs, publicInputs) =>
     scenarioSteps.map((v, i) => {
         if (v.hasOwnProperty('queued')) {
             const b = batches[v.queued];
@@ -405,34 +442,77 @@ const compileScenario = proofs =>
             return {
                 description: `Step #${i}: Queue the Batch.${v.queued}`,
                 calls: queueChunks.map(v => ({
-                    method: 'simulateAddUtxosToBusQueue(bytes32[] utxos, uint96 reward)',
-                    params: [v, v.length * 10],
+                    contract: 'PantherBusTree',
+                    method: 'addUtxosToBusQueue(bytes32[] utxos, uint96 reward)',
+                    params: [v, (rewardPerUtxo * BigInt(v.length)).toString()],
                 })),
             };
         } else if (v.hasOwnProperty('inserted')) {
+            const queueId = v.inserted;
             const proofIndex = insertedBatches.findIndex(
-                batchNum => batchNum === v.inserted,
+                batchNum => batchNum === queueId,
             );
             assert(
                 proofIndex >= 0,
-                `PANIC!!! proof input for batch ${v.inserted} missing`,
+                `PANIC!!! proof input for batch ${queueId} missing`,
             );
             const inp = proofInputs[proofIndex];
             assert(
-                batches[v.inserted].batchRoot === inp.batchRoot,
-                `PANIC!!! Mismatching batchRoot in proof input for batch ${v.inserted}`,
+                batches[queueId].batchRoot === inp.batchRoot,
+                `PANIC!!! Mismatching batchRoot in proof input for batch ${queueId}`,
             );
+            const inputs = publicInputs[proofIndex];
+            assert(
+                inputs.length === 9,
+                `Unexpected publicInputs[${proofIndex}].length (${inputs.length})`,
+            );
+            assert(
+                BigInt(inputs[0]) === BigInt(inp.oldRoot),
+                'Inputs mismatch: oldRoot',
+            );
+            assert(
+                BigInt(inputs[1]) === BigInt(inp.newRoot),
+                'Inputs mismatch: newRoot',
+            );
+            assert(
+                BigInt(inputs[2]) === BigInt(inp.replacedNodeIndex),
+                'Inputs mismatch: replacedNodeIndex',
+            );
+            assert(
+                BigInt(inputs[3]) === BigInt(inp.newLeafsCommitment),
+                'Inputs mismatch: newLeafsCommitment',
+            );
+            assert(
+                BigInt(inputs[4]) === BigInt(inp.nNonEmptyNewLeafs),
+                'Inputs mismatch: nNonEmptyNewLeafs',
+            );
+            assert(
+                BigInt(inputs[5]) === BigInt(inp.batchRoot),
+                'Inputs mismatch: batchRoot',
+            );
+            assert(
+                BigInt(inputs[6]) === BigInt(inp.branchRoot),
+                'Inputs mismatch: branchRoot',
+            );
+            assert(
+                BigInt(inputs[7]) === BigInt(inp.extraInput),
+                'Inputs mismatch: extraInput',
+            );
+            assert(
+                BigInt(inputs[8]) === BigInt(inp.magicalConstraint),
+                'Inputs mismatch: magicalConstraint',
+            );
+
             return {
-                description: `Step #${i}: Insert the Batch.${v.inserted}`,
+                description: `Step #${i}: Insert the Batch.${queueId}`,
                 calls: [
                     {
-                        method: 'onboardQueue(address miner, uint32 queueId, bytes32 busTreeNewRoot, bytes32 batchRoot, bytes32 busBranchNewRoot, SnarkProof memory proof)',
+                        contract: 'PantherBusTree',
+                        method: 'onboardQueue(address miner, uint32 queueId, uint256[] inputs, SnarkProof proof)',
                         params: [
-                            inp.extraInput,
-                            v.inserted,
-                            inp.newRoot,
-                            inp.batchRoot,
-                            inp.branchRoot,
+                            minerAddress,
+                            queueId,
+                            inputs,
                             proofs[proofIndex],
                         ],
                     },
@@ -446,9 +526,9 @@ const compileScenario = proofs =>
 console.info(
     `4 (of 6). Generating proofs for ${insertedBatches.length} insertions`,
 );
-generateProofs(proofInputs).then(proofs => {
+generateProofs(proofInputs).then(({proofs, publicInputs}) => {
     console.info(`5 (of 6). Compiling scenario data`);
-    const scenario = compileScenario(proofs);
+    const scenario = compileScenario(proofs, publicInputs);
 
     console.info(`6 (of 6). Writing result files`);
     const scFName = join(
