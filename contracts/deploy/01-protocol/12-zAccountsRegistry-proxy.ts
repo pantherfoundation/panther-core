@@ -10,7 +10,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
         getNamedAccounts,
-        ethers,
     } = hre;
 
     const {deployer} = await getNamedAccounts();
@@ -20,7 +19,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         contract: 'EIP173Proxy',
         from: deployer,
         args: [
-            ethers.constants.AddressZero, // implementation will be changed
+            // TODO: investigate reuse of MockFxPortal_Proxy
+            // If set to `ethers.constants.AddressZero`, as it logically should
+            // be, hardhat-deploy reuses the MockFxPortal_Proxy proxy instance
+            // instead of deploying a new instance of the proxy contract
+            deployer, // implementation will be changed
             deployer, // owner will be changed
             [], // data
         ],
