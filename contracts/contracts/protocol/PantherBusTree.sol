@@ -47,7 +47,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         address _verifier,
         uint160 _circuitId
     ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId, _pantherPool) {
-        require(rewardToken != address(0), ERR_INIT);
+        require(rewardToken != address(0), ERR_PBT_INIT);
 
         START_TIME = block.timestamp;
 
