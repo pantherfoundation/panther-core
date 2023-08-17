@@ -13,12 +13,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts} = hre;
     const {deployer} = await getNamedAccounts();
 
-    const vaultProxy = await getContractAddress(
+    const busTreeProxy = await getContractAddress(
         hre,
         'PantherBusTree_Proxy',
         '',
     );
-    const vaultImpl = await getContractAddress(
+    const busTreeImpl = await getContractAddress(
         hre,
         'PantherBusTree_Implementation',
         '',
@@ -27,9 +27,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await upgradeEIP1967Proxy(
         hre,
         deployer,
-        vaultProxy,
-        vaultImpl,
-        'mock bus tree',
+        busTreeProxy,
+        busTreeImpl,
+        'PantherBusTree',
     );
 };
 
