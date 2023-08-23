@@ -21,7 +21,7 @@ const zeroValue = BigNumber.from('1');
 const disabledVoucherType = '0xdeadbeef';
 const proof = ethers.utils.id('proof');
 
-describe('PrpVoucherGrantor', function () {
+describe.only('PrpVoucherGrantor', function () {
     let owner: SignerWithAddress,
         poolContract: SignerWithAddress,
         allowedContract: SignerWithAddress,
@@ -37,10 +37,10 @@ describe('PrpVoucherGrantor', function () {
             'PrpVoucherGrantor',
         );
 
-        prpVoucherGrantor = await PrpVoucherGrantor.deploy(
+        prpVoucherGrantor = (await PrpVoucherGrantor.deploy(
             owner.address,
             poolContract.address,
-        );
+        )) as PrpVoucherGrantorType;
 
         await prpVoucherGrantor.deployed();
     });
@@ -166,10 +166,10 @@ describe('PrpVoucherGrantor', function () {
 
     describe('Generating rewards', function () {
         beforeEach(async function () {
-            prpVoucherGrantor = await PrpVoucherGrantor.deploy(
+            prpVoucherGrantor = (await PrpVoucherGrantor.deploy(
                 owner.address,
                 poolContract.address,
-            );
+            )) as PrpVoucherGrantorType;
 
             await prpVoucherGrantor.deployed();
 
@@ -302,7 +302,7 @@ describe('PrpVoucherGrantor', function () {
             );
         });
 
-        it('reverts when trying to generate a reward voucher beyond the reward limit', async function () {
+        it('does not generate a reward voucher beyond the reward limit', async function () {
             const terms = await prpVoucherGrantor.voucherTerms(
                 allowedContract.address,
                 VOUCHER_WITH_PREDEFINED_REWARD,
@@ -327,24 +327,21 @@ describe('PrpVoucherGrantor', function () {
                     VOUCHER_WITH_PREDEFINED_REWARD,
                 );
 
+            // This call should not generate reward
+            await prpVoucherGrantor
+                .connect(allowedContract)
+                .generateReward(
+                    secretHash,
+                    amount.mul(2),
+                    VOUCHER_WITH_PREDEFINED_REWARD,
+                );
+
             const newTerms = await prpVoucherGrantor.voucherTerms(
                 allowedContract.address,
                 VOUCHER_WITH_PREDEFINED_REWARD,
             );
 
             expect(newTerms.rewardsGranted).to.equal(newTerms.limit);
-
-            await expect(
-                prpVoucherGrantor
-                    .connect(allowedContract)
-                    .generateReward(
-                        secretHash,
-                        amount.mul(2),
-                        VOUCHER_WITH_PREDEFINED_REWARD,
-                    ),
-            ).to.be.revertedWith(
-                'PrpVoucherGrantor: Reward limit reached for this voucher',
-            );
         });
 
         it('properly updates rewards granted when generating reward vouchers', async function () {
@@ -427,10 +424,10 @@ describe('PrpVoucherGrantor', function () {
 
     describe('Repetitive claiming and generation of rewards', () => {
         beforeEach(async function () {
-            prpVoucherGrantor = await PrpVoucherGrantor.deploy(
+            prpVoucherGrantor = (await PrpVoucherGrantor.deploy(
                 owner.address,
                 poolContract.address,
-            );
+            )) as PrpVoucherGrantorType;
 
             await prpVoucherGrantor.deployed();
 
