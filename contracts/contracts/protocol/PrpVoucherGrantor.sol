@@ -100,27 +100,22 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param _secretHash The secret hash for the reward voucher.
     /// @param _amount The amount of the reward voucher.
     /// @param _voucherType The type of the reward voucher.
+    /// @return The prp amount which has be granted.
     function generateReward(
         bytes32 _secretHash,
         uint64 _amount,
         bytes4 _voucherType
-    ) external onlyValidVoucherTypes(_voucherType) {
+    ) external onlyValidVoucherTypes(_voucherType) returns (uint256) {
         VoucherTerms memory voucherTerm = voucherTerms[msg.sender][
             _voucherType
         ];
 
-        uint64 prpToGrant = _amount;
         // If amount in the voucher is not set, then the amount is specified
         // by the calling smart contract, otherwise it is specified by the
-        // voucher terms
-        if (voucherTerm.amount != 0) {
-            prpToGrant = voucherTerm.amount;
-        }
+        uint64 prpToGrant = _amount > 0 ? _amount : voucherTerm.amount;
 
-        require(
-            voucherTerm.limit >= voucherTerm.rewardsGranted + prpToGrant,
-            "PrpVoucherGrantor: Reward limit reached for this voucher"
-        );
+        if (voucherTerm.rewardsGranted + prpToGrant > voucherTerm.limit)
+            return 0;
 
         // we are setting the balance to non-zero to save gas
         if (balance[_secretHash] > ZERO_VALUE) {
@@ -130,7 +125,10 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         }
 
         voucherTerms[msg.sender][_voucherType].rewardsGranted += prpToGrant;
+
         emit RewardVoucherGenerated(_secretHash);
+
+        return prpToGrant;
     }
 
     /// @notice Claims a rewards collected for the given secret hash.
