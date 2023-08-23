@@ -11,6 +11,7 @@ import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
 
 import "./zAccountsRegistry/BlacklistedZAccountIdsTree.sol";
 import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
+import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Types.sol";
@@ -34,11 +35,6 @@ contract ZAccountsRegistry is
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    enum ZACCOUNT_STATUS {
-        UNDEFINED,
-        REGISTERED,
-        ACTIVATED
-    }
     // solhint-disable var-name-mixedcase
 
     uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
@@ -253,7 +249,7 @@ contract ZAccountsRegistry is
                 zAccountMasterEOA,
                 uint8(userPrevStatus),
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
-                new bytes(0)
+                abi.encodePacked(inputs[13])
             );
             uint256 zkpAmount = inputs[1];
             require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);

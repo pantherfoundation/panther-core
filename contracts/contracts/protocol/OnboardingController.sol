@@ -2,9 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "./interfaces/IPrpVoucherGrantor.sol";
+
+import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
+
 import "../common/ImmutableOwnable.sol";
 import "../common/TransferHelper.sol";
-import { HUNDRED_PERCENT } from "../common/Constants.sol";
+import { HUNDRED_PERCENT, GT_ONBOARDING } from "../common/Constants.sol";
 
 contract OnboardingController is ImmutableOwnable {
     using TransferHelper for address;
@@ -14,6 +18,7 @@ contract OnboardingController is ImmutableOwnable {
     uint256 private constant ZERO_REWARD = 0;
 
     address public immutable ZACCOUNT_REGISTRY;
+    address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable ZKP_TOKEN;
     address public immutable VAULT;
     address public immutable RESERVE_CONTROLLER;
@@ -21,14 +26,12 @@ contract OnboardingController is ImmutableOwnable {
     // solhint-enable var-name-mixedcase
 
     struct RewardParams {
+        // kyc provider reward amount in zkp
+        uint96 zkpAmount;
+        // user reward amount in zZkp
+        uint96 zZkpAmount;
         // reserved bytes
-        uint128 _unused;
-        // kyc provider ratio from zkpRewardsPerActivation
-        uint16 zkpRate;
-        // user ratio from zkpRewardsPerActivation
-        uint16 zZkpRate;
-        // zkp reward to be grant on each call.
-        uint96 rewardsPerGrant;
+        uint64 _unused;
     }
 
     RewardParams public rewardParams;
@@ -36,21 +39,20 @@ contract OnboardingController is ImmutableOwnable {
     uint128 public rewardsGranted;
     uint128 public rewardsLimit;
 
-    mapping(address => bool) public isUserRewarded;
-
-    event RewardParamsUpdated(
-        uint96 rewardsPerGrant,
-        uint16 zkpRate,
-        uint16 zZkpRate
-    );
+    event RewardParamsUpdated(uint96 zkpAmountScaled, uint96 zZkpAmountScaled);
     event RewardsLimtUpdated(uint256 rewardsLimit);
-    event ZzkpAllocated(address user, uint256 amount);
     event ReserveControllerApproved(uint256 amount);
+    event ZzkpAndPrpAllocated(
+        address user,
+        uint256 zZkpAmount,
+        uint256 prpAmount
+    );
 
     constructor(
         address _owner,
         address _zkpToken,
         address _zAccountRegistry,
+        address _prpVoucherGrantor,
         address _vault,
         address _reserveController
     ) ImmutableOwnable(_owner) {
@@ -62,31 +64,25 @@ contract OnboardingController is ImmutableOwnable {
         );
 
         ZACCOUNT_REGISTRY = _zAccountRegistry;
+        PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
         ZKP_TOKEN = _zkpToken;
         VAULT = _vault;
         RESERVE_CONTROLLER = _reserveController;
     }
 
-    function updateRewardParams(
-        uint96 _rewardsPerGrant,
-        uint16 _zkpRate,
-        uint16 _zZkpRate
-    ) external onlyOwner {
-        // if _rewardsPerGrant is defined, then sum of ratios should be 10000
-        // setting _rewardsPerGrant to 0 disables the program
-        require(
-            _rewardsPerGrant == 0 || (_zkpRate + _zZkpRate == HUNDRED_PERCENT),
-            "invalid zkp ratio"
-        );
+    function updateRewardParams(uint96 _zkpAmount, uint96 _zZkpAmount)
+        external
+        onlyOwner
+    {
+        // TODO: Should reward amounts be more than 0?
 
         rewardParams = RewardParams({
-            _unused: uint128(0),
-            zkpRate: _zkpRate,
-            zZkpRate: _zZkpRate,
-            rewardsPerGrant: _rewardsPerGrant
+            zkpAmount: _zkpAmount,
+            zZkpAmount: _zZkpAmount,
+            _unused: uint64(0)
         });
 
-        emit RewardParamsUpdated(_rewardsPerGrant, _zkpRate, _zZkpRate);
+        emit RewardParamsUpdated(_zkpAmount, _zZkpAmount);
     }
 
     function updateRewardsLimitAndVaultAllowance() external {
@@ -132,61 +128,48 @@ contract OnboardingController is ImmutableOwnable {
     function grantRewards(
         address _user,
         uint8 _prevStatus,
-        uint8 _newStatus,
+        uint8, /* _newStatus */
         bytes memory _data
     ) external returns (uint256 _zZkpRewardAlloc) {
-        _zZkpRewardAlloc = 100e18;
+        require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
 
-        // require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
+        RewardParams memory _rewardParams = rewardParams;
 
-        // RewardParams memory _rewardParams = rewardParams;
+        uint256 _zZkpToAllocate = _prevStatus ==
+            uint8(ZACCOUNT_STATUS.REGISTERED)
+            ? _rewardParams.zZkpAmount
+            : ZERO_REWARD;
 
-        // uint256 _rewardsGranted = rewardsGranted +
-        //     (_rewardParams.rewardsPerGrant);
+        uint256 _newRewardsGranted = rewardsGranted +
+            (_rewardParams.zkpAmount + _zZkpToAllocate);
 
-        // if (rewardsLimit >= _rewardsGranted) {
-        //     _zZkpRewardAlloc = _getZzkpRewardsAllocation(_rewardParams, _user);
+        // return 0 if limit is reached
+        if (rewardsLimit < _newRewardsGranted) return _zZkpRewardAlloc;
 
-        //     _increaseReserveControllerAllowance(_rewardParams);
+        if (_prevStatus == uint8(ZACCOUNT_STATUS.REGISTERED)) {
+            uint256 _prpRewardsGranted = _grantPrpRewardsToUser(bytes32(_data));
 
-        //     rewardsGranted = uint128(_rewardsGranted);
-        // }
-    }
+            _zZkpRewardAlloc = _zZkpToAllocate;
 
-    // solhint-enable no-unused-vars
-
-    function _getZzkpRewardsAllocation(
-        RewardParams memory _rewardParams,
-        address _user
-    ) private returns (uint256 _zZkpRewardAlloc) {
-        // return 0 if has already got rewarded
-        if (isUserRewarded[_user]) return (_zZkpRewardAlloc);
-
-        // Calculate ZKP rewards allocation
-        _zZkpRewardAlloc =
-            ((_rewardParams.rewardsPerGrant) * _rewardParams.zZkpRate) /
-            HUNDRED_PERCENT;
-
-        if (_zZkpRewardAlloc > ZERO_REWARD) {
-            isUserRewarded[_user] = true;
-
-            emit ZzkpAllocated(_user, _zZkpRewardAlloc);
-        }
-    }
-
-    function _increaseReserveControllerAllowance(
-        RewardParams memory _rewardParams
-    ) private {
-        uint256 _zkpRewardAlloc = ((_rewardParams.rewardsPerGrant) *
-            _rewardParams.zkpRate) / HUNDRED_PERCENT;
-
-        if (_zkpRewardAlloc > ZERO_REWARD) {
-            ZKP_TOKEN.safeIncreaseAllowance(
-                RESERVE_CONTROLLER,
-                _zkpRewardAlloc
+            emit ZzkpAndPrpAllocated(
+                _user,
+                _zZkpRewardAlloc,
+                _prpRewardsGranted
             );
-
-            emit ReserveControllerApproved(_zkpRewardAlloc);
         }
+
+        rewardsGranted = uint128(_newRewardsGranted);
+    }
+
+    function _grantPrpRewardsToUser(bytes32 secretHash)
+        private
+        view
+        returns (uint256 _prpRewards)
+    {
+        _prpRewards = IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+            secretHash,
+            0, // amount defined for `GT_ONBOARDING` type will be used
+            GT_ONBOARDING
+        );
     }
 }
