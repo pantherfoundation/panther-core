@@ -5,6 +5,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
+    getContractAddress,
     reuseEnvAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
@@ -23,9 +24,35 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await getNamedAccounts()).multisig ||
         deployer;
 
+    const zAccountsRegistryProxy = await getContractAddress(
+        hre,
+        'ZAccountsRegistry_Proxy',
+        '',
+    );
+
+    const prpVoucherGrantorProxy = await getContractAddress(
+        hre,
+        'PrpVoucherGrantor_Proxy',
+        '',
+    );
+
+    const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
+
+    const vaultProxy = await getContractAddress(
+        hre,
+        'Vault_Proxy',
+        'VAULT_PROXY',
+    );
+
     await deploy('OnboardingController', {
         from: deployer,
-        args: [multisig, multisig, multisig, multisig, multisig],
+        args: [
+            multisig,
+            pzkp,
+            zAccountsRegistryProxy,
+            prpVoucherGrantorProxy,
+            vaultProxy,
+        ],
         proxy: {
             proxyContract: 'EIP173Proxy',
             owner: multisig,
