@@ -11,5 +11,5 @@ interface IPrpVoucherGrantor {
         bytes32 _secretHash,
         uint64 _amount,
         bytes4 _voucherType
-    ) external view returns (uint256);
+    ) external returns (uint256);
 }
