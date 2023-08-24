@@ -176,7 +176,6 @@ contract OnboardingController is ImmutableOwnable {
 
     function _grantPrpRewardsToUser(bytes32 secretHash)
         private
-        view
         returns (uint256 _prpRewards)
     {
         _prpRewards = IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
