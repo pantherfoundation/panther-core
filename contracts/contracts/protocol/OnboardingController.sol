@@ -21,7 +21,6 @@ contract OnboardingController is ImmutableOwnable {
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable ZKP_TOKEN;
     address public immutable VAULT;
-    address public immutable RESERVE_CONTROLLER;
 
     // solhint-enable var-name-mixedcase
 
@@ -53,8 +52,7 @@ contract OnboardingController is ImmutableOwnable {
         address _zkpToken,
         address _zAccountRegistry,
         address _prpVoucherGrantor,
-        address _vault,
-        address _reserveController
+        address _vault
     ) ImmutableOwnable(_owner) {
         require(
             _zAccountRegistry != address(0) &&
@@ -67,7 +65,6 @@ contract OnboardingController is ImmutableOwnable {
         PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
         ZKP_TOKEN = _zkpToken;
         VAULT = _vault;
-        RESERVE_CONTROLLER = _reserveController;
     }
 
     function updateRewardParams(uint96 _zkpAmount, uint96 _zZkpAmount)
@@ -86,19 +83,21 @@ contract OnboardingController is ImmutableOwnable {
     }
 
     function updateRewardsLimitAndVaultAllowance() external {
-        // Getting the current allowance of ReserveController
-        uint256 reserveControllerAllowance = ZKP_TOKEN.safeAllowance(
-            address(this),
-            RESERVE_CONTROLLER
-        );
+        // // Getting the current allowance of ReserveController
+        // uint256 reserveControllerAllowance = ZKP_TOKEN.safeAllowance(
+        //     address(this),
+        //     RESERVE_CONTROLLER
+        // );
         uint256 _rewardsLimit = rewardsLimit;
 
         // Getting the unused rewards limit
         uint256 unusedLimit = _rewardsLimit - rewardsGranted;
 
         // The availabe balance (part of the balance is reserved and will be withdrawn from ReserveController)
-        uint256 available = ZKP_TOKEN.safeBalanceOf(address(this)) -
-            reserveControllerAllowance;
+        uint256 available = ZKP_TOKEN.safeBalanceOf(address(this));
+
+        // uint256 available = ZKP_TOKEN.safeBalanceOf(address(this)) -
+        //     reserveControllerAllowance;
 
         if (available == unusedLimit) return;
 
