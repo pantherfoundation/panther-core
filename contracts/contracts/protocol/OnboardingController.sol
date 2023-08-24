@@ -127,10 +127,11 @@ contract OnboardingController is ImmutableOwnable {
     function grantRewards(
         address _user,
         uint8 _prevStatus,
-        uint8, /* _newStatus */
+        uint8 _newStatus,
         bytes memory _data
     ) external returns (uint256 _zZkpRewardAlloc) {
         require(msg.sender == ZACCOUNT_REGISTRY, "unauthorized");
+        require(_data.length == 32, "OC: invalid data length");
 
         RewardParams memory _rewardParams = rewardParams;
 
@@ -145,8 +146,12 @@ contract OnboardingController is ImmutableOwnable {
         // return 0 if limit is reached
         if (rewardsLimit < _newRewardsGranted) return _zZkpRewardAlloc;
 
-        if (_prevStatus == uint8(ZACCOUNT_STATUS.REGISTERED)) {
-            uint256 _prpRewardsGranted = _grantPrpRewardsToUser(bytes32(_data));
+        if (
+            _prevStatus == uint8(ZACCOUNT_STATUS.REGISTERED) &&
+            _newStatus == uint8(ZACCOUNT_STATUS.ACTIVATED)
+        ) {
+            bytes32 secret = abi.decode(_data, (bytes32));
+            uint256 _prpRewardsGranted = _grantPrpRewardsToUser(secret);
 
             _zZkpRewardAlloc = _zZkpToAllocate;
 
