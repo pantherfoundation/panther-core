@@ -249,7 +249,7 @@ contract ZAccountsRegistry is
                 zAccountMasterEOA,
                 uint8(userPrevStatus),
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
-                abi.encode(inputs[13])
+                abi.encodePacked(inputs[13])
             );
             uint256 zkpAmount = inputs[1];
             require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);

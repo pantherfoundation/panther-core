@@ -150,7 +150,16 @@ contract OnboardingController is ImmutableOwnable {
             _prevStatus == uint8(ZACCOUNT_STATUS.REGISTERED) &&
             _newStatus == uint8(ZACCOUNT_STATUS.ACTIVATED)
         ) {
-            bytes32 secret = abi.decode(_data, (bytes32));
+            bytes32 secret;
+
+            // solhint-disable no-inline-assembly
+            assembly {
+                // the 1st word (32 bytes) contains the `message.length`
+                // we need the (entire) 2nd word ..
+                secret := mload(add(_data, 0x20))
+            }
+            // solhint-enable no-inline-assembly
+
             uint256 _prpRewardsGranted = _grantPrpRewardsToUser(secret);
 
             _zZkpRewardAlloc = _zZkpToAllocate;
