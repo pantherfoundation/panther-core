@@ -101,7 +101,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param _amount The amount of the reward voucher.
     /// @param _voucherType The type of the reward voucher.
     /// @return The prp amount which has be granted.
-    function generateReward(
+    function generateRewards(
         bytes32 _secretHash,
         uint64 _amount,
         bytes4 _voucherType
