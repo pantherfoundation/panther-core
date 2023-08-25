@@ -57,11 +57,11 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
 
     /// @dev Emitted when a new reward voucher is generated.
     /// @param secretHash The secret hash for the reward voucher.
-    event RewardVoucherGenerated(bytes32 secretHash);
+    event RewardVoucherGenerated(bytes32 indexed secretHash, uint256 prpAmount);
 
     /// @dev Emitted when a reward voucher is successfully claimed.
     /// @param secretHash The secret hash for the claimed reward voucher.
-    event RewardClaimed(bytes32 secretHash);
+    event RewardClaimed(bytes32 indexed secretHash);
 
     /// @dev Emitted when the voucher terms are updated.
     /// @param allowedContract The address of the contract allowed to generate
@@ -126,7 +126,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
 
         voucherTerms[msg.sender][_voucherType].rewardsGranted += prpToGrant;
 
-        emit RewardVoucherGenerated(_secretHash);
+        emit RewardVoucherGenerated(_secretHash, prpToGrant);
 
         return prpToGrant;
     }
