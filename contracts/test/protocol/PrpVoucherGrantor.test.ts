@@ -21,7 +21,7 @@ const zeroValue = BigNumber.from('1');
 const disabledVoucherType = '0xdeadbeef';
 const proof = ethers.utils.id('proof');
 
-describe.only('PrpVoucherGrantor', function () {
+describe('PrpVoucherGrantor', function () {
     let owner: SignerWithAddress,
         poolContract: SignerWithAddress,
         allowedContract: SignerWithAddress,
@@ -137,7 +137,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     ethers.utils.id('test_secret'),
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -199,7 +199,7 @@ describe.only('PrpVoucherGrantor', function () {
             await expect(
                 prpVoucherGrantor
                     .connect(user)
-                    .generateReward(
+                    .generateRewards(
                         secretHash,
                         amount,
                         VOUCHER_WITH_PREDEFINED_REWARD,
@@ -212,7 +212,7 @@ describe.only('PrpVoucherGrantor', function () {
         it('generates rewards of predefined amount', async function () {
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -233,7 +233,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -247,7 +247,7 @@ describe.only('PrpVoucherGrantor', function () {
         it('generates rewards of any amount', async function () {
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount.div(2),
                     VOUCHER_WITH_ANY_REWARD,
@@ -259,7 +259,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(secretHash, amount, VOUCHER_WITH_ANY_REWARD);
+                .generateRewards(secretHash, amount, VOUCHER_WITH_ANY_REWARD);
 
             expect(await prpVoucherGrantor.balance(secretHash)).to.equal(
                 amount.div(2).add(zeroValue).add(amount),
@@ -269,7 +269,7 @@ describe.only('PrpVoucherGrantor', function () {
         it('generates rewards of any amount and predefined', async function () {
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -281,7 +281,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount.div(2),
                     VOUCHER_WITH_ANY_REWARD,
@@ -296,7 +296,7 @@ describe.only('PrpVoucherGrantor', function () {
             await expect(
                 prpVoucherGrantor
                     .connect(allowedContract)
-                    .generateReward(secretHash, amount, disabledVoucherType),
+                    .generateRewards(secretHash, amount, disabledVoucherType),
             ).to.be.revertedWith(
                 'PrpVoucherGrantor: Inactive or invalid voucher type',
             );
@@ -321,7 +321,7 @@ describe.only('PrpVoucherGrantor', function () {
             // this reward is within the limit and should succeed
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -330,7 +330,7 @@ describe.only('PrpVoucherGrantor', function () {
             // This call should not generate reward
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount.mul(2),
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -347,7 +347,7 @@ describe.only('PrpVoucherGrantor', function () {
         it('properly updates rewards granted when generating reward vouchers', async function () {
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -364,7 +364,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -395,7 +395,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -455,7 +455,7 @@ describe.only('PrpVoucherGrantor', function () {
         it('generates and claims reward vouchers from different vouchers', async function () {
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount,
                     VOUCHER_WITH_PREDEFINED_REWARD,
@@ -475,7 +475,7 @@ describe.only('PrpVoucherGrantor', function () {
 
             await prpVoucherGrantor
                 .connect(allowedContract)
-                .generateReward(
+                .generateRewards(
                     secretHash,
                     amount.div(2),
                     VOUCHER_WITH_ANY_REWARD,
