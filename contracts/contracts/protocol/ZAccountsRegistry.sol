@@ -384,6 +384,7 @@ contract ZAccountsRegistry is
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
+                address(ONBOARDING_CONTROLLER),
                 privateMessages,
                 cachedForestRootIndex
             )

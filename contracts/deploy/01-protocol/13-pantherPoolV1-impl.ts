@@ -24,6 +24,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await getNamedAccounts()).multisig ||
         deployer;
 
+    const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
+
     const vaultProxy = await getContractAddress(
         hre,
         'Vault_Proxy',
@@ -63,6 +65,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [
             multisig,
+            pzkp,
             taxiTree,
             busTreeProxy,
             ferryTree,

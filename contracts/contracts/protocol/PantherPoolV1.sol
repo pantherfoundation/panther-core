@@ -6,7 +6,9 @@ import "./interfaces/IVault.sol";
 import "./interfaces/IPantherVerifier.sol";
 import "./interfaces/IBusTree.sol";
 import "./../common/ImmutableOwnable.sol";
+import { ERC20_TOKEN_TYPE } from "./../common/Constants.sol";
 import { LockData } from "./../common/Types.sol";
+import "./../common/UtilsLib.sol";
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
@@ -23,6 +25,7 @@ contract PantherPoolV1 is
 
     // solhint-disable var-name-mixedcase
     IVault public immutable VAULT;
+    address public immutable PROTOCOL_TOKEN;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
@@ -34,6 +37,7 @@ contract PantherPoolV1 is
 
     constructor(
         address _owner,
+        address zkpToken,
         address taxiTree,
         address busTree,
         address ferryTree,
@@ -44,11 +48,13 @@ contract PantherPoolV1 is
     ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
         require(
             vault != address(0) &&
+                zkpToken != address(0) &&
                 verifier != address(0) &&
                 zAccountRegistry != address(0),
             ERR_INIT
         );
 
+        PROTOCOL_TOKEN = zkpToken;
         VAULT = IVault(vault);
         BUS_TREE = IBusTree(busTree);
         VERIFIER = IPantherVerifier(verifier);
@@ -94,6 +100,7 @@ contract PantherPoolV1 is
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        address zkpPayer,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
@@ -143,6 +150,11 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
+        if (inputs[1] != 0) {
+            uint256 zkpAmount = inputs[1];
+            _lockZkp(zkpPayer, zkpAmount);
+        }
+
         // Trusted contract - no reentrancy guard needed
         (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
             bytes32(zAccountCommitment)
@@ -163,5 +175,19 @@ contract PantherPoolV1 is
         );
 
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
+    }
+
+    function _lockZkp(address from, uint256 amount) internal {
+        // Trusted contract - no reentrancy guard needed
+        VAULT.lockAsset(
+            LockData(
+                ERC20_TOKEN_TYPE,
+                PROTOCOL_TOKEN,
+                // tokenId undefined for ERC-20
+                0,
+                from,
+                UtilsLib.safe96(amount)
+            )
+        );
     }
 }
