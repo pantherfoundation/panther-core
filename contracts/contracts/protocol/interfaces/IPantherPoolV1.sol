@@ -9,6 +9,7 @@ interface IPantherPoolV1 {
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        address zkpPayer,
         bytes memory secretMessage,
         uint256 cachedForestRootIndex
     ) external returns (uint256);
