@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isLocal, isProd} from '../../lib/checkNetwork';
+import {isProd} from '../../lib/checkNetwork';
 import {getContractAddress} from '../../lib/deploymentHelpers';
 
 // TODO To be deleted after implementing panther pool v1
