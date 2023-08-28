@@ -153,7 +153,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         // generating the first utxo
         uint256 utxo = uint256(keccak256(abi.encode(_counter))) % FIELD_SIZE;
 
-        // Generating the utxos length between 1 - 5
+        // Generating the utxos length between 1 - 4
         uint256 length = (utxo & 3) + 1;
 
         if (_counter + length > getAllowedUtxosAt(block.timestamp, _counter))
