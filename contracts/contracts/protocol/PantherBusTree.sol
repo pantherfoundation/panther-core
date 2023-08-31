@@ -38,6 +38,10 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     // keeps track of number of the added utxos
     uint32 public utxoCounter;
 
+    // TODO: Remove lastUtxoSimulationTimestamp after Testnet (required for Stage #0..2 only)
+    // keeps track of the timestamp of the latest added utxos
+    uint32 public lastUtxoSimulationTimestamp;
+
     event MinerRewarded(address miner, uint256 reward);
 
     constructor(
@@ -53,6 +57,8 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         START_TIME = 1688987658;
 
         REWARD_TOKEN = rewardToken;
+
+        lastUtxoSimulationTimestamp = uint32(block.timestamp);
     }
 
     modifier onlyPantherPool() {
@@ -101,15 +107,15 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     }
 
     // TODO: Remove getAllowedUtxosAt after Testnet (required for Stage #0..2 only)
-    function getAllowedUtxosAt(uint256 _timestamp, uint256 _utxoCounter)
+    function getAllowedUtxosAt(uint256 _timestamp)
         public
         view
         returns (uint256 allowedUtxos)
     {
-        if (_timestamp < START_TIME) return 0;
+        if (_timestamp <= lastUtxoSimulationTimestamp) return 0;
 
-        uint256 secs = _timestamp - START_TIME;
-        allowedUtxos = (secs * perMinuteUtxosLimit) / 60 seconds - _utxoCounter;
+        uint256 secs = _timestamp - lastUtxoSimulationTimestamp;
+        return (secs / 60 seconds) * perMinuteUtxosLimit;
     }
 
     // TODO: add `reward` as a param of `function addUtxoToBusQueue`
@@ -156,8 +162,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         // Generating the utxos length between 1 - 4
         uint256 length = (utxo & 3) + 1;
 
-        if (_counter + length > getAllowedUtxosAt(block.timestamp, _counter))
-            return;
+        if (length > getAllowedUtxosAt(block.timestamp)) return;
 
         bytes32[] memory utxos = new bytes32[](length);
 
@@ -179,6 +184,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
 
         // overflow risk ignored
         utxoCounter = uint32(_counter);
+        lastUtxoSimulationTimestamp = uint32(block.timestamp);
         uint256 reward = uint256(basePerUtxoReward) * length;
 
         addUtxos(utxos, uint96(reward));
