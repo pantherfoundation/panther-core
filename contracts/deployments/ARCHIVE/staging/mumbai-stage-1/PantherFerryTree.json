@@ -1,0 +1,70 @@
+{
+  "address": "0x5c91d70Cd7cf569CA9Ac8DE588705B3f118647DF",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x30f495cf7b5f5cc767a3dd34a200bdfb4b14e22527dcd696c80d886657c2b3a1",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0x5c91d70Cd7cf569CA9Ac8DE588705B3f118647DF",
+    "transactionIndex": 14,
+    "gasUsed": "76987",
+    "logsBloom": "0x00000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000008004000000020000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000020000000000000000001000000000000000000000000004000000000000000000001000002000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x59633fb500443ff6686228ecf775f208609defabf3cb170cd0fe06daf1cbdf4c",
+    "transactionHash": "0x30f495cf7b5f5cc767a3dd34a200bdfb4b14e22527dcd696c80d886657c2b3a1",
+    "logs": [
+      {
+        "transactionIndex": 14,
+        "blockNumber": 38977317,
+        "transactionHash": "0x30f495cf7b5f5cc767a3dd34a200bdfb4b14e22527dcd696c80d886657c2b3a1",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000c26880a0af2ea0c7e8130e6ec47af756465452e8"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000000669406c9bb7b000000000000000000000000000000000000000000000000194008127511511f00000000000000000000000000000000000000000000213a5bc1bc9f54388382000000000000000000000000000000000000000000000000193fa17e6e4795a400000000000000000000000000000000000000000000213a5bc223335b023efd",
+        "logIndex": 49,
+        "blockHash": "0x59633fb500443ff6686228ecf775f208609defabf3cb170cd0fe06daf1cbdf4c"
+      }
+    ],
+    "blockNumber": 38977317,
+    "cumulativeGasUsed": "1428179",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8ced4b4e64f70b0ab3e17932cf8fd4ee",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/PantherFerryTree.sol\":\"PantherFerryTree\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/PantherFerryTree.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport \\\"./pantherForest/merkleTrees/BinaryUpdatableTree.sol\\\";\\nimport { PoseidonT3 } from \\\"./crypto/Poseidon.sol\\\";\\nimport \\\"./pantherForest/interfaces/ITreeRootGetter.sol\\\";\\n\\n// It's supposed to run on the mainnet only.\\n// It keeps roots of the \\\"Bus\\\" trees on supported networks.\\n// Bridges keepers are expected to:\\n// - synchronize \\\"Bus\\\" trees roots (which are leafs of this tree)\\n// - propagate this tree root to other networks (that results in updating the\\n// state of the `PantherForest` contracts on supported network).\\ncontract PantherFerryTree is ITreeRootGetter {\\n    // Root of root with ZERO trees with depth 32\\n    function getRoot() external pure returns (bytes32) {\\n        return\\n            0x24ab16594d418ca2e66ca284f56a4cb7039c6d8f8e0c3c8f362cf18b5afa19d0;\\n    }\\n}\\n\",\"keccak256\":\"0x93cb32b53ac77eae81de8877c8d4bf04ce8f3b463d1911a8ea80a1bd2a7b8a3e\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/crypto/Poseidon.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\n// This is a stub to keep solc happy; the actual code is generated\\n// using poseidon_gencontract.js from circomlibjs.\\n\\nlibrary PoseidonT3 {\\n    function poseidon(bytes32[2] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT4 {\\n    function poseidon(bytes32[3] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT5 {\\n    function poseidon(bytes32[4] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT6 {\\n    function poseidon(bytes32[5] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0x85ba9420af1dcb1218b655c16044d163c9b070ff5913da034a9961e0e8c5aaf2\",\"license\":\"MIT\"},\"contracts/protocol/pantherForest/interfaces/ITreeRootGetter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\ninterface ITreeRootGetter {\\n    function getRoot() external view returns (bytes32);\\n}\\n\",\"keccak256\":\"0xc6bb37fe4059cfe13c15f4c1d324b2de68a48348e136bf6cc72421f4721dc21d\",\"license\":\"MIT\"},\"contracts/protocol/pantherForest/merkleTrees/BinaryUpdatableTree.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.16;\\n\\n// @notice The \\\"binary binary tree\\\" populated with zero leaf values\\n\\n/**\\n * @title BinaryIncrementalUpdatableMerkleTree\\n * @notice\\n * @dev\\n */\\nabstract contract BinaryUpdatableTree {\\n    /**\\n     * @dev Update an existing leaf\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param newLeaf New leaf.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return _newRoot The new root after updating the tree\\n     */\\n    function update(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        bytes32 newLeaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bytes32 _newRoot) {\\n        require(newLeaf != leaf, \\\"BIUT: New leaf cannot be equal the old one\\\");\\n        require(\\n            verify(curRoot, leaf, leafIndex, proofSiblings),\\n            \\\"BIUT: Leaf is not part of the tree\\\"\\n        );\\n\\n        _newRoot = newLeaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _newRoot = hash([_newRoot, proofSiblings[i]]);\\n            } else {\\n                _newRoot = hash([proofSiblings[i], _newRoot]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    /**\\n     * @dev Verify if the path is correct and the leaf is part of the tree.\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return True or false.\\n     */\\n    function verify(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bool) {\\n        // equal to 2**proofSiblings.length\\n        uint256 leavesNum = 1 << proofSiblings.length;\\n        require(leafIndex < leavesNum, \\\"BIUT: invalid leaf index\\\");\\n\\n        bytes32 _hash = leaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _hash = hash([_hash, proofSiblings[i]]);\\n            } else {\\n                _hash = hash([proofSiblings[i], _hash]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n\\n        return curRoot == 0 ? _hash == zeroRoot() : _hash == curRoot;\\n    }\\n\\n    function zeroRoot() internal pure virtual returns (bytes32);\\n\\n    function hash(bytes32[2] memory input)\\n        internal\\n        pure\\n        virtual\\n        returns (bytes32);\\n}\\n\",\"keccak256\":\"0x420ed9477324ce5cdf04329938a7ec1e4687150b9bd273fc0e5f9123e1fa375d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50606d80601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f24ab16594d418ca2e66ca284f56a4cb7039c6d8f8e0c3c8f362cf18b5afa19d060405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f24ab16594d418ca2e66ca284f56a4cb7039c6d8f8e0c3c8f362cf18b5afa19d060405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

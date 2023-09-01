@@ -1,0 +1,974 @@
+{
+  "address": "0xd7Df8c6615ccF73f38820272d4a706D628a2e2C1",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "_zAccountVersion",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "pantherPool",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "pantherStaticTree",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "onboardingController",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "masterEoa",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isBlackListed",
+          "type": "bool"
+        }
+      ],
+      "name": "BlacklistForMasterEoaUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "packedPubRootSpendingKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isBlackListed",
+          "type": "bool"
+        }
+      ],
+      "name": "BlacklistForPubRootSpendingKeyUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint24",
+          "name": "zAccountId",
+          "type": "uint24"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isBlackListed",
+          "type": "bool"
+        }
+      ],
+      "name": "BlacklistForZAccountIdUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint24",
+          "name": "id",
+          "type": "uint24"
+        }
+      ],
+      "name": "ZAccountActivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "masterEoa",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint224",
+              "name": "_unused",
+              "type": "uint224"
+            },
+            {
+              "internalType": "uint24",
+              "name": "id",
+              "type": "uint24"
+            },
+            {
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "pubRootSpendingKey",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "pubReadingKey",
+              "type": "bytes32"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct ZAccountsRegistry.ZAccount",
+          "name": "zAccount",
+          "type": "tuple"
+        }
+      ],
+      "name": "ZAccountRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "EIP712_NAME",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "EIP712_SALT",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "EIP712_VERSION",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ONBOARDING_CONTROLLER",
+      "outputs": [
+        {
+          "internalType": "contract IOnboardingController",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "OWNER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PANTHER_POOL",
+      "outputs": [
+        {
+          "internalType": "contract IPantherPoolV1",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PANTHER_STATIC_TREE",
+      "outputs": [
+        {
+          "internalType": "contract ITreeRootUpdater",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ZACCOUNT_VERSION",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "inputs",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes",
+          "name": "privateMessages",
+          "type": "bytes"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "a",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "b",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "c",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SnarkProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cachedForestRootIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "activateZAccount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "utxoBusQueuePos",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "masterEoas",
+          "type": "address[]"
+        },
+        {
+          "internalType": "bool[]",
+          "name": "isBlackListed",
+          "type": "bool[]"
+        }
+      ],
+      "name": "batchUpdateBlacklistForMasterEoa",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "packedPubRootSpendingKeys",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "bool[]",
+          "name": "isBlackListed",
+          "type": "bool[]"
+        }
+      ],
+      "name": "batchUpdateBlacklistForPubRootSpendingKey",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDomainSeperator",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isMasterEoaBlacklisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isPubRootSpendingKeyBlacklisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint24",
+          "name": "",
+          "type": "uint24"
+        }
+      ],
+      "name": "isZAccountIdBlacklisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_masterEOA",
+          "type": "address"
+        }
+      ],
+      "name": "isZAccountWhitelisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isWhitelisted",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint24",
+          "name": "",
+          "type": "uint24"
+        }
+      ],
+      "name": "masterEOAs",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "_pubRootSpendingKey",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "_pubReadingKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registerZAccount",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint24",
+          "name": "zAccountId",
+          "type": "uint24"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "leaf",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "isBlacklisted",
+          "type": "bool"
+        }
+      ],
+      "name": "updateBlacklistForZAccountId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "zAccountIdTracker",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "zAccountStatus",
+      "outputs": [
+        {
+          "internalType": "enum ZACCOUNT_STATUS",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "zAccounts",
+      "outputs": [
+        {
+          "internalType": "uint224",
+          "name": "_unused",
+          "type": "uint224"
+        },
+        {
+          "internalType": "uint24",
+          "name": "id",
+          "type": "uint24"
+        },
+        {
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "pubRootSpendingKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "pubReadingKey",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "zoneZAccountNullifiers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xe69e9811bf57c4c5f563907c0241013f4578d0bf34e1ff392d15eb99478b00f4",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xd7Df8c6615ccF73f38820272d4a706D628a2e2C1",
+    "transactionIndex": 13,
+    "gasUsed": "2302166",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000020000000000000002000000000000000000000000008004000000020000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000002000000000000000000000000100000000000000000000000000080000000000000000000000000000000000000000000100000",
+    "blockHash": "0x3ed400b9acc35728c1962bf0208e0aa50167bde8e1b2644bae028613cc1d1d76",
+    "transactionHash": "0xe69e9811bf57c4c5f563907c0241013f4578d0bf34e1ff392d15eb99478b00f4",
+    "logs": [
+      {
+        "transactionIndex": 13,
+        "blockNumber": 39389927,
+        "transactionHash": "0xe69e9811bf57c4c5f563907c0241013f4578d0bf34e1ff392d15eb99478b00f4",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x0000000000000000000000005082f249cdb2f2c1ee035e4f423c46ea2dab3ab1"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000147284fa9c26000000000000000000000000000000000000000000000000001861039e8e311d8f000000000000000000000000000000000000000000000061f92a58133c418375000000000000000000000000000000000000000000000000184c91199394f78f000000000000000000000000000000000000000000000061f93eca9836dda975",
+        "logIndex": 35,
+        "blockHash": "0x3ed400b9acc35728c1962bf0208e0aa50167bde8e1b2644bae028613cc1d1d76"
+      }
+    ],
+    "blockNumber": 39389927,
+    "cumulativeGasUsed": "2938918",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    1,
+    "0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd",
+    "0xAbFdb07BC6db782F9bdd6C6BA65ee40081eFA4c4",
+    "0xb376B21d53bc77078dF17CbE6af51B377E6Bae0f"
+  ],
+  "numDeployments": 2,
+  "solcInputHash": "15cb9b361d83a3f33aeee89cd297a569",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"_zAccountVersion\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"pantherPool\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"pantherStaticTree\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"onboardingController\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"masterEoa\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isBlackListed\",\"type\":\"bool\"}],\"name\":\"BlacklistForMasterEoaUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"packedPubRootSpendingKey\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isBlackListed\",\"type\":\"bool\"}],\"name\":\"BlacklistForPubRootSpendingKeyUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint24\",\"name\":\"zAccountId\",\"type\":\"uint24\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isBlackListed\",\"type\":\"bool\"}],\"name\":\"BlacklistForZAccountIdUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint24\",\"name\":\"id\",\"type\":\"uint24\"}],\"name\":\"ZAccountActivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"masterEoa\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint224\",\"name\":\"_unused\",\"type\":\"uint224\"},{\"internalType\":\"uint24\",\"name\":\"id\",\"type\":\"uint24\"},{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"pubRootSpendingKey\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"pubReadingKey\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"struct ZAccountsRegistry.ZAccount\",\"name\":\"zAccount\",\"type\":\"tuple\"}],\"name\":\"ZAccountRegistered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"EIP712_NAME\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"EIP712_SALT\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"EIP712_VERSION\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ONBOARDING_CONTROLLER\",\"outputs\":[{\"internalType\":\"contract IOnboardingController\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OWNER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PANTHER_POOL\",\"outputs\":[{\"internalType\":\"contract IPantherPoolV1\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PANTHER_STATIC_TREE\",\"outputs\":[{\"internalType\":\"contract ITreeRootUpdater\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ZACCOUNT_VERSION\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"inputs\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"privateMessages\",\"type\":\"bytes\"},{\"components\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"a\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"b\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"c\",\"type\":\"tuple\"}],\"internalType\":\"struct SnarkProof\",\"name\":\"proof\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"cachedForestRootIndex\",\"type\":\"uint256\"}],\"name\":\"activateZAccount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"utxoBusQueuePos\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"masterEoas\",\"type\":\"address[]\"},{\"internalType\":\"bool[]\",\"name\":\"isBlackListed\",\"type\":\"bool[]\"}],\"name\":\"batchUpdateBlacklistForMasterEoa\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"packedPubRootSpendingKeys\",\"type\":\"bytes32[]\"},{\"internalType\":\"bool[]\",\"name\":\"isBlackListed\",\"type\":\"bool[]\"}],\"name\":\"batchUpdateBlacklistForPubRootSpendingKey\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDomainSeperator\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isMasterEoaBlacklisted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"isPubRootSpendingKeyBlacklisted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint24\",\"name\":\"\",\"type\":\"uint24\"}],\"name\":\"isZAccountIdBlacklisted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_masterEOA\",\"type\":\"address\"}],\"name\":\"isZAccountWhitelisted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isWhitelisted\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint24\",\"name\":\"\",\"type\":\"uint24\"}],\"name\":\"masterEOAs\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"_pubRootSpendingKey\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"_pubReadingKey\",\"type\":\"tuple\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"registerZAccount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint24\",\"name\":\"zAccountId\",\"type\":\"uint24\"},{\"internalType\":\"bytes32\",\"name\":\"leaf\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"},{\"internalType\":\"bool\",\"name\":\"isBlacklisted\",\"type\":\"bool\"}],\"name\":\"updateBlacklistForZAccountId\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"zAccountIdTracker\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"zAccountStatus\",\"outputs\":[{\"internalType\":\"enum ZACCOUNT_STATUS\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"zAccounts\",\"outputs\":[{\"internalType\":\"uint224\",\"name\":\"_unused\",\"type\":\"uint224\"},{\"internalType\":\"uint24\",\"name\":\"id\",\"type\":\"uint24\"},{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"pubRootSpendingKey\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"pubReadingKey\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"zoneZAccountNullifiers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Pantherprotocol Contributors\",\"kind\":\"dev\",\"methods\":{\"activateZAccount(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256)\":{\"params\":{\"inputs\":\"[14] - magicalConstraint (passed w/o checks)\"}}},\"title\":\"ZAccountsRegistry\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"OWNER()\":{\"notice\":\"The owner who has privileged rights\"}},\"notice\":\"Registry and whitelist of zAccounts allowed to interact with MASP.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/ZAccountsRegistry.sol\":\"ZAccountsRegistry\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/EIP712SignatureVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nabstract contract EIP712SignatureVerifier {\\n    bytes private constant EIP191_VERSION = \\\"\\\\x19\\\\x01\\\";\\n\\n    string public constant EIP712_NAME = \\\"Panther Protocol\\\";\\n    string public constant EIP712_VERSION = \\\"1\\\";\\n\\n    // keccak256(bytes(\\\"PANTHER_EIP712_DOMAIN_SALT\\\"));\\n    bytes32 public constant EIP712_SALT =\\n        0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b;\\n\\n    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)\\\"\\n            )\\n        );\\n\\n    function getDomainSeperator() public view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    EIP712_DOMAIN_TYPEHASH,\\n                    keccak256(bytes(EIP712_NAME)),\\n                    keccak256(bytes(EIP712_VERSION)),\\n                    block.chainid,\\n                    address(this),\\n                    EIP712_SALT\\n                )\\n            );\\n    }\\n\\n    function recover(\\n        bytes32 hash,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal pure returns (address signer) {\\n        signer = ecrecover(hash, v, r, s);\\n        require(signer != address(0), \\\"ECDSA invalid signature\\\");\\n    }\\n\\n    function toTypedDataHash(bytes32 structHash)\\n        internal\\n        view\\n        returns (bytes32)\\n    {\\n        return\\n            keccak256(\\n                abi.encodePacked(\\n                    EIP191_VERSION,\\n                    getDomainSeperator(),\\n                    structHash\\n                )\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0x6c04720d7affe307c10a1c7f369fb1d4e95bf6386b666fd739cb4c6c924c101d\",\"license\":\"BUSL-1.1\"},\"contracts/common/ImmutableOwnable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title Staking\\nabstract contract ImmutableOwnable {\\n    /// @notice The owner who has privileged rights\\n    // solhint-disable-next-line var-name-mixedcase\\n    address public immutable OWNER;\\n\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() {\\n        require(OWNER == msg.sender, \\\"ImmOwn: unauthorized\\\");\\n        _;\\n    }\\n\\n    constructor(address _owner) {\\n        require(_owner != address(0), \\\"ImmOwn: zero owner address\\\");\\n        OWNER = _owner;\\n    }\\n}\\n\",\"keccak256\":\"0x50d471ce507ca3796ff407b52d0dffead3b4eb6c0f0afea9350f712f9c5f1416\",\"license\":\"MIT\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct PluginData {\\n    address contractAddress;\\n    bytes callData;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\",\"keccak256\":\"0xbe5feb34f2f9eb101f2f6b01290b97b0a8696bf64bed4822bbffc65b12b07aff\",\"license\":\"MIT\"},\"contracts/common/UtilsLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.16;\\n\\nlibrary UtilsLib {\\n    function safe24(uint256 n) internal pure returns (uint24) {\\n        require(n < 2**24, \\\"UNSAFE24\\\");\\n        return uint24(n);\\n    }\\n\\n    function safe32(uint256 n) internal pure returns (uint32) {\\n        require(n < 2**32, \\\"UNSAFE32\\\");\\n        return uint32(n);\\n    }\\n\\n    function safe96(uint256 n) internal pure returns (uint96) {\\n        require(n < 2**96, \\\"UNSAFE96\\\");\\n        return uint96(n);\\n    }\\n\\n    function safe128(uint256 n) internal pure returns (uint128) {\\n        require(n < 2**128, \\\"UNSAFE128\\\");\\n        return uint128(n);\\n    }\\n\\n    function safe160(uint256 n) internal pure returns (uint160) {\\n        require(n < 2**160, \\\"UNSAFE160\\\");\\n        return uint160(n);\\n    }\\n\\n    function safe32TimeNow() internal view returns (uint32) {\\n        uint256 t = block.timestamp;\\n        require(t < 2**32, \\\"UNSAFE32TIME\\\");\\n        return uint32(t);\\n    }\\n\\n    function safe32BlockNow() internal view returns (uint32) {\\n        uint256 b = block.number;\\n        require(b < 2**32, \\\"UNSAFE32BLOCK\\\");\\n        return uint32(b);\\n    }\\n\\n    function revertZeroAddress(address account) internal pure {\\n        require(account != address(0), \\\"UNEXPECTED_ZERO_ADDRESS\\\");\\n    }\\n}\\n\",\"keccak256\":\"0x76612fc20a4245d01695ef8b1afccb9376bc61b465d5692785145ce8424d2295\",\"license\":\"MIT\"},\"contracts/protocol/ZAccountsRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"./interfaces/IOnboardingController.sol\\\";\\nimport \\\"./interfaces/IPantherPoolV1.sol\\\";\\nimport \\\"./pantherForest/interfaces/ITreeRootUpdater.sol\\\";\\n\\nimport \\\"./crypto/BabyJubJub.sol\\\";\\nimport { FIELD_SIZE } from \\\"./crypto/SnarkConstants.sol\\\";\\n\\nimport \\\"./zAccountsRegistry/BlacklistedZAccountIdsTree.sol\\\";\\nimport \\\"./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol\\\";\\nimport { ZACCOUNT_STATUS } from \\\"./zAccountsRegistry/Constants.sol\\\";\\n\\nimport \\\"../common/ImmutableOwnable.sol\\\";\\nimport \\\"../common/Types.sol\\\";\\nimport \\\"../common/UtilsLib.sol\\\";\\nimport { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from \\\"./pantherForest/Constants.sol\\\";\\n\\n/**\\n * @title ZAccountsRegistry\\n * @author Pantherprotocol Contributors\\n * @notice Registry and whitelist of zAccounts allowed to interact with MASP.\\n */\\n\\n// solhint-disable contract-name-camelcase\\ncontract ZAccountsRegistry is\\n    ImmutableOwnable,\\n    BlacklistedZAccountIdsTree,\\n    ZAccountsRegeistrationSignatureVerifier\\n{\\n    // The contract is supposed to run behind a proxy DELEGATECALLing it.\\n    // On upgrades, adjust `__gap` to match changes of the storage layout.\\n    // slither-disable-next-line shadowing-state unused-state\\n    uint256[50] private __gap;\\n\\n    // solhint-disable var-name-mixedcase\\n\\n    uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;\\n\\n    IPantherPoolV1 public immutable PANTHER_POOL;\\n    ITreeRootUpdater public immutable PANTHER_STATIC_TREE;\\n    IOnboardingController public immutable ONBOARDING_CONTROLLER;\\n\\n    // solhint-enable var-name-mixedcase\\n\\n    struct ZAccount {\\n        uint224 _unused; // reserved\\n        uint24 id; // the ZAccount id, starts from 0\\n        uint8 version; // ZAccount version\\n        bytes32 pubRootSpendingKey;\\n        bytes32 pubReadingKey;\\n    }\\n\\n    uint256 public zAccountIdTracker;\\n\\n    mapping(bytes32 => uint256) public zoneZAccountNullifiers;\\n    mapping(address => ZACCOUNT_STATUS) public zAccountStatus;\\n    mapping(address => bool) public isMasterEoaBlacklisted;\\n    mapping(bytes32 => bool) public isPubRootSpendingKeyBlacklisted;\\n    mapping(uint24 => bool) public isZAccountIdBlacklisted;\\n\\n    // Mapping from `MasterEoa` to ZAccount (i.e. params of an ZAccount)\\n    mapping(address => ZAccount) public zAccounts;\\n\\n    // Mapping from zAccount Id to Master Eoa\\n    mapping(uint24 => address) public masterEOAs;\\n\\n    event ZAccountRegistered(address masterEoa, ZAccount zAccount);\\n    event ZAccountActivated(uint24 id);\\n    event BlacklistForZAccountIdUpdated(uint24 zAccountId, bool isBlackListed);\\n    event BlacklistForMasterEoaUpdated(address masterEoa, bool isBlackListed);\\n    event BlacklistForPubRootSpendingKeyUpdated(\\n        bytes32 packedPubRootSpendingKey,\\n        bool isBlackListed\\n    );\\n\\n    constructor(\\n        address _owner,\\n        uint8 _zAccountVersion,\\n        address pantherPool,\\n        address pantherStaticTree,\\n        address onboardingController\\n    )\\n        ImmutableOwnable(_owner)\\n        ZAccountsRegeistrationSignatureVerifier(_zAccountVersion)\\n    {\\n        require(\\n            pantherPool != address(0) &&\\n                pantherStaticTree != address(0) &&\\n                onboardingController != address(0),\\n            ERR_INIT_CONTRACT\\n        );\\n\\n        PANTHER_POOL = IPantherPoolV1(pantherPool);\\n        PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);\\n        ONBOARDING_CONTROLLER = IOnboardingController(onboardingController);\\n    }\\n\\n    /* ========== VIEW FUNCTIONS ========== */\\n\\n    function isZAccountWhitelisted(address _masterEOA)\\n        external\\n        view\\n        returns (bool isWhitelisted)\\n    {\\n        ZAccount memory _zAccount = zAccounts[_masterEOA];\\n\\n        bool isZAccountExists = masterEOAs[_zAccount.id] != address(0);\\n\\n        (bool isBlacklisted, ) = _isBlacklisted(\\n            _zAccount.id,\\n            _masterEOA,\\n            _zAccount.pubRootSpendingKey\\n        );\\n\\n        return isZAccountExists && !isBlacklisted;\\n    }\\n\\n    /* ========== EXTERNAL FUNCTIONS ========== */\\n\\n    function registerZAccount(\\n        G1Point memory _pubRootSpendingKey,\\n        G1Point memory _pubReadingKey,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) external {\\n        bytes32 pubRootSpendingKeyPacked = BabyJubJub.pointPack(\\n            _pubRootSpendingKey\\n        );\\n        bytes32 pubReadingKeyPacked = BabyJubJub.pointPack(_pubReadingKey);\\n\\n        require(\\n            !isPubRootSpendingKeyBlacklisted[pubRootSpendingKeyPacked],\\n            ERR_BLACKLIST_PUB_ROOT_SPENDING_KEY\\n        );\\n\\n        address masterEoa = recoverMasterEoa(\\n            pubRootSpendingKeyPacked,\\n            pubReadingKeyPacked,\\n            v,\\n            r,\\n            s\\n        );\\n\\n        require(!isMasterEoaBlacklisted[masterEoa], ERR_BLACKLIST_MASTER_EOA);\\n        require(\\n            zAccountStatus[masterEoa] == ZACCOUNT_STATUS.UNDEFINED,\\n            ERR_DUPLICATED_MASTER_EOA\\n        );\\n\\n        uint24 zAccountId = uint24(_getNextZAccountId());\\n\\n        ZAccount memory _zAccount = ZAccount({\\n            _unused: uint224(0),\\n            id: zAccountId,\\n            version: uint8(ZACCOUNT_VERSION),\\n            pubRootSpendingKey: pubRootSpendingKeyPacked,\\n            pubReadingKey: pubReadingKeyPacked\\n        });\\n\\n        masterEOAs[zAccountId] = masterEoa;\\n        zAccounts[masterEoa] = _zAccount;\\n        zAccountStatus[masterEoa] = ZACCOUNT_STATUS.REGISTERED;\\n\\n        emit ZAccountRegistered(masterEoa, _zAccount);\\n    }\\n\\n    /// @param inputs[0]  - extraInputsHash\\n    /// @param inputs[1]  - zkpAmount\\n    /// @param inputs[2]  - zkpChange (passed w/o checks)\\n    /// @param inputs[3]  - zAccountId\\n    /// @param inputs[4]  - zAccountPrpAmount\\n    /// @param inputs[5]  - zAccountCreateTime (passed w/o checks)\\n    /// @param inputs[6]  - zAccountRootSpendPubKeyX\\n    /// @param inputs[7]  - zAccountRootSpendPubKeyY\\n    /// @param inputs[8]  - zAccountMasterEOA\\n    /// @param inputs[9]  - zAccountNullifier\\n    /// @param inputs[10] - zAccountCommitment\\n    /// @param inputs[11] - kycSignedMessageHash\\n    /// @param inputs[12] - forestMerkleRoot (passed w/o checks)\\n    /// @param inputs[13] - saltHash (passed w/o checks)\\n    /// @param inputs[14] - magicalConstraint (passed w/o checks)\\n    function activateZAccount(\\n        uint256[] calldata inputs,\\n        bytes memory privateMessages,\\n        SnarkProof calldata proof,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256 utxoBusQueuePos) {\\n        {\\n            uint256 extraInputsHash = inputs[0];\\n            bytes memory extraInp = abi.encodePacked(\\n                privateMessages,\\n                cachedForestRootIndex\\n            );\\n            require(\\n                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,\\n                ERR_INVALID_EXTRA_INPUT_HASH\\n            );\\n        }\\n        {\\n            uint256 zAccountPrpAmount = inputs[4];\\n            // No PRP rewards provided on zAccount activation\\n            require(zAccountPrpAmount == 0, ERR_UNEXPECTED_PRP_AMOUNT);\\n        }\\n\\n        uint24 zAccountId = UtilsLib.safe24(inputs[3]);\\n        address zAccountMasterEOA = address(uint160(inputs[8]));\\n\\n        require(\\n            masterEOAs[zAccountId] == zAccountMasterEOA,\\n            ERR_UNKNOWN_ZACCOUNT\\n        );\\n\\n        {\\n            bytes32 zAccountRootSpendPubKey = BabyJubJub.pointPack(\\n                G1Point({ x: inputs[6], y: inputs[7] })\\n            );\\n            (bool isBlacklisted, string memory errMsg) = _isBlacklisted(\\n                zAccountId,\\n                zAccountMasterEOA,\\n                zAccountRootSpendPubKey\\n            );\\n            require(!isBlacklisted, errMsg);\\n        }\\n        {\\n            // Prevent double-activation for the same zone and network\\n            bytes32 zAccountNullifier = bytes32(inputs[9]);\\n            require(\\n                zoneZAccountNullifiers[zAccountNullifier] == 0,\\n                ERR_DUPLICATED_NULLIFIER\\n            );\\n\\n            zoneZAccountNullifiers[zAccountNullifier] = block.number;\\n        }\\n\\n        ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];\\n\\n        // if the status is registered, then change it to activate.\\n        // If status is already activated, it means  Zaccount is activated at least in 1 zone.\\n        if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {\\n            zAccountStatus[zAccountMasterEOA] = ZACCOUNT_STATUS.ACTIVATED;\\n        }\\n\\n        {\\n            uint256 _zkpRewards = _notifyOnboardingController(\\n                zAccountMasterEOA,\\n                uint8(userPrevStatus),\\n                uint8(ZACCOUNT_STATUS.ACTIVATED),\\n                abi.encodePacked(inputs[13])\\n            );\\n            uint256 zkpAmount = inputs[1];\\n            require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);\\n        }\\n\\n        utxoBusQueuePos = _createZAccountUTXO(\\n            inputs,\\n            proof,\\n            privateMessages,\\n            cachedForestRootIndex\\n        );\\n\\n        emit ZAccountActivated(zAccountId);\\n    }\\n\\n    // /* ========== ONLY FOR OWNER FUNCTIONS ========== */\\n\\n    function batchUpdateBlacklistForMasterEoa(\\n        address[] calldata masterEoas,\\n        bool[] calldata isBlackListed\\n    ) external onlyOwner {\\n        require(\\n            masterEoas.length == isBlackListed.length,\\n            ERR_MISMATCH_ARRAYS_LENGTH\\n        );\\n\\n        for (uint256 i = 0; i < masterEoas.length; ) {\\n            require(\\n                isMasterEoaBlacklisted[masterEoas[i]] != isBlackListed[i],\\n                ERR_REPETITIVE_STATUS\\n            );\\n\\n            isMasterEoaBlacklisted[masterEoas[i]] = isBlackListed[i];\\n\\n            emit BlacklistForMasterEoaUpdated(masterEoas[i], isBlackListed[i]);\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    function batchUpdateBlacklistForPubRootSpendingKey(\\n        bytes32[] calldata packedPubRootSpendingKeys,\\n        bool[] calldata isBlackListed\\n    ) external onlyOwner {\\n        require(\\n            packedPubRootSpendingKeys.length == isBlackListed.length,\\n            ERR_MISMATCH_ARRAYS_LENGTH\\n        );\\n\\n        for (uint256 i = 0; i < packedPubRootSpendingKeys.length; ) {\\n            require(\\n                isPubRootSpendingKeyBlacklisted[packedPubRootSpendingKeys[i]] !=\\n                    isBlackListed[i],\\n                ERR_REPETITIVE_STATUS\\n            );\\n\\n            isPubRootSpendingKeyBlacklisted[\\n                packedPubRootSpendingKeys[i]\\n            ] = isBlackListed[i];\\n\\n            emit BlacklistForPubRootSpendingKeyUpdated(\\n                packedPubRootSpendingKeys[i],\\n                isBlackListed[i]\\n            );\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    function updateBlacklistForZAccountId(\\n        uint24 zAccountId,\\n        bytes32 leaf,\\n        bytes32[] calldata proofSiblings,\\n        bool isBlacklisted\\n    ) public onlyOwner {\\n        require(masterEOAs[zAccountId] != address(0), ERR_UNKNOWN_ZACCOUNT);\\n        require(\\n            isZAccountIdBlacklisted[zAccountId] != isBlacklisted,\\n            ERR_REPETITIVE_STATUS\\n        );\\n\\n        bytes32 blacklistedZAccountIdsTreeRoot;\\n\\n        if (isBlacklisted) {\\n            blacklistedZAccountIdsTreeRoot = _addZAccountIdToBlacklist(\\n                zAccountId,\\n                leaf,\\n                proofSiblings\\n            );\\n        } else {\\n            blacklistedZAccountIdsTreeRoot = _removeZAccountIdFromBlacklist(\\n                zAccountId,\\n                leaf,\\n                proofSiblings\\n            );\\n        }\\n\\n        isZAccountIdBlacklisted[zAccountId] = isBlacklisted;\\n\\n        // Trusted contract - no reentrancy guard needed\\n        PANTHER_STATIC_TREE.updateRoot(\\n            blacklistedZAccountIdsTreeRoot,\\n            ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX\\n        );\\n\\n        emit BlacklistForZAccountIdUpdated(zAccountId, isBlacklisted);\\n    }\\n\\n    // /* ========== PRIVATE FUNCTIONS ========== */\\n\\n    function _getNextZAccountId() internal returns (uint256 curId) {\\n        curId = zAccountIdTracker;\\n        zAccountIdTracker = curId & 0xFF < 254\\n            ? curId + 1\\n            : curId + ZACCOUNT_ID_COUNTER_JUMP;\\n    }\\n\\n    function _createZAccountUTXO(\\n        uint256[] calldata inputs,\\n        SnarkProof calldata proof,\\n        bytes memory privateMessages,\\n        uint256 cachedForestRootIndex\\n    ) private returns (uint256 utxoBusQueuePos) {\\n        utxoBusQueuePos = 0;\\n        // Pool is supposed to revert in case of any error\\n        try\\n            // Trusted contract - no reentrancy guard needed\\n            PANTHER_POOL.createZAccountUtxo(\\n                inputs,\\n                proof,\\n                address(ONBOARDING_CONTROLLER),\\n                privateMessages,\\n                cachedForestRootIndex\\n            )\\n        returns (uint256 result) {\\n            utxoBusQueuePos = result;\\n        } catch Error(string memory reason) {\\n            revert(reason);\\n        }\\n    }\\n\\n    function _notifyOnboardingController(\\n        address _user,\\n        uint8 _prevStatus,\\n        uint8 _newStatus,\\n        bytes memory _data\\n    ) private returns (uint256 _zkpRewards) {\\n        // Trusted contract - no reentrancy guard needed\\n        _zkpRewards = ONBOARDING_CONTROLLER.grantRewards(\\n            _user,\\n            _prevStatus,\\n            _newStatus,\\n            _data\\n        );\\n    }\\n\\n    function _isBlacklisted(\\n        uint24 id,\\n        address _masterEOA,\\n        bytes32 pubRootSpendingKey\\n    ) private view returns (bool isBlaklisted, string memory err) {\\n        if (isZAccountIdBlacklisted[id]) {\\n            err = _formatBlackListError(err, ERR_BLACKLIST_ZACCOUNT_ID);\\n        }\\n        if (isMasterEoaBlacklisted[_masterEOA]) {\\n            err = _formatBlackListError(err, ERR_BLACKLIST_MASTER_EOA);\\n        }\\n        if (isPubRootSpendingKeyBlacklisted[pubRootSpendingKey]) {\\n            err = _formatBlackListError(\\n                err,\\n                ERR_BLACKLIST_PUB_ROOT_SPENDING_KEY\\n            );\\n        }\\n\\n        return (isBlaklisted = bytes(err).length > 0 ? true : false, err);\\n    }\\n\\n    function _formatBlackListError(\\n        string memory currentErrMsg,\\n        string memory errToBeAdded\\n    ) private pure returns (string memory newErrMsg) {\\n        return\\n            string(\\n                abi.encodePacked(\\n                    bytes(currentErrMsg).length > 0\\n                        ? string(abi.encodePacked(currentErrMsg, \\\",\\\"))\\n                        : \\\"\\\",\\n                    errToBeAdded\\n                )\\n            );\\n    }\\n\\n    /// @dev Concatenate the strings together and returns the result\\n    function formatBlackListError(\\n        string memory content,\\n        string memory contentToBeAdded,\\n        string memory separator\\n    ) internal pure returns (string memory newErrMsg) {\\n        return\\n            string(\\n                abi.encodePacked(\\n                    bytes(content).length > 0\\n                        ? string(abi.encodePacked(content, separator))\\n                        : \\\"\\\",\\n                    contentToBeAdded\\n                )\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0xc5300352976294e50d1cb75c49a2ffd5428249dddd9c5bc2f3fbb618042cd27f\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/crypto/BabyJubJub.sol\":{\"content\":\"// SPDX-License-Identifier: GPL\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// Implementer name - yondonfu\\n// Link to the implementation - https://github.com/yondonfu/sol-baby-jubjub/blob/master/contracts/CurveBabyJubJub.sol\\npragma solidity ^0.8.16;\\nimport \\\"../../common/Types.sol\\\";\\nimport { FIELD_SIZE } from \\\"./SnarkConstants.sol\\\";\\n\\nlibrary BabyJubJub {\\n    // Curve parameters\\n    // E: 168700x^2 + y^2 = 1 + 168696x^2y^2\\n    // A = 168700\\n    uint256 public constant A = 0x292FC;\\n    // D = 168696\\n    uint256 public constant D = 0x292F8;\\n    // Prime Q = 21888242871839275222246405745257275088548364400416034343698204186575808495617\\n    // slither-disable-next-line too-many-digits\\n    uint256 public constant Q =\\n        0x30644E72E131A029B85045B68181585D2833E84879B9709143E1F593F0000001;\\n\\n    // @dev Base point generates the subgroup of points P of Baby Jubjub satisfying l * P = O.\\n    // That is, it generates the set of points of order l and origin O.\\n    // slither-disable-next-line too-many-digits\\n    uint256 public constant BASE8_X =\\n        5299619240641551281634865583518297030282874472190772894086521144482721001553;\\n    // slither-disable-next-line too-many-digits\\n    uint256 public constant BASE8_Y =\\n        16950150798460657717958625567821834550301663161624707787222815936182638968203;\\n\\n    // pm1d2 = (SNARK_FIELD - 1) >> 1 // same as `negative_one / 2\\n    // slither-disable-next-line too-many-digits\\n    uint256 public constant PM1D2 =\\n        10944121435919637611123202872628637544274182200208017171849102093287904247808;\\n\\n    // TODO: remove dependency on BabyJubJub as a standalone contract\\n    function pointPack(G1Point memory point)\\n        internal\\n        pure\\n        returns (bytes32 _packed)\\n    {\\n        _packed = bytes32(point.y);\\n\\n        if (point.x > PM1D2) {\\n            _packed = bytes32(\\n                point.y |\\n                    0x8000000000000000000000000000000000000000000000000000000000000000\\n            );\\n        }\\n    }\\n\\n    /**\\n     * @dev Add 2 points on baby jubjub curve\\n     * Formulae for adding 2 points on a twisted Edwards curve:\\n     * x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)\\n     * y3 = (y1y2 - ax1x2) / (1 - dx1x2y1y2)\\n     */\\n    function pointAdd(G1Point memory g1, G1Point memory g2)\\n        internal\\n        view\\n        returns (G1Point memory)\\n    {\\n        uint256 x3 = 0;\\n        uint256 y3 = 0;\\n        if (g1.x == 0 && g1.y == 0) {\\n            return G1Point(x3, y3);\\n        }\\n\\n        if (g2.x == 0 && g1.y == 0) {\\n            return G1Point(x3, y3);\\n        }\\n\\n        uint256 x1x2 = mulmod(g1.x, g2.x, Q);\\n        uint256 y1y2 = mulmod(g1.y, g2.y, Q);\\n        uint256 dx1x2y1y2 = mulmod(D, mulmod(x1x2, y1y2, Q), Q);\\n        uint256 x3Num = addmod(mulmod(g1.x, g2.y, Q), mulmod(g1.y, g2.x, Q), Q);\\n        uint256 y3Num = submod(y1y2, mulmod(A, x1x2, Q), Q);\\n\\n        x3 = mulmod(x3Num, inverse(addmod(1, dx1x2y1y2, Q)), Q);\\n        y3 = mulmod(y3Num, inverse(submod(1, dx1x2y1y2, Q)), Q);\\n        return G1Point(x3, y3);\\n    }\\n\\n    /**\\n     * @dev Perform modular subtraction\\n     */\\n    function submod(\\n        uint256 _a,\\n        uint256 _b,\\n        uint256 _mod\\n    ) internal pure returns (uint256) {\\n        uint256 aNN = _a;\\n\\n        if (_a <= _b) {\\n            aNN += _mod;\\n        }\\n\\n        return addmod(aNN - _b, 0, _mod);\\n    }\\n\\n    /**\\n     * @dev Compute modular inverse of a number\\n     */\\n    function inverse(uint256 _a) internal view returns (uint256) {\\n        // We can use Euler's theorem instead of the extended Euclidean algorithm\\n        // Since m = Q and Q is prime we have: a^-1 = a^(m - 2) (mod m)\\n        return expmod(_a, Q - 2, Q);\\n    }\\n\\n    /**\\n     * @dev Helper function to call the bigModExp precompile\\n     */\\n    function expmod(\\n        uint256 _b,\\n        uint256 _e,\\n        uint256 _m\\n    ) internal view returns (uint256 o) {\\n        // solhint-disable no-inline-assembly\\n        // slither-disable-next-line assembly\\n        assembly {\\n            let memPtr := mload(0x40)\\n            mstore(memPtr, 0x20) // Length of base _b\\n            mstore(add(memPtr, 0x20), 0x20) // Length of exponent _e\\n            mstore(add(memPtr, 0x40), 0x20) // Length of modulus _m\\n            mstore(add(memPtr, 0x60), _b) // Base _b\\n            mstore(add(memPtr, 0x80), _e) // Exponent _e\\n            mstore(add(memPtr, 0xa0), _m) // Modulus _m\\n\\n            // The bigModExp precompile is at 0x05\\n            let success := staticcall(gas(), 0x05, memPtr, 0xc0, memPtr, 0x20)\\n            switch success\\n            case 0 {\\n                revert(0x0, 0x0)\\n            }\\n            default {\\n                o := mload(memPtr)\\n            }\\n        }\\n        // solhint-enable no-inline-assembly\\n    }\\n\\n    function mulPointEscalar(G1Point memory point, uint256 scalar)\\n        internal\\n        view\\n        returns (G1Point memory r)\\n    {\\n        r.x = 0;\\n        r.y = 1;\\n\\n        uint256 rem = scalar;\\n        G1Point memory exp = point;\\n\\n        while (rem != uint256(0)) {\\n            if ((rem & 1) == 1) {\\n                r = pointAdd(r, exp);\\n            }\\n            exp = pointAdd(exp, exp);\\n            rem = rem >> 1;\\n        }\\n        r.x = r.x % Q;\\n        r.y = r.y % Q;\\n\\n        return r;\\n    }\\n\\n    function isG1PointLowerThanFieldSize(uint256[2] memory point)\\n        internal\\n        pure\\n        returns (bool)\\n    {\\n        return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;\\n    }\\n}\\n\",\"keccak256\":\"0x97405a0dad4e7cbc9dd13227c9e832793e065120a034719d3cfb6c15dd4693fb\",\"license\":\"GPL\"},\"contracts/protocol/crypto/Poseidon.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\n// This is a stub to keep solc happy; the actual code is generated\\n// using poseidon_gencontract.js from circomlibjs.\\n\\nlibrary PoseidonT3 {\\n    function poseidon(bytes32[2] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT4 {\\n    function poseidon(bytes32[3] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT5 {\\n    function poseidon(bytes32[4] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT6 {\\n    function poseidon(bytes32[5] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0x85ba9420af1dcb1218b655c16044d163c9b070ff5913da034a9961e0e8c5aaf2\",\"license\":\"MIT\"},\"contracts/protocol/crypto/PoseidonHashers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { FIELD_SIZE } from \\\"./SnarkConstants.sol\\\";\\nimport \\\"./Poseidon.sol\\\";\\n\\nlibrary PoseidonHashers {\\n    string private constant ERR_INPUT_NOT_IN_FIELD =\\n        \\\"PoseidonHasher: input not in field\\\";\\n\\n    function poseidonT3(bytes32[2] memory input)\\n        internal\\n        pure\\n        returns (bytes32)\\n    {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE && uint256(input[1]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT3.poseidon(input);\\n    }\\n\\n    function poseidonT4(bytes32[3] memory input)\\n        internal\\n        pure\\n        returns (bytes32)\\n    {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT4.poseidon(input);\\n    }\\n\\n    function poseidonT5(bytes32[4] memory input)\\n        internal\\n        pure\\n        returns (bytes32)\\n    {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE &&\\n                uint256(input[3]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT5.poseidon(input);\\n    }\\n\\n    function poseidonT6(bytes32[5] memory input)\\n        internal\\n        pure\\n        returns (bytes32)\\n    {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE &&\\n                uint256(input[3]) < FIELD_SIZE &&\\n                uint256(input[4]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT6.poseidon(input);\\n    }\\n}\\n\",\"keccak256\":\"0xd1729091f690c784f4666c9ce46f8c6441c8b364645eb0dfe5d09a31ac9ed84f\",\"license\":\"MIT\"},\"contracts/protocol/crypto/SnarkConstants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// solhint-disable var-name-mixedcase\\npragma solidity ^0.8.16;\\n\\n// @dev Order of alt_bn128 and the field prime of Baby Jubjub and Poseidon hash\\nuint256 constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;\\n\\n// @dev Field prime of alt_bn128\\nuint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;\\n\",\"keccak256\":\"0x8c43ddbf720c346b9e56de0cd59eda4b345d18a15b9b131ba82b22efc8630098\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/errMsgs/ZAccountsRegistryErrMsgs.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nstring constant ERR_INIT_CONTRACT = \\\"ZAR:init\\\";\\n\\nstring constant ERR_BLACKLIST_ZACCOUNT_ID = \\\"ZAR:E1\\\";\\nstring constant ERR_BLACKLIST_MASTER_EOA = \\\"ZAR:E2\\\";\\nstring constant ERR_BLACKLIST_PUB_ROOT_SPENDING_KEY = \\\"ZAR:E3\\\";\\n\\nstring constant ERR_DUPLICATED_MASTER_EOA = \\\"ZAR:E4\\\";\\nstring constant ERR_DUPLICATED_NULLIFIER = \\\"ZAR:E5\\\";\\n\\nstring constant ERR_UNKNOWN_ZACCOUNT = \\\"ZAR:E6\\\";\\n\\nstring constant ERR_MISMATCH_ARRAYS_LENGTH = \\\"ZAR:E7\\\";\\nstring constant ERR_REPETITIVE_STATUS = \\\"ZAR:E8\\\";\\n\\nstring constant ERR_INVALID_ZACCOUNT_FLAG_POSITION = \\\"ZAR:E9\\\";\\nstring constant ERR_TOO_LARGE_LEAF_INPUTS = \\\"ZAR:E10\\\";\\n\\nstring constant ERR_INVALID_EXTRA_INPUT_HASH = \\\"ZAR:E11\\\";\\nstring constant ERR_UNEXPECTED_ZKP_AMOUNT = \\\"ZAR:E12\\\";\\nstring constant ERR_UNEXPECTED_PRP_AMOUNT = \\\"ZAR:E13\\\";\\nstring constant ERR_ZERO_ZACCOUNT_COMMIT = \\\"ZAR:E14\\\";\\nstring constant ERR_ZERO_KYC_MSG_HASH = \\\"ZAR:E15\\\";\\n\",\"keccak256\":\"0x8b0a705a2de256222034a6165e086eb899f226adc3afffa20e4677c63602f2a1\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/interfaces/IOnboardingController.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { SnarkProof } from \\\"../../common/Types.sol\\\";\\n\\ninterface IOnboardingController {\\n    function grantRewards(\\n        address _user,\\n        uint8 prevStatus,\\n        uint8 newStatus,\\n        bytes memory _data\\n    ) external returns (uint256 _userZkpRewardAlloc);\\n}\\n\",\"keccak256\":\"0x7a0e2b6331d04950d75c1555e46251b6d587c52e488a38c0d5d47e2ed5382e95\",\"license\":\"MIT\"},\"contracts/protocol/interfaces/IPantherPoolV1.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { SnarkProof } from \\\"../../common/Types.sol\\\";\\nimport { LockData } from \\\"../../common/Types.sol\\\";\\n\\ninterface IPantherPoolV1 {\\n    function createZAccountUtxo(\\n        uint256[] calldata inputs,\\n        SnarkProof calldata proof,\\n        address zkpPayer,\\n        bytes memory secretMessage,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256);\\n\\n    function unlockAssetFromVault(LockData calldata data) external;\\n}\\n\",\"keccak256\":\"0x4a08d7480699e9344a52fe389e7d587fa676dd0e1032d6c56665a18da76f193c\",\"license\":\"MIT\"},\"contracts/protocol/pantherForest/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\n// `PantherForest` tree leafs indices (leafs store specific merkle trees roots)\\nuint256 constant TAXI_TREE_FOREST_LEAF_INDEX = 0;\\nuint256 constant BUS_TREE_FOREST_LEAF_INDEX = 1;\\nuint256 constant FERRY_TREE_FOREST_LEAF_INDEX = 2;\\nuint256 constant STATIC_TREE_FOREST_LEAF_INDEX = 3;\\n\\n// `PantherStaticTree` leafs indices (leafs store specific merkle trees roots)\\nuint256 constant ZASSET_STATIC_LEAF_INDEX = 0;\\nuint256 constant ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX = 1;\\nuint256 constant ZNETWORK_STATIC_LEAF_INDEX = 2;\\nuint256 constant ZZONE_STATIC_LEAF_INDEX = 3;\\nuint256 constant PROVIDERS_KEYS_STATIC_LEAF_INDEX = 4;\\n\",\"keccak256\":\"0x418cf4af2f447d34f87043ba87b1c1901a79e4a15902fd9a26f0ee480d410674\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/pantherForest/interfaces/ITreeRootGetter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\ninterface ITreeRootGetter {\\n    function getRoot() external view returns (bytes32);\\n}\\n\",\"keccak256\":\"0xc6bb37fe4059cfe13c15f4c1d324b2de68a48348e136bf6cc72421f4721dc21d\",\"license\":\"MIT\"},\"contracts/protocol/pantherForest/interfaces/ITreeRootUpdater.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\ninterface ITreeRootUpdater {\\n    function updateRoot(bytes32 updatedLeaf, uint256 leafIndex) external;\\n}\\n\",\"keccak256\":\"0x4370b8a771095734709c5a2d7d920bc550beb91706364f2bdb8cb451cc539dbb\",\"license\":\"MIT\"},\"contracts/protocol/pantherForest/merkleTrees/BinaryUpdatableTree.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.16;\\n\\n// @notice The \\\"binary binary tree\\\" populated with zero leaf values\\n\\n/**\\n * @title BinaryIncrementalUpdatableMerkleTree\\n * @notice\\n * @dev\\n */\\nabstract contract BinaryUpdatableTree {\\n    /**\\n     * @dev Update an existing leaf\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param newLeaf New leaf.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return _newRoot The new root after updating the tree\\n     */\\n    function update(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        bytes32 newLeaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bytes32 _newRoot) {\\n        require(newLeaf != leaf, \\\"BIUT: New leaf cannot be equal the old one\\\");\\n        require(\\n            verify(curRoot, leaf, leafIndex, proofSiblings),\\n            \\\"BIUT: Leaf is not part of the tree\\\"\\n        );\\n\\n        _newRoot = newLeaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _newRoot = hash([_newRoot, proofSiblings[i]]);\\n            } else {\\n                _newRoot = hash([proofSiblings[i], _newRoot]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    /**\\n     * @dev Verify if the path is correct and the leaf is part of the tree.\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return True or false.\\n     */\\n    function verify(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bool) {\\n        // equal to 2**proofSiblings.length\\n        uint256 leavesNum = 1 << proofSiblings.length;\\n        require(leafIndex < leavesNum, \\\"BIUT: invalid leaf index\\\");\\n\\n        bytes32 _hash = leaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _hash = hash([_hash, proofSiblings[i]]);\\n            } else {\\n                _hash = hash([proofSiblings[i], _hash]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n\\n        return curRoot == 0 ? _hash == zeroRoot() : _hash == curRoot;\\n    }\\n\\n    function zeroRoot() internal pure virtual returns (bytes32);\\n\\n    function hash(bytes32[2] memory input)\\n        internal\\n        pure\\n        virtual\\n        returns (bytes32);\\n}\\n\",\"keccak256\":\"0x420ed9477324ce5cdf04329938a7ec1e4687150b9bd273fc0e5f9123e1fa375d\",\"license\":\"MIT\"},\"contracts/protocol/zAccountsRegistry/BlacklistedZAccountIdsTree.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"../pantherForest/interfaces/ITreeRootGetter.sol\\\";\\n\\nimport \\\"../pantherForest/merkleTrees/BinaryUpdatableTree.sol\\\";\\nimport \\\"../errMsgs/ZAccountsRegistryErrMsgs.sol\\\";\\n\\nimport \\\"../crypto/PoseidonHashers.sol\\\";\\nimport { FIELD_SIZE } from \\\"../crypto/SnarkConstants.sol\\\";\\n\\nabstract contract BlacklistedZAccountIdsTree is\\n    BinaryUpdatableTree,\\n    ITreeRootGetter\\n{\\n    // The current root of merkle tree.\\n    // If it's undefined, the `zeroRoot()` shall be called.\\n    bytes32 private _currentRoot;\\n\\n    function getRoot() external view returns (bytes32) {\\n        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;\\n    }\\n\\n    function _getZAccountFlagAndLeafIndexes(uint24 zAccountId)\\n        internal\\n        pure\\n        returns (uint256 flagIndex, uint256 leafIndex)\\n    {\\n        // getting index which is between 0 and 253\\n        flagIndex = zAccountId & 0xFF;\\n\\n        require(\\n            flagIndex >= 0 && flagIndex < 254,\\n            ERR_INVALID_ZACCOUNT_FLAG_POSITION\\n        );\\n\\n        // getting the 16 MSB from uint24\\n        leafIndex = zAccountId >> 8;\\n    }\\n\\n    function _addZAccountIdToBlacklist(\\n        uint24 zAccountId,\\n        bytes32 leaf,\\n        bytes32[] memory proofSiblings\\n    ) internal returns (bytes32 _updatedRoot) {\\n        (uint256 flagIndex, uint256 leafIndex) = _getZAccountFlagAndLeafIndexes(\\n            zAccountId\\n        );\\n\\n        uint256 newLeaf = uint256(leaf) | (1 << flagIndex);\\n\\n        _updatedRoot = update(\\n            _currentRoot,\\n            leaf,\\n            bytes32(newLeaf),\\n            leafIndex,\\n            proofSiblings\\n        );\\n\\n        _currentRoot = _updatedRoot;\\n    }\\n\\n    function _removeZAccountIdFromBlacklist(\\n        uint24 zAccountId,\\n        bytes32 leaf,\\n        bytes32[] memory proofSiblings\\n    ) internal returns (bytes32 _updatedRoot) {\\n        (uint256 flagIndex, uint256 leafIndex) = _getZAccountFlagAndLeafIndexes(\\n            zAccountId\\n        );\\n\\n        uint256 newLeaf = uint256(leaf) & ~(1 << flagIndex);\\n\\n        _updatedRoot = update(\\n            _currentRoot,\\n            leaf,\\n            bytes32(newLeaf),\\n            leafIndex,\\n            proofSiblings\\n        );\\n\\n        _currentRoot = _updatedRoot;\\n    }\\n\\n    function hash(bytes32[2] memory input)\\n        internal\\n        pure\\n        override\\n        returns (bytes32)\\n    {\\n        return PoseidonHashers.poseidonT3(input);\\n    }\\n\\n    //@dev returns the root of tree with depth 16 where each leaf is 0\\n    function zeroRoot() internal pure override returns (bytes32) {\\n        /**\\n        '0x0000000000000000000000000000000000000000000000000000000000000000'   Level 0\\n        '0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864'   Level 1\\n        '0x1069673dcdb12263df301a6ff584a7ec261a44cb9dc68df067a4774460b1f1e1'   Level 2\\n        '0x18f43331537ee2af2e3d758d50f72106467c6eea50371dd528d57eb2b856d238'   Level 3\\n        '0x07f9d837cb17b0d36320ffe93ba52345f1b728571a568265caac97559dbc952a'   Level 4\\n        '0x2b94cf5e8746b3f5c9631f4c5df32907a699c58c94b2ad4d7b5cec1639183f55'   Level 5\\n        '0x2dee93c5a666459646ea7d22cca9e1bcfed71e6951b953611d11dda32ea09d78'   Level 6\\n        '0x078295e5a22b84e982cf601eb639597b8b0515a88cb5ac7fa8a4aabe3c87349d'   Level 7\\n        '0x2fa5e5f18f6027a6501bec864564472a616b2e274a41211a444cbe3a99f3cc61'   Level 8\\n        '0x0e884376d0d8fd21ecb780389e941f66e45e7acce3e228ab3e2156a614fcd747'   Level 9\\n        '0x1b7201da72494f1e28717ad1a52eb469f95892f957713533de6175e5da190af2'   Level 10\\n        '0x1f8d8822725e36385200c0b201249819a6e6e1e4650808b5bebc6bface7d7636'   Level 11\\n        '0x2c5d82f66c914bafb9701589ba8cfcfb6162b0a12acf88a8d0879a0471b5f85a'   Level 12\\n        '0x14c54148a0940bb820957f5adf3fa1134ef5c4aaa113f4646458f270e0bfbfd0'   Level 13\\n        '0x190d33b12f986f961e10c0ee44d8b9af11be25588cad89d416118e4bf4ebe80c'   Level 14\\n        '0x22f98aa9ce704152ac17354914ad73ed1167ae6596af510aa5b3649325e06c92'   Level 15\\n         */\\n        return\\n            bytes32(\\n                uint256(\\n                    0x2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323\\n                )\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0x84122c44a1a1d66404efa1bc4f11e05b36b6429015b66e5af347b1a237b76e15\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/zAccountsRegistry/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\n// solhint-disable var-name-mixedcase\\n// solhint-disable contract-name-camelcase\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.16;\\n\\nenum ZACCOUNT_STATUS {\\n    UNDEFINED,\\n    REGISTERED,\\n    ACTIVATED\\n}\\n\",\"keccak256\":\"0xba4925a0d1aae5045fce67e05ff018ad93d509a59a47a5efaaea2f3c16f13700\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"../../common/EIP712SignatureVerifier.sol\\\";\\n\\nabstract contract ZAccountsRegeistrationSignatureVerifier is\\n    EIP712SignatureVerifier\\n{\\n    // solhint-disable var-name-mixedcase\\n\\n    bytes32 internal constant REGISTRATION_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"Registration(bytes32 pubRootSpendingKey,bytes32 pubReadingKey,uint256 version)\\\"\\n            )\\n        );\\n\\n    uint8 public immutable ZACCOUNT_VERSION;\\n\\n    // solhint-enable var-name-mixedcase\\n\\n    constructor(uint8 zAccountVersion) {\\n        ZACCOUNT_VERSION = zAccountVersion;\\n    }\\n\\n    function getRegistrationDataHash(\\n        bytes32 _pubRootSpendingKey,\\n        bytes32 _pubReadingKey\\n    ) internal view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    REGISTRATION_TYPEHASH,\\n                    _pubRootSpendingKey,\\n                    _pubReadingKey,\\n                    uint256(ZACCOUNT_VERSION)\\n                )\\n            );\\n    }\\n\\n    function recoverMasterEoa(\\n        bytes32 _pubRootSpendingKey,\\n        bytes32 _pubReadingKey,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal view returns (address) {\\n        bytes32 registrationDataHash = getRegistrationDataHash(\\n            _pubRootSpendingKey,\\n            _pubReadingKey\\n        );\\n\\n        bytes32 typedDataHash = toTypedDataHash(registrationDataHash);\\n\\n        return recover(typedDataHash, v, r, s);\\n    }\\n}\\n\",\"keccak256\":\"0xadcbda6f418cbbca9cca69353ed48780369c4f78e44cca6ce5543d247ca6f8a1\",\"license\":\"BUSL-1.1\"}},\"version\":1}",
+  "bytecode": "0x6101206040523480156200001257600080fd5b5060405162002b4038038062002b40833981016040819052620000359162000159565b83856001600160a01b038116620000935760405162461bcd60e51b815260206004820152601a60248201527f496d6d4f776e3a207a65726f206f776e6572206164647265737300000000000060448201526064015b60405180910390fd5b6001600160a01b0390811660805260ff90911660a052831615801590620000c257506001600160a01b03821615155b8015620000d757506001600160a01b03811615155b604051806040016040528060088152602001671690548e9a5b9a5d60c21b81525090620001195760405162461bcd60e51b81526004016200008a9190620001d0565b506001600160a01b0392831660c05290821660e052166101005250620002209050565b80516001600160a01b03811681146200015457600080fd5b919050565b600080600080600060a086880312156200017257600080fd5b6200017d866200013c565b9450602086015160ff811681146200019457600080fd5b9350620001a4604087016200013c565b9250620001b4606087016200013c565b9150620001c4608087016200013c565b90509295509295909350565b600060208083528351808285015260005b81811015620001ff57858101830151858201604001528201620001e1565b506000604082860101526040601f19601f8301168501019250505092915050565b60805160a05160c05160e0516101005161289c620002a4600039600081816103610152818161182301526118ee01526000818161044b015261127801526000818161038801526118bb0152600081816104a2015281816114b00152611d170152600081816101c8015281816109cd01528181610d1a0152611086015261289c6000f3fe608060405234801561001057600080fd5b50600436106101985760003560e01c80638f3e52de116100e3578063c99c07561161008c578063cd14c8b111610066578063cd14c8b1146104d6578063eccec5a8146104e9578063f1fe9a471461050957600080fd5b8063c99c075614610446578063cbe10bf01461046d578063cc577f661461049d57600080fd5b8063b463c7cb116100bd578063b463c7cb146103f0578063b8ef7fb714610413578063c7a629de1461043357600080fd5b80638f3e52de14610383578063923d464a146103aa578063adc617f7146103cd57600080fd5b80633b2fb7a8116101455780635ca1e1651161011f5780635ca1e165146102c757806360314315146102cf57806384ff57581461035c57600080fd5b80633b2fb7a8146102595780634970d87c146102955780634a0997f31461029e57600080fd5b806320379ee51161017657806320379ee51461021757806320edf18c1461021f57806322c9531a1461024657600080fd5b806303e520831461019d578063117803e3146101c35780631dd5be0314610202575b600080fd5b6101b06101ab366004612132565b61052c565b6040519081526020015b60405180910390f35b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016101ba565b61021561021036600461220e565b6109cb565b005b6101b0610c18565b6101b07f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b81565b61021561025436600461220e565b610d18565b6102886040518060400160405280601081526020016f14185b9d1a195c88141c9bdd1bd8dbdb60821b81525081565b6040516101ba91906122ca565b6101b060335481565b6101ea6102ac3660046122f7565b603a602052600090815260409020546001600160a01b031681565b6101b0610fa7565b61031e6102dd366004612312565b6039602052600090815260409020805460018201546002909201546001600160e01b03821692600160e01b830462ffffff1692600160f81b900460ff169185565b604080516001600160e01b03909616865262ffffff909416602086015260ff909216928401929092526060830191909152608082015260a0016101ba565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6103bd6103b8366004612312565b610fdc565b60405190151581526020016101ba565b6103bd6103db3660046122f7565b60386020526000908152604090205460ff1681565b6103bd6103fe366004612312565b60366020526000908152604090205460ff1681565b6101b061042136600461233b565b60346020526000908152604090205481565b610215610441366004612364565b611084565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b61049061047b366004612312565b60356020526000908152604090205460ff1681565b6040516101ba91906123e9565b6104c47f000000000000000000000000000000000000000000000000000000000000000081565b60405160ff90911681526020016101ba565b6102156104e4366004612460565b611324565b610288604051806040016040528060018152602001603160f81b81525081565b6103bd61051736600461233b565b60376020526000908152604090205460ff1681565b60008086866000818110610542576105426124bf565b905060200201359050600085846040516020016105609291906124d5565b60408051601f19818403018152919052805160208201209091506105a5907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001906124f7565b82146040518060400160405280600781526020017f5a41523a45313100000000000000000000000000000000000000000000000000815250906106045760405162461bcd60e51b81526004016105fb91906122ca565b60405180910390fd5b50505060008686600481811061061c5761061c6124bf565b905060200201359050806000146040518060400160405280600781526020017f5a41523a453133000000000000000000000000000000000000000000000000008152509061067d5760405162461bcd60e51b81526004016105fb91906122ca565b505060006106a387876003818110610697576106976124bf565b90506020020135611663565b90506000878760088181106106ba576106ba6124bf565b62ffffff85166000908152603a602090815260409182902054825180840190935260068352652d20a91d229b60d11b838301529202939093013593506001600160a01b0380851691161490506107235760405162461bcd60e51b81526004016105fb91906122ca565b50600061077560405180604001604052808b8b6006818110610747576107476124bf565b9050602002013581526020018b8b6007818110610766576107666124bf565b905060200201358152506116bc565b90506000806107858585856116fc565b91509150811581906107aa5760405162461bcd60e51b81526004016105fb91906122ca565b505050506000888860098181106107c3576107c36124bf565b9050602002013560001b905060346000828152602001908152602001600020546000146040518060400160405280600681526020017f5a41523a453500000000000000000000000000000000000000000000000000008152509061083a5760405162461bcd60e51b81526004016105fb91906122ca565b5060009081526034602090815260408083204390556001600160a01b0384168352603590915290205460ff16600181600281111561087a5761087a6123d3565b036108a3576001600160a01b0382166000908152603560205260409020805460ff191660021790555b60006108fd838360028111156108bb576108bb6123d3565b60028d8d600d8181106108d0576108d06124bf565b905060200201356040516020016108e991815260200190565b604051602081830303815290604052611809565b905060008a8a6001818110610914576109146124bf565b9050602002013590508082146040518060400160405280600781526020017f5a41523a45313200000000000000000000000000000000000000000000000000815250906109745760405162461bcd60e51b81526004016105fb91906122ca565b5050506109848989888a896118a1565b60405162ffffff851681529094507fdc02c3befffd2a4f92511c89886e8238193ede29a8939bf8c631ba549eeafb209060200160405180910390a150505095945050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610a3a5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b6040805180820190915260068152655a41523a453760d01b6020820152838214610a775760405162461bcd60e51b81526004016105fb91906122ca565b5060005b83811015610c1157828282818110610a9557610a956124bf565b9050602002016020810190610aaa9190612519565b151560376000878785818110610ac257610ac26124bf565b90506020020135815260200190815260200160002060009054906101000a900460ff1615151415604051806040016040528060068152602001650b482a4748a760d31b81525090610b265760405162461bcd60e51b81526004016105fb91906122ca565b50828282818110610b3957610b396124bf565b9050602002016020810190610b4e9190612519565b60376000878785818110610b6457610b646124bf565b90506020020135815260200190815260200160002060006101000a81548160ff0219169083151502179055507f57836c6e28b7607fcb54ef9169c69f14460bb2d70d40f2c62d9c20d2c9ba3d98858583818110610bc357610bc36124bf565b90506020020135848484818110610bdc57610bdc6124bf565b9050602002016020810190610bf19190612519565b6040805192835290151560208301520160405180910390a1600101610a7b565b5050505050565b60006040518060800160405280605f8152602001612831605f91398051602091820120604080518082018252601081526f14185b9d1a195c88141c9bdd1bd8dbdb60821b908401528051808201825260018152603160f81b908401528051928301919091527fbd6ac11eb0311bac3ff64366cc16db374956ada90d1e2aa6bb4faed25fc1d0cd908201527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a08201527f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b60c082015260e00160405160208183030381529060405280519060200120905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610d875760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b6040805180820190915260068152655a41523a453760d01b6020820152838214610dc45760405162461bcd60e51b81526004016105fb91906122ca565b5060005b83811015610c1157828282818110610de257610de26124bf565b9050602002016020810190610df79190612519565b151560366000878785818110610e0f57610e0f6124bf565b9050602002016020810190610e249190612312565b6001600160a01b03166001600160a01b0316815260200190815260200160002060009054906101000a900460ff1615151415604051806040016040528060068152602001650b482a4748a760d31b81525090610e935760405162461bcd60e51b81526004016105fb91906122ca565b50828282818110610ea657610ea66124bf565b9050602002016020810190610ebb9190612519565b60366000878785818110610ed157610ed16124bf565b9050602002016020810190610ee69190612312565b6001600160a01b031681526020810191909152604001600020805460ff19169115159190911790557f317b703ab5e9a8a94f27c3e386e8fd5e8e69bde97b4cabf3de6986ab31432f9f858583818110610f4157610f416124bf565b9050602002016020810190610f569190612312565b848484818110610f6857610f686124bf565b9050602002016020810190610f7d9190612519565b604080516001600160a01b03909316835290151560208301520160405180910390a1600101610dc8565b6000805415610fb7575060005490565b507f2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba732390565b6001600160a01b038181166000908152603960209081526040808320815160a08101835281546001600160e01b0381168252600160e01b810462ffffff16828601818152600160f81b90920460ff168386015260018401546060840190815260029094015460808401528652603a90945291842054925190519394919392909116151591849161106d9187906116fc565b50905081801561107b575080155b95945050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146110f35760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b62ffffff85166000908152603a602090815260409182902054825180840190935260068352652d20a91d229b60d11b918301919091526001600160a01b031661114f5760405162461bcd60e51b81526004016105fb91906122ca565b5062ffffff851660009081526038602090815260409182902054825180840190935260068352650b482a4748a760d31b9183019190915260ff161515821515036111ac5760405162461bcd60e51b81526004016105fb91906122ca565b50600081156111fa576111f386868686808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152506119b092505050565b905061123b565b61123886868686808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152506119ea92505050565b90505b62ffffff861660009081526038602052604090819020805460ff19168415151790555163c2e3e62b60e01b815260048101829052600160248201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063c2e3e62b90604401600060405180830381600087803b1580156112c457600080fd5b505af11580156112d8573d6000803e3d6000fd5b50506040805162ffffff8a16815285151560208201527fe537daabb339ea043fe1498519b689d76b7a2a3f067b86d7eef6e3f12cf0a5dc935001905060405180910390a1505050505050565b600061132f866116bc565b9050600061133c866116bc565b60008381526037602090815260409182902054825180840190935260068352655a41523a453360d01b918301919091529192509060ff16156113915760405162461bcd60e51b81526004016105fb91906122ca565b5060006113a18383888888611a15565b6001600160a01b03811660009081526036602090815260409182902054825180840190935260068352652d20a91d229960d11b918301919091529192509060ff16156114005760405162461bcd60e51b81526004016105fb91906122ca565b506001600160a01b03811660009081526035602052604081205460ff16600281111561142e5761142e6123d3565b146040518060400160405280600681526020017f5a41523a45340000000000000000000000000000000000000000000000000000815250906114835760405162461bcd60e51b81526004016105fb91906122ca565b50600061148e611a49565b6040805160a081018252600080825262ffffff808516602080850182815260ff7f00000000000000000000000000000000000000000000000000000000000000008116878901908152606088018e8152608089018e8152958852603a855289882080546001600160a01b038f167fffffffffffffffffffffffff000000000000000000000000000000000000000090911681179091558852603985528988208951815495519351909416600160f81b027effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff93909816600160e01b027fff000000000000000000000000000000000000000000000000000000000000009095166001600160e01b039490941693909317939093171694909417845551600184810191909155915160029093019290925560359091529290208054939450909260ff191682800217905550604080516001600160a01b038516815282516001600160e01b031660208083019190915283015162ffffff16818301529082015160ff1660608083019190915282015160808083019190915282015160a08201527fc5e4838912812bff83e0f820133939c9e0540032e15803606ed95cb769390aaa9060c00160405180910390a150505050505050505050565b6000630100000082106116b85760405162461bcd60e51b815260206004820152600860248201527f554e53414645323400000000000000000000000000000000000000000000000060448201526064016105fb565b5090565b602081015181517f183227397098d014dc2822db40c0ac2e9419f4243cdcb848a1f0fac9f800000010156116f757506020810151600160ff1b175b919050565b62ffffff831660009081526038602052604081205460609060ff161561175e5761175b816040518060400160405280600681526020017f5a41523a45310000000000000000000000000000000000000000000000000000815250611a78565b90505b6001600160a01b03841660009081526036602052604090205460ff16156117aa576117a781604051806040016040528060068152602001652d20a91d229960d11b815250611a78565b90505b60008381526037602052604090205460ff16156117ec576117e981604051806040016040528060068152602001655a41523a453360d01b815250611a78565b90505b60008151116117fc5760006117ff565b60015b9150935093915050565b604051630b73522f60e01b81526000906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690630b73522f9061185e908890889088908890600401612534565b6020604051808303816000875af115801561187d573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061107b9190612568565b6040516316a6f74360e21b81526000906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635a9bdd0c9061191a908990899089907f0000000000000000000000000000000000000000000000000000000000000000908a908a90600401612581565b6020604051808303816000875af1925050508015611955575060408051601f3d908101601f1916820190925261195291810190612568565b60015b6119a65761196161264d565b806308c379a00361199a5750611975612669565b80611980575061199c565b8060405162461bcd60e51b81526004016105fb91906122ca565b505b3d6000803e3d6000fd5b9695505050505050565b60008060006119be86611ae3565b60005491935091506001831b8617906119da9087838589611b58565b6000819055979650505050505050565b60008060006119f886611ae3565b60005491935091506001831b198616906119da9087838589611b58565b600080611a228787611cdb565b90506000611a2f82611d5f565b9050611a3d81878787611db4565b98975050505050505050565b60335460fe60ff821610611a6757611a626002826126f3565b611a72565b611a728160016126f3565b60335590565b60606000835111611a985760405180602001604052806000815250611ab9565b82604051602001611aa99190612714565b6040516020818303038152906040525b82604051602001611acb929190612739565b60405160208183030381529060405290505b92915050565b60ff8116600060fe82106040518060400160405280600681526020017f5a41523a4539000000000000000000000000000000000000000000000000000081525090611b415760405162461bcd60e51b81526004016105fb91906122ca565b5060088362ffffff16901c62ffffff169050915091565b6000848403611bcf5760405162461bcd60e51b815260206004820152602a60248201527f424955543a204e6577206c6561662063616e6e6f7420626520657175616c207460448201527f6865206f6c64206f6e650000000000000000000000000000000000000000000060648201526084016105fb565b611bdb86868585611e73565b611c325760405162461bcd60e51b815260206004820152602260248201527f424955543a204c656166206973206e6f742070617274206f6620746865207472604482015261656560f01b60648201526084016105fb565b50826000805b8351811015611cd0578085901c600116915081600003611c8f57611c886040518060400160405280858152602001868481518110611c7857611c786124bf565b6020026020010151815250611f7e565b9250611cc8565b611cc56040518060400160405280868481518110611caf57611caf6124bf565b6020026020010151815260200185815250611f7e565b92505b600101611c38565b505095945050505050565b60006040518060800160405280604e81526020016127e3604e9139805160209182012060408051928301919091528101849052606081018390527f000000000000000000000000000000000000000000000000000000000000000060ff16608082015260a00160405160208183030381529060405280519060200120905092915050565b600060405180604001604052806002815260200161190160f01b815250611d84610c18565b83604051602001611d9793929190612768565b604051602081830303815290604052805190602001209050919050565b6040805160008082526020820180845287905260ff861692820192909252606081018490526080810183905260019060a0016020604051602081039080840390855afa158015611e08573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b038116611e6b5760405162461bcd60e51b815260206004820152601760248201527f454344534120696e76616c6964207369676e617475726500000000000000000060448201526064016105fb565b949350505050565b80516000906001901b808410611ecb5760405162461bcd60e51b815260206004820152601860248201527f424955543a20696e76616c6964206c65616620696e646578000000000000000060448201526064016105fb565b846000805b8551811015611f42578087901c600116915081600003611f1757611f106040518060400160405280858152602001888481518110611c7857611c786124bf565b9250611f3a565b611f376040518060400160405280888481518110611caf57611caf6124bf565b92505b600101611ed0565b508715611f5157878214611a3d565b507f2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323149695505050505050565b6000611add8280516000907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001118015611fda575060208201517f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001115b6040518060600160405280602281526020016127c160229139906120115760405162461bcd60e51b81526004016105fb91906122ca565b5060405163014cf2b360e51b8152737Ae48edd2Ee06Ba80863A196361B4bAAa5d8F8b19063299e56609061204990859060040161278f565b602060405180830381865af4158015612066573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611add9190612568565b60008083601f84011261209c57600080fd5b50813567ffffffffffffffff8111156120b457600080fd5b6020830191508360208260051b85010111156120cf57600080fd5b9250929050565b634e487b7160e01b600052604160045260246000fd5b601f8201601f1916810167ffffffffffffffff81118282101715612112576121126120d6565b6040525050565b6000610100828403121561212c57600080fd5b50919050565b6000806000806000610160868803121561214b57600080fd5b853567ffffffffffffffff8082111561216357600080fd5b61216f89838a0161208a565b909750955060209150878201358181111561218957600080fd5b8801601f81018a1361219a57600080fd5b8035828111156121ac576121ac6120d6565b60405192506121c4601f8201601f19168501846120ec565b8083528a848284010111156121d857600080fd5b80848301858501376000848285010152505080945050506121fc8760408801612119565b94979396509194610140013592915050565b6000806000806040858703121561222457600080fd5b843567ffffffffffffffff8082111561223c57600080fd5b6122488883890161208a565b9096509450602087013591508082111561226157600080fd5b5061226e8782880161208a565b95989497509550505050565b60005b8381101561229557818101518382015260200161227d565b50506000910152565b600081518084526122b681602086016020860161227a565b601f01601f19169290920160200192915050565b6020815260006122dd602083018461229e565b9392505050565b803562ffffff811681146116f757600080fd5b60006020828403121561230957600080fd5b6122dd826122e4565b60006020828403121561232457600080fd5b81356001600160a01b03811681146122dd57600080fd5b60006020828403121561234d57600080fd5b5035919050565b803580151581146116f757600080fd5b60008060008060006080868803121561237c57600080fd5b612385866122e4565b945060208601359350604086013567ffffffffffffffff8111156123a857600080fd5b6123b48882890161208a565b90945092506123c7905060608701612354565b90509295509295909350565b634e487b7160e01b600052602160045260246000fd5b602081016003831061240b57634e487b7160e01b600052602160045260246000fd5b91905290565b60006040828403121561242357600080fd5b6040516040810181811067ffffffffffffffff82111715612446576124466120d6565b604052823581526020928301359281019290925250919050565b600080600080600060e0868803121561247857600080fd5b6124828787612411565b94506124918760408801612411565b9350608086013560ff811681146124a757600080fd5b9497939650939460a0810135945060c0013592915050565b634e487b7160e01b600052603260045260246000fd5b600083516124e781846020880161227a565b9190910191825250602001919050565b60008261251457634e487b7160e01b600052601260045260246000fd5b500690565b60006020828403121561252b57600080fd5b6122dd82612354565b6001600160a01b038516815260ff8416602082015260ff831660408201526080606082015260006119a6608083018461229e565b60006020828403121561257a57600080fd5b5051919050565b610180808252810186905260006101a07f07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8811156125be57600080fd5b8760051b808a8386013783016125e1602085018980358252602090810135910152565b6040808901606086013760406080890160a086013761261060e0850160c08a0180358252602090810135910152565b6001600160a01b03871661012085015281848203016101408501526126378282018761229e565b9250505082610160830152979650505050505050565b600060033d11156126665760046000803e5060005160e01c5b90565b600060443d10156126775790565b6040516003193d81016004833e81513d67ffffffffffffffff81602484011181841117156126a757505050505090565b82850191508151818111156126bf5750505050505090565b843d87010160208285010111156126d95750505050505090565b6126e8602082860101876120ec565b509095945050505050565b80820180821115611add57634e487b7160e01b600052601160045260246000fd5b6000825161272681846020870161227a565b600b60fa1b920191825250600101919050565b6000835161274b81846020880161227a565b83519083019061275f81836020880161227a565b01949350505050565b6000845161277a81846020890161227a565b91909101928352506020820152604001919050565b60408101818360005b60028110156127b7578151835260209283019290910190600101612798565b5050509291505056fe506f736569646f6e4861736865723a20696e707574206e6f7420696e206669656c64526567697374726174696f6e286279746573333220707562526f6f745370656e64696e674b65792c627974657333322070756252656164696e674b65792c75696e743235362076657273696f6e29454950373132446f6d61696e28737472696e67206e616d652c737472696e672076657273696f6e2c75696e7432353620636861696e49642c6164647265737320766572696679696e67436f6e74726163742c627974657333322073616c7429a164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101985760003560e01c80638f3e52de116100e3578063c99c07561161008c578063cd14c8b111610066578063cd14c8b1146104d6578063eccec5a8146104e9578063f1fe9a471461050957600080fd5b8063c99c075614610446578063cbe10bf01461046d578063cc577f661461049d57600080fd5b8063b463c7cb116100bd578063b463c7cb146103f0578063b8ef7fb714610413578063c7a629de1461043357600080fd5b80638f3e52de14610383578063923d464a146103aa578063adc617f7146103cd57600080fd5b80633b2fb7a8116101455780635ca1e1651161011f5780635ca1e165146102c757806360314315146102cf57806384ff57581461035c57600080fd5b80633b2fb7a8146102595780634970d87c146102955780634a0997f31461029e57600080fd5b806320379ee51161017657806320379ee51461021757806320edf18c1461021f57806322c9531a1461024657600080fd5b806303e520831461019d578063117803e3146101c35780631dd5be0314610202575b600080fd5b6101b06101ab366004612132565b61052c565b6040519081526020015b60405180910390f35b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016101ba565b61021561021036600461220e565b6109cb565b005b6101b0610c18565b6101b07f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b81565b61021561025436600461220e565b610d18565b6102886040518060400160405280601081526020016f14185b9d1a195c88141c9bdd1bd8dbdb60821b81525081565b6040516101ba91906122ca565b6101b060335481565b6101ea6102ac3660046122f7565b603a602052600090815260409020546001600160a01b031681565b6101b0610fa7565b61031e6102dd366004612312565b6039602052600090815260409020805460018201546002909201546001600160e01b03821692600160e01b830462ffffff1692600160f81b900460ff169185565b604080516001600160e01b03909616865262ffffff909416602086015260ff909216928401929092526060830191909152608082015260a0016101ba565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6103bd6103b8366004612312565b610fdc565b60405190151581526020016101ba565b6103bd6103db3660046122f7565b60386020526000908152604090205460ff1681565b6103bd6103fe366004612312565b60366020526000908152604090205460ff1681565b6101b061042136600461233b565b60346020526000908152604090205481565b610215610441366004612364565b611084565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b61049061047b366004612312565b60356020526000908152604090205460ff1681565b6040516101ba91906123e9565b6104c47f000000000000000000000000000000000000000000000000000000000000000081565b60405160ff90911681526020016101ba565b6102156104e4366004612460565b611324565b610288604051806040016040528060018152602001603160f81b81525081565b6103bd61051736600461233b565b60376020526000908152604090205460ff1681565b60008086866000818110610542576105426124bf565b905060200201359050600085846040516020016105609291906124d5565b60408051601f19818403018152919052805160208201209091506105a5907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001906124f7565b82146040518060400160405280600781526020017f5a41523a45313100000000000000000000000000000000000000000000000000815250906106045760405162461bcd60e51b81526004016105fb91906122ca565b60405180910390fd5b50505060008686600481811061061c5761061c6124bf565b905060200201359050806000146040518060400160405280600781526020017f5a41523a453133000000000000000000000000000000000000000000000000008152509061067d5760405162461bcd60e51b81526004016105fb91906122ca565b505060006106a387876003818110610697576106976124bf565b90506020020135611663565b90506000878760088181106106ba576106ba6124bf565b62ffffff85166000908152603a602090815260409182902054825180840190935260068352652d20a91d229b60d11b838301529202939093013593506001600160a01b0380851691161490506107235760405162461bcd60e51b81526004016105fb91906122ca565b50600061077560405180604001604052808b8b6006818110610747576107476124bf565b9050602002013581526020018b8b6007818110610766576107666124bf565b905060200201358152506116bc565b90506000806107858585856116fc565b91509150811581906107aa5760405162461bcd60e51b81526004016105fb91906122ca565b505050506000888860098181106107c3576107c36124bf565b9050602002013560001b905060346000828152602001908152602001600020546000146040518060400160405280600681526020017f5a41523a453500000000000000000000000000000000000000000000000000008152509061083a5760405162461bcd60e51b81526004016105fb91906122ca565b5060009081526034602090815260408083204390556001600160a01b0384168352603590915290205460ff16600181600281111561087a5761087a6123d3565b036108a3576001600160a01b0382166000908152603560205260409020805460ff191660021790555b60006108fd838360028111156108bb576108bb6123d3565b60028d8d600d8181106108d0576108d06124bf565b905060200201356040516020016108e991815260200190565b604051602081830303815290604052611809565b905060008a8a6001818110610914576109146124bf565b9050602002013590508082146040518060400160405280600781526020017f5a41523a45313200000000000000000000000000000000000000000000000000815250906109745760405162461bcd60e51b81526004016105fb91906122ca565b5050506109848989888a896118a1565b60405162ffffff851681529094507fdc02c3befffd2a4f92511c89886e8238193ede29a8939bf8c631ba549eeafb209060200160405180910390a150505095945050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610a3a5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b6040805180820190915260068152655a41523a453760d01b6020820152838214610a775760405162461bcd60e51b81526004016105fb91906122ca565b5060005b83811015610c1157828282818110610a9557610a956124bf565b9050602002016020810190610aaa9190612519565b151560376000878785818110610ac257610ac26124bf565b90506020020135815260200190815260200160002060009054906101000a900460ff1615151415604051806040016040528060068152602001650b482a4748a760d31b81525090610b265760405162461bcd60e51b81526004016105fb91906122ca565b50828282818110610b3957610b396124bf565b9050602002016020810190610b4e9190612519565b60376000878785818110610b6457610b646124bf565b90506020020135815260200190815260200160002060006101000a81548160ff0219169083151502179055507f57836c6e28b7607fcb54ef9169c69f14460bb2d70d40f2c62d9c20d2c9ba3d98858583818110610bc357610bc36124bf565b90506020020135848484818110610bdc57610bdc6124bf565b9050602002016020810190610bf19190612519565b6040805192835290151560208301520160405180910390a1600101610a7b565b5050505050565b60006040518060800160405280605f8152602001612831605f91398051602091820120604080518082018252601081526f14185b9d1a195c88141c9bdd1bd8dbdb60821b908401528051808201825260018152603160f81b908401528051928301919091527fbd6ac11eb0311bac3ff64366cc16db374956ada90d1e2aa6bb4faed25fc1d0cd908201527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a08201527f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b60c082015260e00160405160208183030381529060405280519060200120905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610d875760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b6040805180820190915260068152655a41523a453760d01b6020820152838214610dc45760405162461bcd60e51b81526004016105fb91906122ca565b5060005b83811015610c1157828282818110610de257610de26124bf565b9050602002016020810190610df79190612519565b151560366000878785818110610e0f57610e0f6124bf565b9050602002016020810190610e249190612312565b6001600160a01b03166001600160a01b0316815260200190815260200160002060009054906101000a900460ff1615151415604051806040016040528060068152602001650b482a4748a760d31b81525090610e935760405162461bcd60e51b81526004016105fb91906122ca565b50828282818110610ea657610ea66124bf565b9050602002016020810190610ebb9190612519565b60366000878785818110610ed157610ed16124bf565b9050602002016020810190610ee69190612312565b6001600160a01b031681526020810191909152604001600020805460ff19169115159190911790557f317b703ab5e9a8a94f27c3e386e8fd5e8e69bde97b4cabf3de6986ab31432f9f858583818110610f4157610f416124bf565b9050602002016020810190610f569190612312565b848484818110610f6857610f686124bf565b9050602002016020810190610f7d9190612519565b604080516001600160a01b03909316835290151560208301520160405180910390a1600101610dc8565b6000805415610fb7575060005490565b507f2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba732390565b6001600160a01b038181166000908152603960209081526040808320815160a08101835281546001600160e01b0381168252600160e01b810462ffffff16828601818152600160f81b90920460ff168386015260018401546060840190815260029094015460808401528652603a90945291842054925190519394919392909116151591849161106d9187906116fc565b50905081801561107b575080155b95945050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146110f35760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016105fb565b62ffffff85166000908152603a602090815260409182902054825180840190935260068352652d20a91d229b60d11b918301919091526001600160a01b031661114f5760405162461bcd60e51b81526004016105fb91906122ca565b5062ffffff851660009081526038602090815260409182902054825180840190935260068352650b482a4748a760d31b9183019190915260ff161515821515036111ac5760405162461bcd60e51b81526004016105fb91906122ca565b50600081156111fa576111f386868686808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152506119b092505050565b905061123b565b61123886868686808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152506119ea92505050565b90505b62ffffff861660009081526038602052604090819020805460ff19168415151790555163c2e3e62b60e01b815260048101829052600160248201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063c2e3e62b90604401600060405180830381600087803b1580156112c457600080fd5b505af11580156112d8573d6000803e3d6000fd5b50506040805162ffffff8a16815285151560208201527fe537daabb339ea043fe1498519b689d76b7a2a3f067b86d7eef6e3f12cf0a5dc935001905060405180910390a1505050505050565b600061132f866116bc565b9050600061133c866116bc565b60008381526037602090815260409182902054825180840190935260068352655a41523a453360d01b918301919091529192509060ff16156113915760405162461bcd60e51b81526004016105fb91906122ca565b5060006113a18383888888611a15565b6001600160a01b03811660009081526036602090815260409182902054825180840190935260068352652d20a91d229960d11b918301919091529192509060ff16156114005760405162461bcd60e51b81526004016105fb91906122ca565b506001600160a01b03811660009081526035602052604081205460ff16600281111561142e5761142e6123d3565b146040518060400160405280600681526020017f5a41523a45340000000000000000000000000000000000000000000000000000815250906114835760405162461bcd60e51b81526004016105fb91906122ca565b50600061148e611a49565b6040805160a081018252600080825262ffffff808516602080850182815260ff7f00000000000000000000000000000000000000000000000000000000000000008116878901908152606088018e8152608089018e8152958852603a855289882080546001600160a01b038f167fffffffffffffffffffffffff000000000000000000000000000000000000000090911681179091558852603985528988208951815495519351909416600160f81b027effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff93909816600160e01b027fff000000000000000000000000000000000000000000000000000000000000009095166001600160e01b039490941693909317939093171694909417845551600184810191909155915160029093019290925560359091529290208054939450909260ff191682800217905550604080516001600160a01b038516815282516001600160e01b031660208083019190915283015162ffffff16818301529082015160ff1660608083019190915282015160808083019190915282015160a08201527fc5e4838912812bff83e0f820133939c9e0540032e15803606ed95cb769390aaa9060c00160405180910390a150505050505050505050565b6000630100000082106116b85760405162461bcd60e51b815260206004820152600860248201527f554e53414645323400000000000000000000000000000000000000000000000060448201526064016105fb565b5090565b602081015181517f183227397098d014dc2822db40c0ac2e9419f4243cdcb848a1f0fac9f800000010156116f757506020810151600160ff1b175b919050565b62ffffff831660009081526038602052604081205460609060ff161561175e5761175b816040518060400160405280600681526020017f5a41523a45310000000000000000000000000000000000000000000000000000815250611a78565b90505b6001600160a01b03841660009081526036602052604090205460ff16156117aa576117a781604051806040016040528060068152602001652d20a91d229960d11b815250611a78565b90505b60008381526037602052604090205460ff16156117ec576117e981604051806040016040528060068152602001655a41523a453360d01b815250611a78565b90505b60008151116117fc5760006117ff565b60015b9150935093915050565b604051630b73522f60e01b81526000906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690630b73522f9061185e908890889088908890600401612534565b6020604051808303816000875af115801561187d573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061107b9190612568565b6040516316a6f74360e21b81526000906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635a9bdd0c9061191a908990899089907f0000000000000000000000000000000000000000000000000000000000000000908a908a90600401612581565b6020604051808303816000875af1925050508015611955575060408051601f3d908101601f1916820190925261195291810190612568565b60015b6119a65761196161264d565b806308c379a00361199a5750611975612669565b80611980575061199c565b8060405162461bcd60e51b81526004016105fb91906122ca565b505b3d6000803e3d6000fd5b9695505050505050565b60008060006119be86611ae3565b60005491935091506001831b8617906119da9087838589611b58565b6000819055979650505050505050565b60008060006119f886611ae3565b60005491935091506001831b198616906119da9087838589611b58565b600080611a228787611cdb565b90506000611a2f82611d5f565b9050611a3d81878787611db4565b98975050505050505050565b60335460fe60ff821610611a6757611a626002826126f3565b611a72565b611a728160016126f3565b60335590565b60606000835111611a985760405180602001604052806000815250611ab9565b82604051602001611aa99190612714565b6040516020818303038152906040525b82604051602001611acb929190612739565b60405160208183030381529060405290505b92915050565b60ff8116600060fe82106040518060400160405280600681526020017f5a41523a4539000000000000000000000000000000000000000000000000000081525090611b415760405162461bcd60e51b81526004016105fb91906122ca565b5060088362ffffff16901c62ffffff169050915091565b6000848403611bcf5760405162461bcd60e51b815260206004820152602a60248201527f424955543a204e6577206c6561662063616e6e6f7420626520657175616c207460448201527f6865206f6c64206f6e650000000000000000000000000000000000000000000060648201526084016105fb565b611bdb86868585611e73565b611c325760405162461bcd60e51b815260206004820152602260248201527f424955543a204c656166206973206e6f742070617274206f6620746865207472604482015261656560f01b60648201526084016105fb565b50826000805b8351811015611cd0578085901c600116915081600003611c8f57611c886040518060400160405280858152602001868481518110611c7857611c786124bf565b6020026020010151815250611f7e565b9250611cc8565b611cc56040518060400160405280868481518110611caf57611caf6124bf565b6020026020010151815260200185815250611f7e565b92505b600101611c38565b505095945050505050565b60006040518060800160405280604e81526020016127e3604e9139805160209182012060408051928301919091528101849052606081018390527f000000000000000000000000000000000000000000000000000000000000000060ff16608082015260a00160405160208183030381529060405280519060200120905092915050565b600060405180604001604052806002815260200161190160f01b815250611d84610c18565b83604051602001611d9793929190612768565b604051602081830303815290604052805190602001209050919050565b6040805160008082526020820180845287905260ff861692820192909252606081018490526080810183905260019060a0016020604051602081039080840390855afa158015611e08573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b038116611e6b5760405162461bcd60e51b815260206004820152601760248201527f454344534120696e76616c6964207369676e617475726500000000000000000060448201526064016105fb565b949350505050565b80516000906001901b808410611ecb5760405162461bcd60e51b815260206004820152601860248201527f424955543a20696e76616c6964206c65616620696e646578000000000000000060448201526064016105fb565b846000805b8551811015611f42578087901c600116915081600003611f1757611f106040518060400160405280858152602001888481518110611c7857611c786124bf565b9250611f3a565b611f376040518060400160405280888481518110611caf57611caf6124bf565b92505b600101611ed0565b508715611f5157878214611a3d565b507f2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323149695505050505050565b6000611add8280516000907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001118015611fda575060208201517f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001115b6040518060600160405280602281526020016127c160229139906120115760405162461bcd60e51b81526004016105fb91906122ca565b5060405163014cf2b360e51b815273__$3d381aec2d571db697c779e211a438fb21$__9063299e56609061204990859060040161278f565b602060405180830381865af4158015612066573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611add9190612568565b60008083601f84011261209c57600080fd5b50813567ffffffffffffffff8111156120b457600080fd5b6020830191508360208260051b85010111156120cf57600080fd5b9250929050565b634e487b7160e01b600052604160045260246000fd5b601f8201601f1916810167ffffffffffffffff81118282101715612112576121126120d6565b6040525050565b6000610100828403121561212c57600080fd5b50919050565b6000806000806000610160868803121561214b57600080fd5b853567ffffffffffffffff8082111561216357600080fd5b61216f89838a0161208a565b909750955060209150878201358181111561218957600080fd5b8801601f81018a1361219a57600080fd5b8035828111156121ac576121ac6120d6565b60405192506121c4601f8201601f19168501846120ec565b8083528a848284010111156121d857600080fd5b80848301858501376000848285010152505080945050506121fc8760408801612119565b94979396509194610140013592915050565b6000806000806040858703121561222457600080fd5b843567ffffffffffffffff8082111561223c57600080fd5b6122488883890161208a565b9096509450602087013591508082111561226157600080fd5b5061226e8782880161208a565b95989497509550505050565b60005b8381101561229557818101518382015260200161227d565b50506000910152565b600081518084526122b681602086016020860161227a565b601f01601f19169290920160200192915050565b6020815260006122dd602083018461229e565b9392505050565b803562ffffff811681146116f757600080fd5b60006020828403121561230957600080fd5b6122dd826122e4565b60006020828403121561232457600080fd5b81356001600160a01b03811681146122dd57600080fd5b60006020828403121561234d57600080fd5b5035919050565b803580151581146116f757600080fd5b60008060008060006080868803121561237c57600080fd5b612385866122e4565b945060208601359350604086013567ffffffffffffffff8111156123a857600080fd5b6123b48882890161208a565b90945092506123c7905060608701612354565b90509295509295909350565b634e487b7160e01b600052602160045260246000fd5b602081016003831061240b57634e487b7160e01b600052602160045260246000fd5b91905290565b60006040828403121561242357600080fd5b6040516040810181811067ffffffffffffffff82111715612446576124466120d6565b604052823581526020928301359281019290925250919050565b600080600080600060e0868803121561247857600080fd5b6124828787612411565b94506124918760408801612411565b9350608086013560ff811681146124a757600080fd5b9497939650939460a0810135945060c0013592915050565b634e487b7160e01b600052603260045260246000fd5b600083516124e781846020880161227a565b9190910191825250602001919050565b60008261251457634e487b7160e01b600052601260045260246000fd5b500690565b60006020828403121561252b57600080fd5b6122dd82612354565b6001600160a01b038516815260ff8416602082015260ff831660408201526080606082015260006119a6608083018461229e565b60006020828403121561257a57600080fd5b5051919050565b610180808252810186905260006101a07f07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8811156125be57600080fd5b8760051b808a8386013783016125e1602085018980358252602090810135910152565b6040808901606086013760406080890160a086013761261060e0850160c08a0180358252602090810135910152565b6001600160a01b03871661012085015281848203016101408501526126378282018761229e565b9250505082610160830152979650505050505050565b600060033d11156126665760046000803e5060005160e01c5b90565b600060443d10156126775790565b6040516003193d81016004833e81513d67ffffffffffffffff81602484011181841117156126a757505050505090565b82850191508151818111156126bf5750505050505090565b843d87010160208285010111156126d95750505050505090565b6126e8602082860101876120ec565b509095945050505050565b80820180821115611add57634e487b7160e01b600052601160045260246000fd5b6000825161272681846020870161227a565b600b60fa1b920191825250600101919050565b6000835161274b81846020880161227a565b83519083019061275f81836020880161227a565b01949350505050565b6000845161277a81846020890161227a565b91909101928352506020820152604001919050565b60408101818360005b60028110156127b7578151835260209283019290910190600101612798565b5050509291505056fe506f736569646f6e4861736865723a20696e707574206e6f7420696e206669656c64526567697374726174696f6e286279746573333220707562526f6f745370656e64696e674b65792c627974657333322070756252656164696e674b65792c75696e743235362076657273696f6e29454950373132446f6d61696e28737472696e67206e616d652c737472696e672076657273696f6e2c75696e7432353620636861696e49642c6164647265737320766572696679696e67436f6e74726163742c627974657333322073616c7429a164736f6c6343000810000a",
+  "libraries": {
+    "PoseidonT3": "0x7Ae48edd2Ee06Ba80863A196361B4bAAa5d8F8b1",
+    "BabyJubJub": "0x0Ab02321Fc701C3C539F92b563B9cD4a2c0f75A4"
+  },
+  "devdoc": {
+    "author": "Pantherprotocol Contributors",
+    "kind": "dev",
+    "methods": {
+      "activateZAccount(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256)": {
+        "params": {
+          "inputs": "[14] - magicalConstraint (passed w/o checks)"
+        }
+      }
+    },
+    "title": "ZAccountsRegistry",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "OWNER()": {
+        "notice": "The owner who has privileged rights"
+      }
+    },
+    "notice": "Registry and whitelist of zAccounts allowed to interact with MASP.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 5991,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "_currentRoot",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bytes32"
+      },
+      {
+        "astId": 1420,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_array(t_uint256)50_storage"
+      },
+      {
+        "astId": 1445,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "zAccountIdTracker",
+        "offset": 0,
+        "slot": "51",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1449,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "zoneZAccountNullifiers",
+        "offset": 0,
+        "slot": "52",
+        "type": "t_mapping(t_bytes32,t_uint256)"
+      },
+      {
+        "astId": 1454,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "zAccountStatus",
+        "offset": 0,
+        "slot": "53",
+        "type": "t_mapping(t_address,t_enum(ZACCOUNT_STATUS)6180)"
+      },
+      {
+        "astId": 1458,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "isMasterEoaBlacklisted",
+        "offset": 0,
+        "slot": "54",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 1462,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "isPubRootSpendingKeyBlacklisted",
+        "offset": 0,
+        "slot": "55",
+        "type": "t_mapping(t_bytes32,t_bool)"
+      },
+      {
+        "astId": 1466,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "isZAccountIdBlacklisted",
+        "offset": 0,
+        "slot": "56",
+        "type": "t_mapping(t_uint24,t_bool)"
+      },
+      {
+        "astId": 1471,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "zAccounts",
+        "offset": 0,
+        "slot": "57",
+        "type": "t_mapping(t_address,t_struct(ZAccount)1443_storage)"
+      },
+      {
+        "astId": 1475,
+        "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+        "label": "masterEOAs",
+        "offset": 0,
+        "slot": "58",
+        "type": "t_mapping(t_uint24,t_address)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_uint256)50_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[50]",
+        "numberOfBytes": "1600"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_enum(ZACCOUNT_STATUS)6180": {
+        "encoding": "inplace",
+        "label": "enum ZACCOUNT_STATUS",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_enum(ZACCOUNT_STATUS)6180)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => enum ZACCOUNT_STATUS)",
+        "numberOfBytes": "32",
+        "value": "t_enum(ZACCOUNT_STATUS)6180"
+      },
+      "t_mapping(t_address,t_struct(ZAccount)1443_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct ZAccountsRegistry.ZAccount)",
+        "numberOfBytes": "32",
+        "value": "t_struct(ZAccount)1443_storage"
+      },
+      "t_mapping(t_bytes32,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint24,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint24",
+        "label": "mapping(uint24 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_uint24,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_uint24",
+        "label": "mapping(uint24 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_struct(ZAccount)1443_storage": {
+        "encoding": "inplace",
+        "label": "struct ZAccountsRegistry.ZAccount",
+        "members": [
+          {
+            "astId": 1434,
+            "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+            "label": "_unused",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint224"
+          },
+          {
+            "astId": 1436,
+            "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+            "label": "id",
+            "offset": 28,
+            "slot": "0",
+            "type": "t_uint24"
+          },
+          {
+            "astId": 1438,
+            "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+            "label": "version",
+            "offset": 31,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 1440,
+            "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+            "label": "pubRootSpendingKey",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 1442,
+            "contract": "contracts/protocol/ZAccountsRegistry.sol:ZAccountsRegistry",
+            "label": "pubReadingKey",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32"
+          }
+        ],
+        "numberOfBytes": "96"
+      },
+      "t_uint224": {
+        "encoding": "inplace",
+        "label": "uint224",
+        "numberOfBytes": "28"
+      },
+      "t_uint24": {
+        "encoding": "inplace",
+        "label": "uint24",
+        "numberOfBytes": "3"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}
