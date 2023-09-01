@@ -7,6 +7,8 @@ import chai from 'chai';
 import {BigNumber, BaseContract} from 'ethers';
 import hre from 'hardhat';
 
+import {getBlockTimestamp} from '../../lib/provider';
+
 const expect = chai.expect;
 
 const {getSigners} = hre.ethers;
@@ -39,18 +41,22 @@ describe('RewardPool', async () => {
         );
     });
 
+    async function getValidExpiryTime(): Promise<number> {
+        return (await getBlockTimestamp()) + 1000;
+    }
+
     describe('contract initialisation', async () => {
         it('returns error in initialisation when expired timestamp is passed', async () => {
             // const f = await rewardPool.transferPoolWalletRole(wallet1.address)
             // vestingPoolFactory.getWallet.returns(rewardPool.address)
-            const expiryTime = Math.round(+new Date() / 1000) - 100;
+            const expiryTime = (await getBlockTimestamp()) - 100;
             await expect(
                 rewardPool.initialize(0, alice.address, expiryTime),
             ).to.be.revertedWith('RP: expired');
         });
 
         it('returns error in initialisation when 0th address is not used', async () => {
-            const expiryTime = Math.round(+new Date() / 1000) - 100;
+            const expiryTime = await getValidExpiryTime();
             await expect(
                 rewardPool.initialize(
                     0,
@@ -61,7 +67,7 @@ describe('RewardPool', async () => {
         });
 
         it('returns error in initialisation when wallet address of pool is not used', async () => {
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await expect(
                 rewardPool.initialize(0, alice.address, expiryTime),
             ).to.be.revertedWith('RP:E7');
@@ -69,7 +75,7 @@ describe('RewardPool', async () => {
 
         it('successfully initializes the contract', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await expect(rewardPool.initialize(0, alice.address, expiryTime))
                 .to.emit(rewardPool, 'Initialized')
                 .withArgs(0, alice.address, expiryTime);
@@ -88,7 +94,7 @@ describe('RewardPool', async () => {
 
         it('return 0 releasable amount of tokens when tokens are not vested', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             const releasableAmount = await rewardPool.releasableAmount();
             expect(releasableAmount).to.eql(toBN(0));
@@ -97,7 +103,7 @@ describe('RewardPool', async () => {
         it('return 100 releasable amount of tokens when 100 tokens are vested', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             const releasableAmount = await rewardPool.releasableAmount();
             expect(releasableAmount).to.eql(toBN(100));
@@ -116,7 +122,7 @@ describe('RewardPool', async () => {
         it('revert if unauthorized vestRewards() call is made', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(rewardPool.vestRewards()).to.be.revertedWith(
                 'RP: unauthorized',
@@ -126,7 +132,7 @@ describe('RewardPool', async () => {
         it('doesnt release any reward tokens to recipient when releasable amount is 0', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(0);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(rewardPool.connect(alice).vestRewards()).not.to.emit(
                 rewardPool,
@@ -137,7 +143,7 @@ describe('RewardPool', async () => {
         it('successfully vest and release 100 reward tokens to recipient', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(rewardPool.connect(alice).vestRewards()).to.emit(
                 rewardPool,
@@ -159,7 +165,7 @@ describe('RewardPool', async () => {
         it('reverts when 0 address passed while transferring wallet role', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(
                 rewardPool.transferPoolWalletRole(
@@ -171,7 +177,7 @@ describe('RewardPool', async () => {
         it('reverts when non-owner calls transferPoolWalletRole()', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await expect(
                 rewardPool
@@ -183,7 +189,7 @@ describe('RewardPool', async () => {
         it('successfully transfers pool wallet address', async () => {
             vestingPoolFactory.getWallet.returns(rewardPool.address);
             vestingPoolFactory.releasableAmount.returns(100);
-            const expiryTime = Math.round(+new Date() / 1000) + 100;
+            const expiryTime = await getValidExpiryTime();
             await rewardPool.initialize(0, alice.address, expiryTime);
             await rewardPool
                 .connect(deployer)
