@@ -4,9 +4,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes1",
+        "internalType": "uint8",
         "name": "txType",
-        "type": "bytes1"
+        "type": "uint8"
       },
       {
         "indexed": false,
