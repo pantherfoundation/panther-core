@@ -55,6 +55,6 @@ dataSources:
         - name: PoolContract
           file: ./abis/PantherPoolV1.json
       eventHandlers:
-        - event: TransactionNote(bytes1,bytes)
+        - event: TransactionNote(uint8,bytes)
           handler: handleTransactionNote
       file: ./src/handePoolContract.ts

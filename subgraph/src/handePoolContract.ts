@@ -1,3 +1,4 @@
+import {BigInt, Bytes} from '@graphprotocol/graph-ts';
 import {TransactionNote as TransactionNoteEvent} from '../generated/PoolContract/PoolContract';
 import {TransactionNote} from '../generated/schema';
 

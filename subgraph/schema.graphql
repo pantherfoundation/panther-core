@@ -1,31 +1,3 @@
-type Staker @entity {
-    id: ID!
-    lastUpdatedTime: Int!
-    lastBlockNumber: Int!
-    advancedStakingRewards: [AdvancedStakingReward!]!
-        @derivedFrom(field: "staker")
-}
-
-type AdvancedStakingReward @entity {
-    id: ID!
-    creationTime: Int!
-    commitments: [Bytes!]
-    utxoData: Bytes
-    zZkpAmount: BigInt
-    staker: Staker!
-}
-
-type Triad @entity {
-    id: ID!
-    leafId: Int!
-    commitments: [Bytes!]!
-    utxoData: Bytes!
-    treeId: Int!
-    blockNumber: Int!
-    creationTime: Int!
-    txHash: Bytes!
-}
-
 type BusBatchOnboarded @entity(immutable: true) {
     id: Bytes!
     queueId: BigInt! # uint256
@@ -86,7 +58,7 @@ type UtxoBusQueued @entity(immutable: true) {
 
 type TransactionNote @entity(immutable: true) {
     id: Bytes!
-    txType: Bytes! # bytes1
+    txType: Int! # bytes1
     content: Bytes! # bytes
     blockNumber: BigInt!
     blockTimestamp: BigInt!
