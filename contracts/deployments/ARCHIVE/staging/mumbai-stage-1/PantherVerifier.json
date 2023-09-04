@@ -1,0 +1,272 @@
+{
+  "address": "0xeeAfce13506847a19141A4513718df17383f4f7b",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint160",
+          "name": "circuitId",
+          "type": "uint160"
+        }
+      ],
+      "name": "getVerifyingKey",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "alfa1",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "beta2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "gamma2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "delta2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point[]",
+              "name": "ic",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct VerifyingKey",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint160",
+          "name": "circuitId",
+          "type": "uint160"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "input",
+          "type": "uint256[]"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "a",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "b",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "c",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SnarkProof",
+          "name": "proof",
+          "type": "tuple"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x0c39c515b78ade3ee0206b3904fa56bba0c1a3ecbf063100b8a8304f3cba2f5d",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xeeAfce13506847a19141A4513718df17383f4f7b",
+    "transactionIndex": 21,
+    "gasUsed": "1029994",
+    "logsBloom": "0x00000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000008004000000020000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000020000000000000000001000000000000000000000000004000000000000000000001000002000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x53572d384b34f4eab6ea8a20cbbc5c164af28765fbb477cba8560ae53ae10216",
+    "transactionHash": "0x0c39c515b78ade3ee0206b3904fa56bba0c1a3ecbf063100b8a8304f3cba2f5d",
+    "logs": [
+      {
+        "transactionIndex": 21,
+        "blockNumber": 37764513,
+        "transactionHash": "0x0c39c515b78ade3ee0206b3904fa56bba0c1a3ecbf063100b8a8304f3cba2f5d",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000c26880a0af2ea0c7e8130e6ec47af756465452e8"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000002497bda7dd39f60000000000000000000000000000000000000000000000001a012f56276227550000000000000000000000000000000000000000000020b1ba69d7549414da0e00000000000000000000000000000000000000000000000019dc97987f84ed5f0000000000000000000000000000000000000000000020b1ba8e6f123bf21404",
+        "logIndex": 42,
+        "blockHash": "0x53572d384b34f4eab6ea8a20cbbc5c164af28765fbb477cba8560ae53ae10216"
+      }
+    ],
+    "blockNumber": 37764513,
+    "cumulativeGasUsed": "1492879",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "b8eeeddae64fd5c3b79a196914bed59a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint160\",\"name\":\"circuitId\",\"type\":\"uint160\"}],\"name\":\"getVerifyingKey\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"alfa1\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"beta2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"gamma2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"delta2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point[]\",\"name\":\"ic\",\"type\":\"tuple[]\"}],\"internalType\":\"struct VerifyingKey\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint160\",\"name\":\"circuitId\",\"type\":\"uint160\"},{\"internalType\":\"uint256[]\",\"name\":\"input\",\"type\":\"uint256[]\"},{\"components\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"a\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"b\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"c\",\"type\":\"tuple\"}],\"internalType\":\"struct SnarkProof\",\"name\":\"proof\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isVerified\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"getVerifyingKey(uint160)\":{\"details\":\"circuitId is an address where the key is deployed as bytecode\",\"params\":{\"circuitId\":\"ID of the circuit\"},\"returns\":{\"_0\":\"Verifying key\"}},\"verify(uint160,uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)))\":{\"params\":{\"circuitId\":\"ID of the circuit (it tells which verifying key to use)\",\"input\":\"Public input signals\",\"proof\":\"SNARK proof\"},\"returns\":{\"isVerified\":\"bool true if proof is valid\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getVerifyingKey(uint160)\":{\"notice\":\"Get the verifying key for the specified circuits\"},\"verify(uint160,uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)))\":{\"notice\":\"Verify the SNARK proof\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/PantherVerifier.sol\":\"PantherVerifier\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/Bytecode.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// SPDX-FileCopyrightText: Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/SSTORE2.sol)\\npragma solidity ^0.8.16;\\n\\n/**\\n * @notice Read bytecode at given address from given position.\\n */\\nlibrary Bytecode {\\n    function read(address pointer, uint256 offset)\\n        internal\\n        view\\n        returns (bytes memory data)\\n    {\\n        uint256 size = pointer.code.length;\\n        require(size >= offset, \\\"OUT_OF_BOUNDS\\\");\\n\\n        unchecked {\\n            size -= offset;\\n        }\\n\\n        // solhint-disable-next-line no-inline-assembly\\n        assembly {\\n            // Get a pointer to some free memory.\\n            data := mload(0x40)\\n\\n            // Update the free memory pointer to prevent overriding our data.\\n            // We use and(x, not(31)) as a cheaper equivalent to sub(x, mod(x, 32)).\\n            // Adding 31 to size and running the result through the logic above ensures\\n            // the memory pointer remains word-aligned, following the Solidity convention.\\n            mstore(0x40, add(data, and(add(add(size, 32), 31), not(31))))\\n\\n            // Store the size of the data in the first 32 byte chunk of free memory.\\n            mstore(data, size)\\n\\n            // Copy the code into memory right after the 32 bytes we used to store the size.\\n            extcodecopy(pointer, add(data, 32), offset, size)\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x0a5bd8ca5a91dc1448d8c94e0834005e59c3fb63b840cbc8ca81a0ff607ea328\",\"license\":\"AGPL-3.0-only\"},\"contracts/common/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// solhint-disable var-name-mixedcase\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n// Constants\\n\\nuint256 constant IN_PRP_UTXOs = 1;\\nuint256 constant IN_UTXOs = 2 + IN_PRP_UTXOs;\\n\\nuint256 constant OUT_PRP_UTXOs = 1;\\nuint256 constant OUT_UTXOs = 2 + OUT_PRP_UTXOs;\\nuint256 constant OUT_MAX_UTXOs = OUT_UTXOs;\\n// Number of UTXOs given as a reward for an \\\"advanced\\\" stake\\nuint256 constant OUT_RWRD_UTXOs = 2;\\n\\n// For overflow protection and circuits optimization\\n// (must be less than the FIELD_SIZE)\\nuint256 constant MAX_EXT_AMOUNT = 2**96;\\nuint256 constant MAX_IN_CIRCUIT_AMOUNT = 2**64;\\nuint256 constant MAX_TIMESTAMP = 2**32;\\nuint256 constant MAX_ZASSET_ID = 2**160;\\n\\n// Token types\\n// (not `enum` to let protocol extensions use bits, if needed)\\nuint8 constant ERC20_TOKEN_TYPE = 0x00;\\nuint8 constant ERC721_TOKEN_TYPE = 0x10;\\nuint8 constant ERC1155_TOKEN_TYPE = 0x11;\\n// defined for every tokenId rather than for all tokens on the contract\\n// (unsupported in the V0 and V1 of the MASP)\\nuint8 constant BY_TOKENID_TOKEN_TYPE = 0xFF;\\n\\n// ZAsset statuses\\n// (not `enum` to let protocol extensions use bits, if needed)\\nuint8 constant zASSET_ENABLED = 0x01;\\nuint8 constant zASSET_DISABLED = 0x02;\\nuint8 constant zASSET_UNKNOWN = 0x00;\\n\\n// UTXO data (opening values - encrypted and public) formats\\nuint8 constant UTXO_DATA_TYPE5 = 0x00; // for zero UTXO (no data to provide)\\nuint8 constant UTXO_DATA_TYPE1 = 0x01; // for UTXO w/ zero tokenId\\nuint8 constant UTXO_DATA_TYPE3 = 0x02; // for UTXO w/ non-zero tokenId\\n\\n// Number of 32-bit words of the CiphertextMsg for UTXO_DATA_TYPE1\\n// (ephemeral key (packed) - 32 bytes, encrypted `random` - 32 bytes)\\nuint256 constant CIPHERTEXT1_WORDS = 2;\\n\\n// Number of 32-bit words in the (uncompressed) spending PubKey\\nuint256 constant PUBKEY_WORDS = 2;\\n// Number of elements in `pathElements`\\nuint256 constant PATH_ELEMENTS_NUM = 16;\\n\\n// @dev Unusable on public network address, which is useful for simulations\\n//  in forked test env, e.g. for bypassing SNARK proof verification like this:\\n// `require(isValidProof || tx.origin == DEAD_CODE_ADDRESS)`\\naddress constant DEAD_CODE_ADDRESS = address(uint160(0xDEADC0DE));\\n\\n// 100% expressed in 1/100th of 1% (\\\"pips\\\")\\nuint256 constant HUNDRED_PERCENT = 100 * 100;\\n\",\"keccak256\":\"0xf0014960cc51ff618159a7642b296827dcd7ff3b393b9dbe440d0ead67052e54\",\"license\":\"BUSL-1.1\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct PluginData {\\n    address contractAddress;\\n    bytes callData;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\",\"keccak256\":\"0xbe5feb34f2f9eb101f2f6b01290b97b0a8696bf64bed4822bbffc65b12b07aff\",\"license\":\"MIT\"},\"contracts/protocol/PantherVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport \\\"../common/Bytecode.sol\\\";\\nimport { VerifyingKey } from \\\"../common/Types.sol\\\";\\nimport \\\"./pantherVerifier/Verifier.sol\\\";\\nimport \\\"./interfaces/IPantherVerifier.sol\\\";\\n\\ncontract PantherVerifier is Verifier, IPantherVerifier {\\n    /// @inheritdoc IPantherVerifier\\n    function getVerifyingKey(uint160 circuitId)\\n        external\\n        view\\n        override\\n        returns (VerifyingKey memory)\\n    {\\n        return loadVerifyingKey(circuitId);\\n    }\\n\\n    /// @dev It reads the verifying key from bytecode at `address(circuitId)`\\n    function loadVerifyingKey(uint160 circuitId)\\n        internal\\n        view\\n        virtual\\n        override\\n        returns (VerifyingKey memory)\\n    {\\n        return\\n            // Stored key MUST be `abi.encode`d and prepended by 0x00\\n            abi.decode(\\n                Bytecode.read(address(circuitId), DATA_OFFSET),\\n                (VerifyingKey)\\n            );\\n    }\\n\\n    // Keys in deployed bytecode MUST be prepended by 0x00 (STOP opcode)\\n    uint256 private constant DATA_OFFSET = 1;\\n}\\n\",\"keccak256\":\"0x3fc0c1694252f22b1835908c66de58cde313b2d527e0fa7d65eee4c43e8f4cb5\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/crypto/EllipticCurveMath.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0\\npragma solidity ^0.8.16;\\n\\nimport { G1Point, G2Point } from \\\"../../common/Types.sol\\\";\\nimport { PRIME_Q } from \\\"./SnarkConstants.sol\\\";\\n\\n/// @dev This is slightly modified `library Paring` generated by the `snarkjs` lib (v.0.6.9).\\nabstract contract EllipticCurveMath {\\n    /// @return the generator of G1\\n    function P1() internal pure returns (G1Point memory) {\\n        return G1Point(1, 2);\\n    }\\n\\n    /// @return the generator of G2\\n    function P2() internal pure returns (G2Point memory) {\\n        return\\n            G2Point(\\n                [\\n                    11559732032986387107991004021392285783925812861821192530917403151452391805634,\\n                    10857046999023057135944570762232829481370756359578518086990519993285655852781\\n                ],\\n                [\\n                    4082367875863433681332203403145435568316851327593401208105741076214120093531,\\n                    8495653923123431417604973247489272438418190587263600148770280649306958101930\\n                ]\\n            );\\n    }\\n\\n    /// @return r the negation of p, i.e. p.addition(p.negate()) should be zero.\\n    function negate(G1Point memory p) internal pure returns (G1Point memory r) {\\n        if (p.x == 0 && p.y == 0) return G1Point(0, 0);\\n        return G1Point(p.x, PRIME_Q - (p.y % PRIME_Q));\\n    }\\n\\n    /// @return r the sum of two points of G1\\n    function addition(G1Point memory p1, G1Point memory p2)\\n        internal\\n        view\\n        returns (G1Point memory r)\\n    {\\n        uint256[4] memory input;\\n        input[0] = p1.x;\\n        input[1] = p1.y;\\n        input[2] = p2.x;\\n        input[3] = p2.y;\\n        bool success;\\n        // solium-disable-next-line security/no-inline-assembly\\n        assembly {\\n            success := staticcall(sub(gas(), 2000), 6, input, 0xc0, r, 0x60)\\n            // Use \\\"invalid\\\" to make gas estimation work\\n            switch success\\n            case 0 {\\n                invalid()\\n            }\\n        }\\n        require(success, \\\"pairing-add-failed\\\");\\n    }\\n\\n    /// @return r the product of a point on G1 and a scalar, i.e.\\n    /// p == p.scalar_mul(1) and p.addition(p) == p.scalar_mul(2) for all points p.\\n    function scalar_mul(G1Point memory p, uint256 s)\\n        internal\\n        view\\n        returns (G1Point memory r)\\n    {\\n        uint256[3] memory input;\\n        input[0] = p.x;\\n        input[1] = p.y;\\n        input[2] = s;\\n        bool success;\\n        // solium-disable-next-line security/no-inline-assembly\\n        assembly {\\n            success := staticcall(sub(gas(), 2000), 7, input, 0x80, r, 0x60)\\n            // Use \\\"invalid\\\" to make gas estimation work\\n            switch success\\n            case 0 {\\n                invalid()\\n            }\\n        }\\n        require(success, \\\"pairing-mul-failed\\\");\\n    }\\n\\n    /// @return the result of computing the pairing check\\n    /// e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1\\n    /// For example pairing([P1(), P1().negate()], [P2(), P2()]) should\\n    /// return true.\\n    function pairing(G1Point[] memory p1, G2Point[] memory p2)\\n        internal\\n        view\\n        returns (bool)\\n    {\\n        require(p1.length == p2.length, \\\"pairing-lengths-failed\\\");\\n        uint256 elements = p1.length;\\n        uint256 inputSize = elements * 6;\\n        uint256[] memory input = new uint256[](inputSize);\\n        for (uint256 i = 0; i < elements; i++) {\\n            input[i * 6 + 0] = p1[i].x;\\n            input[i * 6 + 1] = p1[i].y;\\n            input[i * 6 + 2] = p2[i].x[0];\\n            input[i * 6 + 3] = p2[i].x[1];\\n            input[i * 6 + 4] = p2[i].y[0];\\n            input[i * 6 + 5] = p2[i].y[1];\\n        }\\n        uint256[1] memory out;\\n        bool success;\\n        // solium-disable-next-line security/no-inline-assembly\\n        assembly {\\n            success := staticcall(\\n                sub(gas(), 2000),\\n                8,\\n                add(input, 0x20),\\n                mul(inputSize, 0x20),\\n                out,\\n                0x20\\n            )\\n            // Use \\\"invalid\\\" to make gas estimation work\\n            switch success\\n            case 0 {\\n                invalid()\\n            }\\n        }\\n        require(success, \\\"pairing-opcode-failed\\\");\\n        return out[0] != 0;\\n    }\\n\\n    /// Convenience method for a pairing check for four pairs.\\n    function pairingProd4(\\n        G1Point memory a1,\\n        G2Point memory a2,\\n        G1Point memory b1,\\n        G2Point memory b2,\\n        G1Point memory c1,\\n        G2Point memory c2,\\n        G1Point memory d1,\\n        G2Point memory d2\\n    ) internal view returns (bool) {\\n        G1Point[] memory p1 = new G1Point[](4);\\n        G2Point[] memory p2 = new G2Point[](4);\\n        p1[0] = a1;\\n        p1[1] = b1;\\n        p1[2] = c1;\\n        p1[3] = d1;\\n        p2[0] = a2;\\n        p2[1] = b2;\\n        p2[2] = c2;\\n        p2[3] = d2;\\n        return pairing(p1, p2);\\n    }\\n}\\n\",\"keccak256\":\"0x0d39144ed21d5c380ee9ef1d673b82d9e99077d17634dd7cf535a5856a2d86c0\",\"license\":\"GPL-3.0\"},\"contracts/protocol/crypto/SnarkConstants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// solhint-disable var-name-mixedcase\\npragma solidity ^0.8.16;\\n\\n// @dev Order of alt_bn128 and the field prime of Baby Jubjub and Poseidon hash\\nuint256 constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;\\n\\n// @dev Field prime of alt_bn128\\nuint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;\\n\\n// @dev Circuit extra public input as work-around for recently found groth16 vulnerability\\nuint256 constant MAGICAL_CONSTRAINT = 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00;\\n\",\"keccak256\":\"0x1f749f386195d007265bd0c7853210af6f3633b13ad5c8e2999ab1805a492f43\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/interfaces/IPantherVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { VerifyingKey } from \\\"../../common/Types.sol\\\";\\nimport \\\"./IVerifier.sol\\\";\\n\\ninterface IPantherVerifier is IVerifier {\\n    /**\\n     * @notice Get the verifying key for the specified circuits\\n     * @param circuitId ID of the circuit\\n     * @dev circuitId is an address where the key is deployed as bytecode\\n     * @return Verifying key\\n     */\\n    function getVerifyingKey(uint160 circuitId)\\n        external\\n        view\\n        returns (VerifyingKey memory);\\n}\\n\",\"keccak256\":\"0x2e6abbc2b48d0c695bada4c79aa4a8b70d3cf13d1bf725860512bbb8c31b028b\",\"license\":\"MIT\"},\"contracts/protocol/interfaces/IVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { SnarkProof } from \\\"../../common/Types.sol\\\";\\nimport \\\"./IVerifier.sol\\\";\\n\\ninterface IVerifier {\\n    /**\\n     * @notice Verify the SNARK proof\\n     * @param circuitId ID of the circuit (it tells which verifying key to use)\\n     * @param input Public input signals\\n     * @param proof SNARK proof\\n     * @return isVerified bool true if proof is valid\\n     */\\n    function verify(\\n        uint160 circuitId,\\n        uint256[] memory input,\\n        SnarkProof memory proof\\n    ) external view returns (bool isVerified);\\n}\\n\",\"keccak256\":\"0x33bce2a4dfeafbb2149077d2d14d0682dbdc51b9f5e0566a57c69fe62c0356d5\",\"license\":\"MIT\"},\"contracts/protocol/pantherVerifier/Verifier.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0\\npragma solidity ^0.8.16;\\n\\nimport { SnarkProof, VerifyingKey } from \\\"../../common/Types.sol\\\";\\nimport { DEAD_CODE_ADDRESS } from \\\"../../common/Constants.sol\\\";\\nimport \\\"../interfaces/IVerifier.sol\\\";\\nimport \\\"../crypto/EllipticCurveMath.sol\\\";\\nimport { FIELD_SIZE } from \\\"../crypto/SnarkConstants.sol\\\";\\n\\n/// @dev This is slightly modified code generated by the `snarkjs` lib (v.0.6.9).\\nabstract contract Verifier is EllipticCurveMath, IVerifier {\\n    /// @inheritdoc IVerifier\\n    function verify(\\n        uint160 circuitId,\\n        uint256[] memory input,\\n        SnarkProof memory proof\\n    ) public view override returns (bool isVerified) {\\n        VerifyingKey memory vk = loadVerifyingKey(circuitId);\\n        require(input.length + 1 == vk.ic.length, \\\"verifier-bad-input\\\");\\n\\n        // Compute the linear combination vk_x\\n        G1Point memory vk_x = G1Point(0, 0);\\n        for (uint256 i = 0; i < input.length; i++) {\\n            require(input[i] < FIELD_SIZE, \\\"verifier-gte-snark-scalar-field\\\");\\n            vk_x = addition(vk_x, scalar_mul(vk.ic[i + 1], input[i]));\\n        }\\n        vk_x = addition(vk_x, vk.ic[0]);\\n\\n        isVerified =\\n            pairingProd4(\\n                negate(proof.a),\\n                proof.b,\\n                vk.alfa1,\\n                vk.beta2,\\n                vk_x,\\n                vk.gamma2,\\n                proof.c,\\n                vk.delta2\\n            ) ||\\n            // May ever be TRUE in local tests only, has no effect in prod env.\\n            // (must follow computations above to better estimate gas in tests)\\n            tx.origin == DEAD_CODE_ADDRESS;\\n    }\\n\\n    function loadVerifyingKey(uint160 circuitId)\\n        internal\\n        view\\n        virtual\\n        returns (VerifyingKey memory);\\n}\\n\",\"keccak256\":\"0x91d03201bdf987e3403fa755bface346568e3ff161b10a561d8a89c1ee187cd9\",\"license\":\"GPL-3.0\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506111af806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80633bd61b361461003b5780639ea4cf6e14610064575b600080fd5b61004e610049366004610b5c565b610087565b60405161005b9190610bc9565b60405180910390f35b610077610072366004610e6d565b61009e565b604051901515815260200161005b565b61008f610a45565b6100988261029a565b92915050565b6000806100aa8561029a565b9050806080015151845160016100c09190610f3e565b146101125760405162461bcd60e51b815260206004820152601260248201527f76657269666965722d6261642d696e707574000000000000000000000000000060448201526064015b60405180910390fd5b604080518082019091526000808252602082018190525b8551811015610223577f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f000000186828151811061016557610165610f51565b6020026020010151106101ba5760405162461bcd60e51b815260206004820152601f60248201527f76657269666965722d6774652d736e61726b2d7363616c61722d6669656c64006044820152606401610109565b61020f8261020a85608001518460016101d39190610f3e565b815181106101e3576101e3610f51565b60200260200101518985815181106101fd576101fd610f51565b60200260200101516102c0565b610361565b91508061021b81610f67565b915050610129565b5061024c81836080015160008151811061023f5761023f610f51565b6020026020010151610361565b905061028261025e8560000151610405565b8560200151846000015185602001518587604001518a6040015189606001516104bf565b8061029057503263deadc0de145b9695505050505050565b6102a2610a45565b6102ad82600161064a565b8060200190518101906100989190611035565b60408051808201909152600080825260208201526102dc610a96565b835181526020808501519082015260408101839052600060608360808460076107d05a03fa9050808061030b57fe5b50806103595760405162461bcd60e51b815260206004820152601260248201527f70616972696e672d6d756c2d6661696c656400000000000000000000000000006044820152606401610109565b505092915050565b604080518082019091526000808252602082015261037d610ab4565b8351815260208085015181830152835160408301528301516060808301919091526000908360c08460066107d05a03fa905080806103b757fe5b50806103595760405162461bcd60e51b815260206004820152601260248201527f70616972696e672d6164642d6661696c656400000000000000000000000000006044820152606401610109565b6040805180820190915260008082526020820152815115801561042a57506020820151155b15610448575050604080518082019091526000808252602082015290565b6040518060400160405280836000015181526020017f30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47846020015161048d919061114e565b6104b7907f30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47611170565b905292915050565b60408051600480825260a08201909252600091829190816020015b60408051808201909152600080825260208201528152602001906001900390816104da57505060408051600480825260a0820190925291925060009190602082015b610524610ad2565b81526020019060019003908161051c5790505090508a8260008151811061054d5761054d610f51565b6020026020010181905250888260018151811061056c5761056c610f51565b6020026020010181905250868260028151811061058b5761058b610f51565b602002602001018190525084826003815181106105aa576105aa610f51565b602002602001018190525089816000815181106105c9576105c9610f51565b602002602001018190525087816001815181106105e8576105e8610f51565b6020026020010181905250858160028151811061060757610607610f51565b6020026020010181905250838160038151811061062657610626610f51565b602002602001018190525061063b82826106de565b9b9a5050505050505050505050565b606073ffffffffffffffffffffffffffffffffffffffff83163b828110156106b45760405162461bcd60e51b815260206004820152600d60248201527f4f55545f4f465f424f554e4453000000000000000000000000000000000000006044820152606401610109565b60408051603f92859003928301601f191681019091528181529150808360208401863c5092915050565b600081518351146107315760405162461bcd60e51b815260206004820152601660248201527f70616972696e672d6c656e677468732d6661696c6564000000000000000000006044820152606401610109565b82516000610740826006611183565b905060008167ffffffffffffffff81111561075d5761075d610c7c565b604051908082528060200260200182016040528015610786578160200160208202803683370190505b50905060005b838110156109c1578681815181106107a6576107a6610f51565b602002602001015160000151828260066107c09190611183565b6107cb906000610f3e565b815181106107db576107db610f51565b6020026020010181815250508681815181106107f9576107f9610f51565b602002602001015160200151828260066108139190611183565b61081e906001610f3e565b8151811061082e5761082e610f51565b60200260200101818152505085818151811061084c5761084c610f51565b6020908102919091010151515182610865836006611183565b610870906002610f3e565b8151811061088057610880610f51565b60200260200101818152505085818151811061089e5761089e610f51565b602090810291909101810151510151826108b9836006611183565b6108c4906003610f3e565b815181106108d4576108d4610f51565b6020026020010181815250508581815181106108f2576108f2610f51565b60200260200101516020015160006002811061091057610910610f51565b602002015182610921836006611183565b61092c906004610f3e565b8151811061093c5761093c610f51565b60200260200101818152505085818151811061095a5761095a610f51565b60200260200101516020015160016002811061097857610978610f51565b602002015182610989836006611183565b610994906005610f3e565b815181106109a4576109a4610f51565b6020908102919091010152806109b981610f67565b91505061078c565b506109ca610af7565b6000602082602086026020860160086107d05a03fa905080806109e957fe5b5080610a375760405162461bcd60e51b815260206004820152601560248201527f70616972696e672d6f70636f64652d6661696c656400000000000000000000006044820152606401610109565b505115159695505050505050565b6040805160e08101909152600060a0820181815260c0830191909152815260208101610a6f610ad2565b8152602001610a7c610ad2565b8152602001610a89610ad2565b8152602001606081525090565b60405180606001604052806003906020820280368337509192915050565b60405180608001604052806004906020820280368337509192915050565b6040518060400160405280610ae5610b15565b8152602001610af2610b15565b905290565b60405180602001604052806001906020820280368337509192915050565b60405180604001604052806002906020820280368337509192915050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610b5757600080fd5b919050565b600060208284031215610b6e57600080fd5b610b7782610b33565b9392505050565b8060005b6002811015610ba1578151845260209384019390910190600101610b82565b50505050565b610bb2828251610b7e565b6020810151610bc46040840182610b7e565b505050565b602080825282518051838301528101516040830152600090610200830181850151610bf76060860182610ba7565b50604080860151610c0b60e0870182610ba7565b506060860151610c1f610160870182610ba7565b5060808601516101e0868101528051928390528301916000906102208701905b80831015610c7057610c5c82865180518252602090810151910152565b938501936001929092019190830190610c3f565b50979650505050505050565b634e487b7160e01b600052604160045260246000fd5b6040805190810167ffffffffffffffff81118282101715610cb557610cb5610c7c565b60405290565b60405160a0810167ffffffffffffffff81118282101715610cb557610cb5610c7c565b604051601f8201601f1916810167ffffffffffffffff81118282101715610d0757610d07610c7c565b604052919050565b600067ffffffffffffffff821115610d2957610d29610c7c565b5060051b60200190565b600060408284031215610d4557600080fd5b610d4d610c92565b9050813581526020820135602082015292915050565b600082601f830112610d7457600080fd5b610d7c610c92565b806040840185811115610d8e57600080fd5b845b81811015610da8578035845260209384019301610d90565b509095945050505050565b6000818303610100811215610dc757600080fd5b604080516060810167ffffffffffffffff8282108183111715610dec57610dec610c7c565b818452829550610dfc8888610d33565b83526080603f1986011215610e1057600080fd5b8351945083850191508482108183111715610e2d57610e2d610c7c565b508252610e3c86868401610d63565b8352610e4b8660808701610d63565b6020840152826020820152610e638660c08701610d33565b9101525092915050565b60008060006101408486031215610e8357600080fd5b610e8c84610b33565b925060208085013567ffffffffffffffff811115610ea957600080fd5b8501601f81018713610eba57600080fd5b8035610ecd610ec882610d0f565b610cde565b81815260059190911b82018301908381019089831115610eec57600080fd5b928401925b82841015610f0a57833582529284019290840190610ef1565b8096505050505050610f1f8560408601610db3565b90509250925092565b634e487b7160e01b600052601160045260246000fd5b8082018082111561009857610098610f28565b634e487b7160e01b600052603260045260246000fd5b600060018201610f7957610f79610f28565b5060010190565b600060408284031215610f9257600080fd5b610f9a610c92565b9050815181526020820151602082015292915050565b600082601f830112610fc157600080fd5b610fc9610c92565b806040840185811115610fdb57600080fd5b845b81811015610da8578051845260209384019301610fdd565b60006080828403121561100757600080fd5b61100f610c92565b905061101b8383610fb0565b815261102a8360408401610fb0565b602082015292915050565b6000602080838503121561104857600080fd5b825167ffffffffffffffff8082111561106057600080fd5b908401906101e0828703121561107557600080fd5b61107d610cbb565b6110878784610f80565b8152604061109788828601610ff5565b858301526110a88860c08601610ff5565b818301526110ba886101408601610ff5565b60608301526101c0840151838111156110d257600080fd5b80850194505087601f8501126110e757600080fd5b835192506110f7610ec884610d0f565b83815260069390931b8401850192858101908985111561111657600080fd5b948601945b8486101561113c5761112d8a87610f80565b8252948201949086019061111b565b60808401525090979650505050505050565b60008261116b57634e487b7160e01b600052601260045260246000fd5b500690565b8181038181111561009857610098610f28565b600081600019048311821515161561119d5761119d610f28565b50029056fea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80633bd61b361461003b5780639ea4cf6e14610064575b600080fd5b61004e610049366004610b5c565b610087565b60405161005b9190610bc9565b60405180910390f35b610077610072366004610e6d565b61009e565b604051901515815260200161005b565b61008f610a45565b6100988261029a565b92915050565b6000806100aa8561029a565b9050806080015151845160016100c09190610f3e565b146101125760405162461bcd60e51b815260206004820152601260248201527f76657269666965722d6261642d696e707574000000000000000000000000000060448201526064015b60405180910390fd5b604080518082019091526000808252602082018190525b8551811015610223577f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f000000186828151811061016557610165610f51565b6020026020010151106101ba5760405162461bcd60e51b815260206004820152601f60248201527f76657269666965722d6774652d736e61726b2d7363616c61722d6669656c64006044820152606401610109565b61020f8261020a85608001518460016101d39190610f3e565b815181106101e3576101e3610f51565b60200260200101518985815181106101fd576101fd610f51565b60200260200101516102c0565b610361565b91508061021b81610f67565b915050610129565b5061024c81836080015160008151811061023f5761023f610f51565b6020026020010151610361565b905061028261025e8560000151610405565b8560200151846000015185602001518587604001518a6040015189606001516104bf565b8061029057503263deadc0de145b9695505050505050565b6102a2610a45565b6102ad82600161064a565b8060200190518101906100989190611035565b60408051808201909152600080825260208201526102dc610a96565b835181526020808501519082015260408101839052600060608360808460076107d05a03fa9050808061030b57fe5b50806103595760405162461bcd60e51b815260206004820152601260248201527f70616972696e672d6d756c2d6661696c656400000000000000000000000000006044820152606401610109565b505092915050565b604080518082019091526000808252602082015261037d610ab4565b8351815260208085015181830152835160408301528301516060808301919091526000908360c08460066107d05a03fa905080806103b757fe5b50806103595760405162461bcd60e51b815260206004820152601260248201527f70616972696e672d6164642d6661696c656400000000000000000000000000006044820152606401610109565b6040805180820190915260008082526020820152815115801561042a57506020820151155b15610448575050604080518082019091526000808252602082015290565b6040518060400160405280836000015181526020017f30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47846020015161048d919061114e565b6104b7907f30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47611170565b905292915050565b60408051600480825260a08201909252600091829190816020015b60408051808201909152600080825260208201528152602001906001900390816104da57505060408051600480825260a0820190925291925060009190602082015b610524610ad2565b81526020019060019003908161051c5790505090508a8260008151811061054d5761054d610f51565b6020026020010181905250888260018151811061056c5761056c610f51565b6020026020010181905250868260028151811061058b5761058b610f51565b602002602001018190525084826003815181106105aa576105aa610f51565b602002602001018190525089816000815181106105c9576105c9610f51565b602002602001018190525087816001815181106105e8576105e8610f51565b6020026020010181905250858160028151811061060757610607610f51565b6020026020010181905250838160038151811061062657610626610f51565b602002602001018190525061063b82826106de565b9b9a5050505050505050505050565b606073ffffffffffffffffffffffffffffffffffffffff83163b828110156106b45760405162461bcd60e51b815260206004820152600d60248201527f4f55545f4f465f424f554e4453000000000000000000000000000000000000006044820152606401610109565b60408051603f92859003928301601f191681019091528181529150808360208401863c5092915050565b600081518351146107315760405162461bcd60e51b815260206004820152601660248201527f70616972696e672d6c656e677468732d6661696c6564000000000000000000006044820152606401610109565b82516000610740826006611183565b905060008167ffffffffffffffff81111561075d5761075d610c7c565b604051908082528060200260200182016040528015610786578160200160208202803683370190505b50905060005b838110156109c1578681815181106107a6576107a6610f51565b602002602001015160000151828260066107c09190611183565b6107cb906000610f3e565b815181106107db576107db610f51565b6020026020010181815250508681815181106107f9576107f9610f51565b602002602001015160200151828260066108139190611183565b61081e906001610f3e565b8151811061082e5761082e610f51565b60200260200101818152505085818151811061084c5761084c610f51565b6020908102919091010151515182610865836006611183565b610870906002610f3e565b8151811061088057610880610f51565b60200260200101818152505085818151811061089e5761089e610f51565b602090810291909101810151510151826108b9836006611183565b6108c4906003610f3e565b815181106108d4576108d4610f51565b6020026020010181815250508581815181106108f2576108f2610f51565b60200260200101516020015160006002811061091057610910610f51565b602002015182610921836006611183565b61092c906004610f3e565b8151811061093c5761093c610f51565b60200260200101818152505085818151811061095a5761095a610f51565b60200260200101516020015160016002811061097857610978610f51565b602002015182610989836006611183565b610994906005610f3e565b815181106109a4576109a4610f51565b6020908102919091010152806109b981610f67565b91505061078c565b506109ca610af7565b6000602082602086026020860160086107d05a03fa905080806109e957fe5b5080610a375760405162461bcd60e51b815260206004820152601560248201527f70616972696e672d6f70636f64652d6661696c656400000000000000000000006044820152606401610109565b505115159695505050505050565b6040805160e08101909152600060a0820181815260c0830191909152815260208101610a6f610ad2565b8152602001610a7c610ad2565b8152602001610a89610ad2565b8152602001606081525090565b60405180606001604052806003906020820280368337509192915050565b60405180608001604052806004906020820280368337509192915050565b6040518060400160405280610ae5610b15565b8152602001610af2610b15565b905290565b60405180602001604052806001906020820280368337509192915050565b60405180604001604052806002906020820280368337509192915050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610b5757600080fd5b919050565b600060208284031215610b6e57600080fd5b610b7782610b33565b9392505050565b8060005b6002811015610ba1578151845260209384019390910190600101610b82565b50505050565b610bb2828251610b7e565b6020810151610bc46040840182610b7e565b505050565b602080825282518051838301528101516040830152600090610200830181850151610bf76060860182610ba7565b50604080860151610c0b60e0870182610ba7565b506060860151610c1f610160870182610ba7565b5060808601516101e0868101528051928390528301916000906102208701905b80831015610c7057610c5c82865180518252602090810151910152565b938501936001929092019190830190610c3f565b50979650505050505050565b634e487b7160e01b600052604160045260246000fd5b6040805190810167ffffffffffffffff81118282101715610cb557610cb5610c7c565b60405290565b60405160a0810167ffffffffffffffff81118282101715610cb557610cb5610c7c565b604051601f8201601f1916810167ffffffffffffffff81118282101715610d0757610d07610c7c565b604052919050565b600067ffffffffffffffff821115610d2957610d29610c7c565b5060051b60200190565b600060408284031215610d4557600080fd5b610d4d610c92565b9050813581526020820135602082015292915050565b600082601f830112610d7457600080fd5b610d7c610c92565b806040840185811115610d8e57600080fd5b845b81811015610da8578035845260209384019301610d90565b509095945050505050565b6000818303610100811215610dc757600080fd5b604080516060810167ffffffffffffffff8282108183111715610dec57610dec610c7c565b818452829550610dfc8888610d33565b83526080603f1986011215610e1057600080fd5b8351945083850191508482108183111715610e2d57610e2d610c7c565b508252610e3c86868401610d63565b8352610e4b8660808701610d63565b6020840152826020820152610e638660c08701610d33565b9101525092915050565b60008060006101408486031215610e8357600080fd5b610e8c84610b33565b925060208085013567ffffffffffffffff811115610ea957600080fd5b8501601f81018713610eba57600080fd5b8035610ecd610ec882610d0f565b610cde565b81815260059190911b82018301908381019089831115610eec57600080fd5b928401925b82841015610f0a57833582529284019290840190610ef1565b8096505050505050610f1f8560408601610db3565b90509250925092565b634e487b7160e01b600052601160045260246000fd5b8082018082111561009857610098610f28565b634e487b7160e01b600052603260045260246000fd5b600060018201610f7957610f79610f28565b5060010190565b600060408284031215610f9257600080fd5b610f9a610c92565b9050815181526020820151602082015292915050565b600082601f830112610fc157600080fd5b610fc9610c92565b806040840185811115610fdb57600080fd5b845b81811015610da8578051845260209384019301610fdd565b60006080828403121561100757600080fd5b61100f610c92565b905061101b8383610fb0565b815261102a8360408401610fb0565b602082015292915050565b6000602080838503121561104857600080fd5b825167ffffffffffffffff8082111561106057600080fd5b908401906101e0828703121561107557600080fd5b61107d610cbb565b6110878784610f80565b8152604061109788828601610ff5565b858301526110a88860c08601610ff5565b818301526110ba886101408601610ff5565b60608301526101c0840151838111156110d257600080fd5b80850194505087601f8501126110e757600080fd5b835192506110f7610ec884610d0f565b83815260069390931b8401850192858101908985111561111657600080fd5b948601945b8486101561113c5761112d8a87610f80565b8252948201949086019061111b565b60808401525090979650505050505050565b60008261116b57634e487b7160e01b600052601260045260246000fd5b500690565b8181038181111561009857610098610f28565b600081600019048311821515161561119d5761119d610f28565b50029056fea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "getVerifyingKey(uint160)": {
+        "details": "circuitId is an address where the key is deployed as bytecode",
+        "params": {
+          "circuitId": "ID of the circuit"
+        },
+        "returns": {
+          "_0": "Verifying key"
+        }
+      },
+      "verify(uint160,uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)))": {
+        "params": {
+          "circuitId": "ID of the circuit (it tells which verifying key to use)",
+          "input": "Public input signals",
+          "proof": "SNARK proof"
+        },
+        "returns": {
+          "isVerified": "bool true if proof is valid"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getVerifyingKey(uint160)": {
+        "notice": "Get the verifying key for the specified circuits"
+      },
+      "verify(uint160,uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)))": {
+        "notice": "Verify the SNARK proof"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

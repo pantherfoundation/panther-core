@@ -42,6 +42,10 @@ uint8 constant UTXO_DATA_TYPE5 = 0x00; // for zero UTXO (no data to provide)
 uint8 constant UTXO_DATA_TYPE1 = 0x01; // for UTXO w/ zero tokenId
 uint8 constant UTXO_DATA_TYPE3 = 0x02; // for UTXO w/ non-zero tokenId
 
+// Grant Types
+// bytes4(keccak('panther-onboarding-grantor'))
+bytes4 constant GT_ONBOARDING = 0x93b212ae;
+
 // Number of 32-bit words of the CiphertextMsg for UTXO_DATA_TYPE1
 // (ephemeral key (packed) - 32 bytes, encrypted `random` - 32 bytes)
 uint256 constant CIPHERTEXT1_WORDS = 2;

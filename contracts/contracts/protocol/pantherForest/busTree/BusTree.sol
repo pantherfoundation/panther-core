@@ -5,11 +5,11 @@ pragma solidity ^0.8.16;
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 import "../interfaces/ITreeRootGetter.sol";
+import { FIELD_SIZE } from "../../crypto/SnarkConstants.sol";
 import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "../zeroTrees/Constants.sol";
-// TODO: remove MAGICAL_CONSTRAINT as a constant and make it a pub input var
 import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constants.sol";
-import { MAGICAL_CONSTRAINT } from "../../crypto/SnarkConstants.sol";
 import "../interfaces/ITreeRootUpdater.sol";
+import "../../errMsgs/BusTreeErrMsgs.sol";
 
 /**
  * @dev The Bus Tree ("Tree") is an incremental binary Merkle tree that stores
@@ -25,9 +25,11 @@ import "../interfaces/ITreeRootUpdater.sol";
  * constitutes replacement of an inner node of the Tree with the Batch root.
  * To ease off-chain re-construction, roots of Tree's branches ("Branches") are
  * published via on-chain logs.
+ * Each time the Bus Tree root is updated, this contract MUST call PantherPoolV1
+ * contract to trigger updates of that contract state (see PantherForest).
  */
 abstract contract BusTree is BusQueues, ITreeRootGetter {
-    // TODO: adding gap to the beginning and end of the storage
+    // TODO: add gap to the beginning and end of the storage
 
     // solhint-disable var-name-mixedcase
     bytes32 internal constant EMPTY_BUS_TREE_ROOT =
@@ -83,11 +85,11 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         uint160 _circuitId,
         address _pantherPool
     ) {
-        require(_pantherPool != address(0), "init: zero address");
+        require(_pantherPool != address(0), ERR_INIT);
         require(
             IPantherVerifier(_verifier).getVerifyingKey(_circuitId).ic.length >=
                 1,
-            "BT:INVALID_VK"
+            ERR_INVALID_VK
         );
         VERIFIER = IPantherVerifier(_verifier);
         CIRCUIT_ID = _circuitId;
@@ -119,45 +121,69 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         latestBatchBlock = _latestBatchBlock;
     }
 
+    /// @dev ZK-circuit public signals:
+    /// @param inputs[0] - oldRoot (BusTree root before insertion)
+    /// @param inputs[1] - newRoot (BusTree root after insertion)
+    /// @param inputs[2] - replacedNodeIndex
+    /// @param inputs[3] - newLeafsCommitment (commitment to leafs in batch)
+    /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
+    /// @param inputs[5] - batchRoot (Root of the batch to insert)
+    /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
+    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
+    /// @param inputs[8] - magicalConstraint (non-zero random number)
     function onboardQueue(
         address miner,
         uint32 queueId,
-        bytes32 busTreeNewRoot,
-        bytes32 batchRoot,
-        bytes32 busBranchNewRoot,
+        uint256[] memory inputs,
         SnarkProof memory proof
     ) external nonEmptyBusQueue(queueId) {
+        {
+            bytes32 oldRoot = bytes32(inputs[0]);
+            require(oldRoot == getRoot(), ERR_INVALID_BUS_TREE_ROOT);
+        }
+        {
+            bytes memory extraInput = abi.encodePacked(miner, queueId);
+            uint256 extraInputHash = inputs[7];
+            require(
+                extraInputHash == uint256(keccak256(extraInput)) % FIELD_SIZE,
+                ERR_INVALID_EXTRA_INP
+            );
+        }
+        {
+            uint256 magicalConstraint = inputs[8];
+            require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
+        }
+
         uint32 nBatches = _numBatchesInBusTree;
+        {
+            uint256 replacedNodeIndex = inputs[2];
+            require(replacedNodeIndex == nBatches, ERR_INVALID_REPLACE_INDEX);
+        }
+
         (
             bytes32 commitment,
             uint8 nUtxos,
             uint96 reward
         ) = setBusQueueAsProcessed(queueId);
-
-        // Circuit public input signals
-        uint256[] memory input = new uint256[](9);
-        // `oldRoot` signal
-        input[0] = uint256(getRoot());
-        // `newRoot` signal
-        input[1] = uint256(busTreeNewRoot);
-        // `replacedNodeIndex` signal
-        input[2] = nBatches;
-        // `newLeafsCommitment` signal
-        input[3] = uint256(commitment);
-        // `nNonEmptyNewLeafs` signal
-        input[4] = uint256(nUtxos);
-        // `batchRoot` signal
-        input[5] = uint256(batchRoot);
-        // `branchRoot` signal
-        input[6] = uint256(busBranchNewRoot);
-        // `extraInput` signal (front-run protection)
-        input[7] = uint256(uint160(miner));
-        // magicalConstraint
-        input[8] = MAGICAL_CONSTRAINT;
+        {
+            uint256 newLeafsCommitment = inputs[3];
+            require(
+                newLeafsCommitment == uint256(commitment),
+                ERR_INVALID_LEAFS_COMMIT
+            );
+        }
+        {
+            uint256 nNonEmptyNewLeafs = inputs[4];
+            require(nNonEmptyNewLeafs == nUtxos, ERR_INVALID_LEAFS_NUM);
+        }
 
         // Verify the proof
-        require(VERIFIER.verify(CIRCUIT_ID, input, proof), "BT:FAILED_PROOF");
+        require(
+            VERIFIER.verify(CIRCUIT_ID, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
 
+        bytes32 busBranchNewRoot = bytes32(inputs[6]);
         {
             // Overflow risk ignored
             uint40 curBlock = uint40(block.number);
@@ -176,20 +202,22 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
             }
         }
 
-        ITreeRootUpdater(PANTHER_POOL).updateRoot(
-            busTreeNewRoot,
-            BUS_TREE_FOREST_LEAF_INDEX
-        );
-
         // Store updated Bus Tree params
+        bytes32 busTreeNewRoot = bytes32(inputs[1]);
         _busTreeRoot = busTreeNewRoot;
         // Overflow impossible as nUtxos and _numBatchesInBusTree are limited
         _numBatchesInBusTree = nBatches + 1;
         _numUtxosInBusTree += nUtxos;
 
+        // Synchronize the sate of `PantherForest` contract
+        ITreeRootUpdater(PANTHER_POOL).updateRoot(
+            busTreeNewRoot,
+            BUS_TREE_FOREST_LEAF_INDEX
+        );
+
         // `<< BATCH_LEVELS` is equivalent to `* 2**BATCH_LEVELS`
         uint32 leftLeafIndex = nBatches << uint32(BATCH_LEVELS);
-
+        bytes32 batchRoot = bytes32(inputs[5]);
         emit BusBatchOnboarded(
             queueId,
             batchRoot,
