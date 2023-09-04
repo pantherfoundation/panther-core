@@ -11,6 +11,7 @@ import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
 
 import "./zAccountsRegistry/BlacklistedZAccountIdsTree.sol";
 import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
+import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Types.sol";
@@ -34,11 +35,6 @@ contract ZAccountsRegistry is
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    enum ZACCOUNT_STATUS {
-        UNDEFINED,
-        REGISTERED,
-        ACTIVATED
-    }
     // solhint-disable var-name-mixedcase
 
     uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
@@ -189,14 +185,14 @@ contract ZAccountsRegistry is
     /// @param inputs[14] - magicalConstraint (passed w/o checks)
     function activateZAccount(
         uint256[] calldata inputs,
-        bytes memory secretMessage,
+        bytes memory privateMessages,
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                secretMessage,
+                privateMessages,
                 cachedForestRootIndex
             );
             require(
@@ -208,15 +204,6 @@ contract ZAccountsRegistry is
             uint256 zAccountPrpAmount = inputs[4];
             // No PRP rewards provided on zAccount activation
             require(zAccountPrpAmount == 0, ERR_UNEXPECTED_PRP_AMOUNT);
-        }
-        // TODO: review if some of pub signals checks should be moved to PantherPoolV1
-        {
-            uint256 zAccountCommitment = inputs[10];
-            require(zAccountCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
-        }
-        {
-            uint256 kycSignedMessageHash = inputs[11];
-            require(kycSignedMessageHash != 0, ERR_ZERO_KYC_MSG_HASH);
         }
 
         uint24 zAccountId = UtilsLib.safe24(inputs[3]);
@@ -262,7 +249,7 @@ contract ZAccountsRegistry is
                 zAccountMasterEOA,
                 uint8(userPrevStatus),
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
-                new bytes(0)
+                abi.encodePacked(inputs[13])
             );
             uint256 zkpAmount = inputs[1];
             require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);
@@ -271,7 +258,7 @@ contract ZAccountsRegistry is
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
-            secretMessage,
+            privateMessages,
             cachedForestRootIndex
         );
 
@@ -387,7 +374,7 @@ contract ZAccountsRegistry is
     function _createZAccountUTXO(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory secretMessage,
+        bytes memory privateMessages,
         uint256 cachedForestRootIndex
     ) private returns (uint256 utxoBusQueuePos) {
         utxoBusQueuePos = 0;
@@ -397,7 +384,8 @@ contract ZAccountsRegistry is
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
-                secretMessage,
+                address(ONBOARDING_CONTROLLER),
+                privateMessages,
                 cachedForestRootIndex
             )
         returns (uint256 result) {

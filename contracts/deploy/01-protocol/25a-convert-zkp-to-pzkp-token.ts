@@ -11,7 +11,7 @@ import {getContractAddress} from '../../lib/deploymentHelpers';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
 
-    const {artifacts, ethers} = hre;
+    const {artifacts, getNamedAccounts, ethers} = hre;
     const {deployer} = await getNamedAccounts();
 
     const MockFxPortalProxyAddress = await getContractAddress(

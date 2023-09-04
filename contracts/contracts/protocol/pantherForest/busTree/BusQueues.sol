@@ -245,8 +245,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
-    function addUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
+    function addUtxos(bytes32[] memory utxos, uint96 reward)
         internal
+        returns (uint32 firstQueueId, uint8 firstIndexInFirstQueue)
     {
         require(utxos.length < QUEUE_MAX_SIZE, "BQ:TOO_MANY_UTXOS");
 
@@ -266,6 +267,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
                 commitment = _busQueueCommitments[queueId];
             }
         }
+        firstQueueId = queueId;
+        firstIndexInFirstQueue = queue.nUtxos;
 
         // Block number overflow risk ignored
         uint40 curBlock = uint40(block.number);

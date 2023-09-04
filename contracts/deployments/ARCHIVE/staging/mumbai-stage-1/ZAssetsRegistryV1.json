@@ -1,0 +1,77 @@
+{
+  "address": "0xa8C440Dd412F0cdEEC70B3cA8921d2CbEB6F738b",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x77cbea26ed65acdb2c81e21b7e18e3c38449cb93f46406dd2bb2f11321961bef",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xa8C440Dd412F0cdEEC70B3cA8921d2CbEB6F738b",
+    "transactionIndex": 4,
+    "gasUsed": "76987",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008004000080020000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000001000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000002000000000000000000000000100000000000000008000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x7809a8e2a0d8b278aded601489b590e8fec2c76f7ab06e506e04d56341901792",
+    "transactionHash": "0x77cbea26ed65acdb2c81e21b7e18e3c38449cb93f46406dd2bb2f11321961bef",
+    "logs": [
+      {
+        "transactionIndex": 4,
+        "blockNumber": 38977537,
+        "transactionHash": "0x77cbea26ed65acdb2c81e21b7e18e3c38449cb93f46406dd2bb2f11321961bef",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000e7f13f6bc1e7f5ca4a6c9a255124ce22c46f8ef0"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000008c09dd931c00000000000000000000000000000000000000000000000000193a54417d6f21bb00000000000000000000000000000000000000000000001a096162b50e7f8bfc0000000000000000000000000000000000000000000000001939c8379fdc05bb00000000000000000000000000000000000000000000001a0961eebeec12a7fc",
+        "logIndex": 15,
+        "blockHash": "0x7809a8e2a0d8b278aded601489b590e8fec2c76f7ab06e506e04d56341901792"
+      }
+    ],
+    "blockNumber": 38977537,
+    "cumulativeGasUsed": "815001",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8ced4b4e64f70b0ab3e17932cf8fd4ee",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Pantherprotocol Contributors\",\"kind\":\"dev\",\"methods\":{},\"title\":\"ZAssetsRegistryV1\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getRoot()\":{\"notice\":\"ZAssets tree root generation This tree consists of a single leaf yet: testZKP on Mumbai      - leafIndex = 0      - commitment = poseidon([              0, // zAsset (zAssetId MUST be 0 for ZKP on all networks)              BigInt('0x4004C49aBb96B11D89A52DeCCa2D1522da7f3089'), // token (ZKP address on Mumbai)              0, // tokenId (irrelevant)              2, // network (mumbai)              0, // offset              1, // weight              12, // scale (UTXO amount = external amounts * 1e-12)          ]) = 0x04c47be1c966148d8373a2c9a8725fa5a648678416cbe5a39c1600b69e31666a               // (2156408421028048248978532747114059242009883911295094375617969196164719928938n)      - siblings = [              0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d,              0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4,              0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8,              0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c,              0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800,              0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f,              0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69,              0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f,              0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7,              0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718,              0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58,              0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f,              0x28ad970560de01e93b613aabc930fcaf087114743909783e3770a1ed07c2cde6,              0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d,              0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55,              0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c          ]\"}},\"notice\":\"Registry and whitelist of assets (tokens) supported by the Panther Protocol Multi-Asset Shielded Pool (aka \\\"MASP\\\")\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/ZAssetsRegistryV1.sol\":\"ZAssetsRegistryV1\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/ZAssetsRegistryV1.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"./pantherForest/interfaces/ITreeRootGetter.sol\\\";\\n\\n/**\\n * @title ZAssetsRegistryV1\\n * @author Pantherprotocol Contributors\\n * @notice Registry and whitelist of assets (tokens) supported by the Panther\\n * Protocol Multi-Asset Shielded Pool (aka \\\"MASP\\\")\\n */\\ncontract ZAssetsRegistryV1 is ITreeRootGetter {\\n    /**\\n     * ZAssets tree root generation\\n     * This tree consists of a single leaf yet: testZKP on Mumbai\\n     *      - leafIndex = 0\\n     *      - commitment = poseidon([\\n     *              0, // zAsset (zAssetId MUST be 0 for ZKP on all networks)\\n     *              BigInt('0x4004C49aBb96B11D89A52DeCCa2D1522da7f3089'), // token (ZKP address on Mumbai)\\n     *              0, // tokenId (irrelevant)\\n     *              2, // network (mumbai)\\n     *              0, // offset\\n     *              1, // weight\\n     *              12, // scale (UTXO amount = external amounts * 1e-12)\\n  \\n     *\\n     *          ]) = 0x04c47be1c966148d8373a2c9a8725fa5a648678416cbe5a39c1600b69e31666a\\n     *               // (2156408421028048248978532747114059242009883911295094375617969196164719928938n)\\n     *\\n     *      - siblings = [\\n     *              0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d,\\n     *              0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4,\\n     *              0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8,\\n     *              0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c,\\n     *              0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800,\\n     *              0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f,\\n     *              0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69,\\n     *              0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f,\\n     *              0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7,\\n     *              0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718,\\n     *              0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58,\\n     *              0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f,\\n     *              0x28ad970560de01e93b613aabc930fcaf087114743909783e3770a1ed07c2cde6,\\n     *              0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d,\\n     *              0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55,\\n     *              0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c\\n     *          ]\\n     */\\n    function getRoot() external pure returns (bytes32) {\\n        // 3723247354377620069387735695862260139005999863996254561023715046060291769010n\\n        return\\n            0x083b4887dfb6b09c333fdaea1a3ff792183758862ebb371b60de839b7a57c2b2;\\n    }\\n}\\n\",\"keccak256\":\"0x89d714325677a0ecf9f353c25deb6b682c1956f81fd4f07a7cee2f34754a39d3\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/pantherForest/interfaces/ITreeRootGetter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\ninterface ITreeRootGetter {\\n    function getRoot() external view returns (bytes32);\\n}\\n\",\"keccak256\":\"0xc6bb37fe4059cfe13c15f4c1d324b2de68a48348e136bf6cc72421f4721dc21d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50606d80601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f083b4887dfb6b09c333fdaea1a3ff792183758862ebb371b60de839b7a57c2b260405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f083b4887dfb6b09c333fdaea1a3ff792183758862ebb371b60de839b7a57c2b260405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "devdoc": {
+    "author": "Pantherprotocol Contributors",
+    "kind": "dev",
+    "methods": {},
+    "title": "ZAssetsRegistryV1",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getRoot()": {
+        "notice": "ZAssets tree root generation This tree consists of a single leaf yet: testZKP on Mumbai      - leafIndex = 0      - commitment = poseidon([              0, // zAsset (zAssetId MUST be 0 for ZKP on all networks)              BigInt('0x4004C49aBb96B11D89A52DeCCa2D1522da7f3089'), // token (ZKP address on Mumbai)              0, // tokenId (irrelevant)              2, // network (mumbai)              0, // offset              1, // weight              12, // scale (UTXO amount = external amounts * 1e-12)          ]) = 0x04c47be1c966148d8373a2c9a8725fa5a648678416cbe5a39c1600b69e31666a               // (2156408421028048248978532747114059242009883911295094375617969196164719928938n)      - siblings = [              0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d,              0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4,              0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8,              0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c,              0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800,              0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f,              0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69,              0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f,              0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7,              0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718,              0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58,              0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f,              0x28ad970560de01e93b613aabc930fcaf087114743909783e3770a1ed07c2cde6,              0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d,              0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55,              0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c          ]"
+      }
+    },
+    "notice": "Registry and whitelist of assets (tokens) supported by the Panther Protocol Multi-Asset Shielded Pool (aka \"MASP\")",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
