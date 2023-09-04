@@ -54,8 +54,6 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         require(rewardToken != address(0), ERR_PBT_INIT);
 
         REWARD_TOKEN = rewardToken;
-
-        lastUtxoSimulationTimestamp = uint32(block.timestamp);
     }
 
     modifier onlyPantherPool() {
