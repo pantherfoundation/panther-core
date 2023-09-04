@@ -61,6 +61,16 @@ export default {
             toLint,
         );
     },
+    'dapp/**/*.{scss}': async files => {
+        const prefix = process.cwd() + '/dapp/';
+        const toLint = await removeIgnoredFiles(
+            prefix,
+            'dapp/.eslintrc.json',
+            'dapp/.eslintignore',
+            files,
+        );
+        return run('yarn stylelint "dapp/**/*.scss"', toLint);
+    },
     'dapp/**/*.{js,jsx,ts,tsx}': async files => {
         const prefix = process.cwd() + '/dapp/';
         const toLint = await removeIgnoredFiles(
