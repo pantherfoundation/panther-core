@@ -20,9 +20,6 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
 
     // solhint-disable var-name-mixedcase
 
-    // timestamp of deployment
-    uint256 public immutable START_TIME;
-
     // address of reward token
     address public immutable REWARD_TOKEN;
 
@@ -42,6 +39,9 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     // keeps track of the timestamp of the latest added utxos
     uint32 public lastUtxoSimulationTimestamp;
 
+    // timestamp to start adding utxo
+    uint32 public startTime;
+
     event MinerRewarded(address miner, uint256 reward);
 
     constructor(
@@ -52,9 +52,6 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         uint160 _circuitId
     ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId, _pantherPool) {
         require(rewardToken != address(0), ERR_PBT_INIT);
-
-        // TODO: init start time in the `updateParams()`
-        START_TIME = 1688987658;
 
         REWARD_TOKEN = rewardToken;
 
@@ -79,6 +76,9 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
             _perMinuteUtxosLimit > 0 && _basePerUtxoReward > 0,
             ERR_ZERO_REWARD_PARAMS
         );
+
+        if (startTime == 0) startTime = uint32(block.timestamp);
+
         perMinuteUtxosLimit = _perMinuteUtxosLimit;
         basePerUtxoReward = _basePerUtxoReward;
     }
