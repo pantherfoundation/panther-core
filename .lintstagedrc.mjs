@@ -41,6 +41,9 @@ export default {
     '*': files => {
         return run('prettier --write', files);
     },
+    'dapp/**/*.scss': files => {
+        return run('yarn stylelint "**/*.scss', files);
+    },
     'contracts/**/*.sol': files => {
         return run(
             'yarn workspace @panther-core/contracts lint:solhint',
