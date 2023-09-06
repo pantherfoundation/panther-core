@@ -24,3 +24,4 @@ string constant ERR_UNEXPECTED_ZKP_AMOUNT = "ZAR:E12";
 string constant ERR_UNEXPECTED_PRP_AMOUNT = "ZAR:E13";
 string constant ERR_ZERO_ZACCOUNT_COMMIT = "ZAR:E14";
 string constant ERR_ZERO_KYC_MSG_HASH = "ZAR:E15";
+string constant ERR_NON_ZERO_ZKP_CHANGE = "ZAR:E16";
