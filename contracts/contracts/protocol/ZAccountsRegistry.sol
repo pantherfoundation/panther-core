@@ -192,6 +192,8 @@ contract ZAccountsRegistry is
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
         {
+            require(inputs[2] == 0, ERR_NON_ZERO_ZKP_CHANGE);
+
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
                 privateMessages,
