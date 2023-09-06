@@ -46,7 +46,8 @@ contract ZAccountsRegistry is
     // solhint-enable var-name-mixedcase
 
     struct ZAccount {
-        uint224 _unused; // reserved
+        uint192 _unused; // reserved
+        uint32 creationBlock; // timestamp of creation (registration)
         uint24 id; // the ZAccount id, starts from 0
         uint8 version; // ZAccount version
         bytes32 pubRootSpendingKey;
@@ -154,7 +155,8 @@ contract ZAccountsRegistry is
         uint24 zAccountId = uint24(_getNextZAccountId());
 
         ZAccount memory _zAccount = ZAccount({
-            _unused: uint224(0),
+            _unused: uint192(0),
+            creationBlock: UtilsLib.safe32(block.number),
             id: zAccountId,
             version: uint8(ZACCOUNT_VERSION),
             pubRootSpendingKey: pubRootSpendingKeyPacked,
