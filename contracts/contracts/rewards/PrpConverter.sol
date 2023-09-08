@@ -2,17 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "../protocol/interfaces/IPantherPoolV1.sol";
+
 import "../common/TransferHelper.sol";
 import "../common/ImmutableOwnable.sol";
 import "../common/Claimable.sol";
 
 import "./errMsgs/PrpConverterErrMsgs.sol";
-
-interface IPantherPool {
-    function burnPrp(uint256 amount, bytes calldata proof)
-        external
-        returns (bool);
-}
 
 // a library for handling binary fixed point numbers (https://en.wikipedia.org/wiki/Q_(number_format))
 
@@ -158,13 +154,13 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     }
 
     function convert(
+        uint256[] calldata _inputs,
+        SnarkProof memory _proof,
         uint256 _amountIn,
         uint256 _amountOutMin,
         address _to,
-        uint256 _deadline,
-        bytes memory _proof
+        uint256 _deadline
     ) external {
-        require(_proof.length > 0, "PC: Invalid prrof");
         require(_deadline >= block.timestamp, "PC: Convert expired");
         require(_to != ZKP_TOKEN, "PC: Invalid receiver");
 
@@ -177,9 +173,12 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(amountOut >= _amountOutMin, "PC: Insufficient output");
 
         require(amountOut < _zkpReserve, "PC: Insufficient liquidity");
-        require(
-            IPantherPool(PANTHER_POOL).burnPrp(_amountIn, _proof),
-            "PC: Prp burn failed"
+
+        // Trusted contract - no reentrancy guard needed
+        IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
+            _inputs,
+            _proof,
+            amountOut
         );
 
         TransferHelper.safeTransfer(ZKP_TOKEN, _to, amountOut);
