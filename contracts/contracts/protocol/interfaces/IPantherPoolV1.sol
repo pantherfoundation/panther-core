@@ -19,6 +19,12 @@ interface IPantherPoolV1 {
         uint256 cachedForestRootIndex
     ) external returns (uint256);
 
+    function accountPrpConvertion(
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        uint256 zkpAmount
+    ) external;
+
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,

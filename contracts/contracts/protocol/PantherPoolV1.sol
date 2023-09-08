@@ -428,6 +428,14 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
     }
 
+    function accountPrpConvertion(
+        uint256[] calldata, /*inputs*/
+        SnarkProof calldata, /*proof*/
+        uint256 /*zkpAmount*/
+    ) external returns (bool) {
+        return true;
+    }
+
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
         VAULT.lockAsset(
