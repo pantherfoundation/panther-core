@@ -178,6 +178,14 @@ contract PantherPoolV1 is
         external
     {} // solhint-disable-line no-empty-blocks
 
+    function accountPrpConvertion(
+        uint256[] calldata, /*inputs*/
+        SnarkProof calldata, /*proof*/
+        uint256 /*zkpAmount*/
+    ) external returns (bool) {
+        return true;
+    }
+
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
         VAULT.lockAsset(
