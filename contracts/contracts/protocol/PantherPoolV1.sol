@@ -174,6 +174,10 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
     }
 
+    function accountPrp(uint256[] calldata inputs, SnarkProof calldata proof)
+        external
+    {} // solhint-disable-line no-empty-blocks
+
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
         VAULT.lockAsset(
