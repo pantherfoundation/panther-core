@@ -3,13 +3,10 @@
 // solhint-disable one-contract-per-file
 pragma solidity 0.8.16;
 
+import "./interfaces/IPantherPoolV1.sol";
+
 import "../common/ImmutableOwnable.sol";
 import "../common/Utils.sol";
-
-// TODO: Remove this interface once the pool contract is updated.
-interface PoolContract {
-    function increasePRPBalance(uint256 amount, bytes calldata proof) external;
-}
 
 /// @title PrpVoucherGrantor
 /// @notice The PRPGrantor smart contract is designed to facilitate rewarding
@@ -31,7 +28,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     uint256[50] private __gap;
 
     // solhint-disable-next-line
-    PoolContract public immutable POOL_CONTRACT;
+    IPantherPoolV1 public immutable PANTHER_POOL_V1;
     // solhint-disable-next-line
     uint64 private ZERO_VALUE = 1;
 
@@ -79,12 +76,12 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @notice Constructor that sets the initial owner, pool contract and
     /// verifier contract.
     /// @param _owner The owner of the PrpVoucherGrantor contract.
-    /// @param _poolContract The address of the pool contract.
-    constructor(address _owner, address _poolContract)
+    /// @param _pantherPoolV1 The address of the pool contract.
+    constructor(address _owner, address _pantherPoolV1)
         ImmutableOwnable(_owner)
     {
-        revertZeroAddress(_poolContract);
-        POOL_CONTRACT = PoolContract(_poolContract);
+        revertZeroAddress(_pantherPoolV1);
+        PANTHER_POOL_V1 = IPantherPoolV1(_pantherPoolV1);
     }
 
     modifier onlyValidVoucherTypes(bytes4 _voucherType) {
@@ -132,12 +129,13 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     }
 
     /// @notice Claims a rewards collected for the given secret hash.
-    /// @param secretHash The secret hash for the reward voucher.
+    /// @param inputs The public input parameters to be passed to verifier.
     /// @param proof A proof associated with the zAccount and a secret.
+    /// @param secretHash The secret hash for the reward voucher.
     function claimRewards(
-        bytes32 secretHash,
-        // solhint-disable-next-line
-        bytes calldata proof
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        bytes32 secretHash
     ) external {
         uint256 rewardAmount = balance[secretHash];
         require(
@@ -149,16 +147,8 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         // rearward generation
         balance[secretHash] = ZERO_VALUE;
 
-        // TODO: implement the rest of the logic in the Pool contract
-        // POOL_CONTRACT.increasePRPBalance(
-        //     rewardAmount,
-        //     secretHash,
-        //     _secretAndzAccountProof
-        //     // zAccountTree root
-        //     // commitmentHash
-        //     // newZAccountUTXOCommitment
-        //     // and a couple of other things
-        // );
+        PANTHER_POOL_V1.accountPrp(inputs, proof);
+
         emit RewardClaimed(secretHash);
     }
 
