@@ -56,9 +56,8 @@ function addTerms() {
 
 async function addRewardAdvisers(hre: HardhatRuntimeEnvironment) {
     const staking = await hre.ethers.getContract('Staking');
-    const stakeRewardAdviser = await hre.ethers.getContract(
-        'StakeRewardAdviser',
-    );
+    const stakeRewardAdviser =
+        await hre.ethers.getContract('StakeRewardAdviser');
     const addRewardAdviser = (action: string) => {
         console.log(
             '\nRewardMaster.addRewardAdviser()',

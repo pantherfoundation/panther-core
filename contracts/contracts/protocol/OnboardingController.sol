@@ -8,7 +8,7 @@ import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/TransferHelper.sol";
-import { HUNDRED_PERCENT, GT_ONBOARDING } from "../common/Constants.sol";
+import { GT_ONBOARDING } from "../common/Constants.sol";
 
 contract OnboardingController is ImmutableOwnable {
     using TransferHelper for address;

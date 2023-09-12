@@ -20,9 +20,8 @@ describe('Spending child keypair', () => {
     beforeAll(async () => {
         const randomAccount = Wallet.createRandom();
         const seedSpendingMsg = `I'm creating a spending root keypair for ${randomAccount.address}`;
-        const spendingSignature = await randomAccount.signMessage(
-            seedSpendingMsg,
-        );
+        const spendingSignature =
+            await randomAccount.signMessage(seedSpendingMsg);
         spendingRootKeypair = deriveKeypairFromSignature(spendingSignature);
 
         const r = generateRandomInBabyJubSubField();

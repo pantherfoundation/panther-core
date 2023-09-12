@@ -24,9 +24,8 @@ describe('Stakes Reporter', () => {
         stakeRewardController = await smock.fake('StakeRewardController');
         staking = await smock.fake('Staking');
 
-        const StakesReporter = await ethers.getContractFactory(
-            'StakesReporter',
-        );
+        const StakesReporter =
+            await ethers.getContractFactory('StakesReporter');
         stakesReporter = (await StakesReporter.deploy(
             staking.address,
             stakeRewardController.address,

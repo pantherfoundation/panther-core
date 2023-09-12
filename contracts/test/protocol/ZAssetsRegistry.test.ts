@@ -26,9 +26,8 @@ describe.skip('ZAssetsRegistryV1 contract', function () {
 
     before(async () => {
         [owner, notOwner] = await ethers.getSigners();
-        const ZAssetsRegistryV1 = await ethers.getContractFactory(
-            'ZAssetsRegistryV1',
-        );
+        const ZAssetsRegistryV1 =
+            await ethers.getContractFactory('ZAssetsRegistryV1');
         zAssetsRegistry =
             (await ZAssetsRegistryV1.deploy()) as ZAssetsRegistryV1;
     });
@@ -207,9 +206,8 @@ describe.skip('ZAssetsRegistryV1 contract', function () {
         describe('if an asset has not been added', () => {
             it('should return zero values', async () => {
                 for (const {zAssetRootId} of getMissingIds()) {
-                    const actual = await zAssetsRegistry.getZAsset(
-                        zAssetRootId,
-                    );
+                    const actual =
+                        await zAssetsRegistry.getZAsset(zAssetRootId);
                     checkZAssetProperties(getZeroZAsset(), actual);
                 }
             });

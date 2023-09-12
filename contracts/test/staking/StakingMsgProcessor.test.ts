@@ -99,9 +99,10 @@ describe('StakingMsgProcessor', () => {
 
         describe('given encoded message with empty `bytes data`', () => {
             beforeEach(async () => {
-                res = await mockProcessor.internalUnpackStakingActionMsg(
-                    expectedEmptyDataMsg,
-                );
+                res =
+                    await mockProcessor.internalUnpackStakingActionMsg(
+                        expectedEmptyDataMsg,
+                    );
             });
 
             checkUnpackedParams();

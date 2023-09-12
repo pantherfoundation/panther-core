@@ -70,9 +70,8 @@ describe('AdvancedStakeRewardController', () => {
         const NftToken = await ethers.getContractFactory('ERC721Mock');
         nftToken = (await NftToken.connect(owner).deploy()) as ERC721Mock;
 
-        const FakePantherPoolV0 = await ethers.getContractFactory(
-            'FakePantherPoolV0',
-        );
+        const FakePantherPoolV0 =
+            await ethers.getContractFactory('FakePantherPoolV0');
         const exitTime = rewardingStartTime + rewardingPeriod + 100;
         pantherPool = (await FakePantherPoolV0.deploy(
             fakeVaultAddress,
