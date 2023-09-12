@@ -27,9 +27,7 @@ function normalizeExitTimeArg(exitTime: any): ExitTimes | undefined {
         .trim()
         .split(' ');
 
-    exitTime = daysJs()
-        .add(+value, unit)
-        .unix();
+    exitTime = daysJs().add(+value, unit).unix();
 
     return {exitTime};
 }
@@ -54,7 +52,7 @@ async function getDefaultTimes(
             await pantherPoolV0.exitTime(),
             await pantherPoolV0.exitDelay(),
         ]);
-    } catch (error: any) {
+    } catch (error) {
         throw new Error(
             `Error on reading times from panther pool V0 ${error.message}`,
         );

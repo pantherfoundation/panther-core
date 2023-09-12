@@ -64,7 +64,7 @@ export default {
             toLint,
         );
     },
-    'dapp/**/*.{scss}': async files => {
+    'dapp/**/*.scss': async files => {
         const prefix = process.cwd() + '/dapp/';
         const toLint = await removeIgnoredFiles(
             prefix,

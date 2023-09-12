@@ -13,9 +13,8 @@ task(TASK_GRANT_ENABLE, 'Enable grant to curator')
     .setAction(async (taskArgs, hre: HardhatRuntimeEnvironment) => {
         const [deployer] = await hre.ethers.getSigners();
 
-        const PrpGrantorProxy = await hre.ethers.getContract(
-            'PrpGrantor_Proxy',
-        );
+        const PrpGrantorProxy =
+            await hre.ethers.getContract('PrpGrantor_Proxy');
         const PrpGrantorImp = await hre.ethers.getContract(
             'PrpGrantor_Implementation',
         );
