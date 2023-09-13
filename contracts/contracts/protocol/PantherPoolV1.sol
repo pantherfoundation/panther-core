@@ -32,6 +32,8 @@ contract PantherPoolV1 is
     mapping(address => bool) public vaultAssetUnlockers;
 
     uint160 public zAccountRegistrationCircuitId;
+    uint160 public prpAccountingCircuitId;
+    uint160 public prpAccountConversionCircuitId;
 
     constructor(
         address _owner,
@@ -70,6 +72,20 @@ contract PantherPoolV1 is
         uint160 _circuitId
     ) external onlyOwner {
         zAccountRegistrationCircuitId = _circuitId;
+    }
+
+    function updatePrpAccountingCircuitId(uint160 _circuitId)
+        external
+        onlyOwner
+    {
+        prpAccountingCircuitId = _circuitId;
+    }
+
+    function updatePrpAccountConversionCircuitId(uint160 _circuitId)
+        external
+        onlyOwner
+    {
+        prpAccountConversionCircuitId = _circuitId;
     }
 
     function unlockAssetFromVault(LockData calldata data) external {
@@ -176,14 +192,24 @@ contract PantherPoolV1 is
 
     function accountPrp(uint256[] calldata inputs, SnarkProof calldata proof)
         external
-    {} // solhint-disable-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
+    {
+        // Trusted contract - no reentrancy guard needed
+        // require(
+        //     VERIFIER.verify(prpAccountingCircuitId, inputs, proof),
+        //     ERR_FAILED_ZK_PROOF
+        // );
+    }
 
     function accountPrpConvertion(
-        uint256[] calldata, /*inputs*/
-        SnarkProof calldata, /*proof*/
-        uint256 /*zkpAmount*/
-    ) external returns (bool) {
-        return true;
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        uint256 /*zkpAmount*/ // solhint-disable-next-line no-empty-blocks
+    ) external {
+        // require(
+        //     VERIFIER.verify(prpAccountConversionCircuitId, inputs, proof),
+        //     ERR_FAILED_ZK_PROOF
+        // );
     }
 
     function _lockZkp(address from, uint256 amount) internal {
