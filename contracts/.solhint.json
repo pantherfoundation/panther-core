@@ -15,6 +15,12 @@
         "endOfLine": "auto"
       }
     ],
-    "reason-string": ["warn", {"maxLength": 64}]
+    "reason-string": ["warn", {"maxLength": 64}],
+
+    "custom-errors": "off",
+    "immutable-vars-naming": "off",
+    "no-unused-import": "error",
+    "one-contract-per-file": "off",
+    "no-global-import": "off"
   }
 }

@@ -21,9 +21,8 @@ task(TASK_TIME_TRAVEL, 'time:increase on the blockchain')
             await hre.ethers.provider.send('evm_mine', [+input]);
         }
         const futureBlockNumber = await hre.ethers.provider.getBlockNumber();
-        const futureBlock = await hre.ethers.provider.getBlock(
-            futureBlockNumber,
-        );
+        const futureBlock =
+            await hre.ethers.provider.getBlock(futureBlockNumber);
         const futureTimestamp = futureBlock.timestamp;
         console.log(`Future block timestamp ${futureTimestamp}`);
     });

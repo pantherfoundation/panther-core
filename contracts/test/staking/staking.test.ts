@@ -461,9 +461,8 @@ describe('Staking Contract', async () => {
             const length = await ctStaking.globalsSnapshotLength();
             const lastIndex = length.sub(1);
 
-            const {ownPower, delegatedPower} = await ctStaking.globalsSnapshot(
-                lastIndex,
-            );
+            const {ownPower, delegatedPower} =
+                await ctStaking.globalsSnapshot(lastIndex);
 
             expect(ownPower).to.be.eq(11400);
             expect(delegatedPower).to.be.eq(1000);
