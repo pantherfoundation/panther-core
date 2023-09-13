@@ -34,9 +34,8 @@ describe('PrpVoucherGrantor', function () {
         [owner, poolContract, allowedContract, user] =
             await ethers.getSigners();
 
-        PrpVoucherGrantor = await ethers.getContractFactory(
-            'PrpVoucherGrantor',
-        );
+        PrpVoucherGrantor =
+            await ethers.getContractFactory('PrpVoucherGrantor');
 
         prpVoucherGrantor = (await PrpVoucherGrantor.deploy(
             owner.address,
@@ -55,9 +54,8 @@ describe('PrpVoucherGrantor', function () {
         });
 
         it('reverts with zero address', async function () {
-            const PrpVoucherGrantor = await ethers.getContractFactory(
-                'PrpVoucherGrantor',
-            );
+            const PrpVoucherGrantor =
+                await ethers.getContractFactory('PrpVoucherGrantor');
 
             await expect(
                 PrpVoucherGrantor.deploy(

@@ -3,7 +3,6 @@
 pragma solidity ^0.8.16;
 
 import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
-import { PoseidonT3 } from "./crypto/Poseidon.sol";
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 
 // It's supposed to run on the mainnet only.

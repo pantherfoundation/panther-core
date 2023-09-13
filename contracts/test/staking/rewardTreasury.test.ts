@@ -21,9 +21,8 @@ describe('Reward treasury', () => {
         sampleToken = await smock.fake('ERC20');
         rewardToken = await smock.fake('ERC20');
 
-        const RewardTreasury = await ethers.getContractFactory(
-            'RewardTreasury',
-        );
+        const RewardTreasury =
+            await ethers.getContractFactory('RewardTreasury');
         rewardTreasury = (await RewardTreasury.deploy(
             owner.address,
             rewardToken.address,

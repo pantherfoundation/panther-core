@@ -35,9 +35,8 @@ describe('Matic Reward Pool', () => {
         startTime = (await getCurrentTime()) + 100;
         endTime = startTime + 86400;
 
-        const MaticRewardPool = await ethers.getContractFactory(
-            'MaticRewardPool',
-        );
+        const MaticRewardPool =
+            await ethers.getContractFactory('MaticRewardPool');
         maticRewardPool = (await MaticRewardPool.deploy(
             rewardToken.address,
             owner.address,

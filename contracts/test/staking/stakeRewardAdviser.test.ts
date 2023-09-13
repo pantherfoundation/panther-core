@@ -41,9 +41,8 @@ describe('StakeRewardAdviser', () => {
     };
 
     before(async () => {
-        const StakeRewardAdviser = await ethers.getContractFactory(
-            'StakeRewardAdviser',
-        );
+        const StakeRewardAdviser =
+            await ethers.getContractFactory('StakeRewardAdviser');
 
         stakeRewardAdviser = (await StakeRewardAdviser.deploy(
             stakeType,

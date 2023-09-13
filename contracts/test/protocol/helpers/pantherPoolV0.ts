@@ -17,9 +17,8 @@ async function deployPantherPoolV0(): Promise<MockPantherPoolV0> {
     const zAssetRegistry = await smock.fake('ZAssetsRegistryV0');
     const vault = await smock.fake('Vault');
 
-    const PantherPoolV0 = await getPantherPoolMocFactoryByName(
-        'MockPantherPoolV0',
-    );
+    const PantherPoolV0 =
+        await getPantherPoolMocFactoryByName('MockPantherPoolV0');
 
     return (await (
         await PantherPoolV0.deploy(

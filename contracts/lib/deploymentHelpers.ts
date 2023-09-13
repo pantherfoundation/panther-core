@@ -211,7 +211,7 @@ async function getContractAddress(
             contractAddress ||
             (await hre.ethers.getContract(deploymentName)).address
         );
-    } catch (error: any) {
+    } catch (error) {
         console.log(
             '\x1b[31m',
             `Address for contract ${deploymentName} cannot be retrieved. Consider deploying a new version of this contract or adding a pre-deployed contract address in ${contractAddressEnvVariable} env variable`,

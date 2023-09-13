@@ -46,9 +46,7 @@ function normalizeDefinedTimeArgs(_definedTimes: any) {
             .trim()
             .split(' ');
 
-        definedTimes[param] = daysJs()
-            .add(+value, unit)
-            .unix();
+        definedTimes[param] = daysJs().add(+value, unit).unix();
     }
 
     return definedTimes;
