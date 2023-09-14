@@ -9,6 +9,7 @@ include "./templates/kycKytNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAccountNoteInclusionProver.circom";
 include "./templates/zAssetChecker.circom";
 include "./templates/zAssetNoteInclusionProver.circom";
 include "./templates/zNetworkNoteInclusionProver.circom";
@@ -24,11 +25,23 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
-template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
+template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
+                             UtxoMiddleMerkleTreeDepth,
+                             ZNetworkMerkleTreeDepth,
                              ZAssetMerkleTreeDepth,
                              ZAccountBlackListMerkleTreeDepth,
                              ZZoneMerkleTreeDepth,
                              KycKytMerkleTreeDepth ) {
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Ferry MT size
+    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    // Equal to ferry MT size
+    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    // Bus MT extra levels
+    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    // Ferry MT extra levels
+    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
 
@@ -63,6 +76,9 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     signal input zAccountUtxoInSpendKeyRandom;
     signal input zAccountUtxoInCommitment; // public
     signal input zAccountUtxoInNullifier;  // public
+    signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
+    signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
+    signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
 
     // zAccount Output
     signal input zAccountUtxoOutZkpAmount;
@@ -248,7 +264,32 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoInHasherProver.in[1] <== zAccountUtxoInNoteHasher.out;
     zAccountUtxoInHasherProver.enabled <== zAccountUtxoInCommitment;
 
-    // [6] - Verify zAccountUtxoIn nullifier
+    // [6] - Verify zAccountUtxoIn membership
+    component zAccountUtxoInMerkleVerifier = MerkleTreeInclusionProofDoubleLeavesSelectable(UtxoLeftMerkleTreeDepth,UtxoMiddleExtraLevels,UtxoRightExtraLevels);
+    zAccountUtxoInMerkleVerifier.leaf <== zAccountUtxoInNoteHasher.out;
+    for (var i = 0; i < UtxoMerkleTreeDepth; i++) {
+        zAccountUtxoInMerkleVerifier.pathIndices[i] <== zAccountUtxoInPathIndices[i];
+        zAccountUtxoInMerkleVerifier.pathElements[i] <== zAccountUtxoInPathElements[i];
+    }
+    // tree selector
+    zAccountUtxoInMerkleVerifier.treeSelector[0] <== zAccountUtxoInMerkleTreeSelector[0];
+    zAccountUtxoInMerkleVerifier.treeSelector[1] <== zAccountUtxoInMerkleTreeSelector[1];
+
+    // choose the root to return, based upon `treeSelector`
+    component zAccountRootSelectorSwitch = Selector3();
+    zAccountRootSelectorSwitch.sel[0] <== zAccountUtxoInMerkleTreeSelector[0];
+    zAccountRootSelectorSwitch.sel[1] <== zAccountUtxoInMerkleTreeSelector[1];
+    zAccountRootSelectorSwitch.L <== taxiMerkleRoot;
+    zAccountRootSelectorSwitch.M <== busMerkleRoot;
+    zAccountRootSelectorSwitch.R <== ferryMerkleRoot;
+
+    // verify computed root against provided one
+    component isEqualZAccountMerkleRoot = ForceEqualIfEnabled();
+    isEqualZAccountMerkleRoot.in[0] <== zAccountRootSelectorSwitch.out;
+    isEqualZAccountMerkleRoot.in[1] <== zAccountUtxoInMerkleVerifier.root;
+    isEqualZAccountMerkleRoot.enabled <== zAccountRootSelectorSwitch.out;
+
+    // [7] - Verify zAccountUtxoIn nullifier
     component zAccountUtxoInNullifierHasher = Poseidon(4);
     zAccountUtxoInNullifierHasher.inputs[0] <== zAccountUtxoInId;
     zAccountUtxoInNullifierHasher.inputs[1] <== zAccountUtxoInZoneId;
@@ -260,7 +301,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
     zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
 
-    // [7] - Verify zAccoutId exclusion proof
+    // [8] - Verify zAccoutId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
@@ -269,7 +310,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [8] - Verify zAccount UTXO out
+    // [9] - Verify zAccount UTXO out
     // derive spend pub key
     component zAccountUtxoOutSpendPubKeyDeriver = PubKeyDeriver();
     zAccountUtxoOutSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
@@ -295,13 +336,13 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     // verify expiry time
     zAccountUtxoOutExpiryTime === zAccountUtxoOutCreateTime + zZoneKycExpiryTime;
 
-    // [9] - Verify zAccountUtxoOut commitment
+    // [10] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
     zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
     zAccountUtxoOutHasherProver.in[1] <== zAccountUtxoOutNoteHasher.out;
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
-    // [10] - Verify KYT signature
+    // [11] - Verify KYT signature
     component kycSignedMessageHashInternal = Poseidon(6);
 
     kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
@@ -335,7 +376,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     kycSignedMessageHashIsEqual.in[0] <== kycSignedMessageHash;
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 
-    // [11] - Verify kycEdDSA public key membership
+    // [12] - Verify kycEdDSA public key membership
     component kycKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
     kycKycNoteInclusionProver.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
     kycKycNoteInclusionProver.root <== kycKytMerkleRoot;
@@ -347,7 +388,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         kycKycNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
-    // [12] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
+    // [13] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(KycKytMerkleTreeDepth);
     for (var j = 0; j < KycKytMerkleTreeDepth; j++) {
         b2nLeafId.in[j] <== kycPathIndex[j];
@@ -359,7 +400,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     kycLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
     kycLeafIdAndRuleInclusionProver.offset <== kycMerkleTreeLeafIDsAndRulesOffset;
 
-    // [13] - Verify zZone membership
+    // [14] - Verify zZone membership
     component zZoneNoteHasher = ZZoneNoteHasher();
     zZoneNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zZoneNoteHasher.edDsaPubKey[0] <== zZoneEdDsaPubKey[0];
@@ -385,12 +426,12 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
-    // [14] - Verify zAccountId exclusion
+    // [15] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
     zZoneZAccountBlackListExclusionProver.zAccountId <== zAccountUtxoInId;
     zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
 
-    // [15] - Verify zNetwork's membership
+    // [16] - Verify zNetwork's membership
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -408,7 +449,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 
-    // [16] - Verify static-merkle-root
+    // [17] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
     staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
@@ -422,7 +463,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
-    // [17] - Verify forest-merkle-roots
+    // [18] - Verify forest-merkle-roots
     component forestTreeMerkleRootVerifier = Poseidon(4);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
@@ -435,7 +476,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
     isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
 
-    // [18] - Verify salt
+    // [19] - Verify salt
     component saltVerify = Poseidon(1);
     saltVerify.inputs[0] <== salt;
 
@@ -445,7 +486,7 @@ template ZAccountRenewalV1 ( ZNetworkMerkleTreeDepth,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [19] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    // [20] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
 }

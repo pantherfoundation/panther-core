@@ -7,6 +7,7 @@ include "./templates/isNotZero.circom";
 include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/kycKytNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
+include "./templates/zAccountNoteInclusionProver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
 include "./templates/zAssetChecker.circom";
@@ -25,10 +26,22 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
-template AmmV1 ( ZNetworkMerkleTreeDepth,
+template AmmV1 ( UtxoLeftMerkleTreeDepth,
+                 UtxoMiddleMerkleTreeDepth,
+                 ZNetworkMerkleTreeDepth,
                  ZAssetMerkleTreeDepth,
                  ZAccountBlackListMerkleTreeDepth,
                  ZZoneMerkleTreeDepth ) {
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Ferry MT size
+    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    // Equal to ferry MT size
+    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    // Bus MT extra levels
+    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    // Ferry MT extra levels
+    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
 
@@ -71,6 +84,9 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     signal input zAccountUtxoInSpendKeyRandom;
     signal input zAccountUtxoInCommitment;
     signal input zAccountUtxoInNullifier;  // public
+    signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
+    signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
+    signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
 
     // zAccount Output
     signal input zAccountUtxoOutZkpAmount;
@@ -237,7 +253,32 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoInHasherProver.in[1] <== zAccountUtxoInNoteHasher.out;
     zAccountUtxoInHasherProver.enabled <== zAccountUtxoInCommitment;
 
-    // [6] - Verify zAccountUtxoIn nullifier
+    // [6] - Verify zAccountUtxoIn membership
+    component zAccountUtxoInMerkleVerifier = MerkleTreeInclusionProofDoubleLeavesSelectable(UtxoLeftMerkleTreeDepth,UtxoMiddleExtraLevels,UtxoRightExtraLevels);
+    zAccountUtxoInMerkleVerifier.leaf <== zAccountUtxoInNoteHasher.out;
+    for (var i = 0; i < UtxoMerkleTreeDepth; i++) {
+        zAccountUtxoInMerkleVerifier.pathIndices[i] <== zAccountUtxoInPathIndices[i];
+        zAccountUtxoInMerkleVerifier.pathElements[i] <== zAccountUtxoInPathElements[i];
+    }
+    // tree selector
+    zAccountUtxoInMerkleVerifier.treeSelector[0] <== zAccountUtxoInMerkleTreeSelector[0];
+    zAccountUtxoInMerkleVerifier.treeSelector[1] <== zAccountUtxoInMerkleTreeSelector[1];
+
+    // choose the root to return, based upon `treeSelector`
+    component zAccountRootSelectorSwitch = Selector3();
+    zAccountRootSelectorSwitch.sel[0] <== zAccountUtxoInMerkleTreeSelector[0];
+    zAccountRootSelectorSwitch.sel[1] <== zAccountUtxoInMerkleTreeSelector[1];
+    zAccountRootSelectorSwitch.L <== taxiMerkleRoot;
+    zAccountRootSelectorSwitch.M <== busMerkleRoot;
+    zAccountRootSelectorSwitch.R <== ferryMerkleRoot;
+
+    // verify computed root against provided one
+    component isEqualZAccountMerkleRoot = ForceEqualIfEnabled();
+    isEqualZAccountMerkleRoot.in[0] <== zAccountRootSelectorSwitch.out;
+    isEqualZAccountMerkleRoot.in[1] <== zAccountUtxoInMerkleVerifier.root;
+    isEqualZAccountMerkleRoot.enabled <== zAccountRootSelectorSwitch.out;
+
+    // [7] - Verify zAccountUtxoIn nullifier
     component zAccountUtxoInNullifierHasher = Poseidon(4);
     zAccountUtxoInNullifierHasher.inputs[0] <== zAccountUtxoInId;
     zAccountUtxoInNullifierHasher.inputs[1] <== zAccountUtxoInZoneId;
@@ -249,7 +290,7 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
     zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
 
-    // [7] - Verify zAccoutId exclusion proof
+    // [8] - Verify zAccoutId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
@@ -258,7 +299,7 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [8] - Verify zAccount UTXO out
+    // [9] - Verify zAccount UTXO out
     // derive spend pub key
     component zAccountUtxoOutSpendPubKeyDeriver = PubKeyDeriver();
     zAccountUtxoOutSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
@@ -284,13 +325,13 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     // verify expiryTime
     assert(zAccountUtxoInExpiryTime >= createTime);
 
-    // [9] - Verify zAccountUtxoOut commitment
+    // [10] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
     zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
     zAccountUtxoOutHasherProver.in[1] <== zAccountUtxoOutNoteHasher.out;
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
-    // [10] - Utxo hidden part generation & commitment
+    // [11] - Utxo hidden part generation & commitment
     component utxoNoteHasher = UtxoNoteLeafHasher();
     utxoNoteHasher.zAsset <== zAssetId;
     utxoNoteHasher.spendPk[0] <== utxoSpendPubKey[0];
@@ -307,7 +348,7 @@ template AmmV1 ( ZNetworkMerkleTreeDepth,
     utxoCommitmentIsEqual.in[0] <== utxoCommitment;
     utxoCommitmentIsEqual.in[1] <== utxoNoteHasher.out;
 
-    // [11] - derive utxo spend pub key & verify
+    // [12] - derive utxo spend pub key & verify
     component utxoInSpendPubKeyDeriver = PubKeyDeriver();
     utxoInSpendPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     utxoInSpendPubKeyDeriver.rootPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];

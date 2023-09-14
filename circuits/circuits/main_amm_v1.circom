@@ -20,7 +20,9 @@ component main {
         saltHash,                              // [13]
         magicalConstraint                      // [14]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 13 + 2 = 15
-    ]} = AmmV1 ( 6,     // ZNetworkMerkleTreeDepth
+    ]} = AmmV1 ( 6,     // UtxoLeftMerkleTreeDepth
+                 26,    // UtxoMiddleMerkleTreeDepth
+                 6,     // ZNetworkMerkleTreeDepth
                  16,    // ZAssetMerkleTreeDepth
                  16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
                  16 );  // ZZoneMerkleTreeDepth - depends on zoneID size

@@ -15,7 +15,9 @@ component main {
         saltHash,                              // [8]
         magicalConstraint                      // [9]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 9
-    ]} = ZAccountRenewalV1( 6,     // ZNetworkMerkleTreeDepth
+    ]} = ZAccountRenewalV1( 6,     // UtxoLeftMerkleTreeDepth
+                            26,    // UtxoMiddleMerkleTreeDepth
+                            6,     // ZNetworkMerkleTreeDepth
                             16,    // ZAssetMerkleTreeDepth
                             16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
                             16,    // ZZoneMerkleTreeDepth - depends on zoneID size
