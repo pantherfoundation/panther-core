@@ -8,6 +8,8 @@ import "../common/ImmutableOwnable.sol";
 // When called `drink`, it sends tokens to the `_to`
 // As a prerequisite, it shall get enough tokens on the balance
 contract ZkpFaucet is Claimable, ImmutableOwnable {
+    // non snake-case `token` name left as in the deployed version
+    // solhint-disable-next-line immutable-vars-naming
     address public immutable token;
     uint256 public cupSize;
     uint256 public tokenPrice;
