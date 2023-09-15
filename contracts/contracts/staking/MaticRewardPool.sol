@@ -24,6 +24,8 @@ contract MaticRewardPool is
     Utils
 {
     /// @notice Address of the token vested ($ZKP)
+    // non snake-case `token` name left as in the deployed version
+    // solhint-disable-next-line immutable-vars-naming
     IErc20Min public immutable token;
 
     /// @notice Address to vest tokens to

@@ -16,6 +16,8 @@ import "../common/NonReentrant.sol";
  */
 contract RewardTreasury is ImmutableOwnable, NonReentrant, Claimable {
     /// @notice Address of the Reward Pool token
+    // non snake-case `token` name left as in the deployed version
+    // solhint-disable-next-line immutable-vars-naming
     address public immutable token;
 
     constructor(address _owner, address _token) ImmutableOwnable(_owner) {
