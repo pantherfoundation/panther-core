@@ -45,6 +45,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// @notice Address of the PantherPool contract
     address public immutable PANTHER_POOL;
 
+    /// @notice Address of the Vault contract
+    address public immutable VAULT;
+
     // solhint-enable var-name-mixedcase
 
     uint112 private prpReserve;
@@ -62,15 +65,17 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     constructor(
         address _owner,
         address zkpToken,
-        address pantherPool
+        address pantherPool,
+        address vault
     ) ImmutableOwnable(_owner) {
         require(
-            zkpToken != address(0) && pantherPool != address(0),
+            zkpToken != address(0) && pantherPool != address(0) && vault != address(0),
             ERR_ZERO_ADDRESS
         );
 
         ZKP_TOKEN = zkpToken;
         PANTHER_POOL = pantherPool;
+        VAULT = vault;
     }
 
     modifier isInitialized() {
@@ -91,6 +96,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(zkpBalance >= zkpAmount, ERR_LOW_INIT_ZKP_BALANCE);
 
         initialized = true;
+
+        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN,VAULT,zkpAmount);
 
         _update(
             prpVirtualAmount,
@@ -113,6 +120,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         if (zkpBalance <= _zkpReserve) return;
 
         uint256 zkpAmountIn = zkpBalance - _zkpReserve;
+
+        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN,VAULT,zkpAmountIn);
 
         uint256 prpAmountOut = getAmountOut(
             zkpAmountIn,
@@ -160,11 +169,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         SnarkProof memory _proof,
         uint256 _amountIn,
         uint256 _amountOutMin,
-        address _to,
         uint256 _deadline
     ) external {
         require(_deadline >= block.timestamp, "PC: Convert expired");
-        require(_to != ZKP_TOKEN, "PC: Invalid receiver");
 
         (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
 
@@ -177,13 +184,12 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(amountOut < _zkpReserve, "PC: Insufficient liquidity");
 
         // Trusted contract - no reentrancy guard needed
+        // pool contract triggers vault to transfer `amountOut` from prpConverter
         IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
             _inputs,
             _proof,
             amountOut
         );
-
-        TransferHelper.safeTransfer(ZKP_TOKEN, _to, amountOut);
 
         uint256 prpVirtualBalance = _prpReserve + _amountIn;
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
