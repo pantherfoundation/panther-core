@@ -5,6 +5,7 @@ pragma solidity 0.8.16;
 // TODO: add one contract per file
 
 import "../protocol/interfaces/IPantherPoolV1.sol";
+import { FIELD_SIZE } from "../protocol/crypto/SnarkConstants.sol";
 
 import "../common/TransferHelper.sol";
 import "../common/ImmutableOwnable.sol";
@@ -177,8 +178,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// @param inputs[10] - forestMerkleRoot;
     /// @param inputs[11] - saltHash;
     /// @param inputs[12] - magicalConstraint;
+     
     function convert(
         uint256[] calldata inputs,
+        bytes calldata privateMessages,
         SnarkProof memory proof,
         uint256 prpAmountIn,
         uint256 zkpAmountOutMin,
@@ -190,8 +193,19 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         // NOTE: This contract expects the Pool will check the createTime (inputs[2]) which 
         // acts as a deadline
 
-
-        // TODO: extra hash should be amountIn and amountOutMin 
+        {
+            uint256 extraInputsHash = inputs[0];
+            bytes memory extraInp = abi.encodePacked(
+                privateMessages,
+                cachedForestRootIndex,
+                prpAmountIn,
+                zkpAmountOutMin
+            );
+            require(
+                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
+                ERR_INVALID_EXTRA_INPUT_HASH
+            );
+        }
         
         (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
 
