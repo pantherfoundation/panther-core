@@ -164,34 +164,57 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         _blockTimestampLast = blockTimestampLast;
     }
 
+    /// @param inputs[0] - extraInputsHash;
+    /// @param inputs[1] - chargedAmountZkp;
+    /// @param inputs[2] - createTime;
+    /// @param inputs[3] - depositAmountPrp;
+    /// @param inputs[4] - withdrawAmountPrp;
+    /// @param inputs[5] - utxoCommitment;
+    /// @param inputs[6] - zAssetScale;
+    /// @param inputs[7] - zAccountUtxoInNullifier;
+    /// @param inputs[8] - zAccountUtxoOutCommitment;
+    /// @param inputs[9] - zNetworkChainId;
+    /// @param inputs[10] - forestMerkleRoot;
+    /// @param inputs[11] - saltHash;
+    /// @param inputs[12] - magicalConstraint;
     function convert(
-        uint256[] calldata _inputs,
-        SnarkProof memory _proof,
-        uint256 _amountIn,
-        uint256 _amountOutMin,
-        uint256 _deadline
-    ) external {
-        require(_deadline >= block.timestamp, "PC: Convert expired");
+        uint256[] calldata inputs,
+        SnarkProof memory proof,
+        uint256 prpAmountIn,
+        uint256 zkpAmountOutMin,
+        uint256 cachedForestRootIndex
+    ) external returns (uint256 firstUtxoBusQueuePos) {
+        // Note: This contract expects the Verifier to check the `inputs[]` are 
+        // less than the field size
 
+        // NOTE: This contract expects the Pool will check the createTime (inputs[2]) which 
+        // acts as a deadline
+
+
+        // TODO: extra hash should be amountIn and amountOutMin 
+        
         (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
 
         require(_zkpReserve > 0, "PC: Insufficient liquidity");
 
-        uint256 amountOut = getAmountOut(_amountIn, _prpReserve, _zkpReserve);
+        uint256 zkpAmountOutRounded;
 
-        require(amountOut >= _amountOutMin, "PC: Insufficient output");
+        {
+            uint256 zkpAmountOut = getAmountOut(prpAmountIn, _prpReserve, _zkpReserve);
 
-        require(amountOut < _zkpReserve, "PC: Insufficient liquidity");
+            uint256 scale = 10 ** inputs[6];
+            require(zkpAmountOut >= scale, 'PC: Too low liquidity');
 
-        // Trusted contract - no reentrancy guard needed
-        // pool contract triggers vault to transfer `amountOut` from prpConverter
-        IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
-            _inputs,
-            _proof,
-            amountOut
-        );
+            zkpAmountOutRounded = (zkpAmountOut / scale) * 10 ** scale;
 
-        uint256 prpVirtualBalance = _prpReserve + _amountIn;
+            require(zkpAmountOutRounded >= zkpAmountOutMin, "PC: Insufficient output");
+            require(zkpAmountOutRounded < _zkpReserve, "PC: Insufficient liquidity");
+        }
+  
+
+       firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(inputs, proof, zkpAmountOutRounded, cachedForestRootIndex);
+
+        uint256 prpVirtualBalance = _prpReserve + prpAmountIn;
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
             ZKP_TOKEN,
             address(this)
@@ -200,7 +223,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(
             prpVirtualBalance * zkpBalance >=
                 uint256(_prpReserve) * _zkpReserve,
-            "PCL: K"
+            "PC: K"
         );
 
         _update(prpVirtualBalance, zkpBalance, _prpReserve, _zkpReserve);
@@ -233,6 +256,30 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         }
 
         emit Sync(prpReserve, zkpReserve);
+    }
+
+
+    function _createZAccountAndZAssetUtxos(
+        uint256[] calldata inputs,
+        SnarkProof memory proof,
+        uint256 amountOutRounded,
+        uint256 cachedForestRootIndex
+    ) private returns(uint256 firstUtxoBusQueuePos) {
+
+        // Trusted contract - no reentrancy guard needed
+        // pool contract triggers vault to transfer `amountOut` from prpConverter
+        try  
+        IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
+            inputs,
+            proof,
+            amountOutRounded,
+            cachedForestRootIndex
+        )  returns (uint256 result)
+        {
+             firstUtxoBusQueuePos = result;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
     }
 
     /// @dev May be only called by the {OWNER}

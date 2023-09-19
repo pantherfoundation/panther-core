@@ -12,8 +12,9 @@ interface IPantherPoolV1 {
     function accountPrpConvertion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 zkpAmount
-    ) external;
+        uint256 zkpAmountRounded,
+        uint256 cachedForestRootIndex
+    ) external returns (uint256);
 
     function createZAccountUtxo(
         uint256[] calldata inputs,
