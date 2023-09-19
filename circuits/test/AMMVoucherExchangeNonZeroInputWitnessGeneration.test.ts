@@ -15,7 +15,7 @@ import assert from 'assert';
 
 import {deriveChildPubKeyFromRootPubKey} from '@panther-core/crypto/lib/base/keypairs';
 
-describe('Automated Market Maker - Non Zero Input - Witness computation', async function (this: any) {
+describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness computation', async function (this: any) {
     const poseidon2or3 = (inputs: bigint[]): bigint => {
         assert(inputs.length === 3 || inputs.length === 2);
         return poseidon(inputs);
@@ -145,7 +145,7 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
         zAccountUtxoInMasterEOA,
         zAccountUtxoInId,
         zAccountUtxoInZkpAmount,
-        zAccountUtxoInPrpAmount,
+        BigInt(500n), // zAccountUtxoOutPrpAmount
         zAccountUtxoInZoneId,
         zAccountUtxoInExpiryTime,
         zAccountUtxoInNonce + BigInt(1n),
@@ -154,7 +154,7 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
         zAccountUtxoInNetworkId,
     ]);
 
-    // 19802823008016251871288745914209983156232616213475912464793237426733012616115n
+    // 13839448376386834831825066998105804542138021609451006066486200521909294447809n
     // console.log('zAccountUtxoOutNoteHasher=>', zAccountUtxoOutNoteHasher);
 
     // utxoSpendPubKey generation
@@ -186,8 +186,8 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
     const zNetworkId = 2n;
 
     const utxoNoteHasher = poseidon([
-        utxoDerivedPublicKeys[0],
-        utxoDerivedPublicKeys[1],
+        BigInt(0n),
+        BigInt(1n),
         zAssetId,
         zAccountUtxoInId,
         zNetworkId,
@@ -201,9 +201,63 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
     // 1173379727623747128841158896541633120659529678150698137481889548475462906403n
     // console.log('UtxoNoteLeafHasher=>', UtxoNoteLeafHasher);
 
+    // ===============State of UTXO tree=======================
+    // ZAccountRegistration process will create 1 UTXO i.e ZAccountUTXO
+    // This will be added to the BUS tree
+    // Adding ZAccountUTXO created to the BUS tree
+    const busMerkleTree = new MerkleTree(
+        poseidon2or3,
+        26,
+        BigInt(
+            2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+        ),
+    );
+    // 12604557588521919493356492354767978894799472715473645550898984861352936983014n
+    // console.log('busUTXOMerkleTree root=>', busMerkleTree.root);
+
+    // zAccountUtxoInNoteHasher - 12683686760392371723200734431415851905276545802658046731356209079680348296023n
+    busMerkleTree.insert(zAccountUtxoInNoteHasher);
+
+    // console.log(busMerkleTree.createProof(0));
+
+    // 20700627594089994835696347073345997962355519445581685936459492995502184005172n
+    // console.log(busMerkleTree.root);
+    // ===============State of UTXO tree=======================
+
+    // Forest tree calculation
+    const taxiMerkleRoot =
+        BigInt(
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+        );
+
+    const busMerkleRoot =
+        BigInt(
+            20700627594089994835696347073345997962355519445581685936459492995502184005172n,
+        );
+
+    const ferryMerkleRoot =
+        BigInt(
+            16585547643065588372010718035675163508420403417446192422307560350739915741648n,
+        );
+
+    const staticTreeMerkleRoot =
+        BigInt(
+            15323795652282733476787593554593633163509524267163105218965028724899034265607n,
+        );
+
+    const forestTree = poseidon([
+        taxiMerkleRoot,
+        busMerkleRoot,
+        ferryMerkleRoot,
+        staticTreeMerkleRoot,
+    ]);
+
+    // 11780048818013021704457402590428850237561931465869529045964064605890612072469n
+    // console.log('forestTree=>', forestTree);
+
     const nonZeroInput = {
         // external data anchoring
-        extraInputsHash: BigInt(1234n),
+        extraInputsHash: BigInt(0n),
 
         // zAsset
         zAssetId: BigInt(0n),
@@ -286,9 +340,9 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             ),
         ],
 
-        chargedAmountZkp: BigInt(50n),
+        chargedAmountZkp: BigInt(0n),
         zAccountUtxoInZkpAmount: BigInt(100000000n),
-        zAccountUtxoOutZkpAmount: BigInt(99999950n),
+        zAccountUtxoOutZkpAmount: BigInt(100000000n),
 
         zAccountUtxoInRootSpendPubKey: [
             BigInt(
@@ -320,9 +374,12 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             ),
         zNetworkId: BigInt(2n),
 
-        depositAmountPrp: BigInt(0n),
+        // Claimed voucher(vouchers) balance
+        depositAmountPrp: BigInt(500n),
+
+        // For Voucher Exchange withdrawal of PRP is 0
         withdrawAmountPrp: BigInt(0n),
-        zAccountUtxoOutPrpAmount: BigInt(0n),
+        zAccountUtxoOutPrpAmount: BigInt(500n),
 
         zAccountUtxoInSpendPrivKey:
             BigInt(
@@ -333,6 +390,127 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             BigInt(
                 1139970853508650176055884485279872020247472882439797101307093417665748942631n,
             ),
+        zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
+        zAccountUtxoInPathIndices: [
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+        ],
+        zAccountUtxoInPathElements: [
+            BigInt(
+                2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+            ),
+            BigInt(
+                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            ),
+            BigInt(
+                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            ),
+            BigInt(
+                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            ),
+            BigInt(
+                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            ),
+            BigInt(
+                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            ),
+            BigInt(
+                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            ),
+            BigInt(
+                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            ),
+            BigInt(
+                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            ),
+            BigInt(
+                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            ),
+            BigInt(
+                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            ),
+            BigInt(
+                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            ),
+            BigInt(
+                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            ),
+            BigInt(
+                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            ),
+            BigInt(
+                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            ),
+            BigInt(
+                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+            ),
+            BigInt(
+                4689866144310700684516443679096813921756239671572972966393880542662538400201n,
+            ),
+            BigInt(
+                15369835007378492529084633432655739856631861107309342928676871259240227049033n,
+            ),
+            BigInt(
+                11345121393552856548579926390199540849469635305183604045111689968777651956473n,
+            ),
+            BigInt(
+                11299066061427200562963422042645343948885353762628147353062799587547441871332n,
+            ),
+            BigInt(
+                13642291777448032365864888577168560039775015251774208221818005338405304930884n,
+            ),
+            BigInt(
+                5990068516814370380711726420154273589568095823652643357428323105329308577610n,
+            ),
+            BigInt(
+                3326440148296065541386325860294367616471601340115249960006624245213734239367n,
+            ),
+            BigInt(
+                17613623862311960463347469460117166104477522402420094872382418386742059442736n,
+            ),
+            BigInt(
+                16619835833299406266546819907603615045049052832835825671901337303713338780409n,
+            ),
+            BigInt(
+                15002435000641955406214223423745696701460524528446564760654584364314696565951n,
+            ),
+            BigInt(0),
+            BigInt(0),
+            BigInt(0),
+            BigInt(0),
+            BigInt(0),
+            BigInt(0),
+        ],
 
         zAccountBlackListLeaf: BigInt(0n),
         zAccountBlackListMerkleRoot:
@@ -394,7 +572,7 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             ),
         zAccountUtxoOutCommitment:
             BigInt(
-                19802823008016251871288745914209983156232616213475912464793237426733012616115n,
+                13839448376386834831825066998105804542138021609451006066486200521909294447809n,
             ),
 
         // GMT: Tuesday, 29 August 2023 10:49:12
@@ -402,20 +580,11 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
 
         utxoCommitment:
             BigInt(
-                1173379727623747128841158896541633120659529678150698137481889548475462906403n,
+                19593108235650878637893509278693460179257795305603387070719951077607152456245n,
             ),
-        utxoSpendPubKey: [
-            BigInt(
-                16242144124999549881001750798061860694310000906329588094216364089104708054049n,
-            ),
-            BigInt(
-                10560487167730454196440910098054184596052350463925947689880260088216647168026n,
-            ),
-        ],
-        utxoSpendKeyRandom:
-            BigInt(
-                486680520450277763296988191529930687770613990732419092696511815390188797858n,
-            ),
+        // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
+        utxoSpendPubKey: [BigInt(0), BigInt(1)],
+        utxoSpendKeyRandom: BigInt(0),
 
         zZoneOriginZoneIDs: BigInt(1n),
         zZoneTargetZoneIDs: BigInt(1n),
@@ -569,7 +738,7 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             ),
         forestMerkleRoot:
             BigInt(
-                10386103753818051359877349726742641162785338788929264808497852490816483585505n,
+                11780048818013021704457402590428850237561931465869529045964064605890612072469n,
             ),
         taxiMerkleRoot:
             BigInt(
@@ -577,7 +746,7 @@ describe('Automated Market Maker - Non Zero Input - Witness computation', async 
             ),
         busMerkleRoot:
             BigInt(
-                12604557588521919493356492354767978894799472715473645550898984861352936983014n,
+                20700627594089994835696347073345997962355519445581685936459492995502184005172n,
             ),
         ferryMerkleRoot:
             BigInt(
