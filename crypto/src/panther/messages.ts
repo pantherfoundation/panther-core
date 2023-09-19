@@ -15,7 +15,7 @@ import {
     PRIV_KEY_SIZE,
 } from '../base/keypairs';
 import {PublicKey, PrivateKey, ephemeralKeyPacked} from '../types/keypair';
-import {ICiphertext} from '../types/message';
+import {DecryptedZAccountUTXOMessage, ICiphertext} from '../types/message';
 import {assertInBabyJubJubSubOrder, assertMaxBits} from '../utils/assertions';
 import {
     bigIntToUint8Array,
@@ -297,16 +297,7 @@ export function unpackZAccountUTXOMessage(
 export function unpackAndDecryptZAccountUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
-): {
-    secretRandom: bigint;
-    networkId: bigint;
-    zoneId: bigint;
-    nonce: bigint;
-    expiryTime: bigint;
-    amountZkp: bigint;
-    amountPrp: bigint;
-    totalAmountPerTimePeriod: bigint;
-} {
+): DecryptedZAccountUTXOMessage {
     const plaintextUInt8 = unpackAndDecrypt(
         message,
         rootReadingPrivateKey,
