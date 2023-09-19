@@ -314,7 +314,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoOutNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoOutNoteHasher.id <== zAccountUtxoInId;
     zAccountUtxoOutNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
-    zAccountUtxoOutNoteHasher.amountPrp <== 0;
+    zAccountUtxoOutNoteHasher.amountPrp <== zAccountUtxoOutPrpAmount;
     zAccountUtxoOutNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zAccountUtxoOutNoteHasher.expiryTime <== zAccountUtxoInExpiryTime;
     zAccountUtxoOutNoteHasher.nonce <== zAccountUtxoInNonce + 1;
