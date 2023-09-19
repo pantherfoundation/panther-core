@@ -135,13 +135,15 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     /// - number of UTXOs added to the new queue (if there are such) equals to
     ///   `firstUtxoIndexInQueue + utxos[0].length - QUEUE_MAX_SIZE`
     /// - new queue (if created) has ID equal to `firstUtxoQueueId + 1`
-    function addUtxosToBusQueue(bytes32[] memory utxos, uint96 reward)
+    function addUtxosToBusQueue(bytes32[] memory utxos)
         external
         onlyPantherPool
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
         require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
-        _checkReward(reward, utxos.length);
+        uint96 reward = basePerUtxoReward * uint96(utxos.length);
+
+        // _checkReward(reward, utxos.length);
 
         (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);
     }

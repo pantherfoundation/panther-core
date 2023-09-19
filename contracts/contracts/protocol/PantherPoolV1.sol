@@ -13,6 +13,7 @@ import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 import "./interfaces/IPantherPoolV1.sol";
+import "../common/UtilsLib.sol";
 
 contract PantherPoolV1 is
     PantherForest,
@@ -22,6 +23,8 @@ contract PantherPoolV1 is
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
     uint256[453] private __gap;
+
+    uint256 private constant MAX_PRP_AMOUNT = (2 ** 64) - 1;
 
     IVault public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
@@ -34,6 +37,13 @@ contract PantherPoolV1 is
     uint160 public zAccountRegistrationCircuitId;
     uint160 public prpAccountingCircuitId;
     uint160 public prpAccountConversionCircuitId;
+
+    // TODO: to be removed when the total number of circuits in known
+    uint256[10] private __circuiteIdsGap;
+
+    // @notice Seen (i.e. spent) commitment nullifiers
+    // nullifier hash => spent
+    mapping(bytes32 => bool) public isSpent;
 
     constructor(
         address _owner,
@@ -74,17 +84,15 @@ contract PantherPoolV1 is
         zAccountRegistrationCircuitId = _circuitId;
     }
 
-    function updatePrpAccountingCircuitId(uint160 _circuitId)
-        external
-        onlyOwner
-    {
+    function updatePrpAccountingCircuitId(
+        uint160 _circuitId
+    ) external onlyOwner {
         prpAccountingCircuitId = _circuitId;
     }
 
-    function updatePrpAccountConversionCircuitId(uint160 _circuitId)
-        external
-        onlyOwner
-    {
+    function updatePrpAccountConversionCircuitId(
+        uint160 _circuitId
+    ) external onlyOwner {
         prpAccountConversionCircuitId = _circuitId;
     }
 
@@ -117,6 +125,9 @@ contract PantherPoolV1 is
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
+        // Note: This contract expects the Verifier to check the `inputs[]` are
+        // less than the field size
+
         require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
         require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         {
@@ -190,10 +201,13 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
     }
 
-    function accountPrp(uint256[] calldata inputs, SnarkProof calldata proof)
-        external
-    // solhint-disable-next-line no-empty-blocks
+    function accountPrp(
+        uint256[] calldata inputs,
+        SnarkProof calldata proof
+    ) external // solhint-disable-next-line no-empty-blocks
     {
+        // Note: This contract expects the Verifier to check the `inputs[]` are
+        // less than the field size
         // Trusted contract - no reentrancy guard needed
         // require(
         //     VERIFIER.verify(prpAccountingCircuitId, inputs, proof),
@@ -201,15 +215,108 @@ contract PantherPoolV1 is
         // );
     }
 
+    // TODO: Choosing better name
+    /// @param inputs[0] - extraInputsHash;
+    /// @param inputs[1] - chargedAmountZkp;
+    /// @param inputs[2] - createTime;
+    /// @param inputs[3] - depositAmountPrp;
+    /// @param inputs[4] - withdrawAmountPrp;
+    /// @param inputs[5] - utxoCommitmentPrivatePart;
+    /// @param inputs[6] - zAssetScale;
+    /// @param inputs[7] - zAccountUtxoInNullifier;
+    /// @param inputs[8] - zAccountUtxoOutCommitment;
+    /// @param inputs[9] - zNetworkChainId;
+    /// @param inputs[10] - forestMerkleRoot;
+    /// @param inputs[11] - saltHash;
+    /// @param inputs[12] - magicalConstraint;
     function accountPrpConvertion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 /*zkpAmount*/ // solhint-disable-next-line no-empty-blocks
-    ) external {
-        // require(
-        //     VERIFIER.verify(prpAccountConversionCircuitId, inputs, proof),
-        //     ERR_FAILED_ZK_PROOF
-        // );
+        uint256 zkpAmountOutRounded,
+        uint256 cachedForestRootIndex
+    ) external returns (uint256 firstUtxoBusQueuePos) {
+        // Note: This contract expects the Verifier to check the `inputs[]` are
+        // less than the field size
+
+        // Must be less than 32 bits and NOT in the past
+        uint32 createTime = UtilsLib.safe32(inputs[2]);
+        require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        {
+            uint256 depositAmountPrp = inputs[3];
+            uint256 withdrawAmountPrp = inputs[4];
+            require(
+                depositAmountPrp <= MAX_PRP_AMOUNT &&
+                    withdrawAmountPrp <= MAX_PRP_AMOUNT,
+                ERR_TOO_LARGE_PRP_AMOUNT
+            );
+        }
+
+        uint256 zAssetScale = inputs[6];
+        require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
+
+        // Generating the new zAsset utxo commitment
+        bytes32 zAssetUtxoCommitment;
+
+        {
+            uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
+            uint256 utxoCommitmentPrivatePart = inputs[5];
+            zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
+                utxoCommitmentPrivatePart,
+                zkpAmountScaled,
+                createTime
+            );
+        }
+        {
+            // spending zAccount utxo
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[7]);
+            require(
+                !isSpent[zAccountUtxoInNullifier],
+                ERR_SPENT_ZACCOUNT_NULLIFIER
+            );
+            isSpent[zAccountUtxoInNullifier] = true;
+        }
+        {
+            uint256 zNetworkChainId = inputs[9];
+            require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
+        }
+
+        require(
+            isCachedRoot(bytes32(inputs[10]), cachedForestRootIndex),
+            ERR_INVALID_FOREST_ROOT
+        );
+
+        {
+            uint256 saltHash = inputs[11];
+            require(saltHash != 0, ERR_ZERO_SALT_HASH);
+        }
+        {
+            uint256 magicalConstraint = inputs[12];
+            require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
+        }
+
+        // Trusted contract - no reentrancy guard needed
+        require(
+            VERIFIER.verify(prpAccountConversionCircuitId, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
+
+        {
+            bytes32 zAccountUtxoOutCommitment = bytes32(inputs[8]);
+            bytes32[] memory utxos = new bytes32[](2);
+
+            utxos[0] = zAccountUtxoOutCommitment;
+            // new zAsset utxo commitment
+            utxos[1] = zAssetUtxoCommitment;
+
+            (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) = BUS_TREE
+                .addUtxosToBusQueue(utxos);
+            firstUtxoBusQueuePos =
+                (uint256(firstUtxoQueueId) << 8) |
+                uint256(firstUtxoIndexInQueue);
+        }
+
+        _lockZkp(msg.sender, zkpAmountOutRounded);
     }
 
     function _lockZkp(address from, uint256 amount) internal {
@@ -226,39 +333,17 @@ contract PantherPoolV1 is
         );
     }
 
-    function tempAddZAccountsUtxos(
-        uint256[] calldata createTimes,
-        uint256[] calldata commitments,
-        bytes[] calldata privateMessages
-    ) external onlyOwner {
-        require(
-            createTimes.length == commitments.length &&
-                createTimes.length == privateMessages.length,
-            "invalid length"
+    function _generateZAssetUtxoCommitment(
+        uint256 zAssetUtxoPrivateDataHash,
+        uint256 zAssetAmount,
+        uint256 creationTime
+    ) private pure returns (bytes32 zAssetUtxoCommitment) {
+        zAssetUtxoCommitment = PoseidonHashers.poseidonT4(
+            [
+                bytes32(zAssetUtxoPrivateDataHash),
+                bytes32(zAssetAmount),
+                bytes32(creationTime)
+            ]
         );
-        for (uint256 i = 0; i < createTimes.length; i++) {
-            // Trusted contract - no reentrancy guard needed
-            (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
-                bytes32(commitments[i])
-            );
-
-            bytes memory transactionNoteContent = abi.encodePacked(
-                // First public message
-                MT_UTXO_CREATE_TIME,
-                createTimes[i],
-                // Seconds public message
-                MT_UTXO_BUSTREE_IDS,
-                commitments[i],
-                queueId,
-                indexInQueue,
-                // Private message(s)
-                privateMessages[i]
-            );
-
-            emit TransactionNote(
-                TT_ZACCOUNT_ACTIVATION,
-                transactionNoteContent
-            );
-        }
     }
 }
