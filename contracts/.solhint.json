@@ -18,9 +18,8 @@
     "reason-string": ["warn", {"maxLength": 64}],
 
     "custom-errors": "off",
-    "immutable-vars-naming": "off",
-    "no-unused-import": "error",
-    "one-contract-per-file": "off",
+    "immutable-vars-naming": ["warn", {"immutablesAsConstants": true}],
+    "one-contract-per-file": "error",
     "no-global-import": "off"
   }
 }

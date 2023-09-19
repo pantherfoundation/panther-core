@@ -14,6 +14,8 @@ import "./interfaces/IVotingPowerSource.sol";
  */
 contract VotingPowerInformer {
     /// @notice Instance of the `Staking` contract
+    // non snake-case `staking` name left as in the deployed version
+    // solhint-disable-next-line immutable-vars-naming
     address public immutable staking;
 
     // Special address the `Staking` uses to store global state
