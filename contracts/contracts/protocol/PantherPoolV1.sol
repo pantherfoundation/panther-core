@@ -203,9 +203,8 @@ contract PantherPoolV1 is
 
     function accountPrp(
         uint256[] calldata inputs,
-        SnarkProof calldata proof
-    ) external // solhint-disable-next-line no-empty-blocks
-    {
+        SnarkProof calldata proof // solhint-disable-next-line no-empty-blocks
+    ) external {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
         // Trusted contract - no reentrancy guard needed
@@ -237,6 +236,8 @@ contract PantherPoolV1 is
     ) external returns (uint256 firstUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
+
+        require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[2]);
