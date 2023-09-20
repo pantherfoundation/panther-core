@@ -15,15 +15,11 @@ abstract contract StakeZeroRewardAdviser is
     StakingMsgProcessor,
     IRewardAdviser
 {
-    // solhint-disable var-name-mixedcase
-
     // `stakeAction` for the STAKE
     bytes4 internal immutable STAKE;
 
     // `stakeAction` for the UNSTAKE
     bytes4 internal immutable UNSTAKE;
-
-    // solhint-enable var-name-mixedcase
 
     /// @param stakeAction The STAKE action type (see StakingMsgProcessor::_encodeStakeActionType)
     /// @param unstakeAction The UNSTAKE action type (see StakingMsgProcessor::_encodeUNstakeActionType)

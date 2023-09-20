@@ -16,10 +16,8 @@ import "./interfaces/IArptHistory.sol";
  * and `Staking.sol` on Polygon as IArptHistory and IStakeRegister
  */
 contract StakesReporter is IStakingTypes {
-    // solhint-disable var-name-mixedcase
     IStakeRegister public immutable STAKE_REGISTER;
     IArptHistory public immutable ARPT_HISTORY;
-    // solhint-enable var-name-mixedcase
 
     uint256 private constant SCALE = 1e9;
 

@@ -24,7 +24,6 @@ import "../common/Utils.sol";
  */
 contract RewardPool is ImmutableOwnable, Utils, IRewardPool {
     /// @notice Address of the VestingPools instance
-    // solhint-disable-next-line var-name-mixedcase
     address public immutable VESTING_POOLS;
 
     /// @notice ID of the pool (in the VestingPools) to vest from

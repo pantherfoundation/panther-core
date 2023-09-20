@@ -38,7 +38,6 @@ import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 
 // @notice The "triad binary tree" populated with zero leaf values
 abstract contract TriadMerkleZeros {
-    // solhint-disable var-name-mixedcase
 
     // @dev Number of levels in a tree excluding the root level
     // (also defined in scripts/generateTriadMerkleZeroesContracts.sh)
@@ -62,8 +61,6 @@ abstract contract TriadMerkleZeros {
                 0x20fc043586a9fcb416cdf2a3bc8a995f8f815d43f1046a20d1c588cf20482a55
             )
         );
-
-    // solhint-enable var-name-mixedcase
 
     function populateZeros(bytes32[TREE_DEPTH] memory zeros) internal pure {
         zeros[0] = bytes32(

@@ -29,10 +29,8 @@ import { HUNDRED_PERCENT } from "../../../common/Constants.sol";
 abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // TODO: adding gap to the beginning and end of the storage
 
-    // solhint-disable var-name-mixedcase
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
     uint256 private constant QUEUE_MAX_SIZE = 2**QUEUE_MAX_LEVELS;
-    // solhint-enable var-name-mixedcase
 
     /**
      * @param nUtxos Number of UTXOs in the queue

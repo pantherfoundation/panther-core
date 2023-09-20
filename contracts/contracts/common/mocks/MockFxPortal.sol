@@ -24,11 +24,8 @@ contract MockFxPortal is ImmutableOwnable, IRootChainManager, IFxStateSender {
 
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
     address public immutable PZKP_TOKEN;
     address public immutable ZKP_TOKEN;
-
-    // solhint-enable var-name-mixedcase
 
     event DepositForLog(address receiver, address token, bytes depositData);
     event SendMessageToChildLog(address _receiver, bytes _data);

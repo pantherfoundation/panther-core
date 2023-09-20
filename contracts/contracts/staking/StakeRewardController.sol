@@ -64,8 +64,6 @@ contract StakeRewardController is
      * (Scaling omitted in formulas above for clarity)
      */
 
-    // solhint-disable var-name-mixedcase
-
     /// @notice The ERC20 token to pay rewards in
     address public immutable REWARD_TOKEN;
 
@@ -109,8 +107,6 @@ contract StakeRewardController is
 
     // "shares" for "old" stakes are scaled (down) with this factor
     uint256 private constant OLD_SHARE_FACTOR = 1e6;
-
-    // solhint-enable var-name-mixedcase
 
     /// @notice (UNIX) Time when history of "old" stakes was generated
     uint32 public prefilledHistoryEnd;

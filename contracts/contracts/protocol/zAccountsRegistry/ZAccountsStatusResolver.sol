@@ -6,7 +6,6 @@ import "../interfaces/IPureFiIssuerRequestResolver.sol";
 import "../interfaces/IZAccountsRegistry.sol";
 
 contract ZAccountsStatusResolver is IPureFiIssuerRequestResolver {
-    // solhint-disable-next-line var-name-mixedcase
     IZAccountsRegistry public immutable zAccountsRegistry;
 
     constructor(address _zAccountsRegistry) {

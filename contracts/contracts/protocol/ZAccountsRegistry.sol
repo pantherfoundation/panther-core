@@ -35,7 +35,6 @@ contract ZAccountsRegistry is
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
 
     uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
 
@@ -43,7 +42,6 @@ contract ZAccountsRegistry is
     ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
     IOnboardingController public immutable ONBOARDING_CONTROLLER;
 
-    // solhint-enable var-name-mixedcase
 
     struct ZAccount {
         uint224 _unused; // reserved

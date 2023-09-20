@@ -42,7 +42,6 @@ abstract contract PantherForest is
 {
     bytes32[10] private _startGap;
 
-    // solhint-disable var-name-mixedcase
 
     uint256 private constant NUM_LEAFS = 4;
     uint256 private constant STATIC_TREE_LEAF = 3;
@@ -51,8 +50,6 @@ abstract contract PantherForest is
     address public immutable BUS_TREE_CONTROLLER;
     address public immutable FERRY_TREE_CONTROLLER;
     address public immutable STATIC_TREE_CONTROLLER;
-
-    // solhint-enable var-name-mixedcase
 
     bytes32 private _forestRoot;
 

@@ -85,7 +85,6 @@ abstract contract TransactionNoteEmitter {
     //  - 0x00 .. 0x1F allowed
     //  - 0x20 .. 0xFF reserved (unused)
 
-    // solhint-disable var-name-mixedcase
 
     uint8 internal constant TT_ZACCOUNT_ACTIVATION = 0x01;
     // TransactionNote for this tx type MUST include in the specified sequence:
@@ -145,5 +144,4 @@ abstract contract TransactionNoteEmitter {
     // Length in bytes (msgType, msgContainer)
     uint256 internal constant LMT_UTXO_BUSTREE_IDS = 1 + 37;
 
-    // solhint-enable var-name-mixedcase
 }
