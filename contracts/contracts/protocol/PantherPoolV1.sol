@@ -201,17 +201,84 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
     }
 
+    /// @param inputs[0] - extraInputsHash;
+    /// @param inputs[1] - chargedAmountZkp;
+    /// @param inputs[2] - createTime;
+    /// @param inputs[3] - depositAmountPrp;
+    /// @param inputs[4] - withdrawAmountPrp;
+    /// @param inputs[5] - utxoCommitmentPrivatePart;
+    /// @param inputs[6] - zAssetScale;
+    /// @param inputs[7] - zAccountUtxoInNullifier;
+    /// @param inputs[8] - zAccountUtxoOutCommitment;
+    /// @param inputs[9] - zNetworkChainId;
+    /// @param inputs[10] - forestMerkleRoot;
+    /// @param inputs[11] - saltHash;
+    /// @param inputs[12] - magicalConstraint;
     function accountPrp(
         uint256[] calldata inputs,
-        SnarkProof calldata proof // solhint-disable-next-line no-empty-blocks
-    ) external {
+        SnarkProof calldata proof,
+        uint256 cachedForestRootIndex
+    )
+        external
+        returns (uint256 utxoBusQueuePos)
+    // solhint-disable-next-line no-empty-blocks
+    {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
+
+        require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
+
+        // Must be less than 32 bits and NOT in the past
+        uint32 createTime = UtilsLib.safe32(inputs[2]);
+        require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        {
+            uint256 depositAmountPrp = inputs[3];
+            uint256 withdrawAmountPrp = inputs[4];
+            require(
+                depositAmountPrp <= MAX_PRP_AMOUNT &&
+                    withdrawAmountPrp <= MAX_PRP_AMOUNT,
+                ERR_TOO_LARGE_PRP_AMOUNT
+            );
+        }
+
+        {
+            // spending zAccount utxo
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[7]);
+            require(
+                !isSpent[zAccountUtxoInNullifier],
+                ERR_SPENT_ZACCOUNT_NULLIFIER
+            );
+            isSpent[zAccountUtxoInNullifier] = true;
+        }
+        {
+            uint256 zNetworkChainId = inputs[9];
+            require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
+        }
+
+        {
+            bytes32 forestMerkleRoot = bytes32(inputs[10]);
+            require(
+                isCachedRoot(forestMerkleRoot, cachedForestRootIndex),
+                ERR_INVALID_FOREST_ROOT
+            );
+        }
+
         // Trusted contract - no reentrancy guard needed
-        // require(
-        //     VERIFIER.verify(prpAccountingCircuitId, inputs, proof),
-        //     ERR_FAILED_ZK_PROOF
-        // );
+        require(
+            VERIFIER.verify(prpAccountingCircuitId, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
+
+        {
+            uint256 zAccountUtxoOutCommitment = inputs[8];
+            // Trusted contract - no reentrancy guard needed
+            (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
+                bytes32(zAccountUtxoOutCommitment)
+            );
+
+            utxoBusQueuePos = (uint256(queueId) << 8) | uint256(indexInQueue);
+        }
     }
 
     // TODO: Choosing better name

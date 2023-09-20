@@ -6,8 +6,8 @@ import { SnarkProof } from "../../common/Types.sol";
 import { LockData } from "../../common/Types.sol";
 
 interface IPantherPoolV1 {
-    function accountPrp(uint256[] calldata inputs, SnarkProof calldata proof)
-        external;
+    function accountPrp(uint256[] calldata inputs, SnarkProof calldata proof, uint256 cachedForestRootIndex)
+        external returns (uint256 utxoBusQueuePos);
 
     function accountPrpConvertion(
         uint256[] calldata inputs,

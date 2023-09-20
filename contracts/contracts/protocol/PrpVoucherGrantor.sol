@@ -132,24 +132,61 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param secretHash The secret hash for the reward voucher.
+    /// @param inputs[0] - extraInputsHash;
+    /// @param inputs[1] - chargedAmountZkp;
+    /// @param inputs[2] - createTime;
+    /// @param inputs[3] - depositAmountPrp;
+    /// @param inputs[4] - withdrawAmountPrp;
+    /// @param inputs[5] - utxoCommitmentPrivatePart;
+    /// @param inputs[6] - zAssetScale;
+    /// @param inputs[7] - zAccountUtxoInNullifier;
+    /// @param inputs[8] - zAccountUtxoOutCommitment;
+    /// @param inputs[9] - zNetworkChainId;
+    /// @param inputs[10] - forestMerkleRoot;
+    /// @param inputs[11] - saltHash;
+    /// @param inputs[12] - magicalConstraint;
     function claimRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        uint256 cachedForestRootIndex,
         bytes32 secretHash
-    ) external {
+    ) external returns (uint256 utxoBusQueuePos) {
         uint256 rewardAmount = balance[secretHash];
         require(
             rewardAmount > ZERO_VALUE,
             "PrpVoucherGrantor: No reward to claim"
         );
 
+        //TODO: check extra input hash (should contain secret hash)
+
         // we are setting the balance to non-zero to save gas for the next
         // rearward generation
         balance[secretHash] = ZERO_VALUE;
 
-        PANTHER_POOL_V1.accountPrp(inputs, proof);
+        utxoBusQueuePos = _accountPrp(inputs, proof, cachedForestRootIndex);
 
         emit RewardClaimed(secretHash);
+    }
+
+     function _accountPrp(
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        uint256 cachedForestRootIndex
+    ) private returns (uint256 utxoBusQueuePos) {
+        utxoBusQueuePos = 0;
+        // Pool is supposed to revert in case of any error
+        try
+            // Trusted contract - no reentrancy guard needed
+            PANTHER_POOL_V1.accountPrp(
+                inputs,
+                proof,
+                cachedForestRootIndex
+            )
+        returns (uint256 result) {
+            utxoBusQueuePos = result;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
     }
 
     /// @notice Sets the terms for action rewards for a given voucher type.
