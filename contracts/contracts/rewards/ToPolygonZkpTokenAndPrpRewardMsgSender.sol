@@ -31,7 +31,7 @@ interface DepositFor {
  * PRP rewards to the user.
  */
 
-contract PolygonZkpTokenAndPrpRewardMsgSender is
+contract ToPolygonZkpTokenAndPrpRewardMsgSender is
     ImmutableOwnable,
     PrpRewardBridgedDataCoder
 {
@@ -100,7 +100,7 @@ contract PolygonZkpTokenAndPrpRewardMsgSender is
         FX_ROOT = _fxRoot;
     }
 
-    function bridgeZkpTokenssAndPrpRewardsMessage(bytes32 secret) external {
+    function bridgeZkpTokensAndPrpRewardsMessage(bytes32 secret) external {
         // known contract - no reentrancy guard needed
         uint256 releasable = IProtocolRewardController(
             PANTHER_REWARD_CONTROLLER
