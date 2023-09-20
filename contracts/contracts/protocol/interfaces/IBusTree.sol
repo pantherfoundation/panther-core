@@ -5,9 +5,9 @@ pragma solidity ^0.8.16;
 interface IBusTree {
     function addUtxosToBusQueue(bytes32[] calldata utxo)
         external
-        returns (uint32 queueId, uint8 indexInQueue);
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue);
         
     function addUtxoToBusQueue(bytes32 utxo)
         external
-        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue);
+        returns (uint32 queueId, uint8 indexInQueue);
 }
