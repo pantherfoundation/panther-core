@@ -5,7 +5,6 @@ pragma solidity 0.8.16;
 import "../../common/EIP712SignatureVerifier.sol";
 
 abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
-    // solhint-disable var-name-mixedcase
 
     bytes32 internal constant REGISTRATION_TYPEHASH =
         keccak256(
@@ -15,8 +14,6 @@ abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
         );
 
     uint8 public immutable KEYRING_VERSION;
-
-    // solhint-enable var-name-mixedcase
 
     constructor(uint8 keyringVersion) {
         KEYRING_VERSION = keyringVersion;

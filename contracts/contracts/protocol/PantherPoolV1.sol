@@ -23,13 +23,13 @@ contract PantherPoolV1 is
     // slither-disable-next-line shadowing-state unused-state
     uint256[453] private __gap;
 
-    // solhint-disable var-name-mixedcase
+
     IVault public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
-    // solhint-enable var-name-mixedcase
+
 
     mapping(address => bool) public vaultAssetUnlockers;
 

@@ -4,7 +4,6 @@ pragma solidity ^0.8.16;
 
 import "../PantherPoolV0.sol";
 
-// solhint-disable var-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable func-name-mixedcase
 // solhint-disable event-name-camelcase

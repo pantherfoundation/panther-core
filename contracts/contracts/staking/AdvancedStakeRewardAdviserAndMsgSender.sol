@@ -30,8 +30,6 @@ contract AdvancedStakeRewardAdviserAndMsgSender is
 {
     event StakeMsgBridged(uint256 _nonce, bytes data);
 
-    // solhint-disable var-name-mixedcase
-
     /// @notice Address of the `FxRoot` contract on the mainnet/Goerli network
     /// @dev `FxRoot` is the contract of the "Fx-Portal" on the mainnet/Goerli.
     address public immutable FX_ROOT;
@@ -41,8 +39,6 @@ contract AdvancedStakeRewardAdviserAndMsgSender is
 
     /// @notice Address on the AdvancedStakeActionMsgRelayer on the Polygon/Mumbai
     address public immutable ACTION_MSG_RECEIVER;
-
-    // solhint-enable var-name-mixedcase
 
     /// @notice Message nonce (i.e. sequential number of the latest message)
     uint256 public nonce;

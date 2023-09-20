@@ -97,7 +97,6 @@ contract AdvancedStakeRewardController is
         uint8 endZkpApy;
     }
 
-    // solhint-disable var-name-mixedcase
     // These three constants used to align with IPantherPool::generateDeposits API
     uint256 private constant ZERO_AMOUNT = 0;
     uint256 private constant ZERO_TOKEN_ID = 0;
@@ -115,8 +114,6 @@ contract AdvancedStakeRewardController is
 
     /// @notice Block when this contract is deployed
     uint256 public immutable START_BLOCK;
-
-    // solhint-enable var-name-mixedcase
 
     /// @notice Amounts of $ZKP and NFT allocated for rewards
     Limits public limits;
