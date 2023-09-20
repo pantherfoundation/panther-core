@@ -1,0 +1,150 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_owner", "type": "address"},
+      {"internalType": "address", "name": "_poolContract", "type": "address"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RewardClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "prpAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "RewardVoucherGenerated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "allowedContract",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes4",
+        "name": "voucherType",
+        "type": "bytes4"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "limit",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "amount",
+        "type": "uint64"
+      }
+    ],
+    "name": "VoucherTermsUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "OWNER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "POOL_CONTRACT",
+    "outputs": [
+      {"internalType": "contract PoolContract", "name": "", "type": "address"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "name": "balance",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "secretHash", "type": "bytes32"},
+      {"internalType": "bytes", "name": "proof", "type": "bytes"}
+    ],
+    "name": "claimRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "_secretHash", "type": "bytes32"},
+      {"internalType": "uint64", "name": "_amount", "type": "uint64"},
+      {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"}
+    ],
+    "name": "generateRewards",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_allowedContract",
+        "type": "address"
+      },
+      {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"},
+      {"internalType": "uint64", "name": "_limit", "type": "uint64"},
+      {"internalType": "uint64", "name": "_amount", "type": "uint64"},
+      {"internalType": "bool", "name": "_enabled", "type": "bool"}
+    ],
+    "name": "updateVoucherTerms",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "bytes4", "name": "", "type": "bytes4"}
+    ],
+    "name": "voucherTerms",
+    "outputs": [
+      {"internalType": "uint64", "name": "rewardsGranted", "type": "uint64"},
+      {"internalType": "uint64", "name": "limit", "type": "uint64"},
+      {"internalType": "uint64", "name": "amount", "type": "uint64"},
+      {"internalType": "bool", "name": "enabled", "type": "bool"},
+      {"internalType": "uint56", "name": "_reserved", "type": "uint56"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

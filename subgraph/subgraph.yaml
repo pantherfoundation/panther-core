@@ -6,9 +6,11 @@ dataSources:
     name: BusTree
     network: mumbai
     source:
-      address: '0x678D34aA4fc546bA806287a8289FfdAA84681a03'
+      # address: '0x678D34aA4fc546bA806287a8289FfdAA84681a03'
+      address: '0xC042Dd23517eDB7E38F7e92d2e38B6a1f03D7947'
       abi: BusTree
-      startBlock: 37770053
+      # startBlock: 37770053
+      startBlock: 38811462
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -42,9 +44,11 @@ dataSources:
     name: PoolContract
     network: mumbai
     source:
-      address: '0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd'
+      # address: '0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd'
+      address: '0x7Caa195a4A580b9bfc66F8aC87B2Eb8008FB89B7'
       abi: PoolContract
-      startBlock: 37764502
+      # startBlock: 37764502
+      startBlock: 38811473
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -58,3 +62,31 @@ dataSources:
         - event: TransactionNote(uint8,bytes)
           handler: handleTransactionNote
       file: ./src/handePoolContract.ts
+  - kind: ethereum
+    name: PRPVoucherGrantor
+    network: mumbai
+    source:
+      # address: '0x0b8D09a40B696d8173088cdA505DaD0167394B4C'
+      address: '0x9f2bAf4043c1232169Cfbd5cfEF515FBB2af7F42'
+      abi: PRPVoucherGrantor
+      # startBlock: 39383858
+      startBlock: 39320723
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardClaimed
+        - RewardVoucherGenerated
+        - VoucherTermsUpdated
+      abis:
+        - name: PRPVoucherGrantor
+          file: ./abis/PRPVoucherGrantor.json
+      eventHandlers:
+        - event: RewardClaimed(indexed bytes32)
+          handler: handleRewardClaimed
+        - event: RewardVoucherGenerated(indexed bytes32,uint256)
+          handler: handleRewardVoucherGenerated
+        - event: VoucherTermsUpdated(address,bytes4,uint64,uint64)
+          handler: handleVoucherTermsUpdated
+      file: ./src/handlePrpVoucherGrantor.ts

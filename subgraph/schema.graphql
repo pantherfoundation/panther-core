@@ -64,3 +64,31 @@ type TransactionNote @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type RewardClaimed @entity(immutable: true) {
+    id: Bytes!
+    secretHash: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type RewardVoucherGenerated @entity(immutable: true) {
+    id: Bytes!
+    secretHash: Bytes! # bytes32
+    prpAmount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type VoucherTermsUpdated @entity(immutable: true) {
+    id: Bytes!
+    allowedContract: Bytes! # address
+    voucherType: Bytes! # bytes4
+    limit: BigInt! # uint64
+    amount: BigInt! # uint64
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
