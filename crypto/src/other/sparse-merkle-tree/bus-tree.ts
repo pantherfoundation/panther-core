@@ -7,7 +7,7 @@ import {SparseMerkleTree} from './sparse-merkle-tree';
 
 /**
  BusTree is responsible for generating and managing three-tiered Merkle tree
- that is composed of UTXO pack/queue, branch, and root trees.
+ that is composed of UTXO batch/queue, branch, and root trees.
 
                             Root Tree
                              /  |  \
@@ -18,7 +18,7 @@ import {SparseMerkleTree} from './sparse-merkle-tree';
                        /  |  \   |     /  |  \
                       /   |   \  |    /   |   \
                      /    |    \ |   /    |    \
-                UTXO Pack | UTXO Pack | UTXO Pack
+                UTXO Batch | UTXO Batch | UTXO Batch
                    /  |  \  |    /  |  \  |   /  |  \
                   L   L   L |   L   L   L |  L   L   L
                   e   e   e |   e   e   e |  e   e   e
@@ -28,8 +28,8 @@ import {SparseMerkleTree} from './sparse-merkle-tree';
 
 This tree has three levels:
 - The root tree: It is composed of branches (Branch Trees);
-- Branch tree: Each branch is composed of UTXO packs (UTXO Pack Trees);
-- UTXO Pack tree: Each UTXO pack is composed of leaves (transactions);
+- Branch tree: Each branch is composed of UTXO batches (UTXO Batch Trees);
+- UTXO Batch tree: Each UTXO batch is composed of leaves (transactions);
 
 Please note that the above diagram is an oversimplified representation for
 better understanding. In reality, the depth of the tree can vary depending on
@@ -39,98 +39,97 @@ potentially have 2^n nodes, where n is the depth of the tree.
    */
 
 export class BusTree {
-    private readonly utxoPackTree: SparseMerkleTree;
+    private readonly utxoBatchTree: SparseMerkleTree;
     private readonly branchTree: SparseMerkleTree;
     private readonly rootTree: SparseMerkleTree;
-    private readonly utxoPackIndex: number;
+    private readonly utxoBatchIndex: number;
 
     /**
      * Constructor for BusTree.
      * @param {number} leftLeafIndex - Starting index of the left leaf.
-     * @param {bigint[]} leavesOfUtxoPack - Leaves of the UTXO pack.
-     * @param {bigint[]} rootsOfUtxoPacksInBranch - Roots of the UTXO packs in the branch.
-     * @param {bigint[]} rootsOfBranches - Roots of the branches.
-     * @param {number} utxoPackDepth - Depth of the UTXO pack.
+     * @param {bigint[]} utxoBatchLeaves - Leaves of the UTXO batch.
+     * @param {bigint[]} utxoBatchRoots - Roots of the UTXO batches in the branch.
+     * @param {bigint[]} branchRoots - Roots of the branches.
+     * @param {number} utxoBatchDepth - Depth of the UTXO batch.
      * @param {number} branchDepth - Depth of the branch.
      * @param {number} depth - Total depth.
      * @param {bigint} zeroValue - Value to fill in non-existent leaves, defaults to 0.
      */
     constructor(
         leftLeafIndex: number,
-        leavesOfUtxoPack: bigint[],
-        private rootsOfUtxoPacksInBranch: bigint[],
-        private rootsOfBranches: bigint[],
-        private readonly utxoPackDepth: number,
+        utxoBatchLeaves: bigint[],
+        private utxoBatchRoots: bigint[],
+        private branchRoots: bigint[],
+        private readonly utxoBatchDepth: number,
         private readonly branchDepth: number,
         private readonly depth: number,
         zeroValue = BigInt(0),
     ) {
-        this.validateDepths(utxoPackDepth, branchDepth, depth);
+        this.validateDepths(utxoBatchDepth, branchDepth, depth);
 
-        this.utxoPackIndex = this.calculateBranchIndex(
+        this.utxoBatchIndex = this.calculateBranchIndex(
             leftLeafIndex,
-            utxoPackDepth,
+            utxoBatchDepth,
             branchDepth,
         );
         this.validateInputRootsLength(
-            'Roots of the UTXO packs',
-            this.utxoPackIndex,
-            rootsOfUtxoPacksInBranch,
+            'Roots of the UTXO batches',
+            this.utxoBatchIndex,
+            utxoBatchRoots,
         );
 
-        // Initialize UTXO pack tree and update the UTXO pack root in the branch
-        this.utxoPackTree = this.initTree(
-            leavesOfUtxoPack,
-            this.utxoPackDepth,
+        // Initialize UTXO batch tree and update the UTXO batch root in the branch
+        this.utxoBatchTree = this.initTree(
+            utxoBatchLeaves,
+            this.utxoBatchDepth,
             zeroValue,
         );
 
-        this.rootsOfUtxoPacksInBranch[this.utxoPackIndex] =
-            this.utxoPackTree.getRoot();
+        this.utxoBatchRoots[this.utxoBatchIndex] = this.utxoBatchTree.getRoot();
 
         // Initialize branch tree and update the branch root
         this.branchTree = this.initTree(
-            this.rootsOfUtxoPacksInBranch,
+            this.utxoBatchRoots,
             this.branchDepth,
-            this.utxoPackTree.getDefaultRoot(),
+            this.utxoBatchTree.getDefaultRoot(),
         );
 
         const branchIndex = this.calculateBranchIndex(
-            this.calculateSubtreeIndex(leftLeafIndex, utxoPackDepth), // absolute utxo pack index
+            this.calculateSubtreeIndex(leftLeafIndex, utxoBatchDepth), // absolute utxo batch index
             this.branchDepth,
-            this.depth - this.branchDepth - this.utxoPackDepth,
+            this.depth - this.branchDepth - this.utxoBatchDepth,
         );
 
         this.validateInputRootsLength(
             'Roots of the branches',
             branchIndex,
-            rootsOfBranches,
+            branchRoots,
         );
-        this.rootsOfBranches[branchIndex] = this.branchTree.getRoot();
+        this.branchRoots[branchIndex] = this.branchTree.getRoot();
 
         // Initialize root tree
         this.rootTree = this.initTree(
-            this.rootsOfBranches,
-            depth - this.branchDepth - this.utxoPackDepth,
+            this.branchRoots,
+            depth - this.branchDepth - this.utxoBatchDepth,
             this.branchTree.getDefaultRoot(),
         );
     }
 
     /**
-     * Validates that depths are positive integers and the sum of utxoPackDepth and branchDepth is less than the total depth.
+     * Validates that depths are positive integers and the sum of utxoBatchDepth and branchDepth is less than the total depth.
      * @throws Will throw an Error if the depths are not valid.
      */
     private validateDepths(
-        utxoPackDepth: number,
+        utxoBatchDepth: number,
         branchDepth: number,
         depth: number,
     ): void {
-        if (utxoPackDepth <= 0 || branchDepth <= 0 || depth <= 0) {
+        if (utxoBatchDepth <= 0 || branchDepth <= 0 || depth <= 0) {
             throw new Error('Depths must be positive integers.');
         }
-        if (utxoPackDepth + branchDepth >= depth) {
+        if (utxoBatchDepth + branchDepth >= depth) {
             throw new Error(
-                'The sum of utxoPackDepth and branchDepth must be less than the total depth.',
+                'The sum of utxoBatchDepth and branchDepth must be less than the total depth.',
             );
         }
     }
@@ -157,8 +156,19 @@ export class BusTree {
         );
     }
 
+    public getBatchIndex(leafIndex: number): number {
+        return leafIndex >> this.utxoBatchDepth;
+    }
+
+    public getBranchIndex(leafIndex: number): number {
+        return leafIndex >> (this.utxoBatchDepth + this.branchDepth);
+    }
+
+    public getLeftLeafIndex(batchIndex: number): number {
+        return batchIndex * 2 ** this.utxoBatchDepth;
+    }
     /**
-     * Validates that an array has at least packIndex elements.
+     * Validates that an array has at least batchIndex elements.
      * @throws Will throw an Error if the array is not long enough.
      */
     private validateInputRootsLength(
@@ -199,40 +209,40 @@ export class BusTree {
     /**
      * Returns the Merkle proof for a given leaf index.
      * @param {number} leafIndex - The index of the leaf to generate a proof for.
-     * @throws Will throw an Error if the UTXO pack index does not match.
+     * @throws Will throw an Error if the UTXO batch index does not match.
      * @returns {bigint[]} An array of BigInt representing the Merkle proof.
      */
     public getProof(leafIndex: number): bigint[] {
-        const utxoPackIndex = this.calculateBranchIndex(
+        const utxoBatchIndex = this.calculateBranchIndex(
             leafIndex,
-            this.utxoPackDepth,
+            this.utxoBatchDepth,
             this.branchDepth,
         );
 
-        this.validatePackIndex(utxoPackIndex);
+        this.validateBatchIndex(utxoBatchIndex);
 
-        const leafIndexInPack = leafIndex % 2 ** this.utxoPackDepth;
+        const leafIndexInBatch = leafIndex % 2 ** this.utxoBatchDepth;
         const branchIndex = this.calculateBranchIndex(
             leafIndex,
             this.branchDepth,
             this.depth,
         );
 
-        const utxoPackProof = this.utxoPackTree.getProof(leafIndexInPack);
-        const branchProof = this.branchTree.getProof(utxoPackIndex);
+        const utxoBatchProof = this.utxoBatchTree.getProof(leafIndexInBatch);
+        const branchProof = this.branchTree.getProof(utxoBatchIndex);
         const rootProof = this.rootTree.getProof(branchIndex);
 
-        return [...utxoPackProof, ...branchProof, ...rootProof];
+        return [...utxoBatchProof, ...branchProof, ...rootProof];
     }
 
     /**
-     * Validates that the pack index matches the UTXO pack index.
-     * @throws Will throw an Error if the pack index does not match.
+     * Validates that the batch index matches the UTXO batch index.
+     * @throws Will throw an Error if the batch index does not match.
      */
-    private validatePackIndex(packIndex: number): void {
-        if (packIndex !== this.utxoPackIndex) {
+    private validateBatchIndex(batchIndex: number): void {
+        if (batchIndex !== this.utxoBatchIndex) {
             throw new Error(
-                `Pack index ${packIndex} is not in the same UTXO pack as the bus tree ${this.utxoPackIndex}`,
+                `Batch index ${batchIndex} is not in the same UTXO batch as the bus tree ${this.utxoBatchIndex}`,
             );
         }
     }
@@ -242,7 +252,7 @@ export class BusTree {
      * @param {bigint} leaf - The leaf to verify.
      * @param {number} leafIndex - The index of the leaf.
      * @param {bigint[]} merklePath - The Merkle proof to verify.
-     * @throws Will throw an Error if the UTXO pack index does not match.
+     * @throws Will throw an Error if the UTXO batch index does not match.
      * @throws Will throw an Error if the leaf does not match.
      * @returns {boolean} True if the proof is valid, false otherwise.
      */
@@ -251,18 +261,18 @@ export class BusTree {
         leafIndex: number,
         merklePath: bigint[],
     ): boolean {
-        const utxoPackIndex = this.calculateBranchIndex(
+        const utxoBatchIndex = this.calculateBranchIndex(
             leafIndex,
-            this.utxoPackDepth,
+            this.utxoBatchDepth,
             this.branchDepth,
         );
 
-        this.validatePackIndex(utxoPackIndex);
+        this.validateBatchIndex(utxoBatchIndex);
 
-        const leafInPack = this.utxoPackTree.getLeaf(
-            leafIndex % 2 ** this.utxoPackDepth,
+        const leafInBatch = this.utxoBatchTree.getLeaf(
+            leafIndex % 2 ** this.utxoBatchDepth,
         );
-        this.validateLeaf(leaf, leafInPack);
+        this.validateLeaf(leaf, leafInBatch);
 
         return (
             this.calculateHash(leaf, leafIndex, merklePath) === this.getRoot()
@@ -297,10 +307,10 @@ export class BusTree {
      * Validates that a leaf matches a specified leaf.
      * @throws Will throw an Error if the leaves do not match.
      */
-    private validateLeaf(leaf: bigint, leafInPack: bigint): void {
-        if (leafInPack !== leaf) {
+    private validateLeaf(leaf: bigint, leafInBatch: bigint): void {
+        if (leafInBatch !== leaf) {
             throw new Error(
-                `Leaf ${leaf} does not match the leaf ${leafInPack} in the UTXO pack`,
+                `Leaf ${leaf} does not match the leaf ${leafInBatch} in the UTXO batch`,
             );
         }
     }
