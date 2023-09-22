@@ -26,7 +26,7 @@
     "graph:auth": "yarn workspace @panther-core/subgraph auth",
     "graph:setup": "yarn workspace @panther-core/subgraph node setupSubgraph.ts ",
     "hardhat": "yarn workspace @panther-core/contracts hardhat",
-    "install:clean": "rm -rf node_modules && rm -rf crypto/node_modules && rm -rf contracts/node_modules && rm -rf dapp/node_modules && rm -rf subgraph/node_modules && yarn install",
+    "install:clean": "yarn workspaces run rimraf node_modules && yarn rimraf node_modules && yarn install",
     "lint": "yarn workspace @panther-core/contracts lint && yarn workspace @panther-core/crypto lint:eslint && yarn workspace @panther-core/dapp lint",
     "postinstall": "git config commit.template .gitmessage; husky install",
     "prettier:check": "prettier --check .",
