@@ -270,15 +270,26 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        {
-            uint256 zAccountUtxoOutCommitment = inputs[8];
-            // Trusted contract - no reentrancy guard needed
-            (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
-                bytes32(zAccountUtxoOutCommitment)
-            );
+        uint256 zAccountUtxoOutCommitment = inputs[8];
+        // Trusted contract - no reentrancy guard needed
+        (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
+            bytes32(zAccountUtxoOutCommitment)
+        );
 
-            utxoBusQueuePos = (uint256(queueId) << 8) | uint256(indexInQueue);
-        }
+        utxoBusQueuePos = (uint256(queueId) << 8) | uint256(indexInQueue);
+
+        bytes memory transactionNoteContent = abi.encodePacked(
+            // First public message
+            MT_UTXO_CREATE_TIME,
+            createTime,
+            MT_UTXO_BUSTREE_IDS,
+            queueId,
+            indexInQueue,
+            MT_UTXO_ZACCOUNT,
+            zAccountUtxoOutCommitment
+        );
+
+        emit TransactionNote(TT_PRP_CLAIM, transactionNoteContent);
     }
 
     // TODO: Choosing better name
@@ -324,17 +335,17 @@ contract PantherPoolV1 is
         require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
 
         // Generating the new zAsset utxo commitment
+        // Define zAssetUtxoCommitment here to avoid `stack too deep` error
         bytes32 zAssetUtxoCommitment;
 
-        {
-            uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
-            uint256 utxoCommitmentPrivatePart = inputs[5];
-            zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
-                utxoCommitmentPrivatePart,
-                zkpAmountScaled,
-                createTime
-            );
-        }
+        uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
+        uint256 utxoCommitmentPrivatePart = inputs[5];
+        zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
+            utxoCommitmentPrivatePart,
+            zkpAmountScaled,
+            createTime
+        );
+
         {
             // spending zAccount utxo
             bytes32 zAccountUtxoInNullifier = bytes32(inputs[7]);
@@ -344,6 +355,7 @@ contract PantherPoolV1 is
             );
             isSpent[zAccountUtxoInNullifier] = true;
         }
+
         {
             uint256 zNetworkChainId = inputs[9];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
@@ -358,6 +370,7 @@ contract PantherPoolV1 is
             uint256 saltHash = inputs[11];
             require(saltHash != 0, ERR_ZERO_SALT_HASH);
         }
+
         {
             uint256 magicalConstraint = inputs[12];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
@@ -369,25 +382,37 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        {
-            bytes32 zAccountUtxoOutCommitment = bytes32(inputs[8]);
-            bytes32[] memory utxos = new bytes32[](2);
+        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[8]);
+        bytes32[] memory utxos = new bytes32[](2);
 
-            utxos[0] = zAccountUtxoOutCommitment;
-            // new zAsset utxo commitment
-            utxos[1] = zAssetUtxoCommitment;
+        utxos[0] = zAccountUtxoOutCommitment;
+        // new zAsset utxo commitment
+        utxos[1] = zAssetUtxoCommitment;
 
-            // The BusTree returns the queueId and index of the first utxo inside the utxos array, which is the zAccountUtxo
-            (
-                uint32 zAccountUtxoQueueId,
-                uint8 zAccountUtxoIndexInQueue
-            ) = BUS_TREE.addUtxosToBusQueue(utxos);
-            zAccountUtxoBusQueuePos =
-                (uint256(zAccountUtxoQueueId) << 8) |
-                uint256(zAccountUtxoIndexInQueue);
-        }
+        // The BusTree returns the queueId and index of the first utxo inside the utxos array, which is the zAccountUtxo
+        (uint32 zAccountUtxoQueueId, uint8 zAccountUtxoIndexInQueue) = BUS_TREE
+            .addUtxosToBusQueue(utxos);
+        zAccountUtxoBusQueuePos =
+            (uint256(zAccountUtxoQueueId) << 8) |
+            uint256(zAccountUtxoIndexInQueue);
 
         _lockZkp(msg.sender, zkpAmountOutRounded);
+
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            createTime,
+            MT_UTXO_BUSTREE_IDS,
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            MT_UTXO_ZACCOUNT,
+            zAccountUtxoOutCommitment,
+            MT_UTXO_ZASSET_PUB,
+            zkpAmountScaled,
+            MT_UTXO_ZASSET_PRIV,
+            utxoCommitmentPrivatePart
+        );
+
+        emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
     }
 
     function _lockZkp(address from, uint256 amount) internal {
