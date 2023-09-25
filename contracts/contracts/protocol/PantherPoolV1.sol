@@ -300,7 +300,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint256 zkpAmountOutRounded,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 firstUtxoBusQueuePos) {
+    ) external returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -377,11 +377,14 @@ contract PantherPoolV1 is
             // new zAsset utxo commitment
             utxos[1] = zAssetUtxoCommitment;
 
-            (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) = BUS_TREE
-                .addUtxosToBusQueue(utxos);
-            firstUtxoBusQueuePos =
-                (uint256(firstUtxoQueueId) << 8) |
-                uint256(firstUtxoIndexInQueue);
+            // The BusTree returns the queueId and index of the first utxo inside the utxos array, which is the zAccountUtxo
+            (
+                uint32 zAccountUtxoQueueId,
+                uint8 zAccountUtxoIndexInQueue
+            ) = BUS_TREE.addUtxosToBusQueue(utxos);
+            zAccountUtxoBusQueuePos =
+                (uint256(zAccountUtxoQueueId) << 8) |
+                uint256(zAccountUtxoIndexInQueue);
         }
 
         _lockZkp(msg.sender, zkpAmountOutRounded);
