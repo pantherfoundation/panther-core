@@ -131,7 +131,6 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @notice Claims a rewards collected for the given secret hash.
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param proof A proof associated with the zAccount and a secret.
-    /// @param secretHash The secret hash for the reward voucher.
     /// @param inputs[0] - extraInputsHash;
     /// @param inputs[1] - chargedAmountZkp;
     /// @param inputs[2] - createTime;
@@ -148,9 +147,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     function claimRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex,
-        bytes32 secretHash
+        uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
+        bytes32 secretHash = bytes32(inputs[11]);
         uint256 rewardAmount = balance[secretHash];
         require(
             rewardAmount > ZERO_VALUE,
