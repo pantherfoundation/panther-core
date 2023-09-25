@@ -44,7 +44,7 @@ contract ProvidersKeys is
     ITreeRootGetter
 {
     // solhint-disable var-name-mixedcase
-
+    // TODO add `constant` label to these variables
     uint256 private KEYS_TREE_DEPTH = SIXTEEN_LEVELS;
     uint16 private constant MAX_KEYS = uint16(2**SIXTEEN_LEVELS - 1);
 
