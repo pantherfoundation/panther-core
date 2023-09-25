@@ -8,3 +8,5 @@ export const BUS_TREE_EMPTY_BATCH =
 export const BUS_TREE_BRANCH_DEPTH = 10;
 export const BUS_TREE_BATCH_DEPTH = 6;
 export const BUS_TREE_DEPTH = 26;
+
+export const FOREST_TREE_DEPTH = 2;
