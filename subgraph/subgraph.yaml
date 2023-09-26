@@ -67,10 +67,10 @@ dataSources:
     network: mumbai
     source:
       # address: '0x0b8D09a40B696d8173088cdA505DaD0167394B4C'
-      address: '0x9f2bAf4043c1232169Cfbd5cfEF515FBB2af7F42'
+      address: '0x7232Cd7692b761c6410e69f10C40C8255E25Ef00'
       abi: PRPVoucherGrantor
       # startBlock: 39383858
-      startBlock: 39320723
+      startBlock: 39343368
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
