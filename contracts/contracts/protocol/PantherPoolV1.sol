@@ -61,17 +61,16 @@ contract PantherPoolV1 is
         ZACCOUNT_REGISTRY = zAccountRegistry;
     }
 
-    function updateVaultAssetUnlocker(address _unlocker, bool _status)
-        external
-        onlyOwner
-    {
+    function updateVaultAssetUnlocker(
+        address _unlocker,
+        bool _status
+    ) external onlyOwner {
         vaultAssetUnlockers[_unlocker] = _status;
     }
 
-    function updateZAccountRegistrationCircuitId(uint160 _circuitId)
-        external
-        onlyOwner
-    {
+    function updateZAccountRegistrationCircuitId(
+        uint160 _circuitId
+    ) external onlyOwner {
         zAccountRegistrationCircuitId = _circuitId;
     }
 
@@ -167,7 +166,7 @@ contract PantherPoolV1 is
             createTime,
             // Seconds public message
             MT_UTXO_BUSTREE_IDS,
-            inputs[11], // zAccountCommitment
+            zAccountCommitment, // zAccountCommitment
             queueId,
             indexInQueue,
             // Private message(s)
