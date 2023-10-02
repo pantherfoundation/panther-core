@@ -72,6 +72,7 @@ export class BusTree {
             utxoBatchDepth,
             branchDepth,
         );
+
         this.validateInputRootsLength(
             'Roots of the UTXO batches',
             this.utxoBatchIndex,
@@ -213,19 +214,17 @@ export class BusTree {
      * @returns {bigint[]} An array of BigInt representing the Merkle proof.
      */
     public getProof(leafIndex: number): bigint[] {
+        const leafIndexInBatch = leafIndex % 2 ** this.utxoBatchDepth;
         const utxoBatchIndex = this.calculateBranchIndex(
             leafIndex,
             this.utxoBatchDepth,
             this.branchDepth,
         );
 
-        this.validateBatchIndex(utxoBatchIndex);
-
-        const leafIndexInBatch = leafIndex % 2 ** this.utxoBatchDepth;
         const branchIndex = this.calculateBranchIndex(
-            leafIndex,
+            this.calculateSubtreeIndex(leafIndex, this.utxoBatchDepth),
             this.branchDepth,
-            this.depth,
+            this.depth - this.branchDepth - this.utxoBatchDepth,
         );
 
         const utxoBatchProof = this.utxoBatchTree.getProof(leafIndexInBatch);
