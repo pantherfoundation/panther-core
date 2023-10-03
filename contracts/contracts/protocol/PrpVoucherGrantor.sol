@@ -132,19 +132,21 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @notice Claims a rewards collected for the given secret hash.
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param proof A proof associated with the zAccount and a secret.
-    /// @param inputs[0] - extraInputsHash;
-    /// @param inputs[1] - chargedAmountZkp;
-    /// @param inputs[2] - createTime;
-    /// @param inputs[3] - depositAmountPrp;
-    /// @param inputs[4] - withdrawAmountPrp;
-    /// @param inputs[5] - utxoCommitmentPrivatePart;
-    /// @param inputs[6] - zAssetScale;
-    /// @param inputs[7] - zAccountUtxoInNullifier;
-    /// @param inputs[8] - zAccountUtxoOutCommitment;
-    /// @param inputs[9] - zNetworkChainId;
-    /// @param inputs[10] - forestMerkleRoot;
-    /// @param inputs[11] - saltHash;
-    /// @param inputs[12] - magicalConstraint;
+    /// @param inputs[0]  - extraInputsHash;
+    /// @param inputs[1]  - chargedAmountZkp;
+    /// @param inputs[2]  - createTime;
+    /// @param inputs[3]  - depositAmountPrp;
+    /// @param inputs[4]  - withdrawAmountPrp;
+    /// @param inputs[5]  - utxoCommitmentPrivatePart;
+    /// @param inputs[6]  - utxoSpendPubKeyX
+    /// @param inputs[7]  - utxoSpendPubKeyY
+    /// @param inputs[8]  - zAssetScale;
+    /// @param inputs[9]  - zAccountUtxoInNullifier;
+    /// @param inputs[10] - zAccountUtxoOutCommitment;
+    /// @param inputs[11] - zNetworkChainId;
+    /// @param inputs[12] - forestMerkleRoot;
+    /// @param inputs[13] - saltHash;
+    /// @param inputs[14] - magicalConstraint;
     function claimRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,

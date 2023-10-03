@@ -201,19 +201,21 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
     }
 
-    /// @param inputs[0] - extraInputsHash;
-    /// @param inputs[1] - chargedAmountZkp;
-    /// @param inputs[2] - createTime;
-    /// @param inputs[3] - depositAmountPrp;
-    /// @param inputs[4] - withdrawAmountPrp;
-    /// @param inputs[5] - utxoCommitmentPrivatePart;
-    /// @param inputs[6] - zAssetScale;
-    /// @param inputs[7] - zAccountUtxoInNullifier;
-    /// @param inputs[8] - zAccountUtxoOutCommitment;
-    /// @param inputs[9] - zNetworkChainId;
-    /// @param inputs[10] - forestMerkleRoot;
-    /// @param inputs[11] - saltHash;
-    /// @param inputs[12] - magicalConstraint;
+    /// @param inputs[0]  - extraInputsHash;
+    /// @param inputs[1]  - chargedAmountZkp;
+    /// @param inputs[2]  - createTime;
+    /// @param inputs[3]  - depositAmountPrp;
+    /// @param inputs[4]  - withdrawAmountPrp;
+    /// @param inputs[5]  - utxoCommitmentPrivatePart;
+    /// @param inputs[6]  - utxoSpendPubKeyX
+    /// @param inputs[7]  - utxoSpendPubKeyY
+    /// @param inputs[8]  - zAssetScale;
+    /// @param inputs[9]  - zAccountUtxoInNullifier;
+    /// @param inputs[10] - zAccountUtxoOutCommitment;
+    /// @param inputs[11] - zNetworkChainId;
+    /// @param inputs[12] - forestMerkleRoot;
+    /// @param inputs[13] - saltHash;
+    /// @param inputs[14] - magicalConstraint;
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -244,7 +246,7 @@ contract PantherPoolV1 is
 
         {
             // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(inputs[7]);
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[9]);
             require(
                 !isSpent[zAccountUtxoInNullifier],
                 ERR_SPENT_ZACCOUNT_NULLIFIER
@@ -252,12 +254,12 @@ contract PantherPoolV1 is
             isSpent[zAccountUtxoInNullifier] = true;
         }
         {
-            uint256 zNetworkChainId = inputs[9];
+            uint256 zNetworkChainId = inputs[11];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
         }
 
         {
-            bytes32 forestMerkleRoot = bytes32(inputs[10]);
+            bytes32 forestMerkleRoot = bytes32(inputs[12]);
             require(
                 isCachedRoot(forestMerkleRoot, cachedForestRootIndex),
                 ERR_INVALID_FOREST_ROOT
@@ -270,7 +272,7 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        uint256 zAccountUtxoOutCommitment = inputs[8];
+        uint256 zAccountUtxoOutCommitment = inputs[10];
         // Trusted contract - no reentrancy guard needed
         (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
             bytes32(zAccountUtxoOutCommitment)
@@ -293,19 +295,21 @@ contract PantherPoolV1 is
     }
 
     // TODO: Choosing better name
-    /// @param inputs[0] - extraInputsHash;
-    /// @param inputs[1] - chargedAmountZkp;
-    /// @param inputs[2] - createTime;
-    /// @param inputs[3] - depositAmountPrp;
-    /// @param inputs[4] - withdrawAmountPrp;
-    /// @param inputs[5] - utxoCommitmentPrivatePart;
-    /// @param inputs[6] - zAssetScale;
-    /// @param inputs[7] - zAccountUtxoInNullifier;
-    /// @param inputs[8] - zAccountUtxoOutCommitment;
-    /// @param inputs[9] - zNetworkChainId;
-    /// @param inputs[10] - forestMerkleRoot;
-    /// @param inputs[11] - saltHash;
-    /// @param inputs[12] - magicalConstraint;
+    /// @param inputs[0]  - extraInputsHash;
+    /// @param inputs[1]  - chargedAmountZkp;
+    /// @param inputs[2]  - createTime;
+    /// @param inputs[3]  - depositAmountPrp;
+    /// @param inputs[4]  - withdrawAmountPrp;
+    /// @param inputs[5]  - utxoCommitmentPrivatePart;
+    /// @param inputs[6]  - utxoSpendPubKeyX
+    /// @param inputs[7]  - utxoSpendPubKeyY
+    /// @param inputs[8]  - zAssetScale;
+    /// @param inputs[9]  - zAccountUtxoInNullifier;
+    /// @param inputs[10] - zAccountUtxoOutCommitment;
+    /// @param inputs[11] - zNetworkChainId;
+    /// @param inputs[12] - forestMerkleRoot;
+    /// @param inputs[13] - saltHash;
+    /// @param inputs[14] - magicalConstraint;
     function accountPrpConvertion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -331,7 +335,7 @@ contract PantherPoolV1 is
             );
         }
 
-        uint256 zAssetScale = inputs[6];
+        uint256 zAssetScale = inputs[8];
         require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
 
         // Generating the new zAsset utxo commitment
@@ -348,7 +352,7 @@ contract PantherPoolV1 is
 
         {
             // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(inputs[7]);
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[9]);
             require(
                 !isSpent[zAccountUtxoInNullifier],
                 ERR_SPENT_ZACCOUNT_NULLIFIER
@@ -357,22 +361,22 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 zNetworkChainId = inputs[9];
+            uint256 zNetworkChainId = inputs[11];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
         }
 
         require(
-            isCachedRoot(bytes32(inputs[10]), cachedForestRootIndex),
+            isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
             ERR_INVALID_FOREST_ROOT
         );
 
         {
-            uint256 saltHash = inputs[11];
+            uint256 saltHash = inputs[13];
             require(saltHash != 0, ERR_ZERO_SALT_HASH);
         }
 
         {
-            uint256 magicalConstraint = inputs[12];
+            uint256 magicalConstraint = inputs[14];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
 
@@ -382,7 +386,7 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[8]);
+        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[10]);
         bytes32[] memory utxos = new bytes32[](2);
 
         utxos[0] = zAccountUtxoOutCommitment;
