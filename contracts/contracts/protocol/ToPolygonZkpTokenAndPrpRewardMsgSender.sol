@@ -11,7 +11,7 @@ import "../common/TransferHelper.sol";
 
 import "./interfaces/IProtocolRewardController.sol";
 import "./actions/PrpRewardBridgedDataCoder.sol";
-import { ZKP_RELEASE_AND_BRIDGE_PRP_GRANT_TYPE } from "./actions/Constants.sol";
+import { GT_ZKP_RELEASE_AND_BRIDGE_PRP } from "../common/Constants.sol";
 
 interface DepositFor {
     function depositFor(
@@ -136,7 +136,7 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
 
         bytes memory content = _encodeBridgedData(
             _nonce,
-            ZKP_RELEASE_AND_BRIDGE_PRP_GRANT_TYPE,
+            GT_ZKP_RELEASE_AND_BRIDGE_PRP,
             secret
         );
 
