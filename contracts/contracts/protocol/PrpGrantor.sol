@@ -31,7 +31,6 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     // slither-disable-next-line unused-state
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
 
     // Max amount in PRPs
     uint256 private constant MAX_PRP_GRANT = 2**32;
@@ -46,7 +45,6 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     // Account authorized to call `redeemGrant`
     address private immutable GRANT_PROCESSOR;
 
-    // solhint-enable var-name-mixedcase
 
     /// @dev Mapping from "curator" to "grant type" to "grant amount in PRPs"
     /// To distinguish "zero" from "undefined", values are biased by `ZERO_AMOUNT`

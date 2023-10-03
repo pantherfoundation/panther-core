@@ -6,7 +6,6 @@ pragma solidity ^0.8.4;
 /// @title Staking
 abstract contract ImmutableOwnable {
     /// @notice The owner who has privileged rights
-    // solhint-disable-next-line var-name-mixedcase
     address public immutable OWNER;
 
     /// @dev Throws if called by any account other than the {OWNER}.

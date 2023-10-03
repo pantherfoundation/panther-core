@@ -8,8 +8,6 @@ import { FIELD_SIZE } from "../../protocol/crypto/SnarkConstants.sol";
 
 /// @dev It simulates (but not precisely!!!) `IPantherPoolV0`. See an example bellow.
 contract FakePantherPoolV0 is IPantherPoolV0 {
-    // solhint-disable var-name-mixedcase
-
     // Leaf zero value (`keccak256("Pantherprotocol")%FIELD_SIZE`)
     bytes32 internal constant ZERO_VALUE =
         bytes32(
@@ -20,8 +18,6 @@ contract FakePantherPoolV0 is IPantherPoolV0 {
 
     address public immutable override VAULT;
     uint256 public immutable exitTime;
-
-    // solhint-enable var-name-mixedcase
 
     uint256 public fakeLeavesNum;
 

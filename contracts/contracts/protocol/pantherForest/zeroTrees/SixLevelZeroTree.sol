@@ -7,7 +7,6 @@ import { ZERO_VALUE } from "./Constants.sol";
 // @notice The binary Merkle tree of six levels populated with zero leaf values
 abstract contract SixLevelZeroTree {
     // @dev Number of levels in a tree excluding the root level
-    // solhint-disable-next-line var-name-mixedcase
     uint256 internal constant SIX_LEVELS = 6;
 
     // @param level From 0 for the leaf up to SIX_LEVELS for the root

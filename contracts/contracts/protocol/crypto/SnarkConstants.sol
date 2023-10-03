@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
-// solhint-disable var-name-mixedcase
 pragma solidity ^0.8.16;
 
 // @dev Order of alt_bn128 and the field prime of Baby Jubjub and Poseidon hash

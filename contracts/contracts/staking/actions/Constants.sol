@@ -3,8 +3,6 @@
 // slither-disable-next-line solc-version
 pragma solidity ^0.8.4;
 
-// solhint-disable var-name-mixedcase
-
 // The "stake type" for the "classic staking"
 // bytes4(keccak256("classic"))
 bytes4 constant CLASSIC_STAKE_TYPE = 0x4ab0941a;
@@ -45,4 +43,3 @@ bytes4 constant ADVANCED_UNSTAKE_V2 = 0x6a8ecb81;
 // bytes4(keccak256("forAdvancedStakeGrant"))
 bytes4 constant FOR_ADVANCED_STAKE_GRANT = 0x31a180d4;
 
-// solhint-enable var-name-mixedcase

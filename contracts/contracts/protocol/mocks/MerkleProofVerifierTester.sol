@@ -6,7 +6,6 @@ import "../triadTree/TriadIncrementalMerkleTrees.sol";
 import "../pantherPool/MerkleProofVerifier.sol";
 import "../pantherPool/PubKeyGenerator.sol";
 
-// solhint-disable var-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable func-name-mixedcase
 // solhint-disable state-visibility

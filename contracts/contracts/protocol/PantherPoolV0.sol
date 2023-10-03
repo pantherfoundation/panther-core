@@ -54,15 +54,11 @@ contract PantherPoolV0 is
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
-
     /// @notice Address of the ZAssetRegistry contract
     address public immutable ASSET_REGISTRY;
 
     /// @notice Address of the Vault contract
     address public immutable VAULT;
-
-    // solhint-enable var-name-mixedcase
 
     /// @notice (UNIX) Time since when the `exit` calls get enabled
     uint32 public exitTime;
