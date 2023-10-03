@@ -9,14 +9,12 @@ abstract contract CachedRoots {
     // slither-disable-next-line shadowing-state unused-state
     uint256[10] private __gap;
 
-    // solhint-disable var-name-mixedcase
 
     // Must be a power of 2
     uint256 private constant CACHE_SIZE = 2**8;
     uint256 private constant CACHE_INDEX_MASK = CACHE_SIZE - 1;
 
     uint256 public constant UNDEFINED_CACHE_INDEX = 0xFFFF;
-    // solhint-enable var-name-mixedcase
 
     // Initial value of all storage params is 0.
     // So, no initialization in `constructor` required.

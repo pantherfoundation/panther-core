@@ -22,12 +22,8 @@ import { ADVANCED_STAKE, ADVANCED_STAKE_V2, ADVANCED_UNSTAKE_V2 } from "./action
  * it is the `advanced` (not `advanced-v2`) STAKE action.
  */
 contract AdvancedStakeV2ActionMsgTranslator is IRewardAdviser {
-    // solhint-disable var-name-mixedcase
-
     /// @notice RewardMaster contract instance
     address private immutable REWARD_MASTER;
-
-    // solhint-enable var-name-mixedcase
 
     constructor(address rewardMaster) {
         require(rewardMaster != address(0), "Zero address");

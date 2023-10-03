@@ -43,7 +43,6 @@ contract MyERC20 is ERC20 {
     */
 }
 
-// solhint-disable var-name-mixedcase
 contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
     address private registry;
     MyERC20[OUT_UTXOs] private Tokens;

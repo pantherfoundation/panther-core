@@ -31,7 +31,6 @@ import "../../errMsgs/BusTreeErrMsgs.sol";
 abstract contract BusTree is BusQueues, ITreeRootGetter {
     // TODO: add gap to the beginning and end of the storage
 
-    // solhint-disable var-name-mixedcase
     bytes32 internal constant EMPTY_BUS_TREE_ROOT =
         TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
 
@@ -50,7 +49,6 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
 
     // address of panther pool
     address public immutable PANTHER_POOL;
-    // solhint-enable var-name-mixedcase
 
     bytes32 private _busTreeRoot;
 

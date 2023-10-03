@@ -18,12 +18,8 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-    // solhint-disable var-name-mixedcase
-
     // address of reward token
     address public immutable REWARD_TOKEN;
-
-    // solhint-enable var-name-mixedcase
 
     // TODO: Remove perMinuteUtxosLimit after Testnet (required for Stage #0..2 only)
     // avg number of utxos which can be added per minute

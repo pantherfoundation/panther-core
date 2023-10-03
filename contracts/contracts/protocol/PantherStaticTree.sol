@@ -27,7 +27,6 @@ contract PantherStaticTree is
 {
     bytes32[50] private _gap;
 
-    // solhint-disable var-name-mixedcase
 
     uint256 private constant NUM_LEAFS = 5;
 
@@ -39,7 +38,6 @@ contract PantherStaticTree is
     address public immutable ZZONES_TREE_CONTROLLER;
     address public immutable PROVIDERS_KEYS_TREE_CONTROLLER;
 
-    // solhint-enable var-name-mixedcase
 
     bytes32 private _staticTreeRoot;
     bytes32[NUM_LEAFS] public leafs;

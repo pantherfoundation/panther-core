@@ -25,8 +25,6 @@ contract AdvancedStakeActionMsgRelayer is
 {
     event StakeMsgRelayed(uint256 _nonce, bytes data);
 
-    // solhint-disable var-name-mixedcase
-
     /// @notice Address of the `FxChild` contract on the Polygon/Mumbai network
     /// @dev `FxChild` is the contract of the "Fx-Portal" on the Polygon/Mumbai
     address public immutable FX_CHILD;
@@ -37,8 +35,6 @@ contract AdvancedStakeActionMsgRelayer is
     /// @notice Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli
     /// @dev It sends messages over the PoS bridge to this contract
     address public immutable STAKE_MSG_SENDER;
-
-    // solhint-enable var-name-mixedcase
 
     /// @notice Message nonce (i.e. sequential number of the latest message)
     uint256 public nonce;

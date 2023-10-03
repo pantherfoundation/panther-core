@@ -32,7 +32,6 @@ interface IEntitled {
  */
 // slither-disable-next-line missing-inheritance
 contract StakeRewardController2 is IRewardAdviser {
-    // solhint-disable var-name-mixedcase
 
     /// @notice The owner who has privileged rights
     address public immutable OWNER;
@@ -54,8 +53,6 @@ contract StakeRewardController2 is IRewardAdviser {
 
     // 2022-08-15T00:00:00.000Z
     uint256 private constant ZKP_RESCUE_ALLOWED_SINCE = 1660521600;
-
-    // solhint-enable var-name-mixedcase
 
     uint256 public unclaimedRewards;
     /// @notice Mapping from staker to claimed reward amount

@@ -13,7 +13,6 @@ import { GT_ONBOARDING } from "../common/Constants.sol";
 contract OnboardingController is ImmutableOwnable {
     using TransferHelper for address;
 
-    // solhint-disable var-name-mixedcase
 
     uint256 private constant ZERO_REWARD = 0;
 
@@ -21,8 +20,6 @@ contract OnboardingController is ImmutableOwnable {
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable ZKP_TOKEN;
     address public immutable VAULT;
-
-    // solhint-enable var-name-mixedcase
 
     struct RewardParams {
         // kyc provider reward amount in zkp

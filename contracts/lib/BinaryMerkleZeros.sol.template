@@ -6,8 +6,6 @@ pragma solidity ^0.8.16;
 
 // @notice The binary Merkle tree populated with zero leaf values
 abstract contract BinaryMerkleZeros {
-    // solhint-disable var-name-mixedcase
-
     // @dev Number of levels in a tree excluding the root level
     // (also defined in scripts/generateTriadMerkleZeroesContracts.sh)
     uint256 internal constant TREE_DEPTH = <% DEPTH %>;
@@ -27,8 +25,6 @@ abstract contract BinaryMerkleZeros {
                 <% ROOT %>
             )
         );
-
-    // solhint-enable var-name-mixedcase
 
     function populateZeros(bytes32[TREE_DEPTH] memory zeros) internal pure {
 <% ZEROS %>

@@ -10,7 +10,6 @@ interface IMockPantherPoolV1 {
     function unlockAssetFromVault(LockData calldata data) external;
 }
 
-// solhint-disable var-name-mixedcase
 // slither-disable shadowing-state
 // slither-disable unused-state
 contract MockPantherPoolV1 is IMockPantherPoolV1, ImmutableOwnable {
