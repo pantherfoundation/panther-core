@@ -13,11 +13,10 @@ abstract contract OraclePoolsList {
 
     event OraclePoolsUpdated(address tokenA, address tokenB, address pool);
 
-    function _getPoolKey(address tokenA, address tokenB)
-        private
-        pure
-        returns (bytes32)
-    {
+    function _getPoolKey(
+        address tokenA,
+        address tokenB
+    ) private pure returns (bytes32) {
         return
             bytes32(uint256(uint160(tokenA)) << 96) &
             bytes32(uint256(uint160(tokenB)) << 96);
@@ -52,11 +51,10 @@ abstract contract OraclePoolsList {
         emit OraclePoolsUpdated(tokenA, tokenB, address(0));
     }
 
-    function _getOraclePoolOrRevert(address tokenA, address tokenB)
-        internal
-        view
-        returns (address pool)
-    {
+    function _getOraclePoolOrRevert(
+        address tokenA,
+        address tokenB
+    ) internal view returns (address pool) {
         pool = oraclePools[_getPoolKey(tokenA, tokenB)];
         require(pool != address(0), ERR_POOL_NOT_EXISTS);
     }

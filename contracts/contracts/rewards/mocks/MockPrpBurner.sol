@@ -4,7 +4,7 @@ pragma solidity 0.8.16;
 
 contract MockPrpBurner {
     function burnPrp(
-        uint256, /*amount*/
+        uint256 /*amount*/,
         bytes calldata /* proof*/
     ) external returns (bool) {
         return true;

@@ -94,11 +94,10 @@ contract ProtocolRewardController is ImmutableOwnable {
 
     /// @notice Update the RewardSender contract address that will be able to release tokens
     /// @dev Owner only may call
-    function updateRewardSender(address _rewardSender, bool _whitelisted)
-        external
-        onlyOwner
-        nonZeroAddress(_rewardSender)
-    {
+    function updateRewardSender(
+        address _rewardSender,
+        bool _whitelisted
+    ) external onlyOwner nonZeroAddress(_rewardSender) {
         require(
             rewardSenders[_rewardSender] != _whitelisted,
             "PRC: Sender is already updated"
@@ -111,11 +110,10 @@ contract ProtocolRewardController is ImmutableOwnable {
 
     /// @notice Calls VestingPools to transfer 'pool wallet' role to given address
     /// @dev Owner only may call, once only
-    function transferPoolWalletRole(uint8 _index, address _newWallet)
-        external
-        onlyOwner
-        nonZeroAddress(_newWallet)
-    {
+    function transferPoolWalletRole(
+        uint8 _index,
+        address _newWallet
+    ) external onlyOwner nonZeroAddress(_newWallet) {
         uint256 _poolId = poolIds[_index];
         require(_poolId != UNDEF_POOL_ID, "PRC: Not found");
 

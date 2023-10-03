@@ -17,14 +17,12 @@ abstract contract PrpRewardBridgedDataCoder {
 
     // For efficiency we use "packed" (rather than "ABI") encoding.
     // It results in shorter data, but requires custom unpack function.
-    function _decodeBridgedData(bytes memory content)
+    function _decodeBridgedData(
+        bytes memory content
+    )
         internal
         pure
-        returns (
-            uint256 _nonce,
-            bytes4 prpGrantType,
-            bytes memory secret
-        )
+        returns (uint256 _nonce, bytes4 prpGrantType, bytes memory secret)
     {
         require(content.length == 40, "PBD: WRONG_LENGTH");
 
