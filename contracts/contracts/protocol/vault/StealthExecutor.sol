@@ -5,17 +5,17 @@ import { Create2 } from "@openzeppelin/contracts/utils/Create2.sol";
 
 abstract contract StealthExecutor {
     /***
-       @dev It returns the creation code of the "stealthExec" "contract" which, being called
-       during the "deployment":
-       - unlike creation code of a "normal" contract, does not actually create a new contract
-       - executes the CALL to the given `to` and with the given `data`
+       @dev It returns the creation code of the "stealthExec" "contract". Being called by the
+       "deployer", unlike creation code of a "normal" contract, this init code does not create
+       a new contract, but instead:
+       - executes the CALL to the given address `to` and with the given `data`
        - self-destructs in the end, sending remaining native token balance to the "deployer".
 
        So, this code runs inside the CREATE or CREATE2 call and gets destroyed in the end.
 
-       Being "deployed" via CREATE2, the caller (msg.sender) inside the CALL `to` may be
-       computed (deterministically), before the "deployment", from the CREATE2's salt, and
-       the given `to` and `data`.
+       Being "deployed" via CREATE2, the caller (msg.sender) inside the CALL (to the address
+       `to`) may be computed deterministically, from the deployer address, CREATE2's salt, and
+        from `to` and `data`.
      */
     function getStealthExecInitCode(
         address to,
