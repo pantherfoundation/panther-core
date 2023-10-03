@@ -5,7 +5,9 @@ import "../actions/AdvancedStakingDataDecoder.sol";
 import "../../common/Constants.sol";
 
 contract MockAdvancedStakingDataDecoder is AdvancedStakingDataDecoder {
-    function internalUnpackStakingData(bytes memory data)
+    function internalUnpackStakingData(
+        bytes memory data
+    )
         external
         pure
         returns (

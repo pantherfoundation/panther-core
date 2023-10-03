@@ -17,14 +17,12 @@ abstract contract AdvancedStakingBridgedDataCoder {
 
     // For efficiency we use "packed" (rather than "ABI") encoding.
     // It results in shorter data, but requires custom unpack function.
-    function _decodeBridgedData(bytes memory content)
+    function _decodeBridgedData(
+        bytes memory content
+    )
         internal
         pure
-        returns (
-            uint256 _nonce,
-            bytes4 action,
-            bytes memory message
-        )
+        returns (uint256 _nonce, bytes4 action, bytes memory message)
     {
         require(content.length >= 7, "ABD:WRONG_LENGTH");
 

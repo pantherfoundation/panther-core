@@ -4,8 +4,7 @@
 pragma solidity ^0.8.4;
 
 interface IArptHistory {
-    function getScArptAt(uint32 timestamp)
-        external
-        view
-        returns (uint256 scArpt);
+    function getScArptAt(
+        uint32 timestamp
+    ) external view returns (uint256 scArpt);
 }

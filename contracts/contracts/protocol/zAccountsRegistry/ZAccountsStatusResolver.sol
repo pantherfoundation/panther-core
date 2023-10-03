@@ -14,10 +14,10 @@ contract ZAccountsStatusResolver is IPureFiIssuerRequestResolver {
     }
 
     function resolveRequest(
-        uint8, /*_type*/
-        uint256, /*_ruleID*/
+        uint8 /*_type*/,
+        uint256 /*_ruleID*/,
         address _signer,
-        address, /*_from*/
+        address /*_from*/,
         address /*_to*/
     ) external view override returns (bool) {
         return zAccountsRegistry.isZAccountWhitelisted(_signer);

@@ -6,10 +6,10 @@ pragma solidity ^0.8.16;
 abstract contract OnERC1155Received {
     // It accepts all tokens
     function onERC1155Received(
-        address, /* operator */
-        address, /* from */
-        uint256, /* id */
-        uint256, /* value */
+        address /* operator */,
+        address /* from */,
+        uint256 /* id */,
+        uint256 /* value */,
         bytes calldata /* data */
     ) external pure virtual returns (bytes4) {
         // bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))

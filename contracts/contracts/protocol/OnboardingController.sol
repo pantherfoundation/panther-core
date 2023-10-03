@@ -13,7 +13,6 @@ import { GT_ONBOARDING } from "../common/Constants.sol";
 contract OnboardingController is ImmutableOwnable {
     using TransferHelper for address;
 
-
     uint256 private constant ZERO_REWARD = 0;
 
     address public immutable ZACCOUNT_REGISTRY;
@@ -64,10 +63,10 @@ contract OnboardingController is ImmutableOwnable {
         VAULT = _vault;
     }
 
-    function updateRewardParams(uint96 _zkpAmount, uint96 _zZkpAmount)
-        external
-        onlyOwner
-    {
+    function updateRewardParams(
+        uint96 _zkpAmount,
+        uint96 _zZkpAmount
+    ) external onlyOwner {
         // TODO: Should reward amounts be more than 0?
 
         rewardParams = RewardParams({
@@ -171,10 +170,9 @@ contract OnboardingController is ImmutableOwnable {
         rewardsGranted = uint128(_newRewardsGranted);
     }
 
-    function _grantPrpRewardsToUser(bytes32 secretHash)
-        private
-        returns (uint256 _prpRewards)
-    {
+    function _grantPrpRewardsToUser(
+        bytes32 secretHash
+    ) private returns (uint256 _prpRewards) {
         _prpRewards = IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
             secretHash,
             0, // amount defined for `GT_ONBOARDING` type will be used

@@ -193,10 +193,10 @@ contract RewardMaster is
 
     /// @notice Remove "RewardAdviser" for given ActionOracle and action type
     /// @dev May be only called by the {OWNER}
-    function removeRewardAdviser(address oracle, bytes4 action)
-        external
-        onlyOwner
-    {
+    function removeRewardAdviser(
+        address oracle,
+        bytes4 action
+    ) external onlyOwner {
         _removeRewardAdviser(oracle, action);
     }
 
@@ -223,11 +223,7 @@ contract RewardMaster is
     )
         internal
         pure
-        returns (
-            uint256 reward,
-            uint256 newShares,
-            uint256 newOffset
-        )
+        returns (uint256 reward, uint256 newShares, uint256 newOffset)
     {
         // `rec.shares` and `sharesToRedeem` are assumed to be non-zero here,
         // and `sharesToRedeem` does not exceed `rec.shares`
@@ -247,11 +243,10 @@ contract RewardMaster is
         }
     }
 
-    function _grantShares(address to, uint256 shares)
-        internal
-        nonZeroAmount(shares)
-        nonZeroAddress(to)
-    {
+    function _grantShares(
+        address to,
+        uint256 shares
+    ) internal nonZeroAmount(shares) nonZeroAddress(to) {
         (uint256 _accumRewardPerShare, , ) = _triggerVesting(true, true);
 
         UserRecord memory rec = records[to];

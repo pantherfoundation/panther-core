@@ -34,11 +34,10 @@ contract AdvancedStakeV2ActionMsgTranslator is IRewardAdviser {
     /// @dev To be called by the {RewardMaster} for `advanced-v2` type actions.
     /// It makes the `action` to look like the `advanced` (not "v2") type action
     /// and calls the {RewardMaster} back simulating a "new" action message.
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external override returns (Advice memory) {
         require(msg.sender == REWARD_MASTER, "AMT: unauthorized");
 
         if (action == ADVANCED_STAKE_V2) {

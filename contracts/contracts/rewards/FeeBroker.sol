@@ -193,10 +193,9 @@ contract FeeBroker is ImmutableOwnable, Claimable, NonReentrant {
 
     /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
-    function updateTreasuryPercentage(uint256 newPercentage)
-        external
-        onlyOwner
-    {
+    function updateTreasuryPercentage(
+        uint256 newPercentage
+    ) external onlyOwner {
         require(newPercentage > 0, ERR_ZERO_TREASURY_PERCENTAGE);
 
         treasuryPercentage = newPercentage;
@@ -204,10 +203,9 @@ contract FeeBroker is ImmutableOwnable, Claimable, NonReentrant {
         emit TreasuryPercentageUpdated(newPercentage);
     }
 
-    function updateZkpPriceOracle(address newZkpPriceOracle)
-        external
-        onlyOwner
-    {
+    function updateZkpPriceOracle(
+        address newZkpPriceOracle
+    ) external onlyOwner {
         require(newZkpPriceOracle != address(0), ERR_ZERO_ADDRESS);
         ZkpPriceOracle = IZkpPriceOracle(newZkpPriceOracle);
 

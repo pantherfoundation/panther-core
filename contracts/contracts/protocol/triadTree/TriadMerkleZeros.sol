@@ -38,7 +38,6 @@ import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 
 // @notice The "triad binary tree" populated with zero leaf values
 abstract contract TriadMerkleZeros {
-
     // @dev Number of levels in a tree excluding the root level
     // (also defined in scripts/generateTriadMerkleZeroesContracts.sh)
     uint256 internal constant TREE_DEPTH = 15;

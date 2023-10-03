@@ -7,8 +7,7 @@ pragma solidity ^0.8.16;
  */
 interface IPrpGrantor {
     /// @notice Returns the total amount (in PRPs) of unused grants for the given grantee
-    function getUnusedGrantAmount(address grantee)
-        external
-        view
-        returns (uint256 prpAmount);
+    function getUnusedGrantAmount(
+        address grantee
+    ) external view returns (uint256 prpAmount);
 }

@@ -31,11 +31,9 @@ contract StakesReporter is IStakingTypes {
         ARPT_HISTORY = IArptHistory(_stakeRewardController);
     }
 
-    function getStakesInfo(address _account)
-        external
-        view
-        returns (Stake[] memory, uint256[] memory)
-    {
+    function getStakesInfo(
+        address _account
+    ) external view returns (Stake[] memory, uint256[] memory) {
         // trusted contract call - no reentrancy guard needed
         Stake[] memory stakes = STAKE_REGISTER.accountStakes(_account);
 
@@ -57,11 +55,10 @@ contract StakesReporter is IStakingTypes {
         return (stakes, unclaimedRewards);
     }
 
-    function getStakeInfo(address _account, uint256 _stakeID)
-        external
-        view
-        returns (Stake memory, uint256)
-    {
+    function getStakeInfo(
+        address _account,
+        uint256 _stakeID
+    ) external view returns (Stake memory, uint256) {
         Stake memory stake = STAKE_REGISTER.stakes(_account, _stakeID);
 
         uint256 unclaimedRewards = getUnclaimedRewards(stake);
@@ -77,11 +74,9 @@ contract StakesReporter is IStakingTypes {
         return ((_scArptTill - _scArptFrom) * amount) / SCALE;
     }
 
-    function getUnclaimedRewards(Stake memory stake)
-        internal
-        view
-        returns (uint256)
-    {
+    function getUnclaimedRewards(
+        Stake memory stake
+    ) internal view returns (uint256) {
         uint256 unclaimedRewards = 0;
 
         if (stake.claimedAt == 0)

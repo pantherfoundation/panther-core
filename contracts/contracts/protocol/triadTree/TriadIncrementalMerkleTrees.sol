@@ -61,7 +61,7 @@ contract TriadIncrementalMerkleTrees is
     // Number of leaves in a modified triad used for leaf ID calculation
     uint256 private constant iTRIAD_SIZE = 4;
     // The number of leaves in a tree used for leaf ID calculation
-    uint256 private constant iLEAVES_NUM = 2**(TREE_DEPTH - 1) * iTRIAD_SIZE;
+    uint256 private constant iLEAVES_NUM = 2 ** (TREE_DEPTH - 1) * iTRIAD_SIZE;
 
     // Bitmasks and numbers of bits for "cheaper" arithmetics
     uint256 private constant iTRIAD_SIZE_MASK = iTRIAD_SIZE - 1;
@@ -163,10 +163,9 @@ contract TriadIncrementalMerkleTrees is
      * @param leaves The 3 leaves to insert (must be less than SNARK_SCALAR_FIELD)
      * @return leftLeafId The `leafId` of the first leaf from 3 inserted
      */
-    function insertBatch(bytes32[TRIAD_SIZE] memory leaves)
-        internal
-        returns (uint256 leftLeafId)
-    {
+    function insertBatch(
+        bytes32[TRIAD_SIZE] memory leaves
+    ) internal returns (uint256 leftLeafId) {
         leftLeafId = _nextLeafId;
 
         // here the variable is intentionally declared only ...
@@ -258,11 +257,9 @@ contract TriadIncrementalMerkleTrees is
 
     // Returns `triadNodeIndex` index of the triad-node of the given leaf
     // This index is the path to this node - used by anyone who needs the path
-    function _getTriadNodeIndex(uint256 leafId)
-        internal
-        pure
-        returns (uint256)
-    {
+    function _getTriadNodeIndex(
+        uint256 leafId
+    ) internal pure returns (uint256) {
         unchecked {
             // equiv to `leafId % LEAVES_NUM`
             uint256 iIndex = leafId & iLEAVES_NUM_MASK; // throws away tree-id bits
@@ -272,11 +269,9 @@ contract TriadIncrementalMerkleTrees is
     }
 
     // nextLeafId must be even
-    function _nextLeafId2CacheIndex(uint256 nextLeafId)
-        private
-        pure
-        returns (uint256)
-    {
+    function _nextLeafId2CacheIndex(
+        uint256 nextLeafId
+    ) private pure returns (uint256) {
         // equiv to `nextLeafId % (CACHED_ROOTS_NUM * iTRIAD_SIZE) + 1`
         return (nextLeafId & CACHE_SIZE_MASK) | 1;
     }

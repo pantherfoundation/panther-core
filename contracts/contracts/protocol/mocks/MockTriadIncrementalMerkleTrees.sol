@@ -22,19 +22,15 @@ contract MockTriadIncrementalMerkleTrees is TriadIncrementalMerkleTrees {
         emit InternalInsertBatch(leftLeafId);
     }
 
-    function internalIsFullTree(uint256 nextLeafId)
-        external
-        pure
-        returns (bool)
-    {
+    function internalIsFullTree(
+        uint256 nextLeafId
+    ) external pure returns (bool) {
         return _isFullTree(nextLeafId);
     }
 
-    function internalNextLeafId2LeavesNum(uint256 nextId)
-        external
-        pure
-        returns (uint256)
-    {
+    function internalNextLeafId2LeavesNum(
+        uint256 nextId
+    ) external pure returns (uint256) {
         return _nextLeafId2LeavesNum(nextId);
     }
 

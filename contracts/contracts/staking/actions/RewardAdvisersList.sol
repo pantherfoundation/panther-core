@@ -50,11 +50,10 @@ abstract contract RewardAdvisersList {
 
     // disabled since false positive
     // slither-disable-next-line dead-code
-    function _getRewardAdviserOrRevert(address oracle, bytes4 action)
-        internal
-        view
-        returns (IRewardAdviser)
-    {
+    function _getRewardAdviserOrRevert(
+        address oracle,
+        bytes4 action
+    ) internal view returns (IRewardAdviser) {
         address adviser = rewardAdvisers[oracle][action];
         require(adviser != address(0), "ACM:E4");
         return IRewardAdviser(adviser);

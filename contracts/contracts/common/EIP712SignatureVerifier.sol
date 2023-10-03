@@ -43,11 +43,9 @@ abstract contract EIP712SignatureVerifier {
         require(signer != address(0), "ECDSA invalid signature");
     }
 
-    function toTypedDataHash(bytes32 structHash)
-        internal
-        view
-        returns (bytes32)
-    {
+    function toTypedDataHash(
+        bytes32 structHash
+    ) internal view returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(

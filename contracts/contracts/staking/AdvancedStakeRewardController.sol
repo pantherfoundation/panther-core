@@ -166,11 +166,10 @@ contract AdvancedStakeRewardController is
     /// The caller is trusted to never call w/ the STAKE acton:
     /// - twice for the same stake
     /// - after the rewarded period has ended
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external override returns (Advice memory) {
         require(msg.sender == REWARD_MASTER, "ARC: unauthorized");
 
         if (action == ADVANCED_STAKE) {
@@ -199,10 +198,9 @@ contract AdvancedStakeRewardController is
         return _getZkpApyWithinRewardedPeriod(_rewardParams, time);
     }
 
-    function updateRewardParams(RewardParams memory _newParams)
-        external
-        onlyOwner
-    {
+    function updateRewardParams(
+        RewardParams memory _newParams
+    ) external onlyOwner {
         // Time comparison is acceptable in this case since block time accuracy is enough for this scenario
         // slither-disable-next-line timestamp
         require(
@@ -222,10 +220,9 @@ contract AdvancedStakeRewardController is
 
     /// @notice Allocate NFT rewards and approve the Vault to transfer them
     /// @dev Only owner may call it.
-    function setNftRewardLimit(uint256 _desiredNftRewardsLimit)
-        external
-        onlyOwner
-    {
+    function setNftRewardLimit(
+        uint256 _desiredNftRewardsLimit
+    ) external onlyOwner {
         if (NFT_TOKEN == address(0)) return;
 
         Limits memory _limits = limits;

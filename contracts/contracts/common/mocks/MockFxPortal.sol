@@ -50,9 +50,10 @@ contract MockFxPortal is ImmutableOwnable, IRootChainManager, IFxStateSender {
     }
 
     // simulate message bridging
-    function sendMessageToChild(address receiver, bytes calldata data)
-        external
-    {
+    function sendMessageToChild(
+        address receiver,
+        bytes calldata data
+    ) external {
         IFxMessageProcessor(receiver).processMessageFromRoot(
             uint256(0), // stateId
             msg.sender, // rootMessageSender

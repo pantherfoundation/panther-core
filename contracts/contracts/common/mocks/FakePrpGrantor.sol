@@ -6,11 +6,9 @@ contract FakePrpGrantor {
     // mapping from "grantee" to the PRP amount that may be "used"
     mapping(address => uint256) private _unusedPrpGrants;
 
-    function getUnusedGrantAmount(address grantee)
-        external
-        view
-        returns (uint256 prpAmount)
-    {
+    function getUnusedGrantAmount(
+        address grantee
+    ) external view returns (uint256 prpAmount) {
         return _unusedPrpGrants[grantee];
     }
 

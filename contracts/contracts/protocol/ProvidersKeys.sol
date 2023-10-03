@@ -46,7 +46,7 @@ contract ProvidersKeys is
     // solhint-disable var-name-mixedcase
     // TODO add `constant` label to these variables
     uint256 private KEYS_TREE_DEPTH = SIXTEEN_LEVELS;
-    uint16 private constant MAX_KEYS = uint16(2**SIXTEEN_LEVELS - 1);
+    uint16 private constant MAX_KEYS = uint16(2 ** SIXTEEN_LEVELS - 1);
 
     uint32 private REVOKED_KEY_EXPIRY = 0;
     uint256 private MAX_TREE_LOCK_PERIOD = 30 days;
@@ -169,11 +169,10 @@ contract ProvidersKeys is
         return BabyJubJub.pointPack(pubKey);
     }
 
-    function getKeyCommitment(G1Point memory pubKey, uint32 expiry)
-        public
-        pure
-        returns (bytes32 commitment)
-    {
+    function getKeyCommitment(
+        G1Point memory pubKey,
+        uint32 expiry
+    ) public pure returns (bytes32 commitment) {
         // Next call reverts if the input is not in the SNARK field
         commitment = PoseidonHashers.poseidonT4(
             [bytes32(pubKey.x), bytes32(pubKey.y), bytes32(uint256(expiry))]
@@ -261,9 +260,10 @@ contract ProvidersKeys is
     }
 
     /// @notice Update keyring operator. Only the (current) operator may call.
-    function updateKeyringOperator(uint16 keyringId, address newOperator)
-        external
-    {
+    function updateKeyringOperator(
+        uint16 keyringId,
+        address newOperator
+    ) external {
         require(newOperator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
 
         Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
@@ -316,10 +316,10 @@ contract ProvidersKeys is
 
     /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
-    function addKeyring(address operator, uint16 numAllocKeys)
-        external
-        onlyOwner
-    {
+    function addKeyring(
+        address operator,
+        uint16 numAllocKeys
+    ) external onlyOwner {
         require(operator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
 
         uint16 numAllocatedKeys = _totalNumAllocatedKeys;
@@ -390,10 +390,10 @@ contract ProvidersKeys is
         );
     }
 
-    function increaseKeyringKeyAllocation(uint16 keyringId, uint16 allocation)
-        external
-        onlyOwner
-    {
+    function increaseKeyringKeyAllocation(
+        uint16 keyringId,
+        uint16 allocation
+    ) external onlyOwner {
         Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
         uint16 numAllocatedKeys = _totalNumAllocatedKeys;
         numAllocatedKeys += allocation;
@@ -425,12 +425,9 @@ contract ProvidersKeys is
 
     /* ========== INTERNAL & PRIVATE FUNCTIONS ========== */
 
-    function hash(bytes32[2] memory input)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
+    function hash(
+        bytes32[2] memory input
+    ) internal pure override returns (bytes32) {
         // Next call reverts if the input is not in the SNARK field
         return PoseidonHashers.poseidonT3(input);
     }
@@ -443,11 +440,9 @@ contract ProvidersKeys is
         return _numKeyrings + 1;
     }
 
-    function _getActiveKeyringOrRevert(uint16 keyringId)
-        private
-        view
-        returns (Keyring memory keyring)
-    {
+    function _getActiveKeyringOrRevert(
+        uint16 keyringId
+    ) private view returns (Keyring memory keyring) {
         keyring = keyrings[keyringId];
 
         require(keyring.operator != address(0), ERR_KEYRING_NOT_EXISTS);
@@ -462,20 +457,16 @@ contract ProvidersKeys is
         require(keyring.operator == operator, ERR_UNAUTHORIZED_OPERATOR);
     }
 
-    function _suspendKeyring(Keyring memory keyring)
-        private
-        pure
-        returns (Keyring memory)
-    {
+    function _suspendKeyring(
+        Keyring memory keyring
+    ) private pure returns (Keyring memory) {
         keyring.status = STATUS.SUSPENDED;
         return keyring;
     }
 
-    function _getUnusedKeyringAllocation(Keyring memory keyring)
-        private
-        pure
-        returns (uint16)
-    {
+    function _getUnusedKeyringAllocation(
+        Keyring memory keyring
+    ) private pure returns (uint16) {
         return keyring.numAllocKeys - keyring.numKeys;
     }
 

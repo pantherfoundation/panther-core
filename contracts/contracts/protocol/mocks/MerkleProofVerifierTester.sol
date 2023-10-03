@@ -37,11 +37,9 @@ contract MerkleProofVerifierTester is
         return _verifiedProof;
     }
 
-    function generatePublicSpendingKey(uint256 privKey)
-        external
-        view
-        returns (uint256[2] memory xy)
-    {
+    function generatePublicSpendingKey(
+        uint256 privKey
+    ) external view returns (uint256[2] memory xy) {
         G1Point memory p;
         p = generatePubSpendingKey(privKey);
         xy[0] = p.x;

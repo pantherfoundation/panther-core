@@ -42,7 +42,6 @@ abstract contract PantherForest is
 {
     bytes32[10] private _startGap;
 
-
     uint256 private constant NUM_LEAFS = 4;
     uint256 private constant STATIC_TREE_LEAF = 3;
 
@@ -118,11 +117,9 @@ abstract contract PantherForest is
         emit RootUpdated(leafIndex, updatedLeaf, forestRoot, cacheIndex);
     }
 
-    function _getLeafController(uint256 leafIndex)
-        internal
-        view
-        returns (address leafController)
-    {
+    function _getLeafController(
+        uint256 leafIndex
+    ) internal view returns (address leafController) {
         require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
         if (leafIndex == TAXI_TREE_FOREST_LEAF_INDEX)
             leafController = TAXI_TREE_CONTROLLER;
@@ -137,11 +134,9 @@ abstract contract PantherForest is
             leafController = STATIC_TREE_CONTROLLER;
     }
 
-    function hash(bytes32[NUM_LEAFS] memory _leafs)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function hash(
+        bytes32[NUM_LEAFS] memory _leafs
+    ) internal pure returns (bytes32) {
         return PoseidonHashers.poseidonT5(_leafs);
     }
 }

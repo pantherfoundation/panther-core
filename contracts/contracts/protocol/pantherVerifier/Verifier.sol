@@ -42,9 +42,7 @@ abstract contract Verifier is EllipticCurveMath, IVerifier {
             tx.origin == DEAD_CODE_ADDRESS;
     }
 
-    function loadVerifyingKey(uint160 circuitId)
-        internal
-        view
-        virtual
-        returns (VerifyingKey memory);
+    function loadVerifyingKey(
+        uint160 circuitId
+    ) internal view virtual returns (VerifyingKey memory);
 }

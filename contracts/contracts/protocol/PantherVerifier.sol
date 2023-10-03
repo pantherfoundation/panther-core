@@ -9,23 +9,16 @@ import "./interfaces/IPantherVerifier.sol";
 
 contract PantherVerifier is Verifier, IPantherVerifier {
     /// @inheritdoc IPantherVerifier
-    function getVerifyingKey(uint160 circuitId)
-        external
-        view
-        override
-        returns (VerifyingKey memory)
-    {
+    function getVerifyingKey(
+        uint160 circuitId
+    ) external view override returns (VerifyingKey memory) {
         return loadVerifyingKey(circuitId);
     }
 
     /// @dev It reads the verifying key from bytecode at `address(circuitId)`
-    function loadVerifyingKey(uint160 circuitId)
-        internal
-        view
-        virtual
-        override
-        returns (VerifyingKey memory)
-    {
+    function loadVerifyingKey(
+        uint160 circuitId
+    ) internal view virtual override returns (VerifyingKey memory) {
         return
             // Stored key MUST be `abi.encode`d and prepended by 0x00
             abi.decode(

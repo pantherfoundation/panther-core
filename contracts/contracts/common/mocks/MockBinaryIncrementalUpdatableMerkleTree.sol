@@ -6,11 +6,9 @@ import "../binaryTree/BinaryIncrementalUpdatableMerkleTree.sol";
 contract MockBinaryIncrementalUpdatableMerkleTree is
     BinaryIncrementalUpdatableMerkleTree
 {
-    function internalFilledSubtrees(uint256 level)
-        external
-        view
-        returns (bytes32[2] memory)
-    {
+    function internalFilledSubtrees(
+        uint256 level
+    ) external view returns (bytes32[2] memory) {
         return _filledSubtrees[level];
     }
 

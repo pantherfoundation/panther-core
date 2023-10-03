@@ -30,12 +30,10 @@ contract StakeRewardAdviser is StakingMsgProcessor, Utils, IRewardAdviser {
         FACTOR = stakeAmountToSharesScaledFactor;
     }
 
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        view
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external view override returns (Advice memory) {
         (address staker, uint96 amount, , , , , ) = _unpackStakingActionMsg(
             message
         );

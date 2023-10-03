@@ -111,7 +111,9 @@ contract ZkpFaucet is Claimable, ImmutableOwnable {
      * if the restrictToMaxReq is true, then check if the
      * sender is already received token.
      */
-    function drink(address _to)
+    function drink(
+        address _to
+    )
         external
         payable
         validatePrice

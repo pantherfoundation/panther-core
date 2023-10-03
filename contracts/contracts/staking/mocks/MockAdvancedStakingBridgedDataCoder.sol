@@ -14,14 +14,12 @@ contract MockAdvancedStakingBridgedDataCoder is
         return _encodeBridgedData(_nonce, action, message);
     }
 
-    function internalDecodeBridgedData(bytes memory content)
+    function internalDecodeBridgedData(
+        bytes memory content
+    )
         external
         pure
-        returns (
-            uint256 _nonce,
-            bytes4 action,
-            bytes memory message
-        )
+        returns (uint256 _nonce, bytes4 action, bytes memory message)
     {
         return _decodeBridgedData(content);
     }

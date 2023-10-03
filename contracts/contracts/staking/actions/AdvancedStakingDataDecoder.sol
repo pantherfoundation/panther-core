@@ -19,7 +19,9 @@ abstract contract AdvancedStakingDataDecoder {
 
     // For efficiency we use "packed" (rather than "ABI") encoding.
     // It results in shorter data, but requires custom unpack function.
-    function unpackStakingData(bytes memory data)
+    function unpackStakingData(
+        bytes memory data
+    )
         internal
         pure
         returns (

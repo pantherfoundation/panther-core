@@ -8,11 +8,9 @@ import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 import "../crypto/BabyJubJub.sol";
 
 abstract contract PubKeyGenerator {
-    function generatePubSpendingKey(uint256 privKey)
-        internal
-        view
-        returns (G1Point memory pubKey)
-    {
+    function generatePubSpendingKey(
+        uint256 privKey
+    ) internal view returns (G1Point memory pubKey) {
         // [0] - Require
         require(privKey < FIELD_SIZE, ERR_TOO_LARGE_PRIVKEY);
         // [1] - Generate public key

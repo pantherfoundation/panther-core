@@ -65,12 +65,9 @@ contract PNftToken is
         return _nextTokenId.current() - 1;
     }
 
-    function tokenURI(uint256 _tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 _tokenId
+    ) public view override returns (string memory) {
         return
             string(abi.encodePacked(baseTokenURI, Strings.toString(_tokenId)));
     }
@@ -131,11 +128,9 @@ contract PNftToken is
      * @dev Mints a token to an address with a tokenURI.
      * @param _to address of the future owner of the token
      */
-    function grantOneToken(address _to)
-        external
-        virtual
-        returns (uint256 currentTokenId)
-    {
+    function grantOneToken(
+        address _to
+    ) external virtual returns (uint256 currentTokenId) {
         require(_msgSender() == minter, "Only minter");
 
         currentTokenId = _nextTokenId.current();
@@ -147,12 +142,10 @@ contract PNftToken is
      * Override isApprovedForAll to whitelist a Panther authorized account or
      * user's OpenSea proxy accounts to enable gas-less transactions/listings.
      */
-    function isApprovedForAll(address owner, address operator)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view override returns (bool) {
         if (super.isApprovedForAll(owner, operator)) return true;
 
         // if "approved for all" operator (proxy registry) is detected, return true

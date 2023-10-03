@@ -22,11 +22,9 @@ abstract contract BlacklistedZAccountIdsTree is
         return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
     }
 
-    function _getZAccountFlagAndLeafIndexes(uint24 zAccountId)
-        internal
-        pure
-        returns (uint256 flagIndex, uint256 leafIndex)
-    {
+    function _getZAccountFlagAndLeafIndexes(
+        uint24 zAccountId
+    ) internal pure returns (uint256 flagIndex, uint256 leafIndex) {
         // getting index which is between 0 and 253
         flagIndex = zAccountId & 0xFF;
 
@@ -83,12 +81,9 @@ abstract contract BlacklistedZAccountIdsTree is
         _currentRoot = _updatedRoot;
     }
 
-    function hash(bytes32[2] memory input)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
+    function hash(
+        bytes32[2] memory input
+    ) internal pure override returns (bytes32) {
         return PoseidonHashers.poseidonT3(input);
     }
 

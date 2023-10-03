@@ -18,11 +18,9 @@ library TickMath {
     /// two assets (token1/token0)
     /// at the given tick
     // solhint-disable-next-line code-complexity
-    function getSqrtRatioAtTick(int24 tick)
-        internal
-        pure
-        returns (uint160 sqrtPriceX96)
-    {
+    function getSqrtRatioAtTick(
+        int24 tick
+    ) internal pure returns (uint160 sqrtPriceX96) {
         uint256 absTick = tick < 0
             ? uint256(-int256(tick))
             : uint256(int256(tick));

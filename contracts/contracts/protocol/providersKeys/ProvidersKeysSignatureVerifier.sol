@@ -5,7 +5,6 @@ pragma solidity 0.8.16;
 import "../../common/EIP712SignatureVerifier.sol";
 
 abstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {
-
     bytes32 internal constant REGISTRATION_TYPEHASH =
         keccak256(
             bytes(

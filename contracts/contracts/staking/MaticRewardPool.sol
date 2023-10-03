@@ -36,10 +36,10 @@ contract MaticRewardPool is
     /// @notice (UNIX) Timestamp when vesting ends
     uint32 public endTime;
 
-    constructor(address _token, address _owner)
-        ImmutableOwnable(_owner)
-        nonZeroAddress(_token)
-    {
+    constructor(
+        address _token,
+        address _owner
+    ) ImmutableOwnable(_owner) nonZeroAddress(_token) {
         token = IErc20Min(_token);
     }
 

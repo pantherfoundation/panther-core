@@ -41,10 +41,10 @@ library TransferHelper {
     /// @dev Get the ERC20 balance of `account`
     // disabled since false positive
     // slither-disable-next-line dead-code
-    function safeBalanceOf(address token, address account)
-        internal
-        returns (uint256 balance)
-    {
+    function safeBalanceOf(
+        address token,
+        address account
+    ) internal returns (uint256 balance) {
         // slither-disable-next-line low-level-calls
         (bool success, bytes memory data) = token.call(
             // bytes4(keccak256(bytes('balanceOf(address)')));
