@@ -40,7 +40,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     // Number of levels in every Branch, counting from roots of Batches
     uint256 private constant BRANCH_LEVELS = 10;
     // Number of Batches in a fully filled Branch
-    uint256 private constant BRANCH_SIZE = 2**BRANCH_LEVELS;
+    uint256 private constant BRANCH_SIZE = 2 ** BRANCH_LEVELS;
     // Bitmask for cheaper modulo math
     uint256 private constant BRANCH_BITMASK = BRANCH_SIZE - 1;
 
@@ -78,11 +78,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     );
 
     // @dev It is "proxy-friendly" as it does not change the storage
-    constructor(
-        address _verifier,
-        uint160 _circuitId,
-        address _pantherPool
-    ) {
+    constructor(address _verifier, uint160 _circuitId, address _pantherPool) {
         require(_pantherPool != address(0), ERR_INIT);
         require(
             IPantherVerifier(_verifier).getVerifyingKey(_circuitId).ic.length >=

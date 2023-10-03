@@ -114,10 +114,10 @@ contract PantherPoolV0 is
 
     /// @notice Update the exit time and the exit delay
     /// @dev Owner only may calls
-    function updateExitTimes(uint32 newExitTime, uint24 newExitDelay)
-        external
-        onlyOwner
-    {
+    function updateExitTimes(
+        uint32 newExitTime,
+        uint24 newExitDelay
+    ) external onlyOwner {
         require(
             newExitTime >= exitTime &&
                 newExitTime < MAX_TIMESTAMP &&
@@ -384,9 +384,10 @@ contract PantherPoolV0 is
         return (zAssetId, scaledAmount);
     }
 
-    function _verifyExitCommitment(uint256 privSpendingKey, address recipient)
-        internal
-    {
+    function _verifyExitCommitment(
+        uint256 privSpendingKey,
+        address recipient
+    ) internal {
         bytes32 commitment = keccak256(abi.encode(privSpendingKey, recipient));
 
         uint32 commitmentTime = exitCommitments[commitment];

@@ -7,7 +7,6 @@ import "../../common/EIP712SignatureVerifier.sol";
 abstract contract ZAccountsRegeistrationSignatureVerifier is
     EIP712SignatureVerifier
 {
-
     bytes32 internal constant REGISTRATION_TYPEHASH =
         keccak256(
             bytes(

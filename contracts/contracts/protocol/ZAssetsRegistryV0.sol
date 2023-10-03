@@ -74,12 +74,10 @@ contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
         // Proxy-friendly: no storage initialization
     }
 
-    function getZAssetId(address token, uint256 subId)
-        public
-        pure
-        override
-        returns (uint160)
-    {
+    function getZAssetId(
+        address token,
+        uint256 subId
+    ) public pure override returns (uint160) {
         // Being uint160, it is surely less then the FIELD_SIZE
         return
             uint160(
@@ -90,12 +88,9 @@ contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
     }
 
     /// @notice Returns ZAsset record for the given record ID
-    function getZAsset(uint160 zAssetRecId)
-        external
-        view
-        override
-        returns (ZAsset memory asset)
-    {
+    function getZAsset(
+        uint160 zAssetRecId
+    ) external view override returns (ZAsset memory asset) {
         asset = _registry[zAssetRecId];
     }
 
@@ -111,7 +106,10 @@ contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
     /// @return _tokenId ERC-721/1155 _tokenId/_id, if it's an NFT, or 0 for ERC-20
     /// @return zAssetRecId ID of the ZAsset record
     /// @return asset ZAsset record for the token
-    function getZAssetAndIds(address token, uint256 subId)
+    function getZAssetAndIds(
+        address token,
+        uint256 subId
+    )
         external
         view
         override
@@ -177,12 +175,9 @@ contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
         return (zAssetId, _tokenId, zAssetRecId, asset);
     }
 
-    function isZAssetWhitelisted(uint160 zAssetRecId)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isZAssetWhitelisted(
+        uint160 zAssetRecId
+    ) external view override returns (bool) {
         ZAsset memory asset = _registry[zAssetRecId];
         return asset.status == zASSET_ENABLED;
     }
@@ -218,10 +213,10 @@ contract ZAssetsRegistryV0 is ImmutableOwnable, IZAssetsRegistry {
     /// @param zAssetRecId ID of the ZAsset record
     /// @param newStatus Status to be set
     /// @dev The "owner" may call only
-    function changeZAssetStatus(uint160 zAssetRecId, uint8 newStatus)
-        external
-        onlyOwner
-    {
+    function changeZAssetStatus(
+        uint160 zAssetRecId,
+        uint8 newStatus
+    ) external onlyOwner {
         require(_registry[zAssetRecId].token != address(0), ERR_UNKNOWN_ASSET);
         uint8 oldStatus = _registry[zAssetRecId].status;
         // New status value restrictions relaxed to allow for protocol updates.

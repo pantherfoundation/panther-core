@@ -29,20 +29,19 @@ contract MockPantherPoolV0 is PantherPoolV0 {
         emit RESULT_processDepositedAsset(zAssetId, scaledAmount);
     }
 
-    function testGeneratePublicSpendingKey(uint256 privKey)
-        external
-        view
-        returns (uint256[2] memory xy)
-    {
+    function testGeneratePublicSpendingKey(
+        uint256 privKey
+    ) external view returns (uint256[2] memory xy) {
         G1Point memory p;
         p = generatePubSpendingKey(privKey);
         xy[0] = p.x;
         xy[1] = p.y;
     }
 
-    function testUpdateExitTimes(uint32 newExitTime, uint24 newExitDelay)
-        external
-    {
+    function testUpdateExitTimes(
+        uint32 newExitTime,
+        uint24 newExitDelay
+    ) external {
         this.updateExitTimes(newExitTime, newExitDelay);
     }
 

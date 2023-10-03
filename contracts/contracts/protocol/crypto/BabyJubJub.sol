@@ -33,11 +33,9 @@ library BabyJubJub {
         10944121435919637611123202872628637544274182200208017171849102093287904247808;
 
     // TODO: remove dependency on BabyJubJub as a standalone contract
-    function pointPack(G1Point memory point)
-        internal
-        pure
-        returns (bytes32 _packed)
-    {
+    function pointPack(
+        G1Point memory point
+    ) internal pure returns (bytes32 _packed) {
         _packed = bytes32(point.y);
 
         if (point.x > PM1D2) {
@@ -54,11 +52,10 @@ library BabyJubJub {
      * x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)
      * y3 = (y1y2 - ax1x2) / (1 - dx1x2y1y2)
      */
-    function pointAdd(G1Point memory g1, G1Point memory g2)
-        internal
-        view
-        returns (G1Point memory)
-    {
+    function pointAdd(
+        G1Point memory g1,
+        G1Point memory g2
+    ) internal view returns (G1Point memory) {
         uint256 x3 = 0;
         uint256 y3 = 0;
         if (g1.x == 0 && g1.y == 0) {
@@ -138,11 +135,10 @@ library BabyJubJub {
         // solhint-enable no-inline-assembly
     }
 
-    function mulPointEscalar(G1Point memory point, uint256 scalar)
-        internal
-        view
-        returns (G1Point memory r)
-    {
+    function mulPointEscalar(
+        G1Point memory point,
+        uint256 scalar
+    ) internal view returns (G1Point memory r) {
         r.x = 0;
         r.y = 1;
 
@@ -162,11 +158,9 @@ library BabyJubJub {
         return r;
     }
 
-    function isG1PointLowerThanFieldSize(uint256[2] memory point)
-        internal
-        pure
-        returns (bool)
-    {
+    function isG1PointLowerThanFieldSize(
+        uint256[2] memory point
+    ) internal pure returns (bool) {
         return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;
     }
 }

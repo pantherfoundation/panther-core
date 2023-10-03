@@ -31,9 +31,8 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     // slither-disable-next-line unused-state
     uint256[50] private __gap;
 
-
     // Max amount in PRPs
-    uint256 private constant MAX_PRP_GRANT = 2**32;
+    uint256 private constant MAX_PRP_GRANT = 2 ** 32;
 
     // To distinguish "undefined" from "zero"
     uint256 private constant ZERO_AMOUNT = 1;
@@ -44,7 +43,6 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
 
     // Account authorized to call `redeemGrant`
     address private immutable GRANT_PROCESSOR;
-
 
     /// @dev Mapping from "curator" to "grant type" to "grant amount in PRPs"
     /// To distinguish "zero" from "undefined", values are biased by `ZERO_AMOUNT`
@@ -61,9 +59,10 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     uint256 public override totalGrantsRedeemed;
 
     // slither-disable-next-line similar-names
-    constructor(address _owner, address _grantProcessor)
-        ImmutableOwnable(_owner)
-    {
+    constructor(
+        address _owner,
+        address _grantProcessor
+    ) ImmutableOwnable(_owner) {
         // As it runs behind the DELEGATECALL'ing proxy, initialization of
         // immutable "vars" only is allowed in the constructor
         require(_grantProcessor != address(0), ERR_ZERO_PROCESSOR_ADDR);
@@ -76,22 +75,17 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     }
 
     /// @inheritdoc IPrpGrantor
-    function getUnusedGrantAmount(address grantee)
-        external
-        view
-        override
-        returns (uint256 prpAmount)
-    {
+    function getUnusedGrantAmount(
+        address grantee
+    ) external view override returns (uint256 prpAmount) {
         return _unusedPrpGrants[grantee];
     }
 
     /// @inheritdoc IPrpGrantor
-    function getGrantAmount(address curator, bytes4 grantType)
-        external
-        view
-        override
-        returns (uint256 prpAmount)
-    {
+    function getGrantAmount(
+        address curator,
+        bytes4 grantType
+    ) external view override returns (uint256 prpAmount) {
         prpAmount = _prpGrantsAmounts[curator][grantType];
         _revertOnUndefPrpAmount(prpAmount);
         // In this and other `unchecked` blocks, over/underflow impossible since:
@@ -105,7 +99,10 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     }
 
     /// @inheritdoc IPrpGrantor
-    function issueGrant(address grantee, bytes4 grantType)
+    function issueGrant(
+        address grantee,
+        bytes4 grantType
+    )
         external
         override
         nonZeroGrantType(grantType)
@@ -121,11 +118,10 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
     }
 
     /// @inheritdoc IPrpGrantor
-    function issueOwnerGrant(address grantee, uint256 prpAmount)
-        external
-        override
-        onlyOwner
-    {
+    function issueOwnerGrant(
+        address grantee,
+        uint256 prpAmount
+    ) external override onlyOwner {
         require(grantee != address(0), ERR_ZERO_GRANTEE_ADDR);
         _revertOnTooBigPrpAmount(prpAmount);
         _issueGrant(grantee, prpAmount, OWNER_GRANT_TYPE);
@@ -174,11 +170,10 @@ contract PrpGrantor is ImmutableOwnable, IPrpGrantor {
 
     /// @dev Disable previously enabled "grant type".
     /// Only the owner may call.
-    function disableGrantType(address curator, bytes4 grantType)
-        external
-        onlyOwner
-        nonZeroGrantType(grantType)
-    {
+    function disableGrantType(
+        address curator,
+        bytes4 grantType
+    ) external onlyOwner nonZeroGrantType(grantType) {
         _revertOnUndefPrpAmount(_prpGrantsAmounts[curator][grantType]);
         _prpGrantsAmounts[curator][grantType] = UNDEF_AMOUNT;
         emit PrpGrantDisabled(curator, grantType);

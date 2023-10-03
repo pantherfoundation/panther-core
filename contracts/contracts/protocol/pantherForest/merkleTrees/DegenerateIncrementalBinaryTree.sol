@@ -21,9 +21,8 @@ abstract contract DegenerateIncrementalBinaryTree {
         newRoot = isFirstLeaf ? leaf : hash(root, leaf);
     }
 
-    function hash(bytes32 left, bytes32 right)
-        internal
-        pure
-        virtual
-        returns (bytes32);
+    function hash(
+        bytes32 left,
+        bytes32 right
+    ) internal pure virtual returns (bytes32);
 }

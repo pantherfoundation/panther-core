@@ -194,11 +194,10 @@ contract StakeRewardController is
         return activeSince != 0;
     }
 
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external override returns (Advice memory) {
         require(msg.sender == REWARD_MASTER, "SRC: unauthorized");
         require(isActive(), "SRC: not yet active");
 
@@ -243,11 +242,9 @@ contract StakeRewardController is
 
     /// @notice It returns "Accumulated amount of Rewards Per staked Token" for given time.
     /// If zero value as the time provided, the current network time assumed.
-    function getScArptAt(uint32 timestamp)
-        external
-        view
-        returns (uint256 scArpt)
-    {
+    function getScArptAt(
+        uint32 timestamp
+    ) external view returns (uint256 scArpt) {
         // first, try to use historical data
         scArpt = _getHistoricalArpt(timestamp);
         if (scArpt != 0) return scArpt;
@@ -418,10 +415,9 @@ contract StakeRewardController is
         }
     }
 
-    function _updateRewardPoolParams(uint32 actionTime)
-        internal
-        returns (uint256 newScArpt)
-    {
+    function _updateRewardPoolParams(
+        uint32 actionTime
+    ) internal returns (uint256 newScArpt) {
         uint96 _totalStaked = totalStaked;
         newScArpt = scAccumRewardPerToken;
 
@@ -479,11 +475,9 @@ contract StakeRewardController is
         newScArpt = fromScArpt + scRewardAdded / _totalStaked;
     }
 
-    function _getHistoricalArpt(uint32 stakedAt)
-        internal
-        view
-        returns (uint256 scArpt)
-    {
+    function _getHistoricalArpt(
+        uint32 stakedAt
+    ) internal view returns (uint256 scArpt) {
         scArpt = scArptHistory[stakedAt];
         if (scArpt > 0) return scArpt;
 
@@ -506,29 +500,24 @@ contract StakeRewardController is
         reward = ((endScArpt - startScArpt) * uint256(stakeAmount)) / SCALE;
     }
 
-    function _getStakeVoidAdvice(address staker)
-        internal
-        view
-        returns (Advice memory advice)
-    {
+    function _getStakeVoidAdvice(
+        address staker
+    ) internal view returns (Advice memory advice) {
         advice = _getEmptyAdvice();
         advice.createSharesFor = staker;
     }
 
-    function _getUnstakeVoidAdvice(address staker)
-        internal
-        view
-        returns (Advice memory advice)
-    {
+    function _getUnstakeVoidAdvice(
+        address staker
+    ) internal view returns (Advice memory advice) {
         advice = _getEmptyAdvice();
         advice.redeemSharesFrom = staker;
     }
 
-    function _getUnstakeModifiedAdvice(address staker, uint96 amount)
-        internal
-        view
-        returns (Advice memory advice)
-    {
+    function _getUnstakeModifiedAdvice(
+        address staker,
+        uint96 amount
+    ) internal view returns (Advice memory advice) {
         advice = _getEmptyAdvice();
         advice.redeemSharesFrom = staker;
         advice.sharesToRedeem = safe96(uint256(amount) / OLD_SHARE_FACTOR);

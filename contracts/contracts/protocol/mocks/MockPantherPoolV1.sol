@@ -25,10 +25,10 @@ contract MockPantherPoolV1 is IMockPantherPoolV1, ImmutableOwnable {
         VAULT = vault;
     }
 
-    function updateVaultAssetUnlocker(address _unlocker, bool _status)
-        external
-        onlyOwner
-    {
+    function updateVaultAssetUnlocker(
+        address _unlocker,
+        bool _status
+    ) external onlyOwner {
         vaultAssetUnlockers[_unlocker] = _status;
     }
 

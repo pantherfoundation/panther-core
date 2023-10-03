@@ -27,7 +27,6 @@ contract PantherStaticTree is
 {
     bytes32[50] private _gap;
 
-
     uint256 private constant NUM_LEAFS = 5;
 
     address public immutable PANTHER_FOREST;
@@ -37,7 +36,6 @@ contract PantherStaticTree is
     address public immutable ZNETWORKS_TREE_CONTROLLER;
     address public immutable ZZONES_TREE_CONTROLLER;
     address public immutable PROVIDERS_KEYS_TREE_CONTROLLER;
-
 
     bytes32 private _staticTreeRoot;
     bytes32[NUM_LEAFS] public leafs;
@@ -122,11 +120,9 @@ contract PantherStaticTree is
         emit RootUpdated(leafIndex, updatedLeaf, _staticTreeRoot);
     }
 
-    function _getLeafController(uint256 leafIndex)
-        internal
-        view
-        returns (address leafController)
-    {
+    function _getLeafController(
+        uint256 leafIndex
+    ) internal view returns (address leafController) {
         require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
         if (leafIndex == ZASSET_STATIC_LEAF_INDEX)
             leafController = ZASSETS_TREE_CONTROLLER;

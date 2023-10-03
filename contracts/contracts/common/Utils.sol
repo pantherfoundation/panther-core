@@ -7,26 +7,26 @@ abstract contract Utils {
     // false positive
     // slither-disable-next-line timestamp
     function safe32(uint256 n) internal pure returns (uint32) {
-        require(n < 2**32, "UNSAFE32");
+        require(n < 2 ** 32, "UNSAFE32");
         return uint32(n);
     }
 
     function safe96(uint256 n) internal pure returns (uint96) {
-        require(n < 2**96, "UNSAFE96");
+        require(n < 2 ** 96, "UNSAFE96");
         return uint96(n);
     }
 
     // disabled since false positive
     // slither-disable-next-line dead-code
     function safe128(uint256 n) internal pure returns (uint128) {
-        require(n < 2**128, "UNSAFE128");
+        require(n < 2 ** 128, "UNSAFE128");
         return uint128(n);
     }
 
     // disabled since false positive
     // slither-disable-next-line dead-code
     function safe160(uint256 n) internal pure returns (uint160) {
-        require(n < 2**160, "UNSAFE160");
+        require(n < 2 ** 160, "UNSAFE160");
         return uint160(n);
     }
 

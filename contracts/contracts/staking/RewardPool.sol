@@ -36,10 +36,10 @@ contract RewardPool is ImmutableOwnable, Utils, IRewardPool {
     address public recipient;
 
     // slither-disable-next-line similar-names
-    constructor(address _vestingPools, address _owner)
-        ImmutableOwnable(_owner)
-        nonZeroAddress(_vestingPools)
-    {
+    constructor(
+        address _vestingPools,
+        address _owner
+    ) ImmutableOwnable(_owner) nonZeroAddress(_vestingPools) {
         VESTING_POOLS = _vestingPools;
     }
 
@@ -108,11 +108,9 @@ contract RewardPool is ImmutableOwnable, Utils, IRewardPool {
 
     /// @notice Calls VestingPools to transfer 'pool wallet' role to given address
     /// @dev Owner only may call, once only
-    function transferPoolWalletRole(address newWallet)
-        external
-        onlyOwner
-        nonZeroAddress(newWallet)
-    {
+    function transferPoolWalletRole(
+        address newWallet
+    ) external onlyOwner nonZeroAddress(newWallet) {
         // slither-disable-next-line reentrancy-benign
         IVestingPools(VESTING_POOLS).updatePoolWallet(poolId, newWallet);
     }

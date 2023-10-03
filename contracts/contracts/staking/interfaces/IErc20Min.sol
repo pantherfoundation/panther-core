@@ -7,9 +7,10 @@ interface IErc20Min {
     function balanceOf(address account) external view returns (uint256);
 
     /// @dev ERC-20 `transfer`
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 
     /// @dev ERC-20 `transferFrom`
     function transferFrom(

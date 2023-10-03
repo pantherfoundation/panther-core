@@ -19,7 +19,7 @@ import "./errMsgs/PrpConverterErrMsgs.sol";
 // resolution: 1 / 2**112
 
 library UQ112x112 {
-    uint224 private constant Q112 = 2**112;
+    uint224 private constant Q112 = 2 ** 112;
 
     // encode a uint112 as a UQ112x112
     function encode(uint112 y) internal pure returns (uint224 z) {
@@ -70,7 +70,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         address vault
     ) ImmutableOwnable(_owner) {
         require(
-            zkpToken != address(0) && pantherPool != address(0) && vault != address(0),
+            zkpToken != address(0) &&
+                pantherPool != address(0) &&
+                vault != address(0),
             ERR_ZERO_ADDRESS
         );
 
@@ -84,10 +86,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         _;
     }
 
-    function initPool(uint256 prpVirtualAmount, uint256 zkpAmount)
-        external
-        onlyOwner
-    {
+    function initPool(
+        uint256 prpVirtualAmount,
+        uint256 zkpAmount
+    ) external onlyOwner {
         require(!initialized, ERR_ALREADY_INITIALIZED);
 
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
@@ -98,7 +100,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         initialized = true;
 
-        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN,VAULT,zkpAmount);
+        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmount);
 
         _update(
             prpVirtualAmount,
@@ -122,7 +124,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         uint256 zkpAmountIn = zkpBalance - _zkpReserve;
 
-        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN,VAULT,zkpAmountIn);
+        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmountIn);
 
         uint256 prpAmountOut = getAmountOut(
             zkpAmountIn,
@@ -178,7 +180,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// @param inputs[10] - forestMerkleRoot;
     /// @param inputs[11] - saltHash;
     /// @param inputs[12] - magicalConstraint;
-     
+
     function convert(
         uint256[] calldata inputs,
         bytes calldata privateMessages,
@@ -187,10 +189,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         uint256 zkpAmountOutMin,
         uint256 cachedForestRootIndex
     ) external returns (uint256 firstUtxoBusQueuePos) {
-        // Note: This contract expects the Verifier to check the `inputs[]` are 
+        // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
-        // NOTE: This contract expects the Pool will check the createTime (inputs[2]) which 
+        // NOTE: This contract expects the Pool will check the createTime (inputs[2]) which
         // acts as a deadline
 
         {
@@ -206,7 +208,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
                 ERR_INVALID_EXTRA_INPUT_HASH
             );
         }
-        
+
         (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
 
         require(_zkpReserve > 0, "PC: Insufficient liquidity");
@@ -214,19 +216,33 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         uint256 zkpAmountOutRounded;
 
         {
-            uint256 zkpAmountOut = getAmountOut(prpAmountIn, _prpReserve, _zkpReserve);
+            uint256 zkpAmountOut = getAmountOut(
+                prpAmountIn,
+                _prpReserve,
+                _zkpReserve
+            );
 
             uint256 scale = 10 ** inputs[6];
-            require(zkpAmountOut >= scale, 'PC: Too low liquidity');
+            require(zkpAmountOut >= scale, "PC: Too low liquidity");
 
             zkpAmountOutRounded = (zkpAmountOut / scale) * 10 ** scale;
 
-            require(zkpAmountOutRounded >= zkpAmountOutMin, "PC: Insufficient output");
-            require(zkpAmountOutRounded < _zkpReserve, "PC: Insufficient liquidity");
+            require(
+                zkpAmountOutRounded >= zkpAmountOutMin,
+                "PC: Insufficient output"
+            );
+            require(
+                zkpAmountOutRounded < _zkpReserve,
+                "PC: Insufficient liquidity"
+            );
         }
-  
 
-       firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(inputs, proof, zkpAmountOutRounded, cachedForestRootIndex);
+        firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(
+            inputs,
+            proof,
+            zkpAmountOutRounded,
+            cachedForestRootIndex
+        );
 
         uint256 prpVirtualBalance = _prpReserve + prpAmountIn;
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
@@ -272,36 +288,30 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         emit Sync(prpReserve, zkpReserve);
     }
 
-
     function _createZAccountAndZAssetUtxos(
         uint256[] calldata inputs,
         SnarkProof memory proof,
         uint256 amountOutRounded,
         uint256 cachedForestRootIndex
-    ) private returns(uint256 firstUtxoBusQueuePos) {
-
+    ) private returns (uint256 firstUtxoBusQueuePos) {
         // Trusted contract - no reentrancy guard needed
         // pool contract triggers vault to transfer `amountOut` from prpConverter
-        try  
-        IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
-            inputs,
-            proof,
-            amountOutRounded,
-            cachedForestRootIndex
-        )  returns (uint256 result)
-        {
-             firstUtxoBusQueuePos = result;
+        try
+            IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
+                inputs,
+                proof,
+                amountOutRounded,
+                cachedForestRootIndex
+            )
+        returns (uint256 result) {
+            firstUtxoBusQueuePos = result;
         } catch Error(string memory reason) {
             revert(reason);
         }
     }
 
     /// @dev May be only called by the {OWNER}
-    function rescueErc20(
-        address token,
-        address to,
-        uint256 amount
-    ) external {
+    function rescueErc20(address token, address to, uint256 amount) external {
         require(OWNER == msg.sender, ERR_UNAUTHORIZED);
 
         _claimErc20(token, to, amount);

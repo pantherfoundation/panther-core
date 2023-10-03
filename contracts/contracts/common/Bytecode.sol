@@ -7,11 +7,10 @@ pragma solidity ^0.8.16;
  * @notice Read bytecode at given address from given position.
  */
 library Bytecode {
-    function read(address pointer, uint256 offset)
-        internal
-        view
-        returns (bytes memory data)
-    {
+    function read(
+        address pointer,
+        uint256 offset
+    ) internal view returns (bytes memory data) {
         uint256 size = pointer.code.length;
         require(size >= offset, "OUT_OF_BOUNDS");
 

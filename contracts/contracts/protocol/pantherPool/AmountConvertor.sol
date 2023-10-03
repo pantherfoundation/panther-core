@@ -21,11 +21,10 @@ abstract contract AmountConvertor {
 
     // Conversion from the unscaled amount (aka amount) to the scaled one.
     // Returns the scaled amount and the reminder.
-    function _scaleAmount(uint256 amount, uint8 scale)
-        internal
-        pure
-        returns (uint64 scaledAmount, uint256 change)
-    {
+    function _scaleAmount(
+        uint256 amount,
+        uint8 scale
+    ) internal pure returns (uint64 scaledAmount, uint256 change) {
         uint256 _scaledAmount;
         if (scale == 0) {
             // No scaling and no change for zero `scale`
@@ -47,11 +46,10 @@ abstract contract AmountConvertor {
 
     // Conversion from the scaled amount to unscaled one.
     // Returns the unscaled amount.
-    function _unscaleAmount(uint64 scaledAmount, uint8 scale)
-        internal
-        pure
-        returns (uint96)
-    {
+    function _unscaleAmount(
+        uint64 scaledAmount,
+        uint8 scale
+    ) internal pure returns (uint96) {
         uint256 amount = scale == 0
             ? scaledAmount // no scaling
             : uint256(scaledAmount) * _getScalingFactor(scale);
@@ -63,11 +61,9 @@ abstract contract AmountConvertor {
         return uint96(amount);
     }
 
-    function _sanitizeScaledAmount(uint256 scaledAmount)
-        internal
-        pure
-        returns (uint64)
-    {
+    function _sanitizeScaledAmount(
+        uint256 scaledAmount
+    ) internal pure returns (uint64) {
         require(
             scaledAmount < MAX_IN_CIRCUIT_AMOUNT,
             ERR_TOO_LARGE_SCALED_AMOUNT
@@ -80,11 +76,9 @@ abstract contract AmountConvertor {
     // Note: implementation accepts 0..255 values for nonZeroScale
     // It is responsibility of the caller check it is indeed less than 255 since 10^255 overflows uint256
     // This overflow check not implemented here since caller will implement it in upper level
-    function _getScalingFactor(uint8 nonZeroScale)
-        private
-        pure
-        returns (uint256)
-    {
-        return 10**nonZeroScale;
+    function _getScalingFactor(
+        uint8 nonZeroScale
+    ) private pure returns (uint256) {
+        return 10 ** nonZeroScale;
     }
 }

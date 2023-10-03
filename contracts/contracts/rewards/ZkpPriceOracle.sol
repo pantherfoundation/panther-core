@@ -45,11 +45,10 @@ contract ZkpPriceOracle is ImmutableOwnable, OraclePoolsList {
 
     /* ========== GETTER FUNCTIONS ========== */
 
-    function getFeeTokenAmountOut(address feeToken, uint256 zkpTokenAmountIn)
-        external
-        view
-        returns (uint256 feeTokenAmountOut)
-    {
+    function getFeeTokenAmountOut(
+        address feeToken,
+        uint256 zkpTokenAmountIn
+    ) external view returns (uint256 feeTokenAmountOut) {
         address pool = _getOraclePoolOrRevert(ZKP_TOKEN, feeToken);
 
         feeTokenAmountOut = PriceOracle.quoteOrRevert(
@@ -61,20 +60,18 @@ contract ZkpPriceOracle is ImmutableOwnable, OraclePoolsList {
         );
     }
 
-    function getOraclePoolForZkpToken(address feeToken)
-        public
-        view
-        returns (address)
-    {
+    function getOraclePoolForZkpToken(
+        address feeToken
+    ) public view returns (address) {
         return _getOraclePoolOrRevert(ZKP_TOKEN, feeToken);
     }
 
     /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
-    function addOraclePoolForZkpToken(address feeToken, address pool)
-        external
-        onlyOwner
-    {
+    function addOraclePoolForZkpToken(
+        address feeToken,
+        address pool
+    ) external onlyOwner {
         _addOraclePool(ZKP_TOKEN, feeToken, pool);
     }
 

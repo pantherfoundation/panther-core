@@ -12,14 +12,12 @@ contract MockPrpRewardBridgedDataCoder is PrpRewardBridgedDataCoder {
         return _encodeBridgedData(_nonce, prpGrantType, secret);
     }
 
-    function internalDecodeBridgedData(bytes memory content)
+    function internalDecodeBridgedData(
+        bytes memory content
+    )
         external
         pure
-        returns (
-            uint256 _nonce,
-            bytes4 prpGrantType,
-            bytes memory secret
-        )
+        returns (uint256 _nonce, bytes4 prpGrantType, bytes memory secret)
     {
         return _decodeBridgedData(content);
     }

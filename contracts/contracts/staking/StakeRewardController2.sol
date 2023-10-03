@@ -32,7 +32,6 @@ interface IEntitled {
  */
 // slither-disable-next-line missing-inheritance
 contract StakeRewardController2 is IRewardAdviser {
-
     /// @notice The owner who has privileged rights
     address public immutable OWNER;
 
@@ -89,11 +88,10 @@ contract StakeRewardController2 is IRewardAdviser {
         unclaimedRewards = _unclaimedRewards;
     }
 
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external override returns (Advice memory) {
         require(msg.sender == REWARD_MASTER, "SRC: unauthorized");
         require(action == UNSTAKE, "SRC: unexpected action");
 
@@ -121,11 +119,7 @@ contract StakeRewardController2 is IRewardAdviser {
 
     /// @notice Withdraws unclaimed rewards or accidentally sent token from this contract
     /// @dev May be only called by the {OWNER}
-    function rescueErc20(
-        address token,
-        address to,
-        uint256 amount
-    ) external {
+    function rescueErc20(address token, address to, uint256 amount) external {
         require(_reentrancyStatus != 1, "SRC: can't be re-entered");
         // slither-disable-next-line write-after-write
         _reentrancyStatus = 1;
@@ -166,11 +160,9 @@ contract StakeRewardController2 is IRewardAdviser {
         emit RewardPaid(staker, reward);
     }
 
-    function _decodeStakerFromMsg(bytes memory message)
-        internal
-        pure
-        returns (address staker)
-    {
+    function _decodeStakerFromMsg(
+        bytes memory message
+    ) internal pure returns (address staker) {
         uint256 stakerAndAmount;
         // solhint-disable no-inline-assembly
         // slither-disable-next-line assembly
@@ -184,21 +176,15 @@ contract StakeRewardController2 is IRewardAdviser {
     }
 
     // Declared as `internal` to ease testing
-    function _getEntitledReward(address staker)
-        internal
-        view
-        returns (uint256 reward)
-    {
+    function _getEntitledReward(
+        address staker
+    ) internal view returns (uint256 reward) {
         // trusted contract - reentrancy guard unneeded
         // slither-disable-next-line reentrancy-benign
         reward = IEntitled(REWARD_MASTER).entitled(staker);
     }
 
-    function _transferErc20(
-        address token,
-        address to,
-        uint256 value
-    ) internal {
+    function _transferErc20(address token, address to, uint256 value) internal {
         // solhint-disable avoid-low-level-calls
         // slither-disable-next-line low-level-calls
         (bool success, bytes memory data) = token.call(

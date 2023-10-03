@@ -20,7 +20,7 @@ abstract contract BinaryIncrementalUpdatableMerkleTree is
     // The nodes of the subtrees used in the last addition of a leaf (level -> [left node, right node])
     mapping(uint256 => bytes32[2]) internal _filledSubtrees;
 
-    uint256 public constant LEAVES_NUM = 2**TREE_DEPTH;
+    uint256 public constant LEAVES_NUM = 2 ** TREE_DEPTH;
 
     bytes32 public currentRoot;
 

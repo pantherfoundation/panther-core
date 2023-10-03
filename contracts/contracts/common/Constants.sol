@@ -16,10 +16,10 @@ uint256 constant OUT_RWRD_UTXOs = 2;
 
 // For overflow protection and circuits optimization
 // (must be less than the FIELD_SIZE)
-uint256 constant MAX_EXT_AMOUNT = 2**96;
-uint256 constant MAX_IN_CIRCUIT_AMOUNT = 2**64;
-uint256 constant MAX_TIMESTAMP = 2**32;
-uint256 constant MAX_ZASSET_ID = 2**160;
+uint256 constant MAX_EXT_AMOUNT = 2 ** 96;
+uint256 constant MAX_IN_CIRCUIT_AMOUNT = 2 ** 64;
+uint256 constant MAX_TIMESTAMP = 2 ** 32;
+uint256 constant MAX_ZASSET_ID = 2 ** 160;
 
 // Token types
 // (not `enum` to let protocol extensions use bits, if needed)

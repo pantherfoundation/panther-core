@@ -23,11 +23,7 @@ contract MockRewardMaster is RewardMaster {
     )
         external
         pure
-        returns (
-            uint256 reward,
-            uint256 newShares,
-            uint256 newOffset
-        )
+        returns (uint256 reward, uint256 newShares, uint256 newOffset)
     {
         return _computeRedemption(sharesToRedeem, rec, _accumRewardPerShare);
     }

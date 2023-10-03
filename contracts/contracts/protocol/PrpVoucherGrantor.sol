@@ -77,9 +77,10 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// verifier contract.
     /// @param _owner The owner of the PrpVoucherGrantor contract.
     /// @param _pantherPoolV1 The address of the pool contract.
-    constructor(address _owner, address _pantherPoolV1)
-        ImmutableOwnable(_owner)
-    {
+    constructor(
+        address _owner,
+        address _pantherPoolV1
+    ) ImmutableOwnable(_owner) {
         revertZeroAddress(_pantherPoolV1);
         PANTHER_POOL_V1 = IPantherPoolV1(_pantherPoolV1);
     }
@@ -167,7 +168,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         emit RewardClaimed(secretHash);
     }
 
-     function _accountPrp(
+    function _accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex
@@ -176,11 +177,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         // Pool is supposed to revert in case of any error
         try
             // Trusted contract - no reentrancy guard needed
-            PANTHER_POOL_V1.accountPrp(
-                inputs,
-                proof,
-                cachedForestRootIndex
-            )
+            PANTHER_POOL_V1.accountPrp(inputs, proof, cachedForestRootIndex)
         returns (uint256 result) {
             utxoBusQueuePos = result;
         } catch Error(string memory reason) {

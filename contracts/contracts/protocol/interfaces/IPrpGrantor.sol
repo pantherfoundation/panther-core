@@ -20,24 +20,24 @@ interface IPrpGrantor {
     function totalGrantsRedeemed() external returns (uint256);
 
     /// @notice Returns the total amount (in PRPs) of unused grants for the given grantee
-    function getUnusedGrantAmount(address grantee)
-        external
-        view
-        returns (uint256 prpAmount);
+    function getUnusedGrantAmount(
+        address grantee
+    ) external view returns (uint256 prpAmount);
 
     /// @notice Returns the PRP amount of the grant specified by a given curator and type
-    function getGrantAmount(address curator, bytes4 grantType)
-        external
-        view
-        returns (uint256 prpAmount);
+    function getGrantAmount(
+        address curator,
+        bytes4 grantType
+    ) external view returns (uint256 prpAmount);
 
     /// @notice Increase the amount of "unused" grants for the given grantee, by the amount
     /// defined for the given "grant type"
     /// @return prpAmount The amount (in PRPs) of the grant
     /// @dev An authorized "curator" may call with the enabled (added) "grant type" only
-    function issueGrant(address grantee, bytes4 grantType)
-        external
-        returns (uint256 prpAmount);
+    function issueGrant(
+        address grantee,
+        bytes4 grantType
+    ) external returns (uint256 prpAmount);
 
     /// @notice Increase the amount of "unused" grants for the given grantee, by the amount
     /// specified.

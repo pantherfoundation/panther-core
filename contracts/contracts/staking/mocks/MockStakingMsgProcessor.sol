@@ -6,19 +6,15 @@ import "../actions/StakingMsgProcessor.sol";
 import "../interfaces/IStakingTypes.sol";
 
 contract MockStakingMsgProcessor is StakingMsgProcessor {
-    function internalEncodeStakeActionType(bytes4 stakeType)
-        external
-        pure
-        returns (bytes4)
-    {
+    function internalEncodeStakeActionType(
+        bytes4 stakeType
+    ) external pure returns (bytes4) {
         return _encodeStakeActionType(stakeType);
     }
 
-    function internalEncodeUnstakeActionType(bytes4 stakeType)
-        external
-        pure
-        returns (bytes4)
-    {
+    function internalEncodeUnstakeActionType(
+        bytes4 stakeType
+    ) external pure returns (bytes4) {
         return _encodeUnstakeActionType(stakeType);
     }
 
@@ -30,7 +26,9 @@ contract MockStakingMsgProcessor is StakingMsgProcessor {
         return _packStakingActionMsg(staker, stake, data);
     }
 
-    function internalUnpackStakingActionMsg(bytes memory message)
+    function internalUnpackStakingActionMsg(
+        bytes memory message
+    )
         external
         pure
         returns (

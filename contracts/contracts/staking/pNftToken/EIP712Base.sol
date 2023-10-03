@@ -70,11 +70,9 @@ contract EIP712Base is Initializable {
      * "\\x19" makes the encoding deterministic
      * "\\x01" is the version byte to make it compatible to EIP-191
      */
-    function toTypedMessageHash(bytes32 messageHash)
-        internal
-        view
-        returns (bytes32)
-    {
+    function toTypedMessageHash(
+        bytes32 messageHash
+    ) internal view returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked("\x19\x01", getDomainSeperator(), messageHash)

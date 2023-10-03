@@ -12,11 +12,7 @@ import "./TransferHelper.sol";
 abstract contract Claimable {
     /// @dev Withdraws ERC20 tokens from this contract
     /// (take care of reentrancy attack risk mitigation)
-    function _claimErc20(
-        address token,
-        address to,
-        uint256 amount
-    ) internal {
+    function _claimErc20(address token, address to, uint256 amount) internal {
         // withdraw ERC20
         TransferHelper.safeTransfer(token, to, amount);
     }

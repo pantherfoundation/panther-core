@@ -3,8 +3,7 @@
 pragma solidity ^0.8.16;
 
 interface IZAccountsRegistry {
-    function isZAccountWhitelisted(address _masterEOA)
-        external
-        view
-        returns (bool isWhitelisted);
+    function isZAccountWhitelisted(
+        address _masterEOA
+    ) external view returns (bool isWhitelisted);
 }

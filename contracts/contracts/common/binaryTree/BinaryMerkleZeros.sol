@@ -28,7 +28,6 @@ import { FIELD_SIZE } from "../../protocol/crypto/SnarkConstants.sol";
 
 // @notice The "binary binary tree" populated with zero leaf values
 abstract contract BinaryMerkleZeros {
-
     // @dev Number of levels in a tree excluding the root level
     uint256 internal constant TREE_DEPTH = 16;
 
@@ -45,7 +44,6 @@ abstract contract BinaryMerkleZeros {
                 0x2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323
             )
         );
-
 
     function populateZeros(bytes32[TREE_DEPTH] memory zeros) internal pure {
         zeros[0] = bytes32(uint256(0x0));

@@ -30,7 +30,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // TODO: adding gap to the beginning and end of the storage
 
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
-    uint256 private constant QUEUE_MAX_SIZE = 2**QUEUE_MAX_LEVELS;
+    uint256 private constant QUEUE_MAX_SIZE = 2 ** QUEUE_MAX_LEVELS;
+    // solhint-enable var-name-mixedcase
 
     /**
      * @param nUtxos Number of UTXOs in the queue
@@ -166,11 +167,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         rewardReserve = _rewardReserve;
     }
 
-    function getBusQueue(uint32 queueId)
-        external
-        view
-        returns (BusQueueRec memory queue)
-    {
+    function getBusQueue(
+        uint32 queueId
+    ) external view returns (BusQueueRec memory queue) {
         BusQueue memory q = _busQueues[queueId];
         require(
             queueId + 1 == _nextQueueId || q.nUtxos > 0,
@@ -191,11 +190,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
     // @param maxLength Maximum number of queues to return
     // @return queues Queues pending processing, starting from the oldest one
-    function getOldestPendingQueues(uint32 maxLength)
-        external
-        view
-        returns (BusQueueRec[] memory queues)
-    {
+    function getOldestPendingQueues(
+        uint32 maxLength
+    ) external view returns (BusQueueRec[] memory queues) {
         uint256 nQueues = _numPendingQueues;
         if (nQueues > maxLength) nQueues = maxLength;
         queues = new BusQueueRec[](nQueues);
@@ -243,10 +240,10 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
-    function addUtxos(bytes32[] memory utxos, uint96 reward)
-        internal
-        returns (uint32 firstQueueId, uint8 firstIndexInFirstQueue)
-    {
+    function addUtxos(
+        bytes32[] memory utxos,
+        uint96 reward
+    ) internal returns (uint32 firstQueueId, uint8 firstIndexInFirstQueue) {
         require(utxos.length < QUEUE_MAX_SIZE, "BQ:TOO_MANY_UTXOS");
 
         uint32 queueId;
@@ -307,14 +304,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // It delete the processed queue and returns the queue params
-    function setBusQueueAsProcessed(uint32 queueId)
+    function setBusQueueAsProcessed(
+        uint32 queueId
+    )
         internal
         nonEmptyBusQueue(queueId)
-        returns (
-            bytes32 commitment,
-            uint8 nUtxos,
-            uint96 reward
-        )
+        returns (bytes32 commitment, uint8 nUtxos, uint96 reward)
     {
         BusQueue memory queue = _busQueues[queueId];
         require(_getQueueRemainingBlocks(queue) == 0, "BQT:IMMATURE_QUEUE");
@@ -355,10 +350,10 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         emit BusQueueProcessed(queueId);
     }
 
-    function addBusQueueReward(uint32 queueId, uint96 extraReward)
-        internal
-        nonEmptyBusQueue(queueId)
-    {
+    function addBusQueueReward(
+        uint32 queueId,
+        uint96 extraReward
+    ) internal nonEmptyBusQueue(queueId) {
         require(extraReward > 0, "BQ:ZERO_REWARD");
         uint96 accumReward;
         unchecked {
@@ -371,11 +366,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
     function _createNewBusQueue()
         private
-        returns (
-            uint32 newQueueId,
-            BusQueue memory queue,
-            bytes32 commitment
-        )
+        returns (uint32 newQueueId, BusQueue memory queue, bytes32 commitment)
     {
         newQueueId = _nextQueueId;
 
@@ -395,11 +386,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // Returns the number of blocks to wait until a queue may be processed.
     // Always returns 0 for a fully populated queue (immediately processable).
     // For an empty queue it returns a meaningless value.
-    function _getQueueRemainingBlocks(BusQueue memory queue)
-        private
-        view
-        returns (uint40)
-    {
+    function _getQueueRemainingBlocks(
+        BusQueue memory queue
+    ) private view returns (uint40) {
         if (queue.nUtxos >= QUEUE_MAX_SIZE) return 0;
 
         // Minimum "age" declines linearly to the number of UTXOs in the queue
@@ -413,10 +402,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
                 : uint40(maturityBlock - block.number);
     }
 
-    function _computeReward(BusQueue memory queue)
-        private
-        returns (uint256 actReward)
-    {
+    function _computeReward(
+        BusQueue memory queue
+    ) private returns (uint256 actReward) {
         (
             uint256 reward,
             uint256 premium,
@@ -440,14 +428,12 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         actReward = reward + premium;
     }
 
-    function _estimateRewarding(BusQueue memory queue)
+    function _estimateRewarding(
+        BusQueue memory queue
+    )
         private
         view
-        returns (
-            uint256 reward,
-            uint256 premium,
-            int256 netReserveChange
-        )
+        returns (uint256 reward, uint256 premium, int256 netReserveChange)
     {
         // _reservationRate MUST be less than HUNDRED_PERCENT ...
         uint256 contrib = (uint256(queue.reward) * _reservationRate) /

@@ -203,10 +203,10 @@ contract Staking is
      * @param stakeID - ID of the stake to delegate votes uber
      * @param to - address to delegate to
      */
-    function delegate(uint256 stakeID, address to)
-        public
-        stakeExist(msg.sender, stakeID)
-    {
+    function delegate(
+        uint256 stakeID,
+        address to
+    ) public stakeExist(msg.sender, stakeID) {
         require(
             to != GLOBAL_ACCOUNT,
             "Staking: Can't delegate to GLOBAL_ACCOUNT"
@@ -245,11 +245,9 @@ contract Staking is
     }
 
     /// @notice Returns stakes of given account
-    function accountStakes(address _account)
-        external
-        view
-        returns (Stake[] memory)
-    {
+    function accountStakes(
+        address _account
+    ) external view returns (Stake[] memory) {
         Stake[] memory _stakes = stakes[_account];
         return _stakes;
     }
@@ -277,12 +275,9 @@ contract Staking is
     }
 
     /// @inheritdoc IVotingPower
-    function latestSnapshotBlock(address _account)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function latestSnapshotBlock(
+        address _account
+    ) public view override returns (uint256) {
         if (snapshots[_account].length == 0) return 0;
 
         return snapshots[_account][snapshots[_account].length - 1].beforeBlock;
@@ -294,42 +289,32 @@ contract Staking is
     }
 
     /// @inheritdoc IVotingPower
-    function snapshotLength(address _account)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function snapshotLength(
+        address _account
+    ) external view override returns (uint256) {
         return snapshots[_account].length;
     }
 
     /// @inheritdoc IVotingPower
-    function globalsSnapshot(uint256 _index)
-        external
-        view
-        override
-        returns (Snapshot memory)
-    {
+    function globalsSnapshot(
+        uint256 _index
+    ) external view override returns (Snapshot memory) {
         return snapshots[GLOBAL_ACCOUNT][_index];
     }
 
     /// @inheritdoc IVotingPower
-    function snapshot(address _account, uint256 _index)
-        external
-        view
-        override
-        returns (Snapshot memory)
-    {
+    function snapshot(
+        address _account,
+        uint256 _index
+    ) external view override returns (Snapshot memory) {
         return snapshots[_account][_index];
     }
 
     /// @inheritdoc IVotingPower
-    function globalSnapshotAt(uint256 blockNum, uint256 hint)
-        external
-        view
-        override
-        returns (Snapshot memory)
-    {
+    function globalSnapshotAt(
+        uint256 blockNum,
+        uint256 hint
+    ) external view override returns (Snapshot memory) {
         return _snapshotAt(GLOBAL_ACCOUNT, blockNum, hint);
     }
 
@@ -346,11 +331,10 @@ contract Staking is
 
     /// @notice Adds a new stake type with given terms
     /// @dev May be only called by the {OWNER}
-    function addTerms(bytes4 stakeType, Terms memory _terms)
-        external
-        onlyOwner
-        nonZeroStakeType(stakeType)
-    {
+    function addTerms(
+        bytes4 stakeType,
+        Terms memory _terms
+    ) external onlyOwner nonZeroStakeType(stakeType) {
         Terms memory existingTerms = terms[stakeType];
         require(!_isDefinedTerms(existingTerms), "Staking:E1");
         require(_terms.isEnabled, "Staking:E2");
@@ -396,11 +380,9 @@ contract Staking is
         emit TermsAdded(stakeType);
     }
 
-    function disableTerms(bytes4 stakeType)
-        external
-        onlyOwner
-        nonZeroStakeType(stakeType)
-    {
+    function disableTerms(
+        bytes4 stakeType
+    ) external onlyOwner nonZeroStakeType(stakeType) {
         Terms memory _terms = terms[stakeType];
         require(_isDefinedTerms(terms[stakeType]), "Staking:E9");
         require(_terms.isEnabled, "Staking:EA");
@@ -423,7 +405,7 @@ contract Staking is
         require(amount > 0, "Staking: Amount not set");
         // slither-disable-next-line similar-names
         uint256 _totalStake = amount + uint256(totalStaked);
-        require(_totalStake < 2**96, "Staking: Too big amount");
+        require(_totalStake < 2 ** 96, "Staking: Too big amount");
 
         require(
             _terms.minAmountScaled == 0 ||
@@ -505,11 +487,7 @@ contract Staking is
         power[from].own -= uint96(amount);
     }
 
-    function _delegatePower(
-        address from,
-        address to,
-        uint256 amount
-    ) private {
+    function _delegatePower(address from, address to, uint256 amount) private {
         _takeSnapshot(GLOBAL_ACCOUNT);
         _takeSnapshot(to);
         _takeSnapshot(from);
@@ -589,11 +567,10 @@ contract Staking is
         else return _snapshotAt(_account, blockNum);
     }
 
-    function _snapshotAt(address _account, uint256 blockNum)
-        internal
-        view
-        returns (Snapshot memory)
-    {
+    function _snapshotAt(
+        address _account,
+        uint256 blockNum
+    ) internal view returns (Snapshot memory) {
         _sanitizeBlockNum(blockNum);
 
         // https://en.wikipedia.org/wiki/Binary_search_algorithm

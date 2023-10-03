@@ -27,10 +27,10 @@ contract RewardTreasury is ImmutableOwnable, NonReentrant, Claimable {
 
     /// @notice It sets amount as ERC20 allowance over the {token} to the given spender
     /// @dev May be only called by the {OWNER}
-    function approveSpender(address spender, uint256 amount)
-        external
-        onlyOwner
-    {
+    function approveSpender(
+        address spender,
+        uint256 amount
+    ) external onlyOwner {
         // call to the trusted contract - no reentrancy guard needed
         // slither-disable-next-line unused-return
         IErc20Approve(token).approve(spender, amount);

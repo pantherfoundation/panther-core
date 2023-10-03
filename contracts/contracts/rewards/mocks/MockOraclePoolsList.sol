@@ -17,11 +17,10 @@ contract MockOraclePoolsList is OraclePoolsList {
         _removeOraclePool(tokenA, tokenB);
     }
 
-    function internalGetOraclePoolOrRevert(address tokenA, address tokenB)
-        external
-        view
-        returns (address pool)
-    {
+    function internalGetOraclePoolOrRevert(
+        address tokenA,
+        address tokenB
+    ) external view returns (address pool) {
         return _getOraclePoolOrRevert(tokenA, tokenB);
     }
 }

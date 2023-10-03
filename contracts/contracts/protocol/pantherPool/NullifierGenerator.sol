@@ -7,11 +7,10 @@ import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 import { ERR_TOO_LARGE_LEAFID, ERR_TOO_LARGE_PRIVKEY } from "../errMsgs/PantherPoolErrMsgs.sol";
 
 abstract contract NullifierGenerator {
-    function generateNullifier(uint256 privSpendingKey, uint256 leafId)
-        internal
-        pure
-        returns (bytes32 nullifier)
-    {
+    function generateNullifier(
+        uint256 privSpendingKey,
+        uint256 leafId
+    ) internal pure returns (bytes32 nullifier) {
         require(privSpendingKey < FIELD_SIZE, ERR_TOO_LARGE_PRIVKEY);
         require(leafId < FIELD_SIZE, ERR_TOO_LARGE_LEAFID);
         nullifier = PoseidonT3.poseidon(

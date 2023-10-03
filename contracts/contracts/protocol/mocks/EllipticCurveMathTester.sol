@@ -14,35 +14,30 @@ contract EllipticCurveMathTester is EllipticCurveMath {
         return P2();
     }
 
-    function testNegate(G1Point memory p)
-        external
-        pure
-        returns (G1Point memory r)
-    {
+    function testNegate(
+        G1Point memory p
+    ) external pure returns (G1Point memory r) {
         return negate(p);
     }
 
-    function testAddition(G1Point memory p1, G1Point memory p2)
-        external
-        view
-        returns (G1Point memory r)
-    {
+    function testAddition(
+        G1Point memory p1,
+        G1Point memory p2
+    ) external view returns (G1Point memory r) {
         return addition(p1, p2);
     }
 
-    function testScalar_mul(G1Point memory p, uint256 s)
-        external
-        view
-        returns (G1Point memory r)
-    {
+    function testScalar_mul(
+        G1Point memory p,
+        uint256 s
+    ) external view returns (G1Point memory r) {
         return scalar_mul(p, s);
     }
 
-    function testPairing(G1Point[] memory p1, G2Point[] memory p2)
-        external
-        view
-        returns (bool)
-    {
+    function testPairing(
+        G1Point[] memory p1,
+        G2Point[] memory p2
+    ) external view returns (bool) {
         return pairing(p1, p2);
     }
 }

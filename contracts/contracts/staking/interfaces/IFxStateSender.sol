@@ -8,6 +8,8 @@ pragma solidity ^0.8.16;
  * See https://docs.polygon.technology/docs/develop/l1-l2-communication/fx-portal
  */
 interface IFxStateSender {
-    function sendMessageToChild(address _receiver, bytes calldata _data)
-        external;
+    function sendMessageToChild(
+        address _receiver,
+        bytes calldata _data
+    ) external;
 }

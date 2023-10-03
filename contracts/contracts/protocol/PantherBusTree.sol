@@ -91,21 +91,17 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         emit MinerRewarded(miner, reward);
     }
 
-    function hash(bytes32 left, bytes32 right)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
+    function hash(
+        bytes32 left,
+        bytes32 right
+    ) internal pure override returns (bytes32) {
         return PoseidonHashers.poseidonT3([left, right]);
     }
 
     // TODO: Remove getAllowedUtxosAt after Testnet (required for Stage #0..2 only)
-    function getAllowedUtxosAt(uint256 _timestamp)
-        public
-        view
-        returns (uint256 allowedUtxos)
-    {
+    function getAllowedUtxosAt(
+        uint256 _timestamp
+    ) public view returns (uint256 allowedUtxos) {
         if (_timestamp <= lastUtxoSimulationTimestamp) return 0;
 
         uint256 secs = _timestamp - lastUtxoSimulationTimestamp;
@@ -113,11 +109,9 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     }
 
     // TODO: add `reward` as a param of `function addUtxoToBusQueue`
-    function addUtxoToBusQueue(bytes32 utxo)
-        external
-        onlyPantherPool
-        returns (uint32 queueId, uint8 indexInQueue)
-    {
+    function addUtxoToBusQueue(
+        bytes32 utxo
+    ) external onlyPantherPool returns (uint32 queueId, uint8 indexInQueue) {
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = utxo;
 
@@ -135,7 +129,9 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     /// - number of UTXOs added to the new queue (if there are such) equals to
     ///   `firstUtxoIndexInQueue + utxos[0].length - QUEUE_MAX_SIZE`
     /// - new queue (if created) has ID equal to `firstUtxoQueueId + 1`
-    function addUtxosToBusQueue(bytes32[] memory utxos)
+    function addUtxosToBusQueue(
+        bytes32[] memory utxos
+    )
         external
         onlyPantherPool
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)

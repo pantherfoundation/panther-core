@@ -17,10 +17,10 @@ contract TestnetStaking is Staking {
         address owner
     ) Staking(stakingToken, rewardMaster, owner) {} // solhint-disable no-empty-blocks
 
-    function updateTerms(bytes4 _stakeType, Terms memory _terms)
-        external
-        onlyOwner
-    {
+    function updateTerms(
+        bytes4 _stakeType,
+        Terms memory _terms
+    ) external onlyOwner {
         terms[_stakeType] = _terms;
     }
 }

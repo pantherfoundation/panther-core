@@ -5,17 +5,15 @@ pragma solidity ^0.8.16;
 import "../pantherForest/cachedRoots/CachedRoots.sol";
 
 contract MockCachedRoots is CachedRoots {
-    function internalCacheNewRoot(bytes32 root)
-        external
-        returns (uint256 cacheIndex)
-    {
+    function internalCacheNewRoot(
+        bytes32 root
+    ) external returns (uint256 cacheIndex) {
         return cacheNewRoot(root);
     }
 
-    function internalResetThenCacheNewRoot(bytes32 root)
-        external
-        returns (uint256 cacheIndex)
-    {
+    function internalResetThenCacheNewRoot(
+        bytes32 root
+    ) external returns (uint256 cacheIndex) {
         return resetThenCacheNewRoot(root);
     }
 }

@@ -34,11 +34,10 @@ abstract contract StakeZeroRewardAdviser is
 
     /// @dev It is assumed to be called by the RewardMaster contract.
     /// It returns the "zero" reward advises, no matter who calls it.
-    function getRewardAdvice(bytes4 action, bytes memory message)
-        external
-        override
-        returns (Advice memory)
-    {
+    function getRewardAdvice(
+        bytes4 action,
+        bytes memory message
+    ) external override returns (Advice memory) {
         require(
             action == STAKE || action == UNSTAKE,
             "ZRA: unsupported action"

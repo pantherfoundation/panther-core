@@ -14,9 +14,10 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 // import "hardhat/console.sol";
 
 contract MyERC20 is ERC20 {
-    constructor(uint256 index, address owner)
-        ERC20(Strings.toString(index), Strings.toString(index))
-    {
+    constructor(
+        uint256 index,
+        address owner
+    ) ERC20(Strings.toString(index), Strings.toString(index)) {
         uint256 totalSupply = 1024;
         _mint(owner, totalSupply);
     }
@@ -68,11 +69,10 @@ contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
         exitTime = safe32TimeNow() + 1;
     }
 
-    function testGetZAssetId(uint256 token, uint256 tokenId)
-        external
-        view
-        returns (uint160)
-    {
+    function testGetZAssetId(
+        uint256 token,
+        uint256 tokenId
+    ) external view returns (uint160) {
         return
             ZAssetsRegistryV0(registry).getZAssetId(
                 address(uint160(token)),

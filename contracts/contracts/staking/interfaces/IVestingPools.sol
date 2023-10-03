@@ -29,9 +29,10 @@ interface IVestingPools {
      * @dev Pool wallet may call only.
      * @return released - Amount released.
      */
-    function release(uint256 poolId, uint256 amount)
-        external
-        returns (uint256 released);
+    function release(
+        uint256 poolId,
+        uint256 amount
+    ) external returns (uint256 released);
 
     /**
      * @notice Vests the specified amount from the given pool to the given address.

@@ -29,12 +29,9 @@ contract VotingPowerInformer {
 
     /// @notice Returns votes of a voter scaled to even number of tokens
     /// @dev "own" and "delegated" voting power summed up and scaled by 1e-18
-    function getVotes(address voter)
-        external
-        view
-        nonZeroAddress(voter)
-        returns (uint256)
-    {
+    function getVotes(
+        address voter
+    ) external view nonZeroAddress(voter) returns (uint256) {
         return _getPower(voter) / 1e18;
     }
 
@@ -48,24 +45,18 @@ contract VotingPowerInformer {
     /// (if a user staked 1 token, it returns 1e18)
     /// @dev "own" and "delegated" voting power summed up
     /// (function named so for compatibility with snapshot.org "strategies")
-    function balanceOf(address voter)
-        external
-        view
-        nonZeroAddress(voter)
-        returns (uint256)
-    {
+    function balanceOf(
+        address voter
+    ) external view nonZeroAddress(voter) returns (uint256) {
         return _getPower(voter);
     }
 
     /// @notice Returns quadratic votes of a voter scaled to even number of tokens
     /// (w/o adjustment for the "voting power loss" on delegation)
     /// @dev sum of "own" and "delegated" power scaled by 1e-18
-    function getQuadraticVotes(address voter)
-        external
-        view
-        nonZeroAddress(voter)
-        returns (uint256)
-    {
+    function getQuadraticVotes(
+        address voter
+    ) external view nonZeroAddress(voter) returns (uint256) {
         return sqrt(_getPower(voter) / 1e18);
     }
 
@@ -74,12 +65,9 @@ contract VotingPowerInformer {
     /// @dev sum of "own" and "delegated" power scaled by 1e-18
     // solhint-disable-next-line max-line-length
     // (see https://github.com/snapshot-labs/snapshot-strategies/blob/3b11de40a51a5b5db526cbdc07f965174a4e70c8/src/strategies/erc20-balance-of-quadratic-delegation/README.md)
-    function getQuadraticAdjustedVotes(address voter)
-        external
-        view
-        nonZeroAddress(voter)
-        returns (uint256)
-    {
+    function getQuadraticAdjustedVotes(
+        address voter
+    ) external view nonZeroAddress(voter) returns (uint256) {
         return _getQuadraticAdjustedVotes(voter);
     }
 
@@ -100,11 +88,9 @@ contract VotingPowerInformer {
         return uint256(power.own) + uint256(power.delegated);
     }
 
-    function _getQuadraticAdjustedVotes(address voter)
-        internal
-        view
-        returns (uint256)
-    {
+    function _getQuadraticAdjustedVotes(
+        address voter
+    ) internal view returns (uint256) {
         IVotingPowerSource.Power memory power = IVotingPowerSource(staking)
             .power(voter);
         uint256 credits = power.own / 1e18;

@@ -58,7 +58,7 @@ contract FakePantherPoolV0 is IPantherPoolV0 {
                 "FakePantherPoolV0:TOO_LARGE_tokenId"
             );
             require(
-                extAmounts[utxoIndex] < 2**96,
+                extAmounts[utxoIndex] < 2 ** 96,
                 "FakePantherPoolV0:ERR_TOO_LARGE_AMOUNT"
             );
             require(
@@ -124,7 +124,7 @@ contract FakePantherPoolV0 is IPantherPoolV0 {
             block.timestamp >= exitTime,
             "FakePantherPoolV0:ERR_TOO_EARLY_EXIT"
         );
-        require(amount < 2**96, "FakePantherPoolV0:ERR_TOO_LARGE_AMOUNT");
+        require(amount < 2 ** 96, "FakePantherPoolV0:ERR_TOO_LARGE_AMOUNT");
 
         // Fake (!!!) nullifier
         bytes32 nullifier = bytes32(

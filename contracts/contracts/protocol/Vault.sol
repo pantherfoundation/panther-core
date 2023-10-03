@@ -35,12 +35,9 @@ contract Vault is
     // The caller (i.e. the owner) is supposed to apply reentrancy guard.
     // If an adversarial "token", being called by this function, re-enters it
     // directly, `onlyOwner` will revert as `msg.sender` won't be `owner`.
-    function lockAsset(LockData calldata data)
-        external
-        override
-        onlyOwner
-        checkLockData(data)
-    {
+    function lockAsset(
+        LockData calldata data
+    ) external override onlyOwner checkLockData(data) {
         if (data.tokenType == ERC20_TOKEN_TYPE) {
             // Owner, who only may call this code, is trusted to protect
             // against "Arbitrary from in transferFrom" vulnerability
@@ -76,12 +73,9 @@ contract Vault is
     // The caller (i.e. the owner) is supposed to apply reentrancy guard.
     // If an adversarial "token", being called by this function, re-enters it
     // directly, `onlyOwner` will revert as `msg.sender` won't be `owner`.
-    function unlockAsset(LockData calldata data)
-        external
-        override
-        onlyOwner
-        checkLockData(data)
-    {
+    function unlockAsset(
+        LockData calldata data
+    ) external override onlyOwner checkLockData(data) {
         if (data.tokenType == ERC20_TOKEN_TYPE) {
             // slither-disable-next-line reentrancy-benign,reentrancy-events
             data.token.safeTransfer(data.extAccount, data.extAmount);

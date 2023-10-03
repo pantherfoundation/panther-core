@@ -76,11 +76,9 @@ contract NativeMetaTransaction is EIP712Base {
         return returnData;
     }
 
-    function hashMetaTransaction(MetaTransaction memory metaTx)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function hashMetaTransaction(
+        MetaTransaction memory metaTx
+    ) internal pure returns (bytes32) {
         return
             keccak256(
                 abi.encode(

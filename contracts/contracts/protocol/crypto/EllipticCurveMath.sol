@@ -33,11 +33,10 @@ abstract contract EllipticCurveMath {
     }
 
     /// @return r the sum of two points of G1
-    function addition(G1Point memory p1, G1Point memory p2)
-        internal
-        view
-        returns (G1Point memory r)
-    {
+    function addition(
+        G1Point memory p1,
+        G1Point memory p2
+    ) internal view returns (G1Point memory r) {
         uint256[4] memory input;
         input[0] = p1.x;
         input[1] = p1.y;
@@ -58,11 +57,10 @@ abstract contract EllipticCurveMath {
 
     /// @return r the product of a point on G1 and a scalar, i.e.
     /// p == p.scalar_mul(1) and p.addition(p) == p.scalar_mul(2) for all points p.
-    function scalar_mul(G1Point memory p, uint256 s)
-        internal
-        view
-        returns (G1Point memory r)
-    {
+    function scalar_mul(
+        G1Point memory p,
+        uint256 s
+    ) internal view returns (G1Point memory r) {
         uint256[3] memory input;
         input[0] = p.x;
         input[1] = p.y;
@@ -84,11 +82,10 @@ abstract contract EllipticCurveMath {
     /// e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
     /// For example pairing([P1(), P1().negate()], [P2(), P2()]) should
     /// return true.
-    function pairing(G1Point[] memory p1, G2Point[] memory p2)
-        internal
-        view
-        returns (bool)
-    {
+    function pairing(
+        G1Point[] memory p1,
+        G2Point[] memory p2
+    ) internal view returns (bool) {
         require(p1.length == p2.length, "pairing-lengths-failed");
         uint256 elements = p1.length;
         uint256 inputSize = elements * 6;

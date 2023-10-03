@@ -12,8 +12,7 @@ interface IPantherVerifier is IVerifier {
      * @dev circuitId is an address where the key is deployed as bytecode
      * @return Verifying key
      */
-    function getVerifyingKey(uint160 circuitId)
-        external
-        view
-        returns (VerifyingKey memory);
+    function getVerifyingKey(
+        uint160 circuitId
+    ) external view returns (VerifyingKey memory);
 }
