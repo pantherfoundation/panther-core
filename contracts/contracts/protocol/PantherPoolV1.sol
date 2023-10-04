@@ -31,6 +31,7 @@ contract PantherPoolV1 is
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
+    address public immutable PRP_VOUCHER_GRANTOR;
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -54,13 +55,15 @@ contract PantherPoolV1 is
         address staticTree,
         address vault,
         address zAccountRegistry,
+        address prpVoucherGrantor,
         address verifier
     ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
         require(
             vault != address(0) &&
                 zkpToken != address(0) &&
                 verifier != address(0) &&
-                zAccountRegistry != address(0),
+                zAccountRegistry != address(0) &&
+                prpVoucherGrantor != address(0),
             ERR_INIT
         );
 
@@ -69,6 +72,7 @@ contract PantherPoolV1 is
         BUS_TREE = IBusTree(busTree);
         VERIFIER = IPantherVerifier(verifier);
         ZACCOUNT_REGISTRY = zAccountRegistry;
+        PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
     }
 
     function updateVaultAssetUnlocker(
@@ -228,6 +232,9 @@ contract PantherPoolV1 is
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
+        require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
+        require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
         // Must be less than 32 bits and NOT in the past
@@ -318,6 +325,8 @@ contract PantherPoolV1 is
     ) external returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
+
+        require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
