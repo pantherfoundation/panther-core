@@ -15,8 +15,8 @@ component main {
         zAssetScale,                           // [8]
         zAccountUtxoInNullifier,               // [9]
         zAccountUtxoOutCommitment,             // [10]
-        forestMerkleRoot,                      // [11]
-        zNetworkChainId,                       // [12]
+        zNetworkChainId,                       // [11]
+        forestMerkleRoot,                      // [12]
         saltHash,                              // [13]
         magicalConstraint                      // [14]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 13 + 2 = 15

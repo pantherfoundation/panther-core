@@ -60,8 +60,8 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zAccountRootSpendPubKey[2]; // public
     signal input zAccountMasterEOA;          // public
     signal input zAccountSpendKeyRandom;
-    signal input zAccountCommitment; // public
     signal input zAccountNullifier;  // public
+    signal input zAccountCommitment; // public
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
