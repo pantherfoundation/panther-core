@@ -73,14 +73,15 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
 
     // Verify zAccountUtxoIn nullifier
     const zAccountUtxoInNullifierHasher = poseidon([
-        BigInt(33n),
-        BigInt(1n),
-        BigInt(2n),
         BigInt(
             1364957401031907147846036885962614753763820022581024524807608342937054566107n,
         ),
+        BigInt(
+            13839448376386834831825066998105804542138021609451006066486200521909294447809n,
+        ),
     ]);
 
+    // 3291833592367315262335295508952325841159274385097904397686350470034819319668n
     // console.log(
     //     'zAccountUtxoInNullifierHasher=>',
     //     zAccountUtxoInNullifierHasher,
@@ -292,7 +293,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
 
         zAccountUtxoInNullifier:
             BigInt(
-                1139970853508650176055884485279872020247472882439797101307093417665748942631n,
+                3291833592367315262335295508952325841159274385097904397686350470034819319668n,
             ),
         zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
         zAccountUtxoInPathIndices: [

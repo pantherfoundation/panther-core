@@ -317,7 +317,7 @@ const zeroInput = {
 
 const nonZeroInputVoucherExchange = {
     // external data anchoring
-    extraInputsHash: BigInt(1234n),
+    extraInputsHash: BigInt(0n),
 
     // zAsset
     zAssetId: BigInt(0n),
@@ -400,9 +400,9 @@ const nonZeroInputVoucherExchange = {
         ),
     ],
 
-    chargedAmountZkp: BigInt(50n),
+    chargedAmountZkp: BigInt(0n),
     zAccountUtxoInZkpAmount: BigInt(100000000n),
-    zAccountUtxoOutZkpAmount: BigInt(99999950n),
+    zAccountUtxoOutZkpAmount: BigInt(100000000n),
 
     zAccountUtxoInRootSpendPubKey: [
         BigInt(
@@ -434,9 +434,12 @@ const nonZeroInputVoucherExchange = {
         ),
     zNetworkId: BigInt(2n),
 
-    depositAmountPrp: BigInt(0n),
+    // Claimed voucher(vouchers) balance
+    depositAmountPrp: BigInt(500n),
+
+    // For Voucher Exchange withdrawal of PRP is 0
     withdrawAmountPrp: BigInt(0n),
-    zAccountUtxoOutPrpAmount: BigInt(0n),
+    zAccountUtxoOutPrpAmount: BigInt(500n),
 
     zAccountUtxoInSpendPrivKey:
         BigInt(
@@ -445,7 +448,7 @@ const nonZeroInputVoucherExchange = {
 
     zAccountUtxoInNullifier:
         BigInt(
-            1139970853508650176055884485279872020247472882439797101307093417665748942631n,
+            18922886704379180237041447172449470299960875871208753672982878926064752211589n,
         ),
     zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
     zAccountUtxoInPathIndices: [
@@ -629,7 +632,7 @@ const nonZeroInputVoucherExchange = {
         ),
     zAccountUtxoOutCommitment:
         BigInt(
-            19802823008016251871288745914209983156232616213475912464793237426733012616115n,
+            13839448376386834831825066998105804542138021609451006066486200521909294447809n,
         ),
 
     // GMT: Tuesday, 29 August 2023 10:49:12
@@ -637,20 +640,11 @@ const nonZeroInputVoucherExchange = {
 
     utxoCommitment:
         BigInt(
-            1173379727623747128841158896541633120659529678150698137481889548475462906403n,
+            19593108235650878637893509278693460179257795305603387070719951077607152456245n,
         ),
-    utxoSpendPubKey: [
-        BigInt(
-            16242144124999549881001750798061860694310000906329588094216364089104708054049n,
-        ),
-        BigInt(
-            10560487167730454196440910098054184596052350463925947689880260088216647168026n,
-        ),
-    ],
-    utxoSpendKeyRandom:
-        BigInt(
-            486680520450277763296988191529930687770613990732419092696511815390188797858n,
-        ),
+    // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
+    utxoSpendPubKey: [BigInt(0), BigInt(1)],
+    utxoSpendKeyRandom: BigInt(0),
 
     zZoneOriginZoneIDs: BigInt(1n),
     zZoneTargetZoneIDs: BigInt(1n),
@@ -963,7 +957,7 @@ const nonZeroInputAMMExchange = {
 
     zAccountUtxoInNullifier:
         BigInt(
-            1139970853508650176055884485279872020247472882439797101307093417665748942631n,
+            3291833592367315262335295508952325841159274385097904397686350470034819319668n,
         ),
     zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
     zAccountUtxoInPathIndices: [

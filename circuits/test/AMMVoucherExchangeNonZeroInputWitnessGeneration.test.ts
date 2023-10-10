@@ -103,14 +103,17 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             1364957401031907147846036885962614753763820022581024524807608342937054566107n,
         );
 
+    const zAccountUtxoInCommitment =
+        BigInt(
+            12683686760392371723200734431415851905276545802658046731356209079680348296023n,
+        );
+
     const zAccountUtxoInNullifierHasher = poseidon([
-        zAccountUtxoInId,
-        zAccountUtxoInZoneId,
-        zAccountUtxoInNetworkId,
         zAccountUtxoInSpendPrivKey,
+        zAccountUtxoInCommitment,
     ]);
 
-    // 1139970853508650176055884485279872020247472882439797101307093417665748942631n
+    // 18922886704379180237041447172449470299960875871208753672982878926064752211589n
     // console.log(
     //     'zAccountUtxoInNullifierHasher=>',
     //     zAccountUtxoInNullifierHasher,
@@ -388,7 +391,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
         zAccountUtxoInNullifier:
             BigInt(
-                1139970853508650176055884485279872020247472882439797101307093417665748942631n,
+                18922886704379180237041447172449470299960875871208753672982878926064752211589n,
             ),
         zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
         zAccountUtxoInPathIndices: [
