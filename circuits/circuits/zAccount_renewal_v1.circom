@@ -10,6 +10,7 @@ include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
 include "./templates/zAccountNoteInclusionProver.circom";
+include "./templates/zAccountNullifierHasher.circom";
 include "./templates/zAssetChecker.circom";
 include "./templates/zAssetNoteInclusionProver.circom";
 include "./templates/zNetworkNoteInclusionProver.circom";
@@ -290,11 +291,9 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     isEqualZAccountMerkleRoot.enabled <== zAccountRootSelectorSwitch.out;
 
     // [7] - Verify zAccountUtxoIn nullifier
-    component zAccountUtxoInNullifierHasher = Poseidon(4);
-    zAccountUtxoInNullifierHasher.inputs[0] <== zAccountUtxoInId;
-    zAccountUtxoInNullifierHasher.inputs[1] <== zAccountUtxoInZoneId;
-    zAccountUtxoInNullifierHasher.inputs[2] <== zAccountUtxoInNetworkId;
-    zAccountUtxoInNullifierHasher.inputs[3] <== zAccountUtxoInRootSpendPrivKey;
+    component zAccountUtxoInNullifierHasher = ZAccountNullifierHasher();
+    zAccountUtxoInNullifierHasher.spendPrivKey <== zAccountUtxoInSpendKeyRandom * zAccountUtxoInRootSpendPrivKey; // r * RootPrivKey
+    zAccountUtxoInNullifierHasher.commitment <== zAccountUtxoInNoteHasher.out;
 
     component zAccountUtxoInNullifierHasherProver = ForceEqualIfEnabled();
     zAccountUtxoInNullifierHasherProver.in[0] <== zAccountUtxoInNullifier;
