@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// solhint-disable avoid-low-level-calls
+// solhint-disable no-inline-assembly
 pragma solidity ^0.8.16;
 
 string constant ERR_ZERO_TO = "MC:E2";
@@ -11,7 +13,6 @@ abstract contract Multicall {
         results = new bytes[](data.length);
 
         for (uint256 i = 0; i < data.length; i++) {
-
             (address to, bytes memory _data) = abi.decode(
                 data[i],
                 (address, bytes)
