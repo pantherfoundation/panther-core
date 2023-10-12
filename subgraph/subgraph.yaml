@@ -6,11 +6,11 @@ dataSources:
     name: BusTree
     network: mumbai
     source:
-      # address: '0x678D34aA4fc546bA806287a8289FfdAA84681a03'
-      address: '0xC042Dd23517eDB7E38F7e92d2e38B6a1f03D7947'
+      # address: '0x678D34aA4fc546bA806287a8289FfdAA84681a03' # Public
+      address: '0xC042Dd23517eDB7E38F7e92d2e38B6a1f03D7947' # Internal
       abi: BusTree
-      # startBlock: 37770053
-      startBlock: 38811462
+      # startBlock: 37770053 # Public
+      startBlock: 38811462 # Internal
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -44,33 +44,36 @@ dataSources:
     name: PoolContract
     network: mumbai
     source:
-      # address: '0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd'
-      address: '0x7Caa195a4A580b9bfc66F8aC87B2Eb8008FB89B7'
+      # address: '0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd' # Public
+      address: '0x7Caa195a4A580b9bfc66F8aC87B2Eb8008FB89B7' # Internal
       abi: PoolContract
-      # startBlock: 37764502
-      startBlock: 38811473
+      # startBlock: 37764502 # Public
+      startBlock: 38811473 # Internal
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - TransactionNote
+        - RootUpdated
       abis:
         - name: PoolContract
           file: ./abis/PantherPoolV1.json
       eventHandlers:
         - event: TransactionNote(uint8,bytes)
           handler: handleTransactionNote
+        - event: RootUpdated(indexed uint256,bytes32,bytes32,uint256)
+          handler: handleRootUpdated
       file: ./src/handePoolContract.ts
   - kind: ethereum
     name: PRPVoucherGrantor
     network: mumbai
     source:
-      # address: '0x0b8D09a40B696d8173088cdA505DaD0167394B4C'
-      address: '0x7232Cd7692b761c6410e69f10C40C8255E25Ef00'
+      # address: '0x0b8D09a40B696d8173088cdA505DaD0167394B4C' # Public
+      address: '0x7232Cd7692b761c6410e69f10C40C8255E25Ef00' # Internal
       abi: PRPVoucherGrantor
-      # startBlock: 39383858
-      startBlock: 39343368
+      # startBlock: 39383858 # Public
+      startBlock: 39343368 # Internal
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
