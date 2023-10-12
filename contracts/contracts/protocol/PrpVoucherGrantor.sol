@@ -152,7 +152,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
-        bytes32 secretHash = bytes32(inputs[11]);
+        bytes32 secretHash = bytes32(inputs[13]);
         uint256 rewardAmount = balance[secretHash];
         require(
             rewardAmount > ZERO_VALUE,
