@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2023s Panther Ventures Limited Gibraltar
+// solhint-disable avoid-low-level-calls
+// solhint-disable no-inline-assembly
 pragma solidity ^0.8.16;
 
 import "./interfaces/IVault.sol";
@@ -426,14 +428,6 @@ contract PantherPoolV1 is
         );
 
         emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
-    }
-
-    function accountPrpConvertion(
-        uint256[] calldata, /*inputs*/
-        SnarkProof calldata, /*proof*/
-        uint256 /*zkpAmount*/
-    ) external returns (bool) {
-        return true;
     }
 
     function _lockZkp(address from, uint256 amount) internal {
