@@ -6,22 +6,22 @@ const opts = getOptions();
 
 const zccount_registration_wasm_file_path = path.join(
     opts.basedir,
-    './compiled/main_zAccount_registration_v1_js/main_zAccount_registration_v1.wasm',
+    './compiled/zAccountRegistration/circuits.wasm',
 );
 
 const zccount_registration_witness = path.join(
     opts.basedir,
-    './compiled/main_zAccount_registration_v1_js/generate_witness.js',
+    './compiled/generate_witness.js',
 );
 
 const proving_key_path = path.join(
     opts.basedir,
-    './compiled/main_zAccount_registration_v1_extended_final.zkey',
+    './compiled/zAccountRegistration/provingKey.zkey',
 );
 
 const verification_key_path = path.join(
     opts.basedir,
-    './compiled/main_zAccount_registration_v1_extended_verification_key.json',
+    './compiled/zAccountRegistration/verificationKey.json',
 );
 
 export const generateProof = async (input: {}) => {

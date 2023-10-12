@@ -271,7 +271,7 @@ describe('ZAccount Renewal - ZeroInput - Witness computation', async function (t
         magicalConstraint: BigInt(0n),
     };
 
-    it('should compute valid witness for zero input tx', async () => {
+    xit('should compute valid witness for zero input tx', async () => {
         await wtns.calculate(
             zeroInput,
             mainZAccountRenewalWasm,

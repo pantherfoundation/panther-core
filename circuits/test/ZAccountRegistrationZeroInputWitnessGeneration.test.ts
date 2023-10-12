@@ -23,12 +23,12 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
 
         mainZAccountRegistrationWasm = path.join(
             opts.basedir,
-            './compiled/main_zAccount_registration_v1_js/main_zAccount_registration_v1.wasm',
+            './compiled/zAccountRegistration/circuits.wasm',
         );
 
         mainZAccountRegistrationWitness = path.join(
             opts.basedir,
-            './compiled/main_zAccount_registration_v1_js/generate_witness.js',
+            './compiled/generate_witness.js',
         );
     });
 

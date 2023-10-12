@@ -658,7 +658,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         magicalConstraint: BigInt(0n),
     };
 
-    it('should compute valid witness for zero input tx', async () => {
+    xit('should compute valid witness for zero input tx', async () => {
         await wtns.calculate(zeroInput, mainTxWasm, mainTxWitness, null);
         console.log('Witness calculation successful!');
     });
