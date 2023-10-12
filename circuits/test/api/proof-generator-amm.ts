@@ -6,19 +6,19 @@ const opts = getOptions();
 
 const amm_wasm_file_path = path.join(
     opts.basedir,
-    './compiled/main_amm_v1_js/main_amm_v1.wasm',
+    './compiled/prpConverter/circuits.wasm',
 );
 
-const amm_witness = path.join(
+const amm_witness = path.join(opts.basedir, './compiled/generate_witness.js');
+
+const proving_key_path = path.join(
     opts.basedir,
-    './compiled/main_amm_v1_js/generate_witness.js',
+    './compiled/prpConverter/provingKey.zkey',
 );
-
-const proving_key_path = path.join(opts.basedir, './compiled/amm_final.zkey');
 
 const verification_key_path = path.join(
     opts.basedir,
-    './compiled/amm_verification_key.json',
+    './compiled/prpConverter/verificationKey.json',
 );
 
 export const generateProof = async (input: {}) => {
