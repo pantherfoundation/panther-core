@@ -92,3 +92,14 @@ type VoucherTermsUpdated @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type RootUpdated @entity(immutable: true) {
+    id: Bytes!
+    leafIndex: BigInt! # uint256
+    updatedLeaf: Bytes! # bytes32
+    updatedRoot: Bytes! # bytes32
+    cacheIndex: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
