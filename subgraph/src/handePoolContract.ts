@@ -1,6 +1,9 @@
 import {BigInt, Bytes} from '@graphprotocol/graph-ts';
-import {TransactionNote as TransactionNoteEvent} from '../generated/PoolContract/PoolContract';
-import {TransactionNote} from '../generated/schema';
+import {
+    RootUpdated as RootUpdatedEvent,
+    TransactionNote as TransactionNoteEvent,
+} from '../generated/PoolContract/PoolContract';
+import {TransactionNote, RootUpdated} from '../generated/schema';
 
 export function handleTransactionNote(event: TransactionNoteEvent): void {
     let entity = new TransactionNote(
@@ -8,6 +11,20 @@ export function handleTransactionNote(event: TransactionNoteEvent): void {
     );
     entity.txType = event.params.txType;
     entity.content = event.params.content;
+
+    entity.blockNumber = event.block.number;
+    entity.blockTimestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
+
+    entity.save();
+}
+
+export function handleRootUpdated(event: RootUpdatedEvent): void {
+    let entity = new RootUpdated(event.params.updatedRoot);
+    entity.leafIndex = event.params.leafIndex;
+    entity.updatedLeaf = event.params.updatedLeaf;
+    entity.updatedRoot = event.params.updatedRoot;
+    entity.cacheIndex = event.params.cacheIndex;
 
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
