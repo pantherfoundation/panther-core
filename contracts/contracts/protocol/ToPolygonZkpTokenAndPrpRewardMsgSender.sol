@@ -13,7 +13,7 @@ import "./actions/PrpRewardBridgedDataCoder.sol";
 import { GT_ZKP_RELEASE_AND_BRIDGE_PRP } from "../common/Constants.sol";
 
 /**
- * @title PolygonZkpTokenAndPrpRewardMsgSender
+ * @title ToPolygonZkpTokenAndPrpRewardMsgSender
  * @author Pantherprotocol Contributors
  * @notice Responsible for Bridging $ZKPs and arbitrary messages to the Polygon chain.
  * @dev This contract lives on Ethereum chain and asks from PantherRewardController to
