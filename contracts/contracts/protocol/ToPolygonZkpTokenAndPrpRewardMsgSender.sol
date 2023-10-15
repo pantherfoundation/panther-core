@@ -10,7 +10,7 @@ import "../common/TransferHelper.sol";
 
 import "./interfaces/IProtocolRewardController.sol";
 import "./actions/PrpRewardBridgedDataCoder.sol";
-import { GT_ZKP_RELEASE_AND_BRIDGE_PRP } from "../common/Constants.sol";
+import { GT_ZKP_RELEASE } from "../common/Constants.sol";
 
 /**
  * @title ToPolygonZkpTokenAndPrpRewardMsgSender
@@ -127,7 +127,7 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
 
         bytes memory content = _encodeBridgedData(
             _nonce,
-            GT_ZKP_RELEASE_AND_BRIDGE_PRP,
+            GT_ZKP_RELEASE,
             secret
         );
 
