@@ -22,11 +22,11 @@ abstract contract PrpRewardBridgedDataCoder {
     )
         internal
         pure
-        returns (uint256 _nonce, bytes4 prpGrantType, bytes memory secret)
+        returns (uint256 nonce, bytes4 prpGrantType, bytes32 secret)
     {
-        require(content.length == 40, "PBD: WRONG_LENGTH");
+        require(content.length == 68, "PBD: WRONG_LENGTH");
 
-        _nonce =
+        nonce =
             (uint256(uint8(content[0])) << 24) |
             (uint256(uint8(content[1])) << 16) |
             (uint256(uint8(content[2])) << 8) |
@@ -41,24 +41,11 @@ abstract contract PrpRewardBridgedDataCoder {
             )
         );
 
-        uint256 curPos = 8;
-        uint256 msgLength = content.length - curPos;
-
-        secret = new bytes(msgLength);
-
-        if (msgLength > 0) {
-            uint256 i = 0;
-            while (i < msgLength) {
-                secret[i++] = content[curPos++];
-            }
-        }
-
-        // // solhint-disable-next-line no-inline-assembly
-        // assembly {
-        //     prpGrantee := div(
-        //         mload(add(add(content, 0x20), curPos)),
-        //         0x1000000000000000000000000
-        //     )
-        // }
+        secret = bytes32(
+            (uint256(uint8(content[8])) << 24) |
+                (uint256(uint8(content[9])) << 16) |
+                (uint256(uint8(content[10])) << 8) |
+                (uint256(uint8(content[11])))
+        );
     }
 }
