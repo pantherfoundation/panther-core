@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
-// solhint-disable one-contract-per-file
 pragma solidity ^0.8.16;
-// TODO: add one contract per file
 
 import "../staking/interfaces/IFxStateSender.sol";
+import "../common/interfaces/IPolygonRootChainManager.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/TransferHelper.sol";
@@ -12,14 +11,6 @@ import "../common/TransferHelper.sol";
 import "./interfaces/IProtocolRewardController.sol";
 import "./actions/PrpRewardBridgedDataCoder.sol";
 import { GT_ZKP_RELEASE_AND_BRIDGE_PRP } from "../common/Constants.sol";
-
-interface DepositFor {
-    function depositFor(
-        address receiver,
-        address token,
-        bytes calldata depositData
-    ) external;
-}
 
 /**
  * @title PolygonZkpTokenAndPrpRewardMsgSender
@@ -120,7 +111,7 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
     function bridgeZkpTokens(uint256 _amount) private {
         TransferHelper.safeApprove(ZKP_TOKEN, ERC20_PREDICATE_PROXY, _amount);
 
-        DepositFor(ROOR_CHAIN_MANAGER_PROXY).depositFor(
+        IPolygonRootChainManager(ROOR_CHAIN_MANAGER_PROXY).depositFor(
             PRP_CONVERTER,
             ZKP_TOKEN,
             abi.encode(_amount)
