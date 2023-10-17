@@ -9,7 +9,7 @@ const amm_wasm_file_path = path.join(
     './compiled/prpConverter/circuits.wasm',
 );
 
-const amm_witness = path.join(opts.basedir, './compiled/generate_witness.js');
+const amm_witness = path.join(opts.basedir, './compiled/generateWitness.js');
 
 const proving_key_path = path.join(
     opts.basedir,

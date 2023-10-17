@@ -15,7 +15,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './circuits/mainTransaction_v1_extended.circom',
+            './circuits/mainTransactionV1Extended.circom',
         );
         circuit = await wasm_tester(input, opts);
 

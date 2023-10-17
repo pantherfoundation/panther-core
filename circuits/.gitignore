@@ -7,3 +7,4 @@ compiled/*
 !compiled/zAccountRegistration
 !compiled/prpConverter
 !compiled/generate_witness.js
+*.ptau
