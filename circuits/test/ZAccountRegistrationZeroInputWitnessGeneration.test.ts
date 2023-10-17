@@ -17,7 +17,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './circuits/main_zAccount_registration_v1.circom',
+            './circuits/mainZAccountRegistrationV1.circom',
         );
         circuit = await wasm_tester(input, opts);
 

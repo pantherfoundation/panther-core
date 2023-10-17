@@ -15,18 +15,15 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
 
     before(async () => {
         const opts = getOptions();
-        const input = path.join(opts.basedir, './circuits/main_amm_v1.circom');
+        const input = path.join(opts.basedir, './circuits/mainAmmV1.circom');
         circuit = await wasm_tester(input, opts);
 
         ammWasm = path.join(
             opts.basedir,
-            './compiled/main_amm_v1_js/main_amm_v1.wasm',
+            './compiled/prpConverter/circuits.wasm',
         );
 
-        ammWitness = path.join(
-            opts.basedir,
-            './compiled/main_amm_v1_js/generate_witness.js',
-        );
+        ammWitness = path.join(opts.basedir, './compiled/generateWitness.js');
     });
 
     const zeroInput = {

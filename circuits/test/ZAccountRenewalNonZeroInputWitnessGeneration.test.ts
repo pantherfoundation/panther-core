@@ -24,7 +24,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './circuits/main_zAccount_renewal_v1.circom',
+            './circuits/mainZAccountRenewalV1.circom',
         );
         circuit = await wasm_tester(input, opts);
 

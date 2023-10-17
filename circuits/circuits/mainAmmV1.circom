@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./amm_v1.circom";
+include "./ammV1.circom";
 
 component main {
     public [

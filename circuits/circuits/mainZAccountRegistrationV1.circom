@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./zAccount_registration_v1.circom";
+include "./zAccountRegistrationV1.circom";
 
 component main {
     public [
