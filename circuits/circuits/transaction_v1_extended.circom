@@ -333,10 +333,13 @@ template TransactionV1Extended( nUtxoIn,
         totalUtxoOutAmount += utxoOutAmount[i];
     }
 
+    // verify deposit & withdraw change
     component totalBalanceChecker = BalanceChecker();
     totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
     totalBalanceChecker.depositAmount <== depositAmount;
+    totalBalanceChecker.depositChange <== depositChange;
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
+    totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
@@ -344,10 +347,6 @@ template TransactionV1Extended( nUtxoIn,
     totalBalanceChecker.totalUtxoOutAmount <== totalUtxoOutAmount;
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
-
-    // verify deposit & withdraw change
-    totalBalanceChecker.depositChange === depositChange;
-    totalBalanceChecker.withdrawChange === withdrawChange;
 
     // [3] - Verify zAsset's membership and decode its weight
     component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
@@ -376,8 +375,6 @@ template TransactionV1Extended( nUtxoIn,
     rewards.forDepositReward <== forDepositReward;
     rewards.spendTime <== spendTime;
     rewards.assetWeight <== zAssetWeight;
-    rewards.assetWeightDenominator <== totalBalanceChecker.weightDenominator;
-    rewards.denominator <== 31536*(10**12);
     // compute rewards
     for (var i = 0 ; i < nUtxoIn; i++){
         // pass value for computing rewards
@@ -495,7 +492,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
         // verify zone max internal limits
-        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight) \ totalBalanceChecker.weightDenominator);
+        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight));
     }
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
@@ -571,7 +568,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
         // verify zone max internal limits
-        assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight) \ totalBalanceChecker.weightDenominator);
+        assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight));
 
     }
 

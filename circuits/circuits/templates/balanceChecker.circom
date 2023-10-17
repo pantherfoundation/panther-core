@@ -23,7 +23,9 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 template BalanceChecker() {
     signal input isZkpToken;
     signal input depositAmount;
+    signal input depositChange;
     signal input withdrawAmount;
+    signal input withdrawChange;
     signal input chargedAmountZkp;
     signal input zAccountUtxoInZkpAmount;
     signal input zAccountUtxoOutZkpAmount;
@@ -31,59 +33,64 @@ template BalanceChecker() {
     signal input totalUtxoOutAmount;
     signal input zAssetWeight;
     signal input zAssetScale;
-    signal output totalScaled;
-    signal output totalWeighted;
     signal output depositScaledAmount;
     signal output depositWeightedScaledAmount;
-    signal output depositChange;
-    signal output withdrawScaledAmount;
     signal output withdrawWeightedScaledAmount;
-    signal output withdrawChange;
-    signal output weightDenominator;
+    signal output withdrawScaledAmount;
+    signal output totalScaled;
+    signal output totalWeighted;
 
-    // system wide constant
-    var weightDenominator_local = 10**3;
-    weightDenominator <== weightDenominator_local;
-
-    // Scale external amounts
-    var zAssetScaleFactor = 10**zAssetScale;
-    // 1 - deposit
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [1] - Deposit ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [1.0] - scale ( a / b = c )
     signal depositScaledAmountTmp;
-    depositScaledAmountTmp <-- depositAmount \ zAssetScaleFactor;
+    depositScaledAmountTmp <-- depositAmount \ zAssetScale;
     depositScaledAmount <== depositScaledAmountTmp;
-    signal depositAmountRestored;
-    depositAmountRestored <-- depositScaledAmount * zAssetScaleFactor;
 
-    depositChange <== depositAmount - depositAmountRestored;
-    signal depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
-    depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator <-- (depositScaledAmountTmp * zAssetWeight) \ weightDenominator_local;
-    depositWeightedScaledAmount <== depositScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
+    // [1.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a + reminder )
+    depositAmount === ( depositScaledAmountTmp * zAssetScale ) + depositChange;
 
-    // 2 - withdraw
+    // [1.2] - weighted amount
+    depositWeightedScaledAmount <== depositScaledAmountTmp * zAssetWeight;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // End of Deposit //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [2] - Withdraw //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [2.0] - scale ( a / b = c )
     signal withdrawScaledAmountTmp;
-    withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScaleFactor;
+    withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
     withdrawScaledAmount <== withdrawScaledAmountTmp;
-    signal withdrawAmountRestored;
-    withdrawAmountRestored <-- withdrawScaledAmount * zAssetScaleFactor;
 
-    withdrawChange <== withdrawAmount - withdrawAmountRestored;
-    signal withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
-    withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator <-- (withdrawScaledAmountTmp * zAssetWeight) \ weightDenominator_local;
-    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp_mult_zAssetWeight_div_weightDenominator;
+    // [2.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a + reminder )
+    withdrawAmount === ( withdrawScaledAmountTmp * zAssetScale ) + withdrawChange;
 
+    // [2.2] - weighted amount
+    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Verify total balances
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [3] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     signal totalBalanceIn;
     totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * zAccountUtxoInZkpAmount;
 
     signal totalBalanceOut;
     totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedAmountZkp );
 
-    component isEqual = IsEqual();
-    isEqual.in[0] <== totalBalanceIn;
-    isEqual.in[1] <== totalBalanceOut;
+    component totalBalanceIsEqual = ForceEqualIfEnabled();
+    totalBalanceIsEqual.enabled <== 1; // always enabled
+    totalBalanceIsEqual.in[0] <== totalBalanceIn;
+    totalBalanceIsEqual.in[1] <== totalBalanceOut;
 
-    // Verify zAccountUtxoOutZkpAmount
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [4] - Verify zAccountUtxoOutZkpAmount ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     component zAccountUtxoOutZkpAmountChecker = ForceEqualIfEnabled();
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
@@ -91,10 +98,7 @@ template BalanceChecker() {
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount - chargedAmountZkp;
 
     totalScaled <== totalBalanceIn;
-    signal totalBalanceIn_mult_zAssetWeight_div_weightDenominator;
-    totalBalanceIn_mult_zAssetWeight_div_weightDenominator <-- (totalBalanceIn * zAssetWeight) \ weightDenominator_local;
-
-    totalWeighted <== totalBalanceIn_mult_zAssetWeight_div_weightDenominator;
+    totalWeighted <== totalBalanceIn * zAssetWeight;
 }
 
 
