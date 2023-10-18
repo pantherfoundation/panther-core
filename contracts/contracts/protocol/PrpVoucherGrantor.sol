@@ -4,6 +4,7 @@
 pragma solidity 0.8.16;
 
 import "./interfaces/IPantherPoolV1.sol";
+import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Utils.sol";
@@ -149,6 +150,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param inputs[14] - magicalConstraint;
     function claimRewards(
         uint256[] calldata inputs,
+        bytes memory privateMessages,
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
@@ -159,13 +161,28 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
             "PrpVoucherGrantor: No reward to claim"
         );
 
-        //TODO: check extra input hash (should contain secret hash)
+        {
+            uint256 extraInputsHash = inputs[0];
+            bytes memory extraInp = abi.encodePacked(
+                privateMessages,
+                cachedForestRootIndex
+            );
+            require(
+                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
+                "PrpVoucherGrantor: Invalid extra input hash"
+            );
+        }
 
         // we are setting the balance to non-zero to save gas for the next
         // rearward generation
         balance[secretHash] = ZERO_VALUE;
 
-        utxoBusQueuePos = _accountPrp(inputs, proof, cachedForestRootIndex);
+        utxoBusQueuePos = _accountPrp(
+            inputs,
+            proof,
+            privateMessages,
+            cachedForestRootIndex
+        );
 
         emit RewardClaimed(secretHash);
     }
@@ -173,13 +190,19 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     function _accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        bytes memory privateMessages,
         uint256 cachedForestRootIndex
     ) private returns (uint256 utxoBusQueuePos) {
         utxoBusQueuePos = 0;
         // Pool is supposed to revert in case of any error
         try
             // Trusted contract - no reentrancy guard needed
-            PANTHER_POOL_V1.accountPrp(inputs, proof, cachedForestRootIndex)
+            PANTHER_POOL_V1.accountPrp(
+                inputs,
+                proof,
+                privateMessages,
+                cachedForestRootIndex
+            )
         returns (uint256 result) {
             utxoBusQueuePos = result;
         } catch Error(string memory reason) {

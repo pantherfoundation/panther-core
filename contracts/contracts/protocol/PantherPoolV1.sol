@@ -225,6 +225,7 @@ contract PantherPoolV1 is
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        bytes memory privateMessages,
         uint256 cachedForestRootIndex
     )
         external
@@ -236,6 +237,12 @@ contract PantherPoolV1 is
 
         require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+
+        require(
+            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
+                privateMessages.length >= LMT_UTXO_ZACCOUNT,
+            ERR_NOT_WELLFORMED_SECRETS
+        );
 
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
@@ -297,7 +304,9 @@ contract PantherPoolV1 is
             queueId,
             indexInQueue,
             MT_UTXO_ZACCOUNT,
-            zAccountUtxoOutCommitment
+            zAccountUtxoOutCommitment,
+            // Private message(s)
+            privateMessages
         );
 
         emit TransactionNote(TT_PRP_CLAIM, transactionNoteContent);
