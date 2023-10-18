@@ -9,6 +9,7 @@ interface IPantherPoolV1 {
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        bytes memory privateMessages,
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos);
 
