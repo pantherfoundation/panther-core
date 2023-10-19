@@ -13,5 +13,6 @@
       }
     }
   ],
-  "plugins": ["prettier-plugin-tailwindcss", "prettier-plugin-solidity"]
+  "plugins": ["prettier-plugin-tailwindcss", "prettier-plugin-solidity"],
+  "tailwindFunctions": ["cva", "cx"]
 }
