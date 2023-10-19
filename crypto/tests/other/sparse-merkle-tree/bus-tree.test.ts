@@ -209,7 +209,6 @@ describe('BusTree', () => {
             BUS_TREE_DEPTH,
             BigInt(BUS_TREE_ZERO_LEAF),
         );
-
         expect(tree.getRoot()).to.be.eq(BigInt(busTreeData.busTreeRoot));
     });
 });
