@@ -23,12 +23,12 @@ export type DecodedZAccountActivationTxNote = {
 };
 
 export function decodeZAccountActivationTxNote(
-    plaintextBinary: string,
+    encodedNoteContentHex: string,
 ): DecodedZAccountActivationTxNote {
-    validateInput(plaintextBinary);
+    validateInput(encodedNoteContentHex);
 
     const {createTimeMsgContent, busMsgContent, zAccountMsgContent} =
-        parseZAccountActivationTxNoteSegments(plaintextBinary);
+        parseZAccountActivationTxNoteSegments(encodedNoteContentHex);
 
     return {
         createTime: parseInt(createTimeMsgContent, 16),
@@ -40,30 +40,31 @@ export function decodeZAccountActivationTxNote(
     };
 }
 
-function parseZAccountActivationTxNoteSegments(plaintextBinary: string): {
+function parseZAccountActivationTxNoteSegments(encodedNoteContentHex: string): {
     createTimeMsgContent: string;
     busMsgContent: string;
     zAccountMsgContent: string;
 } {
     const createTimeMsgContent = parseSegment(
-        plaintextBinary,
+        encodedNoteContentHex,
         1,
         LMT_UTXO_CREATE_TIME_BYTES,
         MT_UTXO_CREATE_TIME,
     );
     const busMsgContent = parseSegment(
-        plaintextBinary,
+        encodedNoteContentHex,
         1 + LMT_UTXO_CREATE_TIME_BYTES,
         LMT_UTXO_BUSTREE_IDS_BYTES,
         MT_UTXO_BUSTREE_IDS,
     );
 
     const zAccountMsgContent = parseSegment(
-        plaintextBinary,
+        encodedNoteContentHex,
         1 + LMT_UTXO_CREATE_TIME_BYTES + LMT_UTXO_BUSTREE_IDS_BYTES,
         LMT_UTXO_ZACCOUNT_BYTES,
         MT_UTXO_ZACCOUNT,
     );
+
     return {createTimeMsgContent, busMsgContent, zAccountMsgContent};
 }
 
@@ -79,7 +80,7 @@ function decodeBusTreeIds(busMsgContent: string): {
 }
 
 export function parseSegment(
-    plaintextBinary: string,
+    plaintextHex: string,
     startByteIndex: number,
     lengthInBytes: number,
     expectedType: number,
@@ -87,7 +88,7 @@ export function parseSegment(
     const startStrIndex = startByteIndex * BYTE_TO_STR_LENGTH_MULTIPLIER;
     const lengthInStr = lengthInBytes * BYTE_TO_STR_LENGTH_MULTIPLIER;
     const msgType = parseInt(
-        plaintextBinary.substr(startStrIndex, BYTE_TO_STR_LENGTH_MULTIPLIER),
+        plaintextHex.substr(startStrIndex, BYTE_TO_STR_LENGTH_MULTIPLIER),
         16,
     );
 
@@ -98,7 +99,7 @@ export function parseSegment(
             )}, got ${msgType.toString(16)}`,
         );
     }
-    return plaintextBinary.substr(
+    return plaintextHex.substr(
         startStrIndex + BYTE_TO_STR_LENGTH_MULTIPLIER * 1,
         lengthInStr - BYTE_TO_STR_LENGTH_MULTIPLIER * 1,
     );
