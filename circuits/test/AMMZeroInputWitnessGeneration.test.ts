@@ -49,7 +49,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zAssetNetwork: BigInt(0n),
         zAssetOffset: BigInt(0n),
         zAssetWeight: BigInt(0n),
-        zAssetScale: BigInt(0n),
+        zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
         zAssetPathIndex: [
             BigInt(0n),

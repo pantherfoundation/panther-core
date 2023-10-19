@@ -43,6 +43,17 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [1] - Deposit ///////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    assert(zAssetScale > 0);
+
+    // If depositAmount is 0 then depositChange must be 0
+    component isZeroDeposit = IsZero();
+    isZeroDeposit.in <== depositAmount;
+
+    component isDepositAndChangeEqual = ForceEqualIfEnabled();
+    isDepositAndChangeEqual.in[0] <== depositAmount;
+    isDepositAndChangeEqual.in[1] <== depositChange;
+    isDepositAndChangeEqual.enabled <== isZeroDeposit.out;
+
     // [1.0] - scale ( a / b = c )
     signal depositScaledAmountTmp;
     depositScaledAmountTmp <-- depositAmount \ zAssetScale;
@@ -60,6 +71,16 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [2] - Withdraw //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // If withdrawAmount is 0 then withdrawChange must be 0
+    component isZeroWithdraw = IsZero();
+    isZeroWithdraw.in <== withdrawAmount;
+
+    component isWithdrawAndChangeEqual = ForceEqualIfEnabled();
+    isWithdrawAndChangeEqual.in[0] <== withdrawAmount;
+    isWithdrawAndChangeEqual.in[1] <== withdrawChange;
+    isWithdrawAndChangeEqual.enabled <== isZeroWithdraw.out;
+
     // [2.0] - scale ( a / b = c )
     signal withdrawScaledAmountTmp;
     withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
