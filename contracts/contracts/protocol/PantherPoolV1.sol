@@ -301,10 +301,9 @@ contract PantherPoolV1 is
             MT_UTXO_CREATE_TIME,
             createTime,
             MT_UTXO_BUSTREE_IDS,
+            zAccountUtxoOutCommitment,
             queueId,
             indexInQueue,
-            MT_UTXO_ZACCOUNT,
-            zAccountUtxoOutCommitment,
             // Private message(s)
             privateMessages
         );
@@ -363,9 +362,9 @@ contract PantherPoolV1 is
         bytes32 zAssetUtxoCommitment;
 
         uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
-        uint256 utxoCommitmentPrivatePart = inputs[5];
+        uint256 zAssetUtxoCommitmentPrivatePart = inputs[5];
         zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
-            utxoCommitmentPrivatePart,
+            zAssetUtxoCommitmentPrivatePart,
             zkpAmountScaled,
             createTime
         );
@@ -433,7 +432,7 @@ contract PantherPoolV1 is
             MT_UTXO_ZASSET_PUB,
             zkpAmountScaled,
             MT_UTXO_ZASSET_PRIV,
-            utxoCommitmentPrivatePart
+            zAssetUtxoCommitmentPrivatePart
         );
 
         emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
