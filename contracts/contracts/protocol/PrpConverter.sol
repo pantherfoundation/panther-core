@@ -240,6 +240,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(
             inputs,
             proof,
+            privateMessages,
             zkpAmountOutRounded,
             cachedForestRootIndex
         );
@@ -291,6 +292,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     function _createZAccountAndZAssetUtxos(
         uint256[] calldata inputs,
         SnarkProof memory proof,
+        bytes memory privateMessages,
         uint256 amountOutRounded,
         uint256 cachedForestRootIndex
     ) private returns (uint256 firstUtxoBusQueuePos) {
@@ -300,6 +302,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
                 inputs,
                 proof,
+                privateMessages,
                 amountOutRounded,
                 cachedForestRootIndex
             )

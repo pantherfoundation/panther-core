@@ -330,6 +330,7 @@ contract PantherPoolV1 is
     function accountPrpConvertion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        bytes memory privateMessages,
         uint256 zkpAmountOutRounded,
         uint256 cachedForestRootIndex
     ) external returns (uint256 zAccountUtxoBusQueuePos) {
@@ -337,6 +338,12 @@ contract PantherPoolV1 is
         // less than the field size
 
         require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+
+        require(
+            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
+                privateMessages.length >= LMT_UTXO_ZACCOUNT,
+            ERR_NOT_WELLFORMED_SECRETS
+        );
 
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
@@ -363,6 +370,7 @@ contract PantherPoolV1 is
 
         uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
         uint256 zAssetUtxoCommitmentPrivatePart = inputs[5];
+
         zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
             zAssetUtxoCommitmentPrivatePart,
             zkpAmountScaled,
@@ -421,18 +429,19 @@ contract PantherPoolV1 is
 
         _lockZkp(msg.sender, zkpAmountOutRounded);
 
+        // solving stack too deep error when adding `privateMessages` to `transactionNoteContent`
+        bytes memory _privateMessages = privateMessages;
+
         bytes memory transactionNoteContent = abi.encodePacked(
             MT_UTXO_CREATE_TIME,
-            createTime,
+            createTime, // createTime
             MT_UTXO_BUSTREE_IDS,
+            zAccountUtxoOutCommitment,
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
-            MT_UTXO_ZACCOUNT,
-            zAccountUtxoOutCommitment,
             MT_UTXO_ZASSET_PUB,
             zkpAmountScaled,
-            MT_UTXO_ZASSET_PRIV,
-            zAssetUtxoCommitmentPrivatePart
+            _privateMessages
         );
 
         emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
