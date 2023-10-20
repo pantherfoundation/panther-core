@@ -130,7 +130,11 @@ contract PantherPoolV1 is
         address zkpPayer,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 utxoBusQueuePos) {
+    )
+        external
+        validatePrivateMessage(privateMessages)
+        returns (uint256 utxoBusQueuePos)
+    {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -157,11 +161,7 @@ contract PantherPoolV1 is
             uint256 magicalConstraint = inputs[14];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
-        require(
-            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
-                privateMessages.length >= LMT_UTXO_ZACCOUNT,
-            ERR_NOT_WELLFORMED_SECRETS
-        );
+
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = uint32(inputs[5]);
         require(
@@ -229,6 +229,7 @@ contract PantherPoolV1 is
         uint256 cachedForestRootIndex
     )
         external
+        validatePrivateMessage(privateMessages)
         returns (uint256 utxoBusQueuePos)
     // solhint-disable-next-line no-empty-blocks
     {
@@ -237,12 +238,6 @@ contract PantherPoolV1 is
 
         require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
-
-        require(
-            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
-                privateMessages.length >= LMT_UTXO_ZACCOUNT,
-            ERR_NOT_WELLFORMED_SECRETS
-        );
 
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
@@ -333,17 +328,15 @@ contract PantherPoolV1 is
         bytes memory privateMessages,
         uint256 zkpAmountOutRounded,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 zAccountUtxoBusQueuePos) {
+    )
+        external
+        validatePrivateMessage(privateMessages)
+        returns (uint256 zAccountUtxoBusQueuePos)
+    {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
         require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
-
-        require(
-            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
-                privateMessages.length >= LMT_UTXO_ZACCOUNT,
-            ERR_NOT_WELLFORMED_SECRETS
-        );
 
         require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
@@ -473,5 +466,14 @@ contract PantherPoolV1 is
                 bytes32(creationTime)
             ]
         );
+    }
+
+    modifier validatePrivateMessage(bytes memory privateMessages) {
+        require(
+            uint8(privateMessages[0]) == MT_UTXO_ZACCOUNT &&
+                privateMessages.length >= LMT_UTXO_ZACCOUNT,
+            ERR_NOT_WELLFORMED_SECRETS
+        );
+        _;
     }
 }
