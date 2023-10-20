@@ -99,8 +99,8 @@ abstract contract TransactionNoteEmitter {
     // TransactionNote for this tx type MUST contain messages of these types:
     // - MT_UTXO_CREATE_TIME
     // - MT_UTXO_BUSTREE_IDS (for the re-created zAccount UTXO)
-    // - MT_UTXO_ZACCOUNT
     // - MT_UTXO_ZASSET_PUB
+    // - MT_UTXO_ZACCOUNT
     // - MT_UTXO_ZASSET_PRIV
     // Then free-content messages MAY follow.
 
