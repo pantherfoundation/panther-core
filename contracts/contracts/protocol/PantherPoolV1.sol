@@ -109,6 +109,9 @@ contract PantherPoolV1 is
         VAULT.unlockAsset(data);
     }
 
+    /// @notice Creates zAccount utxo
+    /// @dev It can be executed only by zAccountsRegistry contract.
+    /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash
     /// @param inputs[1]  - zkpAmount
     /// @param inputs[2]  - zkpChange
@@ -124,6 +127,11 @@ contract PantherPoolV1 is
     /// @param inputs[12] - forestMerkleRoot
     /// @param inputs[13] - saltHash
     /// @param inputs[14] - magicalConstraint
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -207,6 +215,10 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
     }
 
+    /// @notice Accounts prp to zAccount
+    /// @dev It spends the old zAccount utxo and create a new one with increased
+    /// prp balance. It can be executed only be prpVoucherGrantor.
+    /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash;
     /// @param inputs[1]  - chargedAmountZkp;
     /// @param inputs[2]  - createTime;
@@ -222,6 +234,11 @@ contract PantherPoolV1 is
     /// @param inputs[12] - forestMerkleRoot;
     /// @param inputs[13] - saltHash;
     /// @param inputs[14] - magicalConstraint;
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// This data is used to spend the newly created utxo.
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -306,7 +323,12 @@ contract PantherPoolV1 is
         emit TransactionNote(TT_PRP_CLAIM, transactionNoteContent);
     }
 
-    // TODO: Choosing better name
+    // TODO: Choosing better name (isn't it a kind of generate deposit?)
+    /// @notice Accounts prp conversion
+    /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the
+    /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.
+    /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.
+    /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash;
     /// @param inputs[1]  - chargedAmountZkp;
     /// @param inputs[2]  - createTime;
@@ -322,6 +344,12 @@ contract PantherPoolV1 is
     /// @param inputs[12] - forestMerkleRoot;
     /// @param inputs[13] - saltHash;
     /// @param inputs[14] - magicalConstraint;
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// This data is used to spend the newly created utxo.
+    /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function accountPrpConvertion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
