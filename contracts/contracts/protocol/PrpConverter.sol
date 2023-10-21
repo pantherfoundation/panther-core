@@ -167,20 +167,33 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         _blockTimestampLast = blockTimestampLast;
     }
 
-    /// @param inputs[0] - extraInputsHash;
-    /// @param inputs[1] - chargedAmountZkp;
-    /// @param inputs[2] - createTime;
-    /// @param inputs[3] - depositAmountPrp;
-    /// @param inputs[4] - withdrawAmountPrp;
-    /// @param inputs[5] - utxoCommitment;
-    /// @param inputs[6] - zAssetScale;
-    /// @param inputs[7] - zAccountUtxoInNullifier;
-    /// @param inputs[8] - zAccountUtxoOutCommitment;
-    /// @param inputs[9] - zNetworkChainId;
-    /// @param inputs[10] - forestMerkleRoot;
-    /// @param inputs[11] - saltHash;
-    /// @param inputs[12] - magicalConstraint;
-
+    /// @notice Accounts prp conversion
+    /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the
+    /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.
+    /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.
+    /// @param inputs The public input parameters to be passed to verifier.
+    /// @param inputs[0]  - extraInputsHash;
+    /// @param inputs[1]  - chargedAmountZkp;
+    /// @param inputs[2]  - createTime;
+    /// @param inputs[3]  - depositAmountPrp;
+    /// @param inputs[4]  - withdrawAmountPrp;
+    /// @param inputs[5]  - utxoCommitmentPrivatePart;
+    /// @param inputs[6]  - utxoSpendPubKeyX
+    /// @param inputs[7]  - utxoSpendPubKeyY
+    /// @param inputs[8]  - zAssetScale;
+    /// @param inputs[9]  - zAccountUtxoInNullifier;
+    /// @param inputs[10] - zAccountUtxoOutCommitment;
+    /// @param inputs[11] - zNetworkChainId;
+    /// @param inputs[12] - forestMerkleRoot;
+    /// @param inputs[13] - saltHash;
+    /// @param inputs[14] - magicalConstraint;
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// This data is used to spend the newly created utxo.
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param prpAmountIn The amount of prp to burn.
+    /// @param zkpAmountOutMin Minimum zZkp to receive.
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function convert(
         uint256[] calldata inputs,
         bytes calldata privateMessages,

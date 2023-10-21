@@ -164,21 +164,30 @@ contract ZAccountsRegistry is
         emit ZAccountRegistered(masterEoa, _zAccount);
     }
 
+    /// @notice Creates zAccount utxo
+    /// @dev It can be executed only after registring the zAccount. It throws
+    /// if the zAccount has not been registered or it's registered but it has been
+    /// blacklisted.
+    /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash
     /// @param inputs[1]  - zkpAmount
-    /// @param inputs[2]  - zkpChange (passed w/o checks)
+    /// @param inputs[2]  - zkpChange
     /// @param inputs[3]  - zAccountId
     /// @param inputs[4]  - zAccountPrpAmount
-    /// @param inputs[5]  - zAccountCreateTime (passed w/o checks)
+    /// @param inputs[5]  - zAccountCreateTime
     /// @param inputs[6]  - zAccountRootSpendPubKeyX
     /// @param inputs[7]  - zAccountRootSpendPubKeyY
     /// @param inputs[8]  - zAccountMasterEOA
     /// @param inputs[9]  - zAccountNullifier
     /// @param inputs[10] - zAccountCommitment
     /// @param inputs[11] - kycSignedMessageHash
-    /// @param inputs[12] - forestMerkleRoot (passed w/o checks)
-    /// @param inputs[13] - saltHash (passed w/o checks)
-    /// @param inputs[14] - magicalConstraint (passed w/o checks)
+    /// @param inputs[12] - forestMerkleRoot
+    /// @param inputs[13] - saltHash
+    /// @param inputs[14] - magicalConstraint
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function activateZAccount(
         uint256[] calldata inputs,
         bytes memory privateMessages,

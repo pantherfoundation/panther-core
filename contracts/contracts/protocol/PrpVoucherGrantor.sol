@@ -130,9 +130,8 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         return prpToGrant;
     }
 
-    /// @notice Claims a rewards collected for the given secret hash.
+    /// @notice Accounts prp to zAccount
     /// @param inputs The public input parameters to be passed to verifier.
-    /// @param proof A proof associated with the zAccount and a secret.
     /// @param inputs[0]  - extraInputsHash;
     /// @param inputs[1]  - chargedAmountZkp;
     /// @param inputs[2]  - createTime;
@@ -148,6 +147,11 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param inputs[12] - forestMerkleRoot;
     /// @param inputs[13] - saltHash;
     /// @param inputs[14] - magicalConstraint;
+    /// @param privateMessages the private message that contains zAccount utxo data.
+    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
+    /// This data is used to spend the newly created utxo.
+    /// @param proof A proof associated with the zAccount and a secret.
+    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function claimRewards(
         uint256[] calldata inputs,
         bytes memory privateMessages,
