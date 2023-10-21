@@ -34,30 +34,6 @@ const Z_ACCOUNT_MSG_TYPE = '06';
 const EPHEMERAL_KEY_WIDTH = PACKED_PUB_KEY_SIZE * 2;
 const MSG_TYPE_WIDTH = 2;
 
-// encryptAndPackMessageTypeV1 creates a message with encrypted secretRandom
-// of the following format:
-// msg = [IV, packedR, ...encrypted(prolog, r)]
-export function encryptAndPackMessageTypeV1(
-    secretRandom: bigint,
-    rootReadingPubKey: PublicKey,
-): string {
-    const plaintext = bigintToBytes32(secretRandom);
-    return encryptAndPackMessage(plaintext, rootReadingPubKey, PRIV_KEY_SIZE);
-}
-
-export function unpackAndDecryptMessageTypeV1(
-    ciphertextMsg: string,
-    rootReadingPrivateKey: PrivateKey,
-): bigint {
-    const plaintextUInt8 = unpackAndDecrypt(
-        ciphertextMsg,
-        rootReadingPrivateKey,
-        unpackMessageTypeV1,
-    );
-
-    return uint8ArrayToBigInt(plaintextUInt8);
-}
-
 export function extractCipherKeyAndIvFromPackedPoint(
     packedKey: ephemeralKeyPacked,
 ): {
