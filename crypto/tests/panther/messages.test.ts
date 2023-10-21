@@ -8,10 +8,6 @@ import {
     PACKED_PUB_KEY_SIZE,
 } from '../../src/base/keypairs';
 import {
-    CIPHERTEXT_MSG_TYPE_V1_SIZE,
-    unpackAndDecryptMessageTypeV1,
-    encryptAndPackMessageTypeV1,
-    unpackMessageTypeV1,
     encodeZAccountUTXOMessage,
     decodeZAccountUTXOMessage,
     encryptAndPackZAccountUTXOMessage,
@@ -61,52 +57,6 @@ describe('panther messages', () => {
         encodedzAccountUTXOMessage =
             '0x000000000000000000000000000000000000000000000000000000000000007b040004000400000fa00000000000004e20000000000007d00000000000002710';
         keypair = generateRandomKeypair();
-    });
-
-    describe('Random secret encryption', () => {
-        it('should be decrypted and have correct message', () => {
-            const ciphertext = encryptAndPackMessageTypeV1(
-                secretRandom,
-                keypair.publicKey,
-            );
-            const decrypted = unpackAndDecryptMessageTypeV1(
-                ciphertext,
-                keypair.privateKey,
-            );
-
-            expect(decrypted).toEqual(secretRandom);
-        });
-
-        it('should have a ciphertext of size 32 bytes', () => {
-            const ciphertext = encryptAndPackMessageTypeV1(
-                secretRandom,
-                keypair.publicKey,
-            );
-            const [, cipheredText] = unpackMessageTypeV1(ciphertext);
-
-            expect(cipheredText.length).toEqual(CIPHERTEXT_MSG_TYPE_V1_SIZE); // 32 bytes
-        });
-
-        it('should have a packedEphemeralPubKey of size 32 bytes', () => {
-            const ciphertext = encryptAndPackMessageTypeV1(
-                secretRandom,
-                keypair.publicKey,
-            );
-            const [packedEphemeralPubKey] = unpackMessageTypeV1(ciphertext);
-
-            expect(packedEphemeralPubKey.length).toEqual(PACKED_PUB_KEY_SIZE); // 32 bytes
-        });
-
-        it('should have size of 64 bytes', () => {
-            const ciphertext = encryptAndPackMessageTypeV1(
-                secretRandom,
-                keypair.publicKey,
-            );
-
-            expect(ciphertext.length).toEqual(
-                (PACKED_PUB_KEY_SIZE + CIPHERTEXT_MSG_TYPE_V1_SIZE) * 2, // 64 bytes
-            );
-        });
     });
 
     describe('zAccount UTXO encryption', () => {
