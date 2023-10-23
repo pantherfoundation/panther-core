@@ -114,9 +114,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     ) public pure returns (uint256 amountOut) {
         require(
             amountIn > 0 && reserveIn > 0 && reserveOut > 0,
-            "PCL: Insufficient input"
+            ERR_INSUFFICIENT_AMOUNT_IN_OR_RESERVES
         );
-        require(reserveIn > 0 && reserveOut > 0, "PCL: Insufficient liquidity");
 
         uint256 numerator = amountIn * reserveOut;
         uint256 denominator = reserveIn + amountIn;
@@ -194,7 +193,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
 
-        require(_zkpReserve > 0, "PC: Insufficient liquidity");
+        require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);
 
         uint256 zkpAmountOutRounded;
 
@@ -206,18 +205,15 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             );
 
             uint256 scale = 10 ** inputs[8];
-            require(zkpAmountOut >= scale, "PC: Too low liquidity");
+            require(zkpAmountOut >= scale, ERR_INSUFFICIENT_AMOUNT_OUT);
 
-            zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
+            unchecked {
+                // rounding the amount (leaving the changes in the contract)
+                zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
+            }
 
-            require(
-                zkpAmountOutRounded >= zkpAmountOutMin,
-                "PC: Insufficient output"
-            );
-            require(
-                zkpAmountOutRounded < _zkpReserve,
-                "PC: Insufficient liquidity"
-            );
+            require(zkpAmountOutRounded >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);
+            require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
         }
 
         firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(
@@ -237,7 +233,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(
             prpVirtualBalance * zkpBalance >=
                 uint256(_prpReserve) * _zkpReserve,
-            "PC: K"
+            ERR_LOW_CONSTANT_PRODUCT
         );
 
         _update(prpVirtualBalance, zkpBalance);
