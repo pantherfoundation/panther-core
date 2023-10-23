@@ -1,123 +1,205 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {TxNoteType1, TxNoteType3} from 'types/note';
+
 import {bigintToBytes} from '../utils/bigint-conversions';
 
-const MT_UTXO_CREATE_TIME = 0x60;
-const LMT_UTXO_CREATE_TIME_BYTES = 1 + 4;
-const MT_UTXO_BUSTREE_IDS = 0x62;
-// commitment (32) + queueId (4) + indexInQueue (1) = 37
-const LMT_UTXO_BUSTREE_IDS_BYTES = 1 + 37;
-const MT_UTXO_ZACCOUNT = 0x06;
-// 32 (ephemeralKey) + 64 (secretMsg)
-const LMT_UTXO_ZACCOUNT_BYTES = 1 + 32 + 64;
-
-const BYTE_TO_STR_LENGTH_MULTIPLIER = 2;
-
-export type DecodedZAccountActivationTxNote = {
-    createTime: number;
-    commitment: string;
-    queueId: number;
-    indexInQueue: number;
-    zAccountUTXOMessage: string;
+// for reference, see contracts/protocol/pantherPool/TransactionNoteEmitter.sol
+// Message Type Constants
+const MT = {
+    CreateTime: 0x60,
+    BusTreeIds: 0x62,
+    ZAccount: 0x06,
+    ZAssetPub: 0x63,
+    ZAssetPriv: 0x07,
 };
 
-export function decodeZAccountActivationTxNote(
+// Length Constants
+const LMT = {
+    CreateTime: 1 + 4, // 1 byte for message type, 4 bytes for createTime
+    BusTreeIds: 1 + 37, // 1 byte for message type, 32 bytes for commitment, 4 bytes for queueId, 1 byte for indexInQueue
+    ZAccount: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
+    ZAssetPub: 1 + 8, // 1 byte for message type, 8 bytes for zkpAmountScaled
+    ZAssetPriv: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
+};
+
+export enum TxNoteType {
+    ZAccountActivation = 0x01, // Type1
+    PrpClaiming = 0x02, // Type2
+    PrpConversion = 0x03, // Type3
+}
+
+type Segment = {type: number; length: number};
+
+// Segment Configurations for each transaction note type
+const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
+    [TxNoteType.ZAccountActivation]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+    ],
+    [TxNoteType.PrpClaiming]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+    ],
+    [TxNoteType.PrpConversion]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAssetPub},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
+    ],
+};
+
+const BYTES_TO_STRING_LENGTH_FACTOR = 2;
+
+/**
+ * Function to decode transaction note
+ * @param {string} encodedNoteContentHex - The encoded Note Content Hex
+ * @param {TxNoteType} noteType - The Note Type
+ * @returns {TxNoteType1 | TxNoteType3} - returns either a TxNoteType1 or
+ * TxNoteType3 depending on noteType
+ */
+export function decodeTxNote(
     encodedNoteContentHex: string,
-): DecodedZAccountActivationTxNote {
-    validateInput(encodedNoteContentHex);
+    noteType: TxNoteType,
+): TxNoteType1 | TxNoteType3 {
+    const config = SegmentConfigs[noteType];
+    validateInput(encodedNoteContentHex, 1 + getRequiredLength(config));
+    const segments = parseSegments(encodedNoteContentHex, config);
 
-    const {createTimeMsgContent, busMsgContent, zAccountMsgContent} =
-        parseZAccountActivationTxNoteSegments(encodedNoteContentHex);
+    const createTime = parseInt(segments[0], 16);
+    const busTreeIds = decodeBusTreeIds(segments[1]);
+    const zAccountUTXOMessage = prependMessageType(MT.ZAccount, segments[2]);
 
-    return {
-        createTime: parseInt(createTimeMsgContent, 16),
-        ...decodeBusTreeIds(busMsgContent),
-        zAccountUTXOMessage: `${bigintToBytes(
-            BigInt(MT_UTXO_ZACCOUNT),
-            1,
-        )}${zAccountMsgContent}`,
-    };
+    // Use switch for future extensibility
+    switch (noteType) {
+        case TxNoteType.ZAccountActivation:
+        case TxNoteType.PrpClaiming:
+            // For ZAccountActivation and PrpClaiming, we decode common fields
+            // only
+            return {
+                createTime,
+                ...busTreeIds,
+                zAccountUTXOMessage,
+            } as TxNoteType1;
+
+        case TxNoteType.PrpConversion:
+            // For PrpConversion, we additionally decode zkpAmountScaled and
+            // zAssetUTXOMessage
+            return {
+                createTime,
+                ...busTreeIds,
+                zAccountUTXOMessage,
+                zkpAmountScaled: BigInt(segments[3]),
+                zAssetUTXOMessage: prependMessageType(
+                    MT.ZAssetPriv,
+                    segments[4],
+                ),
+            } as TxNoteType3;
+        default:
+            throw new Error(`Unsupported note type: ${noteType}`);
+    }
 }
 
-function parseZAccountActivationTxNoteSegments(encodedNoteContentHex: string): {
-    createTimeMsgContent: string;
-    busMsgContent: string;
-    zAccountMsgContent: string;
-} {
-    const createTimeMsgContent = parseSegment(
-        encodedNoteContentHex,
-        1,
-        LMT_UTXO_CREATE_TIME_BYTES,
-        MT_UTXO_CREATE_TIME,
-    );
-    const busMsgContent = parseSegment(
-        encodedNoteContentHex,
-        1 + LMT_UTXO_CREATE_TIME_BYTES,
-        LMT_UTXO_BUSTREE_IDS_BYTES,
-        MT_UTXO_BUSTREE_IDS,
-    );
-
-    const zAccountMsgContent = parseSegment(
-        encodedNoteContentHex,
-        1 + LMT_UTXO_CREATE_TIME_BYTES + LMT_UTXO_BUSTREE_IDS_BYTES,
-        LMT_UTXO_ZACCOUNT_BYTES,
-        MT_UTXO_ZACCOUNT,
-    );
-
-    return {createTimeMsgContent, busMsgContent, zAccountMsgContent};
-}
-
+/**
+ * Helper function to decode BusTree IDs
+ * @param {string} busMsgContent - The bus message content string
+ * @returns {object} - An object containing decoded BusTree IDs
+ */
 function decodeBusTreeIds(busMsgContent: string): {
     commitment: string;
     queueId: number;
     indexInQueue: number;
 } {
-    const commitment = `0x${busMsgContent.substr(0, 64)}`;
-    const queueId = parseInt(busMsgContent.substr(64, 8), 16);
-    const indexInQueue = parseInt(busMsgContent.substr(72, 2), 16);
-    return {commitment, queueId, indexInQueue};
-}
-
-export function parseSegment(
-    plaintextHex: string,
-    startByteIndex: number,
-    lengthInBytes: number,
-    expectedType: number,
-): string {
-    const startStrIndex = startByteIndex * BYTE_TO_STR_LENGTH_MULTIPLIER;
-    const lengthInStr = lengthInBytes * BYTE_TO_STR_LENGTH_MULTIPLIER;
-    const msgType = parseInt(
-        plaintextHex.substr(startStrIndex, BYTE_TO_STR_LENGTH_MULTIPLIER),
+    let cursor = 0;
+    const commitment = `0x${busMsgContent.slice(cursor, (cursor += 64))}`;
+    const queueId = parseInt(busMsgContent.slice(cursor, (cursor += 8)), 16);
+    const indexInQueue = parseInt(
+        busMsgContent.slice(cursor, (cursor += 2)),
         16,
     );
 
-    if (msgType !== expectedType) {
-        throw new Error(
-            `Invalid msgType: Expected ${expectedType.toString(
-                16,
-            )}, got ${msgType.toString(16)}`,
-        );
-    }
-    return plaintextHex.substr(
-        startStrIndex + BYTE_TO_STR_LENGTH_MULTIPLIER * 1,
-        lengthInStr - BYTE_TO_STR_LENGTH_MULTIPLIER * 1,
-    );
+    return {commitment, queueId, indexInQueue};
 }
 
-function validateInput(plaintextBinary: string): void {
-    const requiredLengthInBytes =
-        1 +
-        LMT_UTXO_BUSTREE_IDS_BYTES +
-        LMT_UTXO_CREATE_TIME_BYTES +
-        LMT_UTXO_ZACCOUNT_BYTES;
+/**
+ * Helper function to parse segments
+ * @param {string} encodedNoteContentHex - The encoded Note Content Hex string
+ * @param {Segment[]} segments - The segments configurations
+ * @returns {string[]} - An array of parsed segments
+ */
+function parseSegments(
+    encodedNoteContentHex: string,
+    segments: Segment[],
+): string[] {
+    let startStrIndex = 1 * BYTES_TO_STRING_LENGTH_FACTOR;
+
+    return segments.map(({type, length}) => {
+        const lengthInStr = length * BYTES_TO_STRING_LENGTH_FACTOR;
+        const msgType = parseInt(
+            encodedNoteContentHex.slice(
+                startStrIndex,
+                startStrIndex + BYTES_TO_STRING_LENGTH_FACTOR,
+            ),
+            16,
+        );
+
+        if (msgType !== type) {
+            throw new Error(
+                `Invalid msgType: Expected ${type.toString(
+                    16,
+                )}, got ${msgType.toString(16)}`,
+            );
+        }
+
+        return encodedNoteContentHex.slice(
+            startStrIndex + BYTES_TO_STRING_LENGTH_FACTOR,
+            (startStrIndex += lengthInStr),
+        );
+    });
+}
+
+/**
+ * Helper function to prepend a message type to the content
+ * @param {number} type - The message type to prepend
+ * @param {string} content - The content to which the message type is prepended
+ * @returns {string} - The new content string with prepended message type
+ */
+function prependMessageType(type: number, content: string): string {
+    return `${bigintToBytes(BigInt(type), 1)}${content}`;
+}
+
+/**
+ * Helper function to validate input
+ * @param {string} plaintextBinary - The input string
+ * @param {number} requiredLengthInBytes - The required length of the input
+ * string
+ */
+function validateInput(
+    plaintextBinary: string,
+    requiredLengthInBytes: number,
+): void {
     const requiredLengthInStr =
-        requiredLengthInBytes * BYTE_TO_STR_LENGTH_MULTIPLIER;
+        requiredLengthInBytes * BYTES_TO_STRING_LENGTH_FACTOR;
 
     if (
         typeof plaintextBinary !== 'string' ||
         plaintextBinary.length < requiredLengthInStr
     ) {
-        throw new Error('Invalid input');
+        throw new Error(
+            'Invalid input. The provided string may not be long enough or it is not of type string.',
+        );
     }
+}
+
+/**
+ * Helper function to calculate required length
+ * @param {Segment[]} segments - The array of segments
+ * @returns {number} - The total length calculated
+ */
+function getRequiredLength(segments: Segment[]): number {
+    return segments.reduce((total, segment) => total + segment.length, 0);
 }
