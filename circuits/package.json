@@ -21,6 +21,7 @@
     "compile:v1-extended": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransactionV1Extended.circom",
     "compile:z-account-registration": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRegistrationV1.circom",
     "compile:z-account-renewal": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRenewalV1.circom",
+    "compile:data-escrow-elgamal-ecnryption": "circom --r1cs --wasm --sym -o compiled/ test/circuits/dataEscrowElGamalEncryption.circom",
     "lint": "yarn eslint && yarn prettier:list-different",
     "lint:eslint": "eslint --max-warnings 0",
     "lint:circom": "yarn lint:eslint \"circuits/**/*.circom\"",
