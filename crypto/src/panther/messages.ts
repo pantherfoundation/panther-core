@@ -12,50 +12,165 @@ import {
     derivePubKeyFromPrivKey,
     unpackPublicKey,
     PACKED_PUB_KEY_SIZE,
-    PRIV_KEY_SIZE,
 } from '../base/keypairs';
 import {PublicKey, PrivateKey, ephemeralKeyPacked} from '../types/keypair';
-import {DecryptedZAccountUTXOMessage, ICiphertext} from '../types/message';
+import {
+    ICiphertext,
+    UTXOMessage,
+    ZAccountUTXOMessage,
+    ZAssetUTXOMessage,
+} from '../types/message';
 import {assertInBabyJubJubSubOrder, assertMaxBits} from '../utils/assertions';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
-    bigintToBytes32,
     bigintToBytes,
     bigintToBinaryString,
 } from '../utils/bigint-conversions';
 
-// sizes in bytes according to Message Encoding docs:
-// https://docs.google.com/document/d/1XIlfyHXFXUUZVQNhV9glcLfUxiFOu8QAXkFhJMQc_3M
-export const CIPHERTEXT_MSG_TYPE_V1_SIZE = 32;
-export const CIPHERTEXT_MSG_TYPE_V6_SIZE = 64;
-
-const Z_ACCOUNT_MSG_TYPE = '06';
 const EPHEMERAL_KEY_WIDTH = PACKED_PUB_KEY_SIZE * 2;
 const MSG_TYPE_WIDTH = 2;
 
-// encryptAndPackMessageTypeV1 creates a message with encrypted secretRandom
-// of the following format:
-// msg = [IV, packedR, ...encrypted(prolog, r)]
-export function encryptAndPackMessageTypeV1(
-    secretRandom: bigint,
-    rootReadingPubKey: PublicKey,
-): string {
-    const plaintext = bigintToBytes32(secretRandom);
-    return encryptAndPackMessage(plaintext, rootReadingPubKey, PRIV_KEY_SIZE);
+const FIELD_BIT_LENGTHS = {
+    secretRandom: 256,
+    zAccountId: 24,
+    zAssetId: 64,
+    originNetworkId: 6,
+    targetNetworkId: 6,
+    originZoneId: 16,
+    targetZoneId: 16,
+    networkId: 6,
+    zoneId: 16,
+    nonce: 16,
+    expiryTime: 32,
+    amountZkp: 64,
+    amountPrp: 58,
+    totalAmountPerTimePeriod: 64,
+} as const;
+
+const FIELD_ALLOWED_VALUES = {
+    zoneId: 2n,
+    originZoneId: 1n,
+    targetZoneId: 1n,
+    networkId: 2n,
+    originNetworkId: 2n,
+    targetNetworkId: 2n,
+} as const;
+
+enum UTXOMessageType {
+    ZAccount = 'ZAccount',
+    ZAsset = 'ZAsset',
 }
 
-export function unpackAndDecryptMessageTypeV1(
-    ciphertextMsg: string,
-    rootReadingPrivateKey: PrivateKey,
-): bigint {
-    const plaintextUInt8 = unpackAndDecrypt(
-        ciphertextMsg,
-        rootReadingPrivateKey,
-        unpackMessageTypeV1,
-    );
+type UtxoMessageConfig = {
+    [key in UTXOMessageType]: {
+        fields: Array<keyof UTXOMessage>;
+        size: number;
+        msgType: string;
+    };
+};
 
-    return uint8ArrayToBigInt(plaintextUInt8);
+const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
+    ZAccount: {
+        fields: [
+            'secretRandom',
+            'networkId',
+            'zoneId',
+            'nonce',
+            'expiryTime',
+            'amountZkp',
+            'amountPrp',
+            'totalAmountPerTimePeriod',
+        ],
+        size: 64,
+        msgType: '06',
+    },
+    ZAsset: {
+        fields: [
+            'secretRandom',
+            'zAccountId',
+            'zAssetId',
+            'originNetworkId',
+            'targetNetworkId',
+            'originZoneId',
+            'targetZoneId',
+        ],
+        size: 64, // actual size is 388 bit (49 bytes) but we need to round up to the nearest byte that is a multiple of 16 because of AES-128-CBC
+        msgType: '07',
+    },
+};
+
+export function unpackAndDecryptZAccountUTXOMessage(
+    message: string,
+    rootReadingPrivateKey: PrivateKey,
+): ZAccountUTXOMessage {
+    const zAccountMsg = unpackAndDecryptUTXOMessage(
+        message,
+        rootReadingPrivateKey,
+        UTXOMessageType.ZAccount,
+    ) as ZAccountUTXOMessage;
+
+    validateFields(zAccountMsg, ['networkId', 'zoneId']);
+    return zAccountMsg;
+}
+
+export function unpackAndDecryptZAssetUTXOMessage(
+    message: string,
+    rootReadingPrivateKey: PrivateKey,
+): ZAssetUTXOMessage {
+    const zAssetMsg = unpackAndDecryptUTXOMessage(
+        message,
+        rootReadingPrivateKey,
+        UTXOMessageType.ZAsset,
+    ) as ZAssetUTXOMessage;
+
+    validateFields(zAssetMsg, [
+        'originNetworkId',
+        'targetNetworkId',
+        'originZoneId',
+        'targetZoneId',
+    ]);
+
+    return zAssetMsg;
+}
+
+export function encryptAndPackZAssetUTXOMessage(
+    secrets: ZAssetUTXOMessage,
+    rootReadingPubKey: PublicKey,
+): string {
+    return encryptAndPackUTXOMessage(
+        UTXOMessageType.ZAsset,
+        [
+            secrets.secretRandom,
+            secrets.zAccountId,
+            secrets.zAssetId,
+            secrets.originNetworkId,
+            secrets.targetNetworkId,
+            secrets.originZoneId,
+            secrets.targetZoneId,
+        ],
+        rootReadingPubKey,
+    );
+}
+
+export function encryptAndPackZAccountUTXOMessage(
+    secrets: ZAccountUTXOMessage,
+    rootReadingPubKey: PublicKey,
+): string {
+    return encryptAndPackUTXOMessage(
+        UTXOMessageType.ZAccount,
+        [
+            secrets.secretRandom,
+            secrets.networkId,
+            secrets.zoneId,
+            secrets.nonce,
+            secrets.expiryTime,
+            secrets.amountZkp,
+            secrets.amountPrp,
+            secrets.totalAmountPerTimePeriod,
+        ],
+        rootReadingPubKey,
+    );
 }
 
 export function extractCipherKeyAndIvFromPackedPoint(
@@ -70,121 +185,75 @@ export function extractCipherKeyAndIvFromPackedPoint(
     };
 }
 
-export function unpackMessageTypeV1(
-    ciphertextMessageTypeV1: string,
-): [Uint8Array, ICiphertext] {
-    /*
-    struct CiphertextMsg {
-        EphemeralPublicKey, // 32 bytes (the packed form)
-        EncryptedText // 32 bytes
-    } // 64 bytes
+function generateRandomPadding(length: number): string {
+    return Array(length)
+        .fill(0)
+        .map(() => Math.round(Math.random()))
+        .join('');
+}
 
-    see: NewCommitments docs:
-    https://docs.google.com/document/d/11oY8TZRPORDP3p5emL09pYKIAQTadNhVPIyZDtMGV8k/edit#bookmark=id.vxygmc6485de
-    */
-    // sizes in Hex string:
-    const ephemeralKeyWidth = PACKED_PUB_KEY_SIZE * 2;
-    const ciphertextWidth = CIPHERTEXT_MSG_TYPE_V1_SIZE * 2;
+function encodeUTXOMessage(type: UTXOMessageType, values: bigint[]): string {
+    const config = UTXO_MESSAGE_CONFIGS[type];
 
-    if (ciphertextMessageTypeV1.length != ephemeralKeyWidth + ciphertextWidth) {
-        throw `Message must be equal to ${ephemeralKeyWidth + ciphertextWidth}`;
+    config.fields.forEach((field, index) => {
+        assertInBabyJubJubSubOrder(values[index], field);
+        assertMaxBits(values[index], FIELD_BIT_LENGTHS[field], field);
+    });
+
+    let binaryString = config.fields.reduce((result, field, index) => {
+        const binary = bigintToBinaryString(
+            values[index],
+            FIELD_BIT_LENGTHS[field],
+        ).slice(2); // skip `0b` at the beginning
+        return result + binary;
+    }, '0b');
+
+    // Append random padding to fill 16 byte block of AES-128-CBC
+    const paddingLength = config.size * 8 - binaryString.length + 2; // '+2' because there's '0b' at head
+    if (paddingLength > 0) {
+        binaryString += generateRandomPadding(paddingLength);
     }
 
-    const ephemeralKeyPackedHex = ciphertextMessageTypeV1.slice(
-        0,
-        ephemeralKeyWidth,
-    );
-    const ephemeralKeyPacked = bigIntToUint8Array(
-        BigInt(`0x${ephemeralKeyPackedHex}`),
-        PACKED_PUB_KEY_SIZE,
-    );
-
-    const cipheredTextHex = ciphertextMessageTypeV1.slice(ephemeralKeyWidth);
-    const cipheredText = bigIntToUint8Array(
-        BigInt(`0x${cipheredTextHex}`),
-        CIPHERTEXT_MSG_TYPE_V1_SIZE,
-    );
-
-    return [ephemeralKeyPacked, cipheredText];
+    return bigintToBytes(BigInt(binaryString), config.size);
 }
 
-// ### preimage of cipherMsg  // 512 bit
-// secretRandom;              // 256 bit
-// networkId;                 // 6 bit
-// zoneId;                    // 16 bit
-// nonce;                     // 16 bit
-// expiryTime;                // 32 bit
-// amountZkp;                 // 64 bit
-// amountPrp;                 // 58 bit
-// totalAmountPerTimePeriod;  // 64 bit
-export function encodeZAccountUTXOMessage(
-    secretRandom: bigint,
-    networkId: bigint,
-    zoneId: bigint,
-    nonce: bigint,
-    expiryTime: bigint,
-    amountZkp: bigint,
-    amountPrp: bigint,
-    totalAmountPerTimePeriod: bigint,
-): string {
-    assertInBabyJubJubSubOrder(secretRandom, 'secretRandom');
-    assertMaxBits(networkId, 6, 'networkId');
-    assertMaxBits(zoneId, 16, 'zoneId');
-    assertMaxBits(nonce, 16, 'nonce');
-    assertMaxBits(expiryTime, 32, 'expiryTime');
-    assertMaxBits(amountZkp, 64, 'amountZkp');
-    assertMaxBits(amountPrp, 58, 'amountPrp');
-    assertMaxBits(totalAmountPerTimePeriod, 64, 'totalAmountPerTimePeriod');
+function decodeUTXOMessage<T extends UTXOMessage>(
+    encodedMessageBinary: string,
+    fields: (keyof T)[],
+): T {
+    let cursor = 2; // Skip first 2 '0b'
+    const decodedMessage: Partial<T> = {};
 
-    return bigintToBytes(
-        BigInt(
-            '0b' +
-                bigintToBinaryString(secretRandom, 256).slice(2) +
-                bigintToBinaryString(networkId, 6).slice(2) +
-                bigintToBinaryString(zoneId, 16).slice(2) +
-                bigintToBinaryString(nonce, 16).slice(2) +
-                bigintToBinaryString(expiryTime, 32).slice(2) +
-                bigintToBinaryString(amountZkp, 64).slice(2) +
-                bigintToBinaryString(amountPrp, 58).slice(2) +
-                bigintToBinaryString(totalAmountPerTimePeriod, 64).slice(2),
-        ),
-        CIPHERTEXT_MSG_TYPE_V6_SIZE,
+    fields.forEach(field => {
+        const bitLength =
+            FIELD_BIT_LENGTHS[field as keyof typeof FIELD_BIT_LENGTHS];
+        const str = encodedMessageBinary.slice(cursor, (cursor += bitLength));
+        decodedMessage[field as keyof T] = BigInt(`0b${str}`) as any;
+    });
+
+    return decodedMessage as T;
+}
+
+function decodeZAssetsUTXOMessage(cipherMsgBinary: string): ZAssetUTXOMessage {
+    return decodeUTXOMessage(
+        cipherMsgBinary,
+        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAsset]
+            .fields as keyof typeof decodeZAssetsUTXOMessage,
     );
 }
 
-export function decodeZAccountUTXOMessage(plaintextBinary: string): {
-    secretRandom: bigint;
-    networkId: bigint;
-    zoneId: bigint;
-    nonce: bigint;
-    expiryTime: bigint;
-    amountZkp: bigint;
-    amountPrp: bigint;
-    totalAmountPerTimePeriod: bigint;
-} {
-    const secretRandomBin = plaintextBinary.slice(2, 258);
-    const networkIdBin = plaintextBinary.slice(258, 264);
-    const zoneIdBin = plaintextBinary.slice(264, 280);
-    const nonceBin = plaintextBinary.slice(280, 296);
-    const expiryTimeBin = plaintextBinary.slice(296, 328);
-    const amountZkpBin = plaintextBinary.slice(328, 392);
-    const amountPrpBin = plaintextBinary.slice(392, 450);
-    const totalAmountPerTimePeriodBin = plaintextBinary.slice(450, 514);
-
-    return {
-        secretRandom: BigInt(`0b${secretRandomBin}`),
-        networkId: BigInt(`0b${networkIdBin}`),
-        zoneId: BigInt(`0b${zoneIdBin}`),
-        nonce: BigInt(`0b${nonceBin}`),
-        expiryTime: BigInt(`0b${expiryTimeBin}`),
-        amountZkp: BigInt(`0b${amountZkpBin}`),
-        amountPrp: BigInt(`0b${amountPrpBin}`),
-        totalAmountPerTimePeriod: BigInt(`0b${totalAmountPerTimePeriodBin}`),
-    };
+function decodeZAccountUTXOMessage(
+    cipherMsgBinary: string,
+): ZAccountUTXOMessage {
+    return decodeUTXOMessage(
+        cipherMsgBinary,
+        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAccount]
+            .fields as keyof typeof decodeZAccountUTXOMessage,
+    );
 }
 
 function encryptAndPackMessage(
-    plaintext: string,
+    secretMsg: string,
     rootReadingPubKey: PublicKey,
     messageSize: number,
 ): string {
@@ -201,7 +270,7 @@ function encryptAndPackMessage(
     );
 
     const ciphertext = encryptPlainText(
-        bigIntToUint8Array(BigInt(plaintext), messageSize),
+        bigIntToUint8Array(BigInt(secretMsg), messageSize),
         cipherKey,
         iv,
     );
@@ -219,62 +288,32 @@ function encryptAndPackMessage(
     return ephemeralSharedPubKeyPackedHex + dataHex;
 }
 
-// for zAccount UTXO secret message
-// struct message {
-//     byte msgType,
-//     bytes[32] ephemeralKey;
-//     bytes[64] cipherMsg
-// }
-// ### preimage of cipherMsg  // 512 bit
-// secretRandom;              // 256 bit
-// networkId;                 // 6 bit
-// zoneId;                    // 16 bit
-// nonce;                     // 16 bit
-// expiryTime;                // 32 bit
-// amountZkp;                 // 64 bit
-// amountPrp;                 // 40 bit
-// totalAmountPerTimePeriod;  // 64 bit
-export function encryptAndPackZAccountUTXOMessage(
-    secretRandom: bigint,
-    networkId: bigint,
-    zoneId: bigint,
-    nonce: bigint,
-    expiryTime: bigint,
-    amountZkp: bigint,
-    amountPrp: bigint,
-    totalAmountPerTimePeriod: bigint,
+function encryptAndPackUTXOMessage(
+    type: UTXOMessageType,
+    values: bigint[],
     rootReadingPubKey: PublicKey,
 ): string {
-    const plaintext = encodeZAccountUTXOMessage(
-        secretRandom,
-        networkId,
-        zoneId,
-        nonce,
-        expiryTime,
-        amountZkp,
-        amountPrp,
-        totalAmountPerTimePeriod,
+    const config = UTXO_MESSAGE_CONFIGS[type];
+    const secretMsg = encodeUTXOMessage(type, values);
+    return (
+        config.msgType +
+        encryptAndPackMessage(secretMsg, rootReadingPubKey, config.size)
     );
-
-    const message =
-        Z_ACCOUNT_MSG_TYPE +
-        encryptAndPackMessage(
-            plaintext,
-            rootReadingPubKey,
-            CIPHERTEXT_MSG_TYPE_V6_SIZE,
-        );
-
-    return message;
 }
 
-export function unpackZAccountUTXOMessage(
-    cipherMsgZAccountUtxo: string,
+function unpackUTXOMessage(
+    ciphertextMsg: string,
+    type: UTXOMessageType,
 ): [Uint8Array, ICiphertext] {
-    const messageType = cipherMsgZAccountUtxo.slice(0, MSG_TYPE_WIDTH);
-    if (messageType != Z_ACCOUNT_MSG_TYPE) {
-        throw `Message type must be equal to ${Z_ACCOUNT_MSG_TYPE} but got ${messageType}`;
+    const {size, msgType} = UTXO_MESSAGE_CONFIGS[type];
+
+    const messageType = ciphertextMsg.slice(0, MSG_TYPE_WIDTH);
+    if (messageType != msgType) {
+        throw new Error(
+            `Message type must be equal to ${msgType} but got ${messageType}`,
+        );
     }
-    const ephemeralKeyPackedHex = cipherMsgZAccountUtxo.slice(
+    const ephemeralKeyPackedHex = ciphertextMsg.slice(
         MSG_TYPE_WIDTH,
         EPHEMERAL_KEY_WIDTH + MSG_TYPE_WIDTH,
     );
@@ -283,71 +322,47 @@ export function unpackZAccountUTXOMessage(
         PACKED_PUB_KEY_SIZE,
     );
 
-    const cipheredTextHex = cipherMsgZAccountUtxo.slice(
+    const cipheredTextHex = ciphertextMsg.slice(
         EPHEMERAL_KEY_WIDTH + MSG_TYPE_WIDTH,
     );
     const cipheredText = bigIntToUint8Array(
         BigInt(`0x${cipheredTextHex}`),
-        CIPHERTEXT_MSG_TYPE_V6_SIZE,
+        size,
     );
 
     return [ephemeralKeyPacked, cipheredText];
 }
 
-export function unpackAndDecryptZAccountUTXOMessage(
+function unpackAndDecryptUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
-): DecryptedZAccountUTXOMessage {
+    type: UTXOMessageType,
+): UTXOMessage {
     const plaintextUInt8 = unpackAndDecrypt(
         message,
         rootReadingPrivateKey,
-        unpackZAccountUTXOMessage,
+        type,
     );
 
     const secretRandomBin = bigintToBinaryString(
         BigInt(uint8ArrayToBigInt(plaintextUInt8)),
-        512,
+        UTXO_MESSAGE_CONFIGS[type].size * 8,
     );
 
-    const {
-        secretRandom,
-        networkId,
-        zoneId,
-        nonce,
-        expiryTime,
-        amountZkp,
-        amountPrp,
-        totalAmountPerTimePeriod,
-    } = decodeZAccountUTXOMessage(secretRandomBin);
-
-    // additional checks to make sure that values have correct range
-    // TODO: extract these checks in separate assert functions
-    if (networkId > 2n) {
-        throw new Error('Failed to get secret random. Incorrect networkId');
-    }
-
-    if (zoneId > 1n) {
-        throw new Error('Failed to get secret random. Incorrect zoneId');
-    }
-
-    return {
-        secretRandom,
-        networkId,
-        zoneId,
-        nonce,
-        expiryTime,
-        amountZkp,
-        amountPrp,
-        totalAmountPerTimePeriod,
-    };
+    return type === 'ZAccount'
+        ? decodeZAccountUTXOMessage(secretRandomBin)
+        : decodeZAssetsUTXOMessage(secretRandomBin);
 }
 
 function unpackAndDecrypt(
     ciphertextMsg: string,
     rootReadingPrivateKey: PrivateKey,
-    unpackFunction: (ciphertextMsg: string) => [Uint8Array, ICiphertext],
+    type: UTXOMessageType,
 ): Uint8Array {
-    const [ephemeralKeyPacked, iCiphertext] = unpackFunction(ciphertextMsg);
+    const [ephemeralKeyPacked, iCiphertext] = unpackUTXOMessage(
+        ciphertextMsg,
+        type,
+    );
     const ephemeralKey = unpackPublicKey(ephemeralKeyPacked);
 
     const ephemeralSharedKey = generateEcdhSharedKey(
@@ -363,13 +378,19 @@ function unpackAndDecrypt(
     try {
         plaintextUInt8 = decryptCipherText(iCiphertext, cipherKey, iv);
     } catch (error) {
-        throw new Error(`Failed to decrypt secret random ${error}`);
-    }
-
-    // check if first 5 most significant bits are zeros
-    if ((plaintextUInt8[0] & 0xf8) != 0x00) {
-        throw new Error('Failed to get secret random. Incorrect padding');
+        throw new Error(`Failed to decrypt ${error}`);
     }
 
     return plaintextUInt8;
+}
+
+function validateFields(
+    message: any,
+    fields: (keyof typeof FIELD_ALLOWED_VALUES)[],
+) {
+    for (const field of fields) {
+        if (message[field] > FIELD_ALLOWED_VALUES[field]) {
+            throw new Error(`Failed to decrypt. Incorrect ${field}`);
+        }
+    }
 }
