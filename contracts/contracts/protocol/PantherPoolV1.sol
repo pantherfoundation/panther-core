@@ -350,7 +350,7 @@ contract PantherPoolV1 is
     /// This data is used to spend the newly created utxo.
     /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
-    function accountPrpConvertion(
+    function accountPrpConversion(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory privateMessages,
