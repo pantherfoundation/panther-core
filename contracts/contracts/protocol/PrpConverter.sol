@@ -257,7 +257,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         // Trusted contract - no reentrancy guard needed
         // pool contract triggers vault to transfer `amountOut` from prpConverter
         try
-            IPantherPoolV1(PANTHER_POOL).accountPrpConvertion(
+            IPantherPoolV1(PANTHER_POOL).accountPrpConversion(
                 inputs,
                 proof,
                 privateMessages,
