@@ -10,35 +10,15 @@ import { FIELD_SIZE } from "../protocol/crypto/SnarkConstants.sol";
 import "../common/TransferHelper.sol";
 import "../common/ImmutableOwnable.sol";
 import "../common/Claimable.sol";
+import "../common/UtilsLib.sol";
 
 import "./errMsgs/PrpConverterErrMsgs.sol";
-
-// a library for handling binary fixed point numbers (https://en.wikipedia.org/wiki/Q_(number_format))
-
-// range: [0, 2**112 - 1]
-// resolution: 1 / 2**112
-
-library UQ112x112 {
-    uint224 private constant Q112 = 2 ** 112;
-
-    // encode a uint112 as a UQ112x112
-    function encode(uint112 y) internal pure returns (uint224 z) {
-        z = uint224(y) * Q112; // never overflows
-    }
-
-    // divide a UQ112x112 by a uint112, returning a UQ112x112
-    function uqdiv(uint224 x, uint112 y) internal pure returns (uint224 z) {
-        z = x / uint224(y);
-    }
-}
 
 contract PrpConverter is ImmutableOwnable, Claimable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
-
-    // solhint-disable var-name-mixedcase
 
     /// @notice Address of the $ZKP token contract
     address private immutable ZKP_TOKEN;
@@ -49,16 +29,11 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// @notice Address of the Vault contract
     address public immutable VAULT;
 
-    // solhint-enable var-name-mixedcase
-
-    uint112 private prpReserve;
-    uint112 private zkpReserve;
+    uint64 private prpReserve;
+    uint96 private zkpReserve;
     uint32 private blockTimestampLast;
 
     bool private initialized;
-
-    uint256 public pricePrpCumulativeLast;
-    uint256 public priceZkpCumulativeLast;
 
     event Initialized(uint256 prpVirtualAmount, uint256 zkpAmount);
     event Sync(uint112 prpReserve, uint112 zkpReserve);
@@ -102,12 +77,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmount);
 
-        _update(
-            prpVirtualAmount,
-            zkpAmount,
-            uint112(prpVirtualAmount),
-            uint112(zkpAmount)
-        );
+        _update(prpVirtualAmount, zkpAmount);
 
         emit Initialized(prpVirtualAmount, zkpAmount);
     }
@@ -118,7 +88,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             address(this)
         );
 
-        (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
+        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
 
         if (zkpBalance <= _zkpReserve) return;
 
@@ -134,7 +104,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         uint256 prpVirtualBalance = _prpReserve - prpAmountOut;
 
-        _update(prpVirtualBalance, zkpBalance, _prpReserve, _zkpReserve);
+        _update(prpVirtualBalance, zkpBalance);
     }
 
     function getAmountOut(
@@ -157,8 +127,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         public
         view
         returns (
-            uint112 _prpReserve,
-            uint112 _zkpReserve,
+            uint256 _prpReserve,
+            uint256 _zkpReserve,
             uint32 _blockTimestampLast
         )
     {
@@ -222,7 +192,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             );
         }
 
-        (uint112 _prpReserve, uint112 _zkpReserve, ) = getReserves();
+        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
 
         require(_zkpReserve > 0, "PC: Insufficient liquidity");
 
@@ -235,10 +205,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
                 _zkpReserve
             );
 
-            uint256 scale = 10 ** inputs[6];
+            uint256 scale = 10 ** inputs[8];
             require(zkpAmountOut >= scale, "PC: Too low liquidity");
 
-            zkpAmountOutRounded = (zkpAmountOut / scale) * 10 ** scale;
+            zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
 
             require(
                 zkpAmountOutRounded >= zkpAmountOutMin,
@@ -270,34 +240,13 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             "PC: K"
         );
 
-        _update(prpVirtualBalance, zkpBalance, _prpReserve, _zkpReserve);
+        _update(prpVirtualBalance, zkpBalance);
     }
 
-    function _update(
-        uint256 prpVirtualBalance,
-        uint256 zkpBalance,
-        uint112 prpReserves,
-        uint112 zkpReserves
-    ) private {
-        prpReserve = uint112(prpVirtualBalance);
-        zkpReserve = uint112(zkpBalance);
-        uint32 blockTimestamp = uint32(block.timestamp);
-
-        uint32 timeElapsed = blockTimestamp - blockTimestampLast;
-
-        if (timeElapsed > 0 && zkpReserves != 0) {
-            pricePrpCumulativeLast +=
-                uint256(
-                    UQ112x112.uqdiv(UQ112x112.encode(zkpReserves), prpReserves)
-                ) *
-                timeElapsed;
-
-            priceZkpCumulativeLast +=
-                uint256(
-                    UQ112x112.uqdiv(UQ112x112.encode(prpReserves), zkpReserves)
-                ) *
-                timeElapsed;
-        }
+    function _update(uint256 prpVirtualBalance, uint256 zkpBalance) private {
+        prpReserve = UtilsLib.safe64(prpVirtualBalance);
+        zkpReserve = UtilsLib.safe96(zkpBalance);
+        blockTimestampLast = UtilsLib.safe32(block.timestamp);
 
         emit Sync(prpReserve, zkpReserve);
     }
