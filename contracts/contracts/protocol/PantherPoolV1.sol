@@ -461,7 +461,7 @@ contract PantherPoolV1 is
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             MT_UTXO_ZASSET_PUB,
-            zkpAmountScaled,
+            UtilsLib.safe64(zkpAmountScaled),
             _privateMessages
         );
 
