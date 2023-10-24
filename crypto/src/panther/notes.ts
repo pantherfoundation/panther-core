@@ -47,7 +47,7 @@ const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
     [TxNoteType.PrpConversion]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAssetPub},
+        {type: MT.ZAssetPub, length: LMT.ZAssetPub},
         {type: MT.ZAccount, length: LMT.ZAccount},
         {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
     ],
@@ -72,7 +72,6 @@ export function decodeTxNote(
 
     const createTime = parseInt(segments[0], 16);
     const busTreeIds = decodeBusTreeIds(segments[1]);
-    const zAccountUTXOMessage = prependMessageType(MT.ZAccount, segments[2]);
 
     // Use switch for future extensibility
     switch (noteType) {
@@ -83,7 +82,10 @@ export function decodeTxNote(
             return {
                 createTime,
                 ...busTreeIds,
-                zAccountUTXOMessage,
+                zAccountUTXOMessage: prependMessageType(
+                    MT.ZAccount,
+                    segments[2],
+                ),
             } as TxNoteType1;
 
         case TxNoteType.PrpConversion:
@@ -92,8 +94,11 @@ export function decodeTxNote(
             return {
                 createTime,
                 ...busTreeIds,
-                zAccountUTXOMessage,
-                zkpAmountScaled: BigInt(segments[3]),
+                zkpAmountScaled: BigInt(`0x${segments[2]}`),
+                zAccountUTXOMessage: prependMessageType(
+                    MT.ZAccount,
+                    segments[3],
+                ),
                 zAssetUTXOMessage: prependMessageType(
                     MT.ZAssetPriv,
                     segments[4],
