@@ -203,13 +203,13 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
             uint256 scale = 10 ** inputs[8];
             require(zkpAmountOut >= scale, ERR_INSUFFICIENT_AMOUNT_OUT);
+            require(zkpAmountOut >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);
 
             unchecked {
                 // rounding the amount (leaving the changes in the contract)
                 zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
             }
 
-            require(zkpAmountOutRounded >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
         }
 
