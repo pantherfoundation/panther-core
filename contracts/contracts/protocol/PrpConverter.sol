@@ -21,7 +21,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     uint256[50] private __gap;
 
     /// @notice Address of the $ZKP token contract
-    address private immutable ZKP_TOKEN;
+    address public immutable ZKP_TOKEN;
 
     /// @notice Address of the PantherPool contract
     address public immutable PANTHER_POOL;
@@ -33,7 +33,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     uint96 private zkpReserve;
     uint32 private blockTimestampLast;
 
-    bool private initialized;
+    bool public initialized;
 
     event Initialized(uint256 prpVirtualAmount, uint256 zkpAmount);
     event Sync(uint112 prpReserve, uint112 zkpReserve);
@@ -54,11 +54,6 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         ZKP_TOKEN = zkpToken;
         PANTHER_POOL = pantherPool;
         VAULT = vault;
-    }
-
-    modifier isInitialized() {
-        require(initialized, ERR_ALREADY_INITIALIZED);
-        _;
     }
 
     function initPool(
@@ -82,7 +77,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         emit Initialized(prpVirtualAmount, zkpAmount);
     }
 
-    function updateZkpReserve() external isInitialized {
+    function updateZkpReserve() external {
+        require(initialized, ERR_NOT_INITIALIZED);
+
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
             ZKP_TOKEN,
             address(this)
