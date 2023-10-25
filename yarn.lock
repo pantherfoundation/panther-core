@@ -5065,6 +5065,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.1.1.tgz#1a5b1959a528e374e8037c4396c3e825d6cf4a83"
   integrity sha512-m0G6wlnhm/AX0H12IOWtK8gASEMffnX08RtKkCgTdHb9JpHKGloI7icFfLg9ZmQeavcvR0PKmzxClyuFPSjKWw==
 
+"@fontsource-variable/space-grotesk@^5.0.15":
+  version "5.0.15"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/space-grotesk/-/space-grotesk-5.0.15.tgz#93067b9610960d85f35f3ed78a072f479b5239ef"
+  integrity sha512-APV/HjMrlJIDbIpfMGVgG3Y6TB9HLZQzYdY3/5EieT0E5+89XuuY0VJJW2RUlg8G6NKNExdlL5QLklfexveHcA==
+
 "@gitbeaker/core@^21.7.0":
   version "21.7.0"
   resolved "https://registry.yarnpkg.com/@gitbeaker/core/-/core-21.7.0.tgz#fcf7a12915d39f416e3f316d0a447a814179b8e5"
@@ -10478,9 +10483,9 @@
     "@types/react" "*"
 
 "@types/react@*", "@types/react@>=16":
-  version "17.0.68"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.68.tgz#99b17f567e258f5e7be855a281ac67b49a34f9f2"
-  integrity sha512-y8heXejd/Gi43S28GOqIFmr6BzhLa3anMlPojRu4rHh3MtRrrpB+BtLEcqP3XPO1urXByzBdkOLU7sodYWnpkA==
+  version "17.0.69"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.69.tgz#245a0cf2f5b0fb1d645691d3083e3c7d4409b98f"
+  integrity sha512-klEeru//GhiQvXUBayz0Q4l3rKHWsBR/EUOhOeow6hK2jV7MlO44+8yEk6+OtPeOlRfnpUnrLXzGK+iGph5aeg==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
