@@ -57,7 +57,7 @@ const FIELD_ALLOWED_VALUES = {
     targetNetworkId: 2n,
 } as const;
 
-enum UTXOMessageType {
+export enum UTXOMessageType {
     ZAccount = 'ZAccount',
     ZAsset = 'ZAsset',
 }
