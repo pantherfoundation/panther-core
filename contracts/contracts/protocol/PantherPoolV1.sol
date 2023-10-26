@@ -23,13 +23,11 @@ contract PantherPoolV1 is
     // slither-disable-next-line shadowing-state unused-state
     uint256[453] private __gap;
 
-
     IVault public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
-
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -188,5 +186,41 @@ contract PantherPoolV1 is
                 UtilsLib.safe96(amount)
             )
         );
+    }
+
+    function tempAddZAccountsUtxos(
+        uint256[] calldata createTimes,
+        uint256[] calldata commitments,
+        bytes[] calldata privateMessages
+    ) external onlyOwner {
+        require(
+            createTimes.length == commitments.length &&
+                createTimes.length == privateMessages.length,
+            "invalid length"
+        );
+        for (uint256 i = 0; i < createTimes.length; i++) {
+            // Trusted contract - no reentrancy guard needed
+            (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
+                bytes32(commitments[i])
+            );
+
+            bytes memory transactionNoteContent = abi.encodePacked(
+                // First public message
+                MT_UTXO_CREATE_TIME,
+                createTimes[i],
+                // Seconds public message
+                MT_UTXO_BUSTREE_IDS,
+                commitments[i],
+                queueId,
+                indexInQueue,
+                // Private message(s)
+                privateMessages[i]
+            );
+
+            emit TransactionNote(
+                TT_ZACCOUNT_ACTIVATION,
+                transactionNoteContent
+            );
+        }
     }
 }

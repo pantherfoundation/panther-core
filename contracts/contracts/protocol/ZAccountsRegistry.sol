@@ -35,13 +35,11 @@ contract ZAccountsRegistry is
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
-
     uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
 
     IPantherPoolV1 public immutable PANTHER_POOL;
     ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
     IOnboardingController public immutable ONBOARDING_CONTROLLER;
-
 
     struct ZAccount {
         uint224 _unused; // reserved
@@ -98,11 +96,9 @@ contract ZAccountsRegistry is
 
     /* ========== VIEW FUNCTIONS ========== */
 
-    function isZAccountWhitelisted(address _masterEOA)
-        external
-        view
-        returns (bool isWhitelisted)
-    {
+    function isZAccountWhitelisted(
+        address _masterEOA
+    ) external view returns (bool isWhitelisted) {
         ZAccount memory _zAccount = zAccounts[_masterEOA];
 
         bool isZAccountExists = masterEOAs[_zAccount.id] != address(0);
@@ -459,5 +455,23 @@ contract ZAccountsRegistry is
                     contentToBeAdded
                 )
             );
+    }
+
+    function tempFixNullifiers(
+        uint256[] calldata blockNums,
+        uint256[] calldata zAccountNullifiers,
+        uint256[] calldata zAccountIds
+    ) external onlyOwner {
+        require(
+            blockNums.length == zAccountNullifiers.length,
+            "invalid length"
+        );
+        for (uint256 i = 0; i < blockNums.length; i++) {
+            zoneZAccountNullifiers[bytes32(zAccountNullifiers[i])] = blockNums[
+                i
+            ];
+
+            emit ZAccountActivated(UtilsLib.safe24(zAccountIds[i]));
+        }
     }
 }
