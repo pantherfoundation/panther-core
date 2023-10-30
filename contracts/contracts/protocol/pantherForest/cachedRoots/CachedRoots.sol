@@ -9,9 +9,8 @@ abstract contract CachedRoots {
     // slither-disable-next-line shadowing-state unused-state
     uint256[10] private __gap;
 
-
     // Must be a power of 2
-    uint256 private constant CACHE_SIZE = 2**8;
+    uint256 private constant CACHE_SIZE = 2 ** 8;
     uint256 private constant CACHE_INDEX_MASK = CACHE_SIZE - 1;
 
     uint256 public constant UNDEFINED_CACHE_INDEX = 0xFFFF;
@@ -35,20 +34,23 @@ abstract contract CachedRoots {
             _cachedRootsCounter,
             _cacheStartPos
         );
-        require(nextInd != 0, ERR_EMPTY_CACHE);
 
-        latestCacheIndex = --nextInd;
+        if (nextInd == 0) {
+            latestCacheIndex = CACHE_SIZE - 1;
+        } else {
+            latestCacheIndex = --nextInd;
+        }
+
         numRootsCached = _getCachedRootsNum(
             _cachedRootsCounter,
             _cacheStartPos
         );
     }
 
-    function isCachedRoot(bytes32 root, uint256 cacheIndex)
-        public
-        view
-        returns (bool isCached)
-    {
+    function isCachedRoot(
+        bytes32 root,
+        uint256 cacheIndex
+    ) public view returns (bool isCached) {
         uint256 nextPos = _cachedRootsCounter;
         // Definitely NOT in the cache, if no roots have been cached yet
         if (nextPos == 0) return false;
@@ -81,20 +83,18 @@ abstract contract CachedRoots {
         cacheIndex = _addRootToCache(root);
     }
 
-    function resetThenCacheNewRoot(bytes32 root)
-        internal
-        returns (uint256 cacheIndex)
-    {
+    function resetThenCacheNewRoot(
+        bytes32 root
+    ) internal returns (uint256 cacheIndex) {
         _cacheStartPos = _cachedRootsCounter;
         cacheIndex = _addRootToCache(root);
     }
 
     /// Private functions follow
 
-    function _addRootToCache(bytes32 root)
-        private
-        returns (uint256 cacheIndex)
-    {
+    function _addRootToCache(
+        bytes32 root
+    ) private returns (uint256 cacheIndex) {
         uint64 counter = _cachedRootsCounter;
         uint64 startPos = _cacheStartPos;
 
@@ -105,21 +105,19 @@ abstract contract CachedRoots {
     }
 
     // Calling code MUST ensure `counter >= startPos`
-    function _getCachedRootsNum(uint256 counter, uint256 startPos)
-        private
-        pure
-        returns (uint256)
-    {
+    function _getCachedRootsNum(
+        uint256 counter,
+        uint256 startPos
+    ) private pure returns (uint256) {
         uint256 nSinceStart = counter - startPos;
         return (nSinceStart > CACHE_SIZE) ? CACHE_SIZE : nSinceStart;
     }
 
     // Calling code MUST ensure `counter >= startPos`
-    function _getCacheNextIndex(uint256 counter, uint256 startPos)
-        private
-        pure
-        returns (uint256)
-    {
+    function _getCacheNextIndex(
+        uint256 counter,
+        uint256 startPos
+    ) private pure returns (uint256) {
         return (counter - startPos) & CACHE_INDEX_MASK;
     }
 
