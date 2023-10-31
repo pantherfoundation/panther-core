@@ -7,32 +7,44 @@
   "repository": "git+https://github.com/pantherprotocol/panther-circuits.git",
   "scripts": {
     "build": "yarn build:types && yarn build:ts",
+    "build:amm": "./scripts/build-amm.sh",
+    "build:main-tx-v1-extended": "./scripts/build-main-transaction-v1-extended.sh",
+    "build:main-z-account-registration-v1-extended": "./scripts/build-main-zaccount-registration-v1-extended.sh",
+    "build:main-z-account-renewal-v1-extended": "./scripts/build-main-zaccount-renewal-v1-extended.sh",
     "build:types": "./scripts/gen-types.sh",
     "build:ts": "tsc -p tsconfig.json",
     "clean": "rm -rf ./node_modules && rm -rf ./types/* && rm -rf ./lib",
     "clean:circuits": "sudo rm -rf compiled/mainTransaction*",
-    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom -l node_modules/",
+    "compile": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
+    "compile:amm": "circom --r1cs --wasm --sym -o compiled/ circuits/mainAmmV1.circom",
     "compile:docker": "scripts/circom-docker.sh --r1cs --wasm --sym -o compiled/ circuits/mainTransaction.circom",
+    "compile:v1-extended": "circom --r1cs --wasm --sym -o compiled/ circuits/mainTransactionV1Extended.circom",
+    "compile:z-account-registration": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRegistrationV1.circom",
+    "compile:z-account-renewal": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRenewalV1.circom",
+    "compile:data-escrow-elgamal-ecnryption": "circom --r1cs --wasm --sym -o compiled/ test/circuits/dataEscrowElGamalEncryption.circom",
     "lint": "yarn eslint && yarn prettier:list-different",
     "lint:eslint": "eslint --max-warnings 0",
     "lint:circom": "yarn lint:eslint \"circuits/**/*.circom\"",
     "prettier:check": "cd .. && yarn prettier --check circuits",
     "prettier:fix": "cd .. && yarn prettier --write circuits",
     "prettier:list-different": "cd .. && yarn prettier --list-different circuits",
-    "test": "yarn build && mocha 'lib/**/*.js' && cd test && ./run_all_tests.sh",
-    "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run_all_tests.sh",
-    "test:docker": "yarn build && export CIRCOM_DOCKER=yes && mocha 'lib/**/*.js' --timeout 15000"
+    "test": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 60000 && cd test && ./run-all-tests.sh",
+    "test:only-ts": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 60000 --exit",
+    "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run-all-tests.sh",
+    "test:docker": "export CIRCOM_DOCKER=yes && mocha --timeout 15000"
   },
   "devDependencies": {
-    "chai": "^4.3.8",
-    "circom_tester": "https://github.com/vkonst/circom_tester.git",
+    "chai": "^4.3.4",
+    "circom_tester": "^0.0.19",
     "circomlibjs": "^0.0.8",
-    "mocha": "^9.1.3"
+    "mocha": "^9.1.3",
+    "snarkjs": "^0.6.11",
+    "@zk-kit/merkle-tree": "^0.1.0"
   },
   "dependencies": {
-    "circomlib": "^2.0.2",
-    "dotenv": "^16.0.3",
-    "typescript": "^5.2.2"
+    "circomlib": "^2.0.5",
+    "typescript": "^4.9.4",
+    "ethers": "^6.3.0"
   },
   "main": "index.js",
   "author": "Pantherprotocol team"
