@@ -3,21 +3,10 @@ pragma solidity ^0.8.16;
 
 import "../TransferHelper.sol";
 import "../ImmutableOwnable.sol";
-
+import "../interfaces/IPZkp.sol";
+import "../interfaces/IRootChainManager.sol";
 import "../../staking/interfaces/IFxStateSender.sol";
 import "../../staking/interfaces/IFxMessageProcessor.sol";
-
-interface IPZkp {
-    function deposit(address user, bytes calldata depositData) external;
-}
-
-interface IRootChainManager {
-    function depositFor(
-        address receiver,
-        address token,
-        bytes calldata depositData
-    ) external;
-}
 
 contract MockFxPortal is ImmutableOwnable, IRootChainManager, IFxStateSender {
     using TransferHelper for address;
