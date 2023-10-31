@@ -30,6 +30,8 @@ abstract contract CachedRoots {
         view
         returns (uint256 numRootsCached, uint256 latestCacheIndex)
     {
+        require(_cachedRootsCounter != 0, ERR_NO_ROOT_IS_ADDED);
+
         uint256 nextInd = _getCacheNextIndex(
             _cachedRootsCounter,
             _cacheStartPos
