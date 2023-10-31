@@ -7,15 +7,17 @@ pragma solidity ^0.8.16;
 import "./interfaces/IVault.sol";
 import "./interfaces/IPantherVerifier.sol";
 import "./interfaces/IBusTree.sol";
+import "./interfaces/IPantherPoolV1.sol";
+
 import "./../common/ImmutableOwnable.sol";
-import { ERC20_TOKEN_TYPE } from "./../common/Constants.sol";
-import { LockData } from "./../common/Types.sol";
 import "./../common/UtilsLib.sol";
+import { LockData } from "./../common/Types.sol";
+import { ERC20_TOKEN_TYPE } from "./../common/Constants.sol";
+
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
+
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
-import "./interfaces/IPantherPoolV1.sol";
-import "../common/UtilsLib.sol";
 
 contract PantherPoolV1 is
     PantherForest,
