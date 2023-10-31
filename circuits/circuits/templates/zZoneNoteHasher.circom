@@ -10,7 +10,7 @@ template ZZoneNoteHasher(){
     signal input originZoneIDs;                            // 256
     signal input targetZoneIDs;                            // 256
     signal input networkIDsBitMap;                         // 64
-    signal input kycKytMerkleTreeLeafIDsAndRulesList;      // 256
+    signal input trustProvidersMerkleTreeLeafIDsAndRulesList;      // 256
     signal input kycExpiryTime;                            // 32
     signal input kytExpiryTime;                            // 32
     signal input depositMaxAmount;                         // 64
@@ -29,7 +29,7 @@ template ZZoneNoteHasher(){
     hash.inputs[3] <== originZoneIDs;
     hash.inputs[4] <== targetZoneIDs;
     hash.inputs[5] <== networkIDsBitMap;
-    hash.inputs[6] <== kycKytMerkleTreeLeafIDsAndRulesList;
+    hash.inputs[6] <== trustProvidersMerkleTreeLeafIDsAndRulesList;
     hash.inputs[7] <== kycExpiryTime;
     hash.inputs[8] <== kytExpiryTime;
     hash.inputs[9] <== depositMaxAmount;
@@ -104,7 +104,7 @@ template ZZoneNoteHasher(){
     component hash0 = Poseidon(5);
     hash0.inputs[0] <== originZoneIDs;
     hash0.inputs[1] <== targetZoneIDs;
-    hash0.inputs[2] <== kycKytMerkleTreeLeafIDsAndRulesList;
+    hash0.inputs[2] <== trustProvidersMerkleTreeLeafIDsAndRulesList;
     hash0.inputs[3] <== b2n_0.out;
     hash0.inputs[4] <== b2n_1.out;
 
