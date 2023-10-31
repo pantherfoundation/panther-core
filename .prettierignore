@@ -12,6 +12,7 @@ circuits/test/data/*.tar.gz
 circuits/lib
 circuits/types
 circuits/compiled
+circuits/.gitattributes
 
 contracts/artifacts/
 contracts/cache/
