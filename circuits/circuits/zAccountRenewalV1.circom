@@ -4,8 +4,8 @@ pragma circom 2.1.6;
 // project deps
 include "./templates/balanceChecker.circom";
 include "./templates/isNotZero.circom";
-include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
-include "./templates/kycKytNoteInclusionProver.circom";
+include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
@@ -32,7 +32,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              ZAssetMerkleTreeDepth,
                              ZAccountBlackListMerkleTreeDepth,
                              ZZoneMerkleTreeDepth,
-                             KycKytMerkleTreeDepth ) {
+                             TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
@@ -73,8 +73,11 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zAccountUtxoInCreateTime;
     signal input zAccountUtxoInRootSpendPrivKey;
     signal input zAccountUtxoInRootSpendPubKey[2];
+    signal input zAccountUtxoInReadPubKey[2];
+    signal input zAccountUtxoInNullifierPubKey[2];
     signal input zAccountUtxoInMasterEOA;
     signal input zAccountUtxoInSpendKeyRandom;
+    signal input zAccountUtxoInNullifierPrivKey;
     signal input zAccountUtxoInCommitment; // public
     signal input zAccountUtxoInNullifier;  // public
     signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
@@ -97,7 +100,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneOriginZoneIDs;
     signal input zZoneTargetZoneIDs;
     signal input zZoneNetworkIDsBitMap;
-    signal input zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    signal input zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     signal input zZoneKycExpiryTime;
     signal input zZoneKytExpiryTime;
     signal input zZoneDepositMaxAmount;
@@ -114,9 +117,9 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // KYC
     signal input kycEdDsaPubKey[2];
     signal input kycEdDsaPubKeyExpiryTime;
-    signal input kycKytMerkleRoot;
-    signal input kycPathElements[KycKytMerkleTreeDepth];
-    signal input kycPathIndex[KycKytMerkleTreeDepth];
+    signal input trustProvidersMerkleRoot;
+    signal input kycPathElements[TrustProvidersMerkleTreeDepth];
+    signal input kycPathIndex[TrustProvidersMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
     // signed message
     signal input kycSignedMessagePackageType;         // 1 - KYC
@@ -125,6 +128,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input kycSignedMessageReceiver;            // 0
     signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
+    signal input kycSignedMessageSigner;
     signal input kycSignedMessageHash;                // public
     signal input kycSignature[3];                     // S,R8x,R8y
 
@@ -152,7 +156,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // 2) zAccountBlackListMerkleRoot
     // 3) zNetworkTreeMerkleRoot
     // 4) zZoneMerkleRoot
-    // 5) kycKytMerkleRoot
+    // 5) trustProvidersMerkleRoot
     signal input staticTreeMerkleRoot;
 
     // forest root
@@ -247,6 +251,10 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoInNoteHasher.spendPubKey[1] <== zAccountUtxoInSpendPubKeyDeriver.derivedPubKey[1];
     zAccountUtxoInNoteHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoInNoteHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoInNoteHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
+    zAccountUtxoInNoteHasher.readPubKey[1] <== zAccountUtxoInReadPubKey[1];
+    zAccountUtxoInNoteHasher.nullifierPubKey[0] <== zAccountUtxoInNullifierPubKey[0];
+    zAccountUtxoInNoteHasher.nullifierPubKey[1] <== zAccountUtxoInNullifierPubKey[1];
     zAccountUtxoInNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoInNoteHasher.id <== zAccountUtxoInId;
     zAccountUtxoInNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
@@ -294,7 +302,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     // [7] - Verify zAccountUtxoIn nullifier
     component zAccountUtxoInNullifierHasher = ZAccountNullifierHasher();
-    zAccountUtxoInNullifierHasher.spendPrivKey <== zAccountUtxoInSpendKeyRandom * zAccountUtxoInRootSpendPrivKey; // r * RootPrivKey
+    zAccountUtxoInNullifierHasher.privKey <== zAccountUtxoInNullifierPrivKey; // r * RootPrivKey
     zAccountUtxoInNullifierHasher.commitment <== zAccountUtxoInNoteHasher.out;
 
     component zAccountUtxoInNullifierHasherProver = ForceEqualIfEnabled();
@@ -323,6 +331,10 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoOutNoteHasher.spendPubKey[1] <== zAccountUtxoOutSpendPubKeyDeriver.derivedPubKey[1];
     zAccountUtxoOutNoteHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoOutNoteHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoOutNoteHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
+    zAccountUtxoOutNoteHasher.readPubKey[1] <== zAccountUtxoInReadPubKey[1];
+    zAccountUtxoOutNoteHasher.nullifierPubKey[0] <== zAccountUtxoInNullifierPubKey[0];
+    zAccountUtxoOutNoteHasher.nullifierPubKey[1] <== zAccountUtxoInNullifierPubKey[1];
     zAccountUtxoOutNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoOutNoteHasher.id <== zAccountUtxoInId;
     zAccountUtxoOutNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
@@ -344,7 +356,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
     // [11] - Verify KYT signature
-    component kycSignedMessageHashInternal = Poseidon(6);
+    component kycSignedMessageHashInternal = Poseidon(7);
 
     kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
     kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
@@ -352,13 +364,15 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
     kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
     kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
+    kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageSigner;
 
     // verify required values
     kycSignedMessagePackageType === 1; // KYC pkg type
     kycSignedMessageSender === zAccountUtxoInMasterEOA;
+    kycSignedMessageSender === kycSignedMessageSigner;
 
     component kycSignatureVerifier = EdDSAPoseidonVerifier();
-    kycSignatureVerifier.enabled <== kycKytMerkleRoot;
+    kycSignatureVerifier.enabled <== trustProvidersMerkleRoot;
     kycSignatureVerifier.Ax <== kycEdDsaPubKey[0];
     kycSignatureVerifier.Ay <== kycEdDsaPubKey[1];
     kycSignatureVerifier.S <== kycSignature[0];
@@ -369,7 +383,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     // check if enabled
     component iskycSignedMessageHashIsEqualEnabled = IsNotZero();
-    iskycSignedMessageHashIsEqualEnabled.in <== kycKytMerkleRoot;
+    iskycSignedMessageHashIsEqualEnabled.in <== trustProvidersMerkleRoot;
 
     // verify kyc-hash
     component kycSignedMessageHashIsEqual = ForceEqualIfEnabled();
@@ -378,27 +392,27 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 
     // [12] - Verify kycEdDSA public key membership
-    component kycKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
+    component kycKycNoteInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
     kycKycNoteInclusionProver.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
-    kycKycNoteInclusionProver.root <== kycKytMerkleRoot;
+    kycKycNoteInclusionProver.root <== trustProvidersMerkleRoot;
     kycKycNoteInclusionProver.key[0] <== kycEdDsaPubKey[0];
     kycKycNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
     kycKycNoteInclusionProver.expiryTime <== kycEdDsaPubKeyExpiryTime;
-    for (var j=0; j< KycKytMerkleTreeDepth; j++) {
+    for (var j=0; j< TrustProvidersMerkleTreeDepth; j++) {
         kycKycNoteInclusionProver.pathIndex[j] <== kycPathIndex[j];
         kycKycNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
     // [13] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
-    component b2nLeafId = Bits2Num(KycKytMerkleTreeDepth);
-    for (var j = 0; j < KycKytMerkleTreeDepth; j++) {
+    component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
+    for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
         b2nLeafId.in[j] <== kycPathIndex[j];
     }
-    component kycLeafIdAndRuleInclusionProver = KycKytMerkleTreeLeafIDAndRuleInclusionProver();
-    kycLeafIdAndRuleInclusionProver.enabled <== kycKytMerkleRoot;
+    component kycLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
+    kycLeafIdAndRuleInclusionProver.enabled <== trustProvidersMerkleRoot;
     kycLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
     kycLeafIdAndRuleInclusionProver.rule <== kycSignedMessageRuleId;
-    kycLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    kycLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kycLeafIdAndRuleInclusionProver.offset <== kycMerkleTreeLeafIDsAndRulesOffset;
 
     // [14] - Verify zZone membership
@@ -409,7 +423,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.originZoneIDs <== zZoneOriginZoneIDs;
     zZoneNoteHasher.targetZoneIDs <== zZoneTargetZoneIDs;
     zZoneNoteHasher.networkIDsBitMap <== zZoneNetworkIDsBitMap;
-    zZoneNoteHasher.kycKytMerkleTreeLeafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    zZoneNoteHasher.trustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     zZoneNoteHasher.kycExpiryTime <== zZoneKycExpiryTime;
     zZoneNoteHasher.kytExpiryTime <== zZoneKytExpiryTime;
     zZoneNoteHasher.depositMaxAmount <== zZoneDepositMaxAmount;
@@ -456,7 +470,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[2] <== zNetworkTreeMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[3] <== zZoneMerkleRoot;
-    staticTreeMerkleRootVerifier.inputs[4] <== kycKytMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[4] <== trustProvidersMerkleRoot;
 
     // verify computed root against provided one
     component isEqualStaticTreeMerkleRoot = ForceEqualIfEnabled();

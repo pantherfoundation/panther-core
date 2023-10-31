@@ -5,8 +5,8 @@ pragma circom 2.1.6;
 include "./templates/balanceChecker.circom";
 include "./templates/dataEscrowElgamalEncryption.circom";
 include "./templates/isNotZero.circom";
-include "./templates/kycKytMerkleTreeLeafIdAndRuleInclusionProver.circom";
-include "./templates/kycKytNoteInclusionProver.circom";
+include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
 include "./templates/nullifierHasher.circom";
 include "./templates/pubKeyDeriver.circom";
@@ -34,15 +34,15 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
-template TransactionV1Extended( nUtxoIn,
-                                nUtxoOut,
-                                UtxoLeftMerkleTreeDepth,
-                                UtxoMiddleMerkleTreeDepth,
-                                ZNetworkMerkleTreeDepth,
-                                ZAssetMerkleTreeDepth,
-                                ZAccountBlackListMerkleTreeDepth,
-                                ZZoneMerkleTreeDepth,
-                                KycKytMerkleTreeDepth ) {
+template ZTransactionV1( nUtxoIn,
+                         nUtxoOut,
+                         UtxoLeftMerkleTreeDepth,
+                         UtxoMiddleMerkleTreeDepth,
+                         ZNetworkMerkleTreeDepth,
+                         ZAssetMerkleTreeDepth,
+                         ZAccountBlackListMerkleTreeDepth,
+                         ZZoneMerkleTreeDepth,
+                         TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
@@ -119,8 +119,12 @@ template TransactionV1Extended( nUtxoIn,
     signal input zAccountUtxoInTotalAmountPerTimePeriod;
     signal input zAccountUtxoInCreateTime;
     signal input zAccountUtxoInRootSpendPubKey[2];
+    signal input zAccountUtxoInReadPubKey[2];
+    signal input zAccountUtxoInNullifierPubKey[2];
     signal input zAccountUtxoInMasterEOA;
     signal input zAccountUtxoInSpendPrivKey;
+    signal input zAccountUtxoInReadPrivKey;
+    signal input zAccountUtxoInNullifierPrivKey;
     signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
     signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
     signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
@@ -135,7 +139,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input zZoneOriginZoneIDs;
     signal input zZoneTargetZoneIDs;
     signal input zZoneNetworkIDsBitMap;
-    signal input zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    signal input zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     signal input zZoneKycExpiryTime;
     signal input zZoneKytExpiryTime;
     signal input zZoneDepositMaxAmount;
@@ -164,9 +168,9 @@ template TransactionV1Extended( nUtxoIn,
     // switch-off control is used for internal tx
     signal input kytEdDsaPubKey[2];
     signal input kytEdDsaPubKeyExpiryTime;
-    signal input kycKytMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
-    signal input kytPathElements[KycKytMerkleTreeDepth];
-    signal input kytPathIndex[KycKytMerkleTreeDepth];
+    signal input trustProvidersMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
+    signal input kytPathElements[TrustProvidersMerkleTreeDepth];
+    signal input kytPathIndex[TrustProvidersMerkleTreeDepth];
     signal input kytMerkleTreeLeafIDsAndRulesOffset;     // used for both cases of deposit & withdraw
     // deposit case
     signal input kytDepositSignedMessagePackageType;
@@ -177,6 +181,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input kytDepositSignedMessageSessionId;
     signal input kytDepositSignedMessageRuleId;
     signal input kytDepositSignedMessageAmount;
+    signal input kytDepositSignedMessageSigner;
     signal input kytDepositSignedMessageHash;                // public
     signal input kytDepositSignature[3];                     // S,R8x,R8y
     // withdraw case
@@ -188,6 +193,7 @@ template TransactionV1Extended( nUtxoIn,
     signal input kytWithdrawSignedMessageSessionId;
     signal input kytWithdrawSignedMessageRuleId;
     signal input kytWithdrawSignedMessageAmount;
+    signal input kytWithdrawSignedMessageSigner;
     signal input kytWithdrawSignedMessageHash;                // public
     signal input kytWithdrawSignature[3];                     // S,R8x,R8y
 
@@ -197,8 +203,8 @@ template TransactionV1Extended( nUtxoIn,
     signal input dataEscrowEphimeralRandom;
     signal input dataEscrowEphimeralPubKeyAx; // public
     signal input dataEscrowEphimeralPubKeyAy;
-    signal input dataEscrowPathElements[KycKytMerkleTreeDepth];
-    signal input dataEscrowPathIndex[KycKytMerkleTreeDepth];
+    signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
+    signal input dataEscrowPathIndex[TrustProvidersMerkleTreeDepth];
 
     // ------------- scalars-size --------------------------------
     // 1) 1 x 64 (zAsset)
@@ -277,7 +283,7 @@ template TransactionV1Extended( nUtxoIn,
     // 2) zAccountBlackListMerkleRoot
     // 3) zNetworkTreeMerkleRoot
     // 4) zZoneMerkleRoot
-    // 5) kycKytMerkleRoot
+    // 5) trustProvidersMerkleRoot
     signal input staticTreeMerkleRoot;
 
     // forest root
@@ -348,6 +354,10 @@ template TransactionV1Extended( nUtxoIn,
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
 
+    // verify change is zero
+    depositChange === 0;
+    withdrawChange === 0;
+
     // [3] - Verify zAsset's membership and decode its weight
     component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
     zAssetNoteInclusionProver.zAsset <== zAssetId;
@@ -413,7 +423,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoInSpendPubKey[i].Ay === utxoInSpendPubKeyDeriver[i].derivedPubKey[1];
 
         // compute commitment
-        utxoInNoteHashers[i] = UtxoNoteHasher();
+        utxoInNoteHashers[i] = UtxoNoteHasher(0);
         utxoInNoteHashers[i].spendPk[0] <== utxoInSpendPubKey[i].Ax;
         utxoInNoteHashers[i].spendPk[1] <== utxoInSpendPubKey[i].Ay;
         utxoInNoteHashers[i].zAsset <== utxoZAsset;
@@ -462,9 +472,8 @@ template TransactionV1Extended( nUtxoIn,
 
         // verify nullifier
         utxoInNullifierHasher[i] = NullifierHasherExtended();
-        utxoInNullifierHasher[i].spendPrivKey <== utxoInSpendPrivKey[i];
+        utxoInNullifierHasher[i].privKey <== zAccountUtxoInNullifierPrivKey;
         utxoInNullifierHasher[i].leaf <== utxoInNoteHashers[i].out;
-        // utxoInNullifier[i] === utxoInNullifierHasher[i].out;
 
         utxoInNullifierProver[i] = ForceEqualIfEnabled();
         utxoInNullifierProver[i].in[0] <== utxoInNullifier[i];
@@ -514,7 +523,7 @@ template TransactionV1Extended( nUtxoIn,
         utxoOutSpendPubKeyDeriver[i].random <== utxoOutSpendPubKeyRandom[i]; // random generated by sender
 
         // verify commitment
-        utxoOutNoteHasher[i] = UtxoNoteHasher();
+        utxoOutNoteHasher[i] = UtxoNoteHasher(0);
         utxoOutNoteHasher[i].spendPk[0] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[0];
         utxoOutNoteHasher[i].spendPk[1] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[1];
         utxoOutNoteHasher[i].zAsset <== utxoZAsset;
@@ -525,45 +534,40 @@ template TransactionV1Extended( nUtxoIn,
         utxoOutNoteHasher[i].originZoneId <== zAccountUtxoInZoneId; // ALWAYS will be ZoneId of current zAccount
         utxoOutNoteHasher[i].targetZoneId <== utxoOutTargetZoneId[i];
         utxoOutNoteHasher[i].zAccountId <== zAccountUtxoInId; // ALWAYS will be ZAccountId of current zAccount
-        // utxoOutCommitment[i] === utxoOutNoteHasher[i].out;
-
-        // is-zero amount check
-        utxoOutIsEnabled[i] = IsNotZero();
-        utxoOutIsEnabled[i].in <== utxoOutAmount[i];
 
         utxoOutCommitmentProver[i] = ForceEqualIfEnabled();
+        utxoOutCommitmentProver[i].enabled <== utxoOutCommitment[i];
         utxoOutCommitmentProver[i].in[0] <== utxoOutCommitment[i];
         utxoOutCommitmentProver[i].in[1] <== utxoOutNoteHasher[i].out;
-        utxoOutCommitmentProver[i].enabled <== utxoOutIsEnabled[i].out;
 
         // verify if target zoneId is allowed in zZone (originZoneId vefiried via zAccount)
         utxoOutZoneIdInclusionProver[i] = ZoneIdInclusionProver();
-        utxoOutZoneIdInclusionProver[i].enabled <== utxoOutIsEnabled[i].out;
+        utxoOutZoneIdInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutZoneIdInclusionProver[i].zoneId <== utxoOutTargetZoneId[i];
         utxoOutZoneIdInclusionProver[i].zoneIds <== zZoneTargetZoneIDs;
         utxoOutZoneIdInclusionProver[i].offset <== utxoOutTargetZoneIdOffset[i];
 
         // verify origin networkId is allowed in zZone
         utxoOutOriginNetworkIdInclusionProver[i] = NetworkIdInclusionProver();
-        utxoOutOriginNetworkIdInclusionProver[i].enabled <== utxoOutIsEnabled[i].out;
+        utxoOutOriginNetworkIdInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutOriginNetworkIdInclusionProver[i].networkId <== utxoOutOriginNetworkId[i];
         utxoOutOriginNetworkIdInclusionProver[i].networkIdsBitMap <== zZoneNetworkIDsBitMap;
 
         // verify target networkId is allowed in zZone
         utxoOutTargetNetworkIdInclusionProver[i] = NetworkIdInclusionProver();
-        utxoOutTargetNetworkIdInclusionProver[i].enabled <== utxoOutIsEnabled[i].out;
+        utxoOutTargetNetworkIdInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutTargetNetworkIdInclusionProver[i].networkId <== utxoOutTargetNetworkId[i];
         utxoOutTargetNetworkIdInclusionProver[i].networkIdsBitMap <== zZoneNetworkIDsBitMap;
 
         // verify origin networkId is allowed (same as zNetworkId) in zNetwork
         utxoOutOriginNetworkIdZNetoworkInclusionProver[i] = ForceEqualIfEnabled();
+        utxoOutOriginNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutOriginNetworkIdZNetoworkInclusionProver[i].in[0] <== zNetworkId;
         utxoOutOriginNetworkIdZNetoworkInclusionProver[i].in[1] <== utxoOutOriginNetworkId[i];
-        utxoOutOriginNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutIsEnabled[i].out;
 
         // verify target networkId is allowed in zNetwork
         utxoOutTargetNetworkIdZNetoworkInclusionProver[i] = NetworkIdInclusionProver();
-        utxoOutTargetNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutIsEnabled[i].out;
+        utxoOutTargetNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkId <== utxoOutTargetNetworkId[i];
         utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
@@ -593,6 +597,10 @@ template TransactionV1Extended( nUtxoIn,
     zAccountUtxoInHasher.spendPubKey[1] <== zAccountUtxoInSpendPubKey.Ay;
     zAccountUtxoInHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoInHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoInHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
+    zAccountUtxoInHasher.readPubKey[1] <== zAccountUtxoInReadPubKey[1];
+    zAccountUtxoInHasher.nullifierPubKey[0] <== zAccountUtxoInNullifierPubKey[0];
+    zAccountUtxoInHasher.nullifierPubKey[1] <== zAccountUtxoInNullifierPubKey[1];
     zAccountUtxoInHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoInHasher.id <== zAccountUtxoInId;
     zAccountUtxoInHasher.amountZkp <== zAccountUtxoInZkpAmount;
@@ -608,15 +616,26 @@ template TransactionV1Extended( nUtxoIn,
     zAccountUtxoInNetworkId === zNetworkId;
 
     // [9] - Verify zAccountUtxoIn nullifier
+    // verify nullifier key
+    component zAccountNullifierPubKeyChecker = BabyPbk();
+    zAccountNullifierPubKeyChecker.in <== zAccountUtxoInNullifierPrivKey;
+    zAccountNullifierPubKeyChecker.Ax === zAccountUtxoInNullifierPubKey[0];
+    zAccountNullifierPubKeyChecker.Ay === zAccountUtxoInNullifierPubKey[1];
+
     component zAccountUtxoInNullifierHasher = ZAccountNullifierHasher();
-    zAccountUtxoInNullifierHasher.spendPrivKey <== zAccountUtxoInSpendPrivKey;
+    zAccountUtxoInNullifierHasher.privKey <== zAccountUtxoInNullifierPrivKey;
     zAccountUtxoInNullifierHasher.commitment <== zAccountUtxoInHasher.out;
-    // zAccountUtxoInNullifier === zAccountUtxoInNullifierHasher.out;
 
     component zAccountUtxoInNullifierHasherProver = ForceEqualIfEnabled();
     zAccountUtxoInNullifierHasherProver.in[0] <== zAccountUtxoInNullifier;
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
     zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInSpendPrivKey;
+
+    // verify reading key
+    component zAccountReadPubKeyChecker = BabyPbk();
+    zAccountReadPubKeyChecker.in <== zAccountUtxoInReadPrivKey;
+    zAccountReadPubKeyChecker.Ax === zAccountUtxoInReadPubKey[0];
+    zAccountReadPubKeyChecker.Ay === zAccountUtxoInReadPubKey[1];
 
     // [10] - Verify zAccountUtxoIn membership
     component zAccountUtxoInMerkleVerifier = MerkleTreeInclusionProofDoubleLeavesSelectable(UtxoLeftMerkleTreeDepth,UtxoMiddleExtraLevels,UtxoRightExtraLevels);
@@ -656,6 +675,10 @@ template TransactionV1Extended( nUtxoIn,
     zAccountUtxoOutHasher.spendPubKey[1] <== zAccountUtxoOutPubKeyDeriver.derivedPubKey[1];
     zAccountUtxoOutHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoOutHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
+    zAccountUtxoOutHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
+    zAccountUtxoOutHasher.readPubKey[1] <== zAccountUtxoInReadPubKey[1];
+    zAccountUtxoOutHasher.nullifierPubKey[0] <== zAccountUtxoInNullifierPubKey[0];
+    zAccountUtxoOutHasher.nullifierPubKey[1] <== zAccountUtxoInNullifierPubKey[1];
     zAccountUtxoOutHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoOutHasher.id <== zAccountUtxoInId;
     zAccountUtxoOutHasher.amountZkp <== zAccountUtxoOutZkpAmount;
@@ -682,7 +705,7 @@ template TransactionV1Extended( nUtxoIn,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [14] - Verify KYT signature, TODO: verify - token, amount, packageType and ruleId
+    // [14] - Verify KYT signature
     component isZeroDeposit = IsZero();
     isZeroDeposit.in <== depositAmount;
 
@@ -695,7 +718,7 @@ template TransactionV1Extended( nUtxoIn,
 
     var isKytDepositCheckEnabled = 1 - isZeroDeposit.out;
 
-    component kytDepositSignedMessageHashInternal = Poseidon(8);
+    component kytDepositSignedMessageHashInternal = Poseidon(9);
 
     kytDepositSignedMessageHashInternal.inputs[0] <== kytDepositSignedMessagePackageType;
     kytDepositSignedMessageHashInternal.inputs[1] <== kytDepositSignedMessageTimestamp;
@@ -705,6 +728,7 @@ template TransactionV1Extended( nUtxoIn,
     kytDepositSignedMessageHashInternal.inputs[5] <== kytDepositSignedMessageSessionId;
     kytDepositSignedMessageHashInternal.inputs[6] <== kytDepositSignedMessageRuleId;
     kytDepositSignedMessageHashInternal.inputs[7] <== kytDepositSignedMessageAmount;
+    kytDepositSignedMessageHashInternal.inputs[8] <== kytDepositSignedMessageSigner;
 
     component kytDepositSignatureVerifier = EdDSAPoseidonVerifier();
     kytDepositSignatureVerifier.enabled <== isKytDepositCheckEnabled;
@@ -715,6 +739,12 @@ template TransactionV1Extended( nUtxoIn,
     kytDepositSignatureVerifier.R8y <== kytDepositSignature[2];
 
     kytDepositSignatureVerifier.M <== kytDepositSignedMessageHashInternal.out;
+
+    // deposit Master EOA check
+    component kytDepositMasterEOAIsEqual = ForceEqualIfEnabled();
+    kytDepositMasterEOAIsEqual.enabled <== isKytDepositCheckEnabled;
+    kytDepositMasterEOAIsEqual.in[0] <== kytDepositSignedMessageSigner;
+    kytDepositMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
 
     // deposit kyt-hash
     component kytDepositSignedMessageHashIsEqual = ForceEqualIfEnabled();
@@ -734,9 +764,12 @@ template TransactionV1Extended( nUtxoIn,
     kytDepositSignedMessageAmountIsEqual.in[0] <== depositAmount;
     kytDepositSignedMessageAmountIsEqual.in[1] <== kytDepositSignedMessageAmount;
 
+    // deposit package type
+    kytDepositSignedMessagePackageType === 2;
+
     var isKytWithdrawCheckEnabled = 1 - isZeroWithdraw.out;
 
-    component kytWithdrawSignedMessageHashInternal = Poseidon(8);
+    component kytWithdrawSignedMessageHashInternal = Poseidon(9);
 
     kytWithdrawSignedMessageHashInternal.inputs[0] <== kytWithdrawSignedMessagePackageType;
     kytWithdrawSignedMessageHashInternal.inputs[1] <== kytWithdrawSignedMessageTimestamp;
@@ -746,6 +779,7 @@ template TransactionV1Extended( nUtxoIn,
     kytWithdrawSignedMessageHashInternal.inputs[5] <== kytWithdrawSignedMessageSessionId;
     kytWithdrawSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageRuleId;
     kytWithdrawSignedMessageHashInternal.inputs[7] <== kytWithdrawSignedMessageAmount;
+    kytWithdrawSignedMessageHashInternal.inputs[8] <== kytWithdrawSignedMessageSigner;
 
     component kytWithdrawSignatureVerifier = EdDSAPoseidonVerifier();
     kytWithdrawSignatureVerifier.enabled <== isKytWithdrawCheckEnabled;
@@ -756,6 +790,12 @@ template TransactionV1Extended( nUtxoIn,
     kytWithdrawSignatureVerifier.R8y <== kytWithdrawSignature[2];
 
     kytWithdrawSignatureVerifier.M <== kytWithdrawSignedMessageHashInternal.out;
+
+    // withdraw Master EOA check
+    component kytWithdrawMasterEOAIsEqual = ForceEqualIfEnabled();
+    kytWithdrawMasterEOAIsEqual.enabled <== isKytWithdrawCheckEnabled;
+    kytWithdrawMasterEOAIsEqual.in[0] <== kytDepositSignedMessageSigner;
+    kytWithdrawMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
 
     // withdraw kyt hash
     component kytWithdrawSignedMessageHashIsEqual = ForceEqualIfEnabled();
@@ -775,50 +815,53 @@ template TransactionV1Extended( nUtxoIn,
     kytWithdrawSignedMessageAmountIsEqual.in[0] <== withdrawAmount;
     kytWithdrawSignedMessageAmountIsEqual.in[1] <== kytWithdrawSignedMessageAmount;
 
+    // withdraw package type
+    kytWithdrawSignedMessagePackageType === 2;
+
     // [15] - Verify kytEdDSA public key membership
-    component kytKycNoteInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
+    component kytKycNoteInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
     kytKycNoteInclusionProver.enabled <== isKytCheckEnabled.out;
-    kytKycNoteInclusionProver.root <== kycKytMerkleRoot;
+    kytKycNoteInclusionProver.root <== trustProvidersMerkleRoot;
     kytKycNoteInclusionProver.key[0] <== kytEdDsaPubKey[0];
     kytKycNoteInclusionProver.key[1] <== kytEdDsaPubKey[1];
     kytKycNoteInclusionProver.expiryTime <== kytEdDsaPubKeyExpiryTime;
-    for (var j=0; j< KycKytMerkleTreeDepth; j++) {
+    for (var j=0; j< TrustProvidersMerkleTreeDepth; j++) {
         kytKycNoteInclusionProver.pathIndex[j] <== kytPathIndex[j];
         kytKycNoteInclusionProver.pathElements[j] <== kytPathElements[j];
     }
 
     // [16] - Verify kyt leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
-    component b2nLeafId = Bits2Num(KycKytMerkleTreeDepth);
-    for (var j = 0; j < KycKytMerkleTreeDepth; j++) {
+    component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
+    for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
         b2nLeafId.in[j] <== kytPathIndex[j];
     }
     // deposit part
-    component kytDepositLeafIdAndRuleInclusionProver = KycKytMerkleTreeLeafIDAndRuleInclusionProver();
+    component kytDepositLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kytDepositLeafIdAndRuleInclusionProver.enabled <== isKytDepositCheckEnabled;
     kytDepositLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
     kytDepositLeafIdAndRuleInclusionProver.rule <== kytDepositSignedMessageRuleId;
-    kytDepositLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    kytDepositLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kytDepositLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
     // withdraw part
-    component kytWithdrawLeafIdAndRuleInclusionProver = KycKytMerkleTreeLeafIDAndRuleInclusionProver();
+    component kytWithdrawLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kytWithdrawLeafIdAndRuleInclusionProver.enabled <== isKytWithdrawCheckEnabled;
     kytWithdrawLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
     kytWithdrawLeafIdAndRuleInclusionProver.rule <== kytWithdrawSignedMessageRuleId;
-    kytWithdrawLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    kytWithdrawLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kytWithdrawLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
 
     // [17] - Verify DataEscrow public key membership
     component isDataEscrowInclusionProverEnabled = IsNotZero();
-    isDataEscrowInclusionProverEnabled.in <== kycKytMerkleRoot;
+    isDataEscrowInclusionProverEnabled.in <== trustProvidersMerkleRoot;
 
-    component dataEscrowInclusionProver = KycKytNoteInclusionProver(KycKytMerkleTreeDepth);
-    dataEscrowInclusionProver.enabled <== isDataEscrowInclusionProverEnabled.out; // 1; // TODO:FIXME - enabled in any case
-    dataEscrowInclusionProver.root <== kycKytMerkleRoot;
+    component dataEscrowInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
+    dataEscrowInclusionProver.enabled <== isDataEscrowInclusionProverEnabled.out;
+    dataEscrowInclusionProver.root <== trustProvidersMerkleRoot;
     dataEscrowInclusionProver.key[0] <== dataEscrowPubKey[0];
     dataEscrowInclusionProver.key[1] <== dataEscrowPubKey[1];
     dataEscrowInclusionProver.expiryTime <== dataEscrowPubKeyExpiryTime;
 
-    for (var j = 0; j < KycKytMerkleTreeDepth; j++) {
+    for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
         dataEscrowInclusionProver.pathIndex[j] <== dataEscrowPathIndex[j];
         dataEscrowInclusionProver.pathElements[j] <== dataEscrowPathElements[j];
     }
@@ -917,7 +960,7 @@ template TransactionV1Extended( nUtxoIn,
     zZoneNoteHasher.originZoneIDs <== zZoneOriginZoneIDs;
     zZoneNoteHasher.targetZoneIDs <== zZoneTargetZoneIDs;
     zZoneNoteHasher.networkIDsBitMap <== zZoneNetworkIDsBitMap;
-    zZoneNoteHasher.kycKytMerkleTreeLeafIDsAndRulesList <== zZoneKycKytMerkleTreeLeafIDsAndRulesList;
+    zZoneNoteHasher.trustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     zZoneNoteHasher.kycExpiryTime <== zZoneKycExpiryTime;
     zZoneNoteHasher.kytExpiryTime <== zZoneKytExpiryTime;
     zZoneNoteHasher.depositMaxAmount <== zZoneDepositMaxAmount;
@@ -993,7 +1036,7 @@ template TransactionV1Extended( nUtxoIn,
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[2] <== zNetworkTreeMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[3] <== zZoneMerkleRoot;
-    staticTreeMerkleRootVerifier.inputs[4] <== kycKytMerkleRoot;
+    staticTreeMerkleRootVerifier.inputs[4] <== trustProvidersMerkleRoot;
 
     // verify computed root against provided one
     component isEqualStaticTreeMerkleRoot = ForceEqualIfEnabled();

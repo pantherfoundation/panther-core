@@ -21,4 +21,4 @@ component main {
                             16,    // ZAssetMerkleTreeDepth
                             16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
                             16,    // ZZoneMerkleTreeDepth - depends on zoneID size
-                            16 );  // KycKytMerkleTreeDepth
+                            16 );  // TrustProvidersMerkleTreeDepth

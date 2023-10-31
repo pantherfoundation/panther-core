@@ -7,7 +7,7 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
-template KycKytNoteInclusionProver(n_levels) {
+template TrustProvidersNoteInclusionProver(n_levels) {
     signal input enabled;
     signal input root;
     signal input key[2];
