@@ -42,7 +42,7 @@ uint8 constant UTXO_DATA_TYPE1 = 0x01; // for UTXO w/ zero tokenId
 uint8 constant UTXO_DATA_TYPE3 = 0x02; // for UTXO w/ non-zero tokenId
 
 // Grant Types
-// bytes4(keccak('panther-onboarding-grantor'))
+// bytes4(keccak256('panther-onboarding-grantor'))
 bytes4 constant GT_ONBOARDING = 0x93b212ae;
 // The "prp grant type" for the "release and bridge" ZKPs
 // bytes4(keccak256("panther-zkp-release"))
