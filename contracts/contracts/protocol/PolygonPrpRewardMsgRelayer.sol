@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "../protocol/interfaces/IPrpVoucherGrantor.sol";
 import "../staking/interfaces/IActionMsgReceiver.sol";
 import "../staking/interfaces/IFxMessageProcessor.sol";
 import "./actions/PrpRewardBridgedDataCoder.sol";
@@ -29,6 +30,8 @@ contract PolygonPrpRewardMsgRelayer is
     /// @dev It sends messages over the PoS bridge to this contract
     address public immutable POLYGON_REWARD_SENDER;
 
+    address public immutable PRP_VOUCHER_GRANTOR;
+
     // solhint-enable var-name-mixedcase
 
     /// @notice Message nonce (i.e. sequential number of the latest message)
@@ -39,15 +42,19 @@ contract PolygonPrpRewardMsgRelayer is
     constructor(
         // slither-disable-next-line similar-names
         address _polygonRewardSender,
-        address _fxChild
+        address _fxChild,
+        address _prpVoucherGrantor
     ) {
         require(
-            _fxChild != address(0) && _polygonRewardSender != address(0),
+            _fxChild != address(0) &&
+                _polygonRewardSender != address(0) &&
+                _prpVoucherGrantor != address(0),
             "PMR:E01"
         );
 
         FX_CHILD = _fxChild;
         POLYGON_REWARD_SENDER = _polygonRewardSender;
+        PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
     }
 
     /// @param rootMessageSender Address on the mainnet/Goerli that sent the message
@@ -63,15 +70,23 @@ contract PolygonPrpRewardMsgRelayer is
             "PMR:INVALID_SENDER"
         );
 
-        (uint256 _nonce, , ) = _decodeBridgedData(content);
-
-        //!! TODO: Here it should interact with PRP grantor to grant PRP to user
+        (
+            uint256 _nonce,
+            bytes4 prpGrantType,
+            bytes32 secret
+        ) = _decodeBridgedData(content);
 
         // Protection against replay attacks/errors. It's supposed that:
         // - failed `.onAction` shall not stop further messages bridging
         // - nonce is expected never be large enough to overflow.
         require(_nonce > nonce, "PMR:INVALID_NONCE");
         nonce = _nonce;
+
+        IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+            secret,
+            0, // amount defined for prpGrantType will be used
+            prpGrantType
+        );
 
         emit PrpRewardMsgRelayed(_nonce, content);
     }
