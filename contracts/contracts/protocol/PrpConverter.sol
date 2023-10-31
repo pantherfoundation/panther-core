@@ -213,7 +213,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
         }
 
-        firstUtxoBusQueuePos = _createZAccountAndZAssetUtxos(
+        firstUtxoBusQueuePos = _createZkpAssetUtxoAndSpendPrpUtxo(
             inputs,
             proof,
             privateMessages,
@@ -244,7 +244,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         emit Sync(prpReserve, zkpReserve);
     }
 
-    function _createZAccountAndZAssetUtxos(
+    function _createZkpAssetUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof memory proof,
         bytes memory privateMessages,
@@ -254,7 +254,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         // Trusted contract - no reentrancy guard needed
         // pool contract triggers vault to transfer `amountOut` from prpConverter
         try
-            IPantherPoolV1(PANTHER_POOL).accountPrpConversion(
+            IPantherPoolV1(PANTHER_POOL).createZkpAssetUtxoAndSpendPrpUtxo(
                 inputs,
                 proof,
                 privateMessages,
