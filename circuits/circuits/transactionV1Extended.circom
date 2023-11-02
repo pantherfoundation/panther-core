@@ -981,11 +981,11 @@ template TransactionV1Extended( nUtxoIn,
     }
 
     // [25] - verify expiryTimes
-    assert(zAccountUtxoInExpiryTime <= utxoOutCreateTime);
-    assert(kytEdDsaPubKeyExpiryTime <= utxoOutCreateTime);
-    assert(dataEscrowPubKeyExpiryTime <= utxoOutCreateTime);
-    assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime <= utxoOutCreateTime);
-    assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime <= utxoOutCreateTime);
+    assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
+    assert(kytEdDsaPubKeyExpiryTime >= utxoOutCreateTime);
+    assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
+    assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+    assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
 
     // [26] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
