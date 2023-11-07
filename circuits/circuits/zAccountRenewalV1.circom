@@ -215,7 +215,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAssetChecker.utxoZAssetId <== zAssetId;
 
     // verify zkp-token
-    zAssetId === 0; // ZKP is zero
+    zAssetChecker.isZkpToken === 1;
 
     // [3] - Zkp balance
     component totalBalanceChecker = BalanceChecker();
@@ -225,12 +225,14 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.withdrawAmount <== 0;
     totalBalanceChecker.withdrawChange <== 0;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.donatedAmountZkp <== 0;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== 0;
     totalBalanceChecker.totalUtxoOutAmount <== 0;
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
 
     // [4] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInRootSpendPubKeyCheck = BabyPbk();

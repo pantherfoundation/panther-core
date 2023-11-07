@@ -27,12 +27,14 @@ template BalanceChecker() {
     signal input withdrawAmount;
     signal input withdrawChange;
     signal input chargedAmountZkp;
+    signal input donatedAmountZkp;
     signal input zAccountUtxoInZkpAmount;
     signal input zAccountUtxoOutZkpAmount;
     signal input totalUtxoInAmount;
     signal input totalUtxoOutAmount;
     signal input zAssetWeight;
     signal input zAssetScale;
+    signal input zAssetScaleZkp;
     signal output depositScaledAmount;
     signal output depositWeightedScaledAmount;
     signal output withdrawWeightedScaledAmount;
@@ -64,6 +66,12 @@ template BalanceChecker() {
 
     // [1.2] - weighted amount
     depositWeightedScaledAmount <== depositScaledAmountTmp * zAssetWeight;
+
+    // [1.3] - scaled zZKP donation
+    assert(zAssetScaleZkp > 0);
+    signal donatedScaledAmountZkp;
+    donatedScaledAmountZkp <-- donatedAmountZkp \ zAssetScaleZkp;
+    donatedAmountZkp === donatedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Deposit //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +79,7 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [2] - Withdraw //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     // If withdrawAmount is 0 then withdrawChange must be 0
     component isZeroWithdraw = IsZero();
     isZeroWithdraw.in <== withdrawAmount;
@@ -91,6 +99,11 @@ template BalanceChecker() {
 
     // [2.2] - weighted amount
     withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
+
+    // [2.3] - scaled zZKP charge
+    signal chargedScaledAmountZkp;
+    chargedScaledAmountZkp <-- donatedAmountZkp \ zAssetScaleZkp;
+    chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,10 +112,10 @@ template BalanceChecker() {
     // [3] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     signal totalBalanceIn;
-    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * zAccountUtxoInZkpAmount;
+    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + donatedScaledAmountZkp );
 
     signal totalBalanceOut;
-    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedAmountZkp );
+    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp );
 
     component totalBalanceIsEqual = ForceEqualIfEnabled();
     totalBalanceIsEqual.enabled <== 1; // always enabled
@@ -115,8 +128,8 @@ template BalanceChecker() {
     component zAccountUtxoOutZkpAmountChecker = ForceEqualIfEnabled();
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
-    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoOutZkpAmount;
-    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount - chargedAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount + donatedScaledAmountZkp;
 
     totalScaled <== totalBalanceIn;
     totalWeighted <== totalBalanceIn * zAssetWeight;
