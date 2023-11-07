@@ -213,12 +213,14 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.withdrawAmount <== 0;
     totalBalanceChecker.withdrawChange <== 0;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.donatedAmountZkp <== 0;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== 0;
     totalBalanceChecker.totalUtxoOutAmount <== 0;
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
 
     // verify zAsset is ZKP
     zAssetChecker.isZkpToken === 1;

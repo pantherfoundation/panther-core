@@ -242,19 +242,16 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     // prp amount decided by the protocol on smart contract level
     assert(0 <= zAccountPrpAmount < 2**64);
 
-    var zAssetScaleFactor = 10**zAssetScale;
     signal zkpScaledAmount;
-    zkpScaledAmount <-- zkpAmount \ zAssetScaleFactor;
+    zkpScaledAmount <-- zkpAmount \ zAssetScale;
+    zkpAmount === zkpScaledAmount * zAssetScale + zkpChange;
 
     // verify scaled zkp amount
     zkpScaledAmount === zAccountZkpAmount;
     assert(zkpScaledAmount * zAssetWeight <= zZoneDepositMaxAmount);
 
-    signal zkpAmountRestored;
-    zkpAmountRestored <-- zkpScaledAmount * zAssetScaleFactor;
-
     // verify zkp change
-    zkpChange === zkpAmount - zkpAmountRestored;
+    zkpChange === 0;
 
     // [4] - Verify zAccountUtxo commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();

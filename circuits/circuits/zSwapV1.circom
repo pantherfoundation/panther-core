@@ -62,6 +62,7 @@ template ZSwapV1( nUtxoIn,
     signal input depositChange;    // public
     signal input withdrawAmount;   // public
     signal input withdrawChange;   // public
+    signal input donatedAmountZkp; // public
 
     assert(0 <= isSwap < 2);
     var arraySizeInCaseOfSwap = 1;
@@ -76,16 +77,22 @@ template ZSwapV1( nUtxoIn,
     signal input utxoZAsset[arraySizeInCaseOfSwap];       // used both for in & out utxo
 
     // zAsset
-    signal input zAssetId[arraySizeInCaseOfSwap];
-    signal input zAssetToken[arraySizeInCaseOfSwap];
-    signal input zAssetTokenId[arraySizeInCaseOfSwap];
-    signal input zAssetNetwork[arraySizeInCaseOfSwap];
-    signal input zAssetOffset[arraySizeInCaseOfSwap];
-    signal input zAssetWeight[arraySizeInCaseOfSwap];
-    signal input zAssetScale[arraySizeInCaseOfSwap];
+    var zkpToken = 1;
+    if ( isSwap ) {
+        zkpToken = 2;
+    }
+    var zAssetArraySize = arraySizeInCaseOfSwap + 1;
+
+    signal input zAssetId[zAssetArraySize];
+    signal input zAssetToken[zAssetArraySize];
+    signal input zAssetTokenId[zAssetArraySize];
+    signal input zAssetNetwork[zAssetArraySize];
+    signal input zAssetOffset[zAssetArraySize];
+    signal input zAssetWeight[zAssetArraySize];
+    signal input zAssetScale[zAssetArraySize];
     signal input zAssetMerkleRoot;
-    signal input zAssetPathIndex[arraySizeInCaseOfSwap][ZAssetMerkleTreeDepth];
-    signal input zAssetPathElements[arraySizeInCaseOfSwap][ZAssetMerkleTreeDepth];
+    signal input zAssetPathIndex[zAssetArraySize][ZAssetMerkleTreeDepth];
+    signal input zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth];
 
     // reward computation params
     signal input forTxReward;
@@ -360,12 +367,14 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
     totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.donatedAmountZkp <== donatedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;
     totalBalanceChecker.totalUtxoOutAmount <== totalUtxoOutAmount;
     totalBalanceChecker.zAssetWeight <== zAssetWeight[regularToken];
     totalBalanceChecker.zAssetScale <== zAssetScale[regularToken];
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
 
     // verify change is zero
     depositChange === 0;

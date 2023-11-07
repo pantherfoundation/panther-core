@@ -61,6 +61,7 @@ template ZTransactionV1( nUtxoIn,
     signal input depositChange;    // public
     signal input withdrawAmount;   // public
     signal input withdrawChange;   // public
+    signal input donatedAmountZkp; // public
     signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
     signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
     signal input utxoZAsset;       // used both for in & out utxo
@@ -76,6 +77,16 @@ template ZTransactionV1( nUtxoIn,
     signal input zAssetMerkleRoot;
     signal input zAssetPathIndex[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
+
+    signal input zAssetIdZkp;
+    signal input zAssetTokenZkp;
+    signal input zAssetTokenIdZkp;
+    signal input zAssetNetworkZkp;
+    signal input zAssetOffsetZkp;
+    signal input zAssetWeightZkp;
+    signal input zAssetScaleZkp;
+    signal input zAssetPathIndexZkp[ZAssetMerkleTreeDepth];
+    signal input zAssetPathElementsZkp[ZAssetMerkleTreeDepth];
 
     // reward computation params
     signal input forTxReward;
@@ -347,12 +358,14 @@ template ZTransactionV1( nUtxoIn,
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
     totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.donatedAmountZkp <== donatedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;
     totalBalanceChecker.totalUtxoOutAmount <== totalUtxoOutAmount;
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScaleZkp;
 
     // verify change is zero
     depositChange === 0;
@@ -376,6 +389,25 @@ template ZTransactionV1( nUtxoIn,
 
     // verify zAsset::network is equal to the current networkId
     zAssetNetwork === zNetworkId;
+
+    // [3.1] - Verify ZKP zAsset's membership and decode its weight
+    component zAssetNoteInclusionProverZkp = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
+    zAssetNoteInclusionProverZkp.zAsset <== zAssetIdZkp;
+    zAssetNoteInclusionProverZkp.token <== zAssetTokenZkp;
+    zAssetNoteInclusionProverZkp.tokenId <== zAssetTokenIdZkp;
+    zAssetNoteInclusionProverZkp.network <== zAssetNetworkZkp;
+    zAssetNoteInclusionProverZkp.offset <== zAssetOffsetZkp;
+    zAssetNoteInclusionProverZkp.weight <== zAssetWeightZkp;
+    zAssetNoteInclusionProverZkp.scale <== zAssetScaleZkp;
+    zAssetNoteInclusionProverZkp.merkleRoot <== zAssetMerkleRoot;
+
+    for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
+        zAssetNoteInclusionProverZkp.pathIndex[i] <== zAssetPathIndexZkp[i];
+        zAssetNoteInclusionProverZkp.pathElements[i] <== zAssetPathElementsZkp[i];
+    }
+
+    // verify zAsset::network is equal to the current networkId
+    zAssetNetworkZkp === zNetworkId;
 
     // [4] - Pass values for computing rewards
     component rewards = RewardsExtended(nUtxoIn);
