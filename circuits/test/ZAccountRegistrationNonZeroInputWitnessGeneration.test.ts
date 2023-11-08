@@ -119,6 +119,54 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         /* END ========== Key generation for ZAccount ========== */
         /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
 
+        // START ============= zAccountReadPubKey ======
+        // const seedForReadPubKey = moduloBabyJubSubFieldPrime(
+        //     generateRandom256Bits(),
+        // );
+        // console.log('seedForReadPubKey=>', seedForReadPubKey);
+        const fixedSeedForReadPubKey =
+            1807143148206188134925427242927492302158087995127931582887251149414169118083n;
+
+        // Generate seedForReadPubKey
+        const readPubKeyKeypair = deriveKeypairFromSeed(fixedSeedForReadPubKey);
+        const readPubKeys = readPubKeyKeypair.publicKey;
+        // console.log('readPubKeys=>', readPubKeys);
+        // read public keys - output
+        // [
+        //     1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+        //     311986042833546580202940940143769849297540181368261575540657864271112079432n
+        // ]
+
+        const readPrivateKey = readPubKeyKeypair.privateKey;
+        // console.log('readPrivateKey=>', readPrivateKey);
+        // readPrivateKey
+        // 1807143148206188134925427242927492302158087995127931582887251149414169118083n
+
+        // END ============= zAccountReadPubKey ======
+
+        // START ============= zAccountReadPubKey ======
+        // const seedForZAccountNullifierPubKey = moduloBabyJubSubFieldPrime(
+        //     generateRandom256Bits(),
+        // );
+        // console.log(
+        //     'seedForZAccountNullifierPubKey=>',
+        //     seedForZAccountNullifierPubKey,
+        // );
+        const fixedSeedForZAccountNullifierPubKey =
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n;
+
+        // Generate seedForReadPubKey
+        const zAccountNullifierPubKeyPair = deriveKeypairFromSeed(
+            fixedSeedForZAccountNullifierPubKey,
+        );
+        const zAccountNullifierPubKeys = zAccountNullifierPubKeyPair.publicKey;
+        // console.log('zAccountNullifierPubKeys=>', zAccountNullifierPubKeys);
+        // zAccountNullifierPubKeys=> [
+        //     18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+        //     21369418187085352831313188453068285816400064790476280656092869887652115165947n
+        //   ]
+        // END ============= zAccountReadPubKey ======
+
         /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
         /* START ========== Key generation for daoDataEscrow ========== */
         // const seedForDAODataEscrow = moduloBabyJubSubFieldPrime(generateRandom256Bits());
@@ -168,7 +216,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         const weight = BigInt(1);
 
         // 7 bit - 10^scale MUST be < 2^252 --> scale must be < 90 - Check
-        const scale = BigInt(0);
+        const scale = BigInt(1);
 
         const zAssetLeafHash = poseidon([
             zAsset,
@@ -188,8 +236,8 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         const poeOfzAssetLeaf = zAssetMerkleTree.createProof(0);
         // console.log('poeOfzAssetLeaf=>', poeOfzAssetLeaf);
         // poeOfzAssetLeaf=> {
-        //     root: 12291659056154266375334883320348019806271858654516961231879779711830670001842n,
-        //     leaf: 13568907681360856299692808632107589149169766513827851044539821704184982678988n,
+        //     root: 19535843916498255092279142315735733351018771081460221571169961247339571651079n,
+        //     leaf: 6785577893762327932470540996982069498079967474890435076767956134926260446775n,
         //     siblingNodes: [
         //       0n,
         //       14744269619966411208579211824598458697587494354926760081771325075741142829156n,
@@ -235,6 +283,14 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
                 3806360534113678626454222391663570333911286964678234024800930715719248331406n,
             ),
         ];
+        const zAccountReadPubKey = [
+            1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+            311986042833546580202940940143769849297540181368261575540657864271112079432n,
+        ];
+        const zAccountNullifierPubKey = [
+            18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+            21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+        ];
         const zAccountMasterEOA =
             BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen);
         const zAccountId = BigInt(1234n);
@@ -259,11 +315,19 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
 
         const zAccountNetworkId = BigInt(1n);
 
-        const zAccountNoteHasher = poseidon([
+        const hash1 = poseidon([
             spendPubKey[0],
             spendPubKey[1],
             zAccountRootSpendPubKey[0],
             zAccountRootSpendPubKey[1],
+            zAccountReadPubKey[0],
+            zAccountReadPubKey[1],
+            zAccountNullifierPubKey[0],
+            zAccountNullifierPubKey[1],
+        ]);
+
+        const zAccountNoteHasher = poseidon([
+            hash1,
             zAccountMasterEOA,
             zAccountId,
             zAccountZkpAmount,
@@ -276,7 +340,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             zAccountNetworkId,
         ]);
 
-        // 13683953030945782116588387268262807344430183373976224469652321118488063371846n
+        // 13144629997801297520165716195490138255341464878144609947339096754816247452817n
         // console.log('zAccountNoteHasher=>', zAccountNoteHasher);
 
         /* END ========== ZAccountNoteHasher ========== */
@@ -352,6 +416,8 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
 
         const kycSignedMessageSender =
             BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen);
+        const kycSignedMessageSigner =
+            BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen);
         const kycSignedMessageReceiver = BigInt(0);
         const kycSignedMessageSessionId = toBeHex(1_000_000);
         const kycSignedMessageRuleId = BigInt(16); // Supports only 8 bits
@@ -371,10 +437,10 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             kycSignedMessageReceiver,
             sessionId,
             kycSignedMessageRuleId,
+            kycSignedMessageSigner,
         ]);
 
-        // 13420359699380543420818570756539288574192640832533512282869778014630724802570n
-        // 4420531866412014575408224684585724661577745605424471385242083653541242299472n
+        // 9885087152629455533177922067642536315083173551946042079286556563507370714740n
         // console.log(
         //     'kycSignedMessageHashInternal=>',
         //     kycSignedMessageHashInternal,
@@ -400,13 +466,12 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             kycSignedMessageHashInternal,
         );
 
-        // New signature -
         // signature=> {
         //     R8: [
-        //       11641340329930283083069007831002934998780161274736733641123979383052463483780n,
-        //       20930079739059236718078105952189995768043348765841153860493384092960801184861n
+        //       11019469704926125664550728735213125647501490479460797831114453229899757579689n,
+        //       13854963995377807573540546718176146863402996159127153864764353046667588731001n
         //     ],
-        //     S: 834458324831473606631783243389498276872766277504948872488162954626615025357n
+        //     S: 2121005999002044499564841405347448402555587723184039422438334688521918381259n
         //   }
         // console.log('signature=>', signature);
 
@@ -653,7 +718,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         /* START ========== static-merkle-root calculation ========== */
         const zAssetMerkleRoot =
             BigInt(
-                12291659056154266375334883320348019806271858654516961231879779711830670001842n,
+                19535843916498255092279142315735733351018771081460221571169961247339571651079n,
             );
 
         const zAccountBlackListMerkleRoot =
@@ -711,7 +776,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             ferryMerkleTree.root,
             staticTreeMerkleRoot,
         ]);
-        // 11038309636808859781829595886770882067715836362130672314164878094832132730791n
+        // 5481873231735763496906486873300326548492829360042714004477564093809633696439n
         // console.log('forestMerkleRoot=>', forestMerkleRoot);
         /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
 
@@ -738,10 +803,10 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         zAssetNetwork: BigInt(1n),
         zAssetOffset: BigInt(0n),
         zAssetWeight: BigInt(1n),
-        zAssetScale: BigInt(0n),
+        zAssetScale: BigInt(1n),
         zAssetMerkleRoot:
             BigInt(
-                12291659056154266375334883320348019806271858654516961231879779711830670001842n,
+                19535843916498255092279142315735733351018771081460221571169961247339571651079n,
             ),
         zAssetPathIndex: [
             BigInt(0n),
@@ -823,11 +888,35 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
                 3806360534113678626454222391663570333911286964678234024800930715719248331406n,
             ),
         ],
+        zAccountNullifierPubKey: [
+            BigInt(
+                18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+            ),
+            BigInt(
+                21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+            ),
+        ],
+        zAccountReadPubKey: [
+            BigInt(
+                1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+            ),
+            BigInt(
+                311986042833546580202940940143769849297540181368261575540657864271112079432n,
+            ),
+        ],
         zAccountSpendKeyRandom:
             BigInt(
                 2340137772334602010357676040383629302593269637370615234782832501387264356683n,
             ),
 
+        zAccountReadPrivKey:
+            BigInt(
+                1807143148206188134925427242927492302158087995127931582887251149414169118083n,
+            ),
+        zAccountNullifierPrivKey:
+            BigInt(
+                2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+            ),
         zAccountMasterEOA: BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
         zAccountId: BigInt(1234n),
         zAccountZkpAmount: BigInt(50n),
@@ -844,7 +933,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // ZAccountUtxo commitment verification
         zAccountCommitment:
             BigInt(
-                13683953030945782116588387268262807344430183373976224469652321118488063371846n,
+                13144629997801297520165716195490138255341464878144609947339096754816247452817n,
             ),
 
         // ZAccount nullifier verification
@@ -913,22 +1002,24 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         kycSignedMessageTimestamp: BigInt(1687489200),
         kycSignedMessageSender:
             BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
+        kycSignedMessageSigner:
+            BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
         kycSignedMessageReceiver: BigInt(0),
         kycSignedMessageSessionId: 3906n,
         kycSignedMessageRuleId: BigInt(16n), // RuleId's value can't be more than 2^8-1=255
         kycSignedMessageHash:
             BigInt(
-                4420531866412014575408224684585724661577745605424471385242083653541242299472n,
+                9885087152629455533177922067642536315083173551946042079286556563507370714740n,
             ),
         kycSignature: [
             BigInt(
-                834458324831473606631783243389498276872766277504948872488162954626615025357n,
+                2121005999002044499564841405347448402555587723184039422438334688521918381259n,
             ),
             BigInt(
-                11641340329930283083069007831002934998780161274736733641123979383052463483780n,
+                11019469704926125664550728735213125647501490479460797831114453229899757579689n,
             ),
             BigInt(
-                20930079739059236718078105952189995768043348765841153860493384092960801184861n,
+                13854963995377807573540546718176146863402996159127153864764353046667588731001n,
             ),
         ],
 
@@ -942,7 +1033,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             ),
         ],
         kycEdDsaPubKeyExpiryTime: BigInt(1719111600n),
-        kycKytMerkleRoot:
+        trustProvidersMerkleRoot:
             BigInt(
                 18139283499551121798144508352920340786793810282154757122124989082341271083633n,
             ),
@@ -1022,7 +1113,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         zZoneOriginZoneIDs: BigInt(123n),
         zZoneTargetZoneIDs: BigInt(156n),
         zZoneNetworkIDsBitMap: BigInt(1234n),
-        zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(272n),
+        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(272n),
         zZoneKycExpiryTime: BigInt(604800n), // 1 week epoch time
         zZoneKytExpiryTime: BigInt(3600n),
         zZoneDepositMaxAmount: BigInt(200n),
@@ -1169,7 +1260,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 5) kycKytMerkleRoot
         staticTreeMerkleRoot:
             BigInt(
-                11728486084117138299049842970728391864873855415795077492316123666247373393728n,
+                10148314721627660005834377470188837651967404256120618743230733300123301462601n,
             ),
 
         // forest root
@@ -1180,7 +1271,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 4) Static-Tree
         forestMerkleRoot:
             BigInt(
-                11038309636808859781829595886770882067715836362130672314164878094832132730791n,
+                5481873231735763496906486873300326548492829360042714004477564093809633696439n,
             ),
         taxiMerkleRoot:
             BigInt(

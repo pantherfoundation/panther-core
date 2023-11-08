@@ -13,7 +13,7 @@ import poseidon from 'circomlibjs/src/poseidon';
 
 describe('NullifierHasher circuit', async function (this: any) {
     interface Input {
-        spendPrivKey: bigint;
+        privKey: bigint;
         leaf: bigint;
     }
 
@@ -33,7 +33,7 @@ describe('NullifierHasher circuit', async function (this: any) {
 
     beforeEach(async function () {
         signalInput = {
-            spendPrivKey: BigInt(0),
+            privKey: BigInt(0),
             leaf: BigInt(0),
         };
     });
@@ -51,7 +51,7 @@ describe('NullifierHasher circuit', async function (this: any) {
             let value = BigInt(getRandomInt(0, 123456789));
 
             signalInput = {
-                spendPrivKey: F.e(value),
+                privKey: F.e(value),
                 leaf: F.e(value),
             };
 
@@ -70,7 +70,7 @@ describe('NullifierHasher circuit', async function (this: any) {
                 value += BigInt(Math.pow(2, i));
             }
             signalInput = {
-                spendPrivKey: value,
+                privKey: value,
                 leaf: value,
             };
 
