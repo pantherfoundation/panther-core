@@ -23,6 +23,7 @@
     "compile:z-account-registration": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRegistrationV1.circom",
     "compile:z-account-renewal": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRenewalV1.circom",
     "compile:data-escrow-elgamal-ecnryption": "circom --r1cs --wasm --sym -o compiled/ test/circuits/dataEscrowElGamalEncryption.circom",
+    "compile:range-check": "circom --r1cs --wasm --sym -o compiled/ circuits/mainRangeCheck.circom",
     "compile:everything": "yarn compile:z-transaction && yarn compile:z-swap && yarn compile:z-account-registration && yarn compile:z-account-renewal && yarn compile:amm",
     "lint": "yarn eslint && yarn prettier:list-different",
     "lint:eslint": "eslint --max-warnings 0",
