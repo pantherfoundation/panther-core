@@ -29,7 +29,7 @@ contract PolygonPrpRewardMsgRelayer is
 
     /// @notice Address of the PolygonRewardSender on the mainnet/Goerli
     /// @dev It sends messages over the PoS bridge to this contract
-    address public immutable POLYGON_REWARD_SENDER;
+    address public immutable TO_POLYGON_REWARD_SENDER;
 
     address public immutable PRP_VOUCHER_GRANTOR;
 
@@ -40,25 +40,25 @@ contract PolygonPrpRewardMsgRelayer is
     /// @notice Message nonce (i.e. sequential number of the latest message)
     uint256 public nonce;
 
-    /// @param _polygonRewardSender Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli
+    /// @param _toPolygonRewardSender Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli
     /// @param _fxChild Address of the `FxChild` (Bridge) contract on Polygon/Mumbai
     constructor(
         // slither-disable-next-line similar-names
-        address _polygonRewardSender,
+        address _toPolygonRewardSender,
         address _fxChild,
         address _prpVoucherGrantor,
         address _prpConverter
     ) {
         require(
             _fxChild != address(0) &&
-                _polygonRewardSender != address(0) &&
+                _toPolygonRewardSender != address(0) &&
                 _prpVoucherGrantor != address(0) &&
                 _prpConverter != address(0),
             "PMR:E01"
         );
 
         FX_CHILD = _fxChild;
-        POLYGON_REWARD_SENDER = _polygonRewardSender;
+        TO_POLYGON_REWARD_SENDER = _toPolygonRewardSender;
         PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
         PRP_CONVERTER = _prpConverter;
     }
@@ -72,7 +72,7 @@ contract PolygonPrpRewardMsgRelayer is
     ) external override {
         require(msg.sender == FX_CHILD, "PMR:INVALID_CALLER");
         require(
-            rootMessageSender == POLYGON_REWARD_SENDER,
+            rootMessageSender == TO_POLYGON_REWARD_SENDER,
             "PMR:INVALID_SENDER"
         );
 
