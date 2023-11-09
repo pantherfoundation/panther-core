@@ -2,7 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
-import "../protocol/interfaces/IPrpVoucherGrantor.sol";
+import "./interfaces/IPrpVoucherGrantor.sol";
+import "./interfaces/IPrpConverter.sol";
 import "../staking/interfaces/IActionMsgReceiver.sol";
 import "../staking/interfaces/IFxMessageProcessor.sol";
 import "./actions/PrpRewardBridgedDataCoder.sol";
@@ -32,6 +33,8 @@ contract PolygonPrpRewardMsgRelayer is
 
     address public immutable PRP_VOUCHER_GRANTOR;
 
+    address public immutable PRP_CONVERTER;
+
     // solhint-enable var-name-mixedcase
 
     /// @notice Message nonce (i.e. sequential number of the latest message)
@@ -43,18 +46,21 @@ contract PolygonPrpRewardMsgRelayer is
         // slither-disable-next-line similar-names
         address _polygonRewardSender,
         address _fxChild,
-        address _prpVoucherGrantor
+        address _prpVoucherGrantor,
+        address _prpConverter
     ) {
         require(
             _fxChild != address(0) &&
                 _polygonRewardSender != address(0) &&
-                _prpVoucherGrantor != address(0),
+                _prpVoucherGrantor != address(0) &&
+                _prpConverter != address(0),
             "PMR:E01"
         );
 
         FX_CHILD = _fxChild;
         POLYGON_REWARD_SENDER = _polygonRewardSender;
         PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
+        PRP_CONVERTER = _prpConverter;
     }
 
     /// @param rootMessageSender Address on the mainnet/Goerli that sent the message
@@ -87,6 +93,8 @@ contract PolygonPrpRewardMsgRelayer is
             0, // amount defined for prpGrantType will be used
             prpGrantType
         );
+
+        IPrpConverter(PRP_CONVERTER).updateZkpReserve();
 
         emit PrpRewardMsgRelayed(_nonce, content);
     }
