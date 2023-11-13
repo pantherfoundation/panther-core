@@ -5,6 +5,7 @@ pragma circom 2.1.6;
 include "./templates/balanceChecker.circom";
 include "./templates/dataEscrowElgamalEncryption.circom";
 include "./templates/isNotZero.circom";
+include "./templates/lessEqThanWhenEnabled.circom";
 include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
@@ -69,7 +70,7 @@ template ZSwapV1( nUtxoIn,
     if ( isSwap ) {
         arraySizeInCaseOfSwap = 2;
     }
-    var regularToken = 0;
+    var transactedToken = 0;
     var swapToken = 1;
 
     signal input token[arraySizeInCaseOfSwap];            // public - 160 bit ERC20 address - in case of internal tx will be zero
@@ -81,7 +82,7 @@ template ZSwapV1( nUtxoIn,
     if ( isSwap ) {
         zkpToken = 2;
     }
-    var zAssetArraySize = arraySizeInCaseOfSwap + 1;
+    var zAssetArraySize = arraySizeInCaseOfSwap + 1; // zkp token in last possition
 
     signal input zAssetId[zAssetArraySize];
     signal input zAssetToken[zAssetArraySize];
@@ -345,6 +346,8 @@ template ZSwapV1( nUtxoIn,
         zAssetChecker[i].withdrawAmount <== withdrawAmount;
         zAssetChecker[i].utxoZAssetId <== utxoZAsset[i];
     }
+    // [1.1] - Check zAsset-ZKP - verify it is zkp-token
+    zAssetId[zkpToken] === 0;
 
     // [2] - Check the overall balance of all inputs & outputs amounts
     var totalUtxoInAmount = 0; // in zAsset units
@@ -361,7 +364,7 @@ template ZSwapV1( nUtxoIn,
 
     // verify deposit & withdraw change
     component totalBalanceChecker = BalanceChecker();
-    totalBalanceChecker.isZkpToken <== zAssetChecker[regularToken].isZkpToken;
+    totalBalanceChecker.isZkpToken <== zAssetChecker[transactedToken].isZkpToken;
     totalBalanceChecker.depositAmount <== depositAmount;
     totalBalanceChecker.depositChange <== depositChange;
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
@@ -372,8 +375,8 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;
     totalBalanceChecker.totalUtxoOutAmount <== totalUtxoOutAmount;
-    totalBalanceChecker.zAssetWeight <== zAssetWeight[regularToken];
-    totalBalanceChecker.zAssetScale <== zAssetScale[regularToken];
+    totalBalanceChecker.zAssetWeight <== zAssetWeight[transactedToken];
+    totalBalanceChecker.zAssetScale <== zAssetScale[transactedToken];
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
 
     // verify change is zero
@@ -409,7 +412,7 @@ template ZSwapV1( nUtxoIn,
     rewards.forUtxoReward <== forUtxoReward;
     rewards.forDepositReward <== forDepositReward;
     rewards.spendTime <== spendTime;
-    rewards.assetWeight <== zAssetWeight[regularToken];
+    rewards.assetWeight <== zAssetWeight[transactedToken];
     // compute rewards
     for (var i = 0 ; i < nUtxoIn; i++){
         // pass value for computing rewards
@@ -451,7 +454,7 @@ template ZSwapV1( nUtxoIn,
         utxoInNoteHashers[i] = UtxoNoteHasher(0);
         utxoInNoteHashers[i].spendPk[0] <== utxoInSpendPubKey[i].Ax;
         utxoInNoteHashers[i].spendPk[1] <== utxoInSpendPubKey[i].Ay;
-        utxoInNoteHashers[i].zAsset <== utxoZAsset[regularToken];
+        utxoInNoteHashers[i].zAsset <== utxoZAsset[transactedToken];
         utxoInNoteHashers[i].amount <== utxoInAmount[i];
         utxoInNoteHashers[i].originNetworkId <== utxoInOriginNetworkId[i];
         utxoInNoteHashers[i].targetNetworkId <== utxoInTargetNetworkId[i];
@@ -526,7 +529,7 @@ template ZSwapV1( nUtxoIn,
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
         // verify zone max internal limits
-        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[regularToken]));
+        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[transactedToken]));
     }
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
@@ -556,7 +559,7 @@ template ZSwapV1( nUtxoIn,
             // require zero utxo-out amounts in case of swap
             utxoOutAmount[i] === 0;
         } else {
-            utxoOutNoteHasher[i].zAsset <== utxoZAsset[regularToken];
+            utxoOutNoteHasher[i].zAsset <== utxoZAsset[transactedToken];
         }
         utxoOutNoteHasher[i].amount <== utxoOutAmount[i];
         utxoOutNoteHasher[i].originNetworkId <== utxoOutOriginNetworkId[i];
@@ -608,7 +611,7 @@ template ZSwapV1( nUtxoIn,
         }
         else {
             // verify zone max internal limits
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[regularToken]));
+            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken]));
         }
     }
 
@@ -791,7 +794,7 @@ template ZSwapV1( nUtxoIn,
     // deposit token
     component kytDepositSignedMessageTokenIsEqual = ForceEqualIfEnabled();
     kytDepositSignedMessageTokenIsEqual.enabled <== isKytDepositCheckEnabled;
-    kytDepositSignedMessageTokenIsEqual.in[0] <== token[regularToken];
+    kytDepositSignedMessageTokenIsEqual.in[0] <== token[transactedToken];
     kytDepositSignedMessageTokenIsEqual.in[1] <== kytDepositSignedMessageToken;
 
     // deposit amount
@@ -842,7 +845,7 @@ template ZSwapV1( nUtxoIn,
     // withdraw token
     component kytWithdrawSignedMessageTokenIsEqual = ForceEqualIfEnabled();
     kytWithdrawSignedMessageTokenIsEqual.enabled <== isKytWithdrawCheckEnabled;
-    kytWithdrawSignedMessageTokenIsEqual.in[0] <== token[regularToken];
+    kytWithdrawSignedMessageTokenIsEqual.in[0] <== token[transactedToken];
     kytWithdrawSignedMessageTokenIsEqual.in[1] <== kytWithdrawSignedMessageToken;
 
     // withdraw amount
@@ -919,7 +922,7 @@ template ZSwapV1( nUtxoIn,
 
     // --------------- scalars -----------------
     component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut);
-    dataEscrowScalarsSerializer.zAsset <== utxoZAsset[regularToken];
+    dataEscrowScalarsSerializer.zAsset <== utxoZAsset[transactedToken];
     dataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
     dataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
 
@@ -1065,6 +1068,24 @@ template ZSwapV1( nUtxoIn,
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
     assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+
+    // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+    component iskytDepositSignedMessageTimestampZero = IsZero();
+    iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
+
+    component isLessThanEqDepsoit = LessThanWhenEnabled(252);
+    isLessThanEqDepsoit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
+    isLessThanEqDepsoit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqDepsoit.in[1] <== utxoOutCreateTime;
+
+    // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+    component iskytWithdrawSignedMessageTimestampZero = IsZero();
+    iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
+
+    component isLessThanEqWithdraw = LessThanWhenEnabled(252);
+    isLessThanEqWithdraw.enabled <== 1 - iskytWithdrawSignedMessageTimestampZero.out;
+    isLessThanEqWithdraw.in[0] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqWithdraw.in[1] <== utxoOutCreateTime;
 
     // [26] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);

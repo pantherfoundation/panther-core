@@ -5,6 +5,7 @@ pragma circom 2.1.6;
 include "./templates/balanceChecker.circom";
 include "./templates/dataEscrowElgamalEncryption.circom";
 include "./templates/isNotZero.circom";
+include "./templates/lessEqThanWhenEnabled.circom";
 include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
@@ -336,6 +337,9 @@ template ZTransactionV1( nUtxoIn,
     zAssetChecker.depositAmount <== depositAmount;
     zAssetChecker.withdrawAmount <== withdrawAmount;
     zAssetChecker.utxoZAssetId <== utxoZAsset;
+
+    // [1.1] - Check zAsset-ZKP - verify it is zkp-token
+    zAssetIdZkp === 0;
 
     // [2] - Check the overall balance of all inputs & outputs amounts
     var totalUtxoInAmount = 0; // in zAsset units
@@ -1037,7 +1041,7 @@ template ZTransactionV1( nUtxoIn,
         zZoneDataEscrowEncryptedMessageAy[i] === zZoneDataEscrow.encryptedMessage[i][1];
     }
 
-    // [24] - Verify zAsset's membership and decode its weight
+    // [24] - Verify zNetwork's membership and decode its weight
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -1061,6 +1065,24 @@ template ZTransactionV1( nUtxoIn,
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
     assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+
+    // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+    component iskytDepositSignedMessageTimestampZero = IsZero();
+    iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
+
+    component isLessThanEqDepsoit = LessThanWhenEnabled(252);
+    isLessThanEqDepsoit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
+    isLessThanEqDepsoit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqDepsoit.in[1] <== utxoOutCreateTime;
+
+    // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
+    component iskytWithdrawSignedMessageTimestampZero = IsZero();
+    iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
+
+    component isLessThanEqWithdraw = LessThanWhenEnabled(252);
+    isLessThanEqWithdraw.enabled <== 1 - iskytWithdrawSignedMessageTimestampZero.out;
+    isLessThanEqWithdraw.in[0] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqWithdraw.in[1] <== utxoOutCreateTime;
 
     // [26] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);

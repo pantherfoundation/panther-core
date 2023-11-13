@@ -102,7 +102,7 @@ template BalanceChecker() {
 
     // [2.3] - scaled zZKP charge
     signal chargedScaledAmountZkp;
-    chargedScaledAmountZkp <-- donatedAmountZkp \ zAssetScaleZkp;
+    chargedScaledAmountZkp <-- chargedAmountZkp \ zAssetScaleZkp;
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////
