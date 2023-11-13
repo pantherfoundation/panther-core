@@ -4,7 +4,7 @@ pragma circom 2.1.6;
 include "./zTransactionV1.circom";
 
 component main {
-    public [ // TODO: add d+w sender + reciever (KYT)
+    public [
         extraInputsHash,                       // [1]
         depositAmount,                         // [2]
         withdrawAmount,                        // [3]

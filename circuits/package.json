@@ -8,7 +8,7 @@
   "scripts": {
     "build": "yarn build:types && yarn build:ts",
     "build:amm": "./scripts/build-amm.sh",
-    "build:main-tx-v1-extended": "./scripts/build-main-transaction-v1-extended.sh",
+    "build:z-transaction": "./scripts/build-main-transaction-v1-extended.sh",
     "build:main-z-account-registration-v1-extended": "./scripts/build-main-zaccount-registration-v1-extended.sh",
     "build:main-z-account-renewal-v1-extended": "./scripts/build-main-zaccount-renewal-v1-extended.sh",
     "build:types": "./scripts/gen-types.sh",
