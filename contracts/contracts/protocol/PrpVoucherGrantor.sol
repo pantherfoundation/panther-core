@@ -164,6 +164,10 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
             rewardAmount > ZERO_VALUE,
             "PrpVoucherGrantor: No reward to claim"
         );
+        require(
+            rewardAmount == inputs[3],
+            "PrpVoucherGrantor: Incorrect reward balance"
+        );
 
         {
             uint256 extraInputsHash = inputs[0];
