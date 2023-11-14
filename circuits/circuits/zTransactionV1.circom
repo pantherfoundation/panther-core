@@ -1063,18 +1063,18 @@ template ZTransactionV1( nUtxoIn,
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
     assert(kytEdDsaPubKeyExpiryTime >= utxoOutCreateTime);
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
-    assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
-    assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
 
+    // [25.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytDepositSignedMessageTimestampZero = IsZero();
     iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
 
-    component isLessThanEqDepsoit = LessThanWhenEnabled(252);
-    isLessThanEqDepsoit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
-    isLessThanEqDepsoit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
-    isLessThanEqDepsoit.in[1] <== utxoOutCreateTime;
+    component isLessThanEqDeposit = LessThanWhenEnabled(252);
+    isLessThanEqDeposit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
+    isLessThanEqDeposit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqDeposit.in[1] <== utxoOutCreateTime;
 
+    // [25.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytWithdrawSignedMessageTimestampZero = IsZero();
     iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
