@@ -157,14 +157,12 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
     /// @param proof A proof associated with the zAccount and a secret.
-    /// @param prpAmountIn The amount of prp to burn.
     /// @param zkpAmountOutMin Minimum zZkp to receive.
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function convert(
         uint256[] calldata inputs,
         bytes calldata privateMessages,
         SnarkProof memory proof,
-        uint256 prpAmountIn,
         uint256 zkpAmountOutMin,
         uint256 cachedForestRootIndex
     ) external returns (uint256 firstUtxoBusQueuePos) {
@@ -179,7 +177,6 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             bytes memory extraInp = abi.encodePacked(
                 privateMessages,
                 cachedForestRootIndex,
-                prpAmountIn,
                 zkpAmountOutMin
             );
             require(
@@ -193,10 +190,11 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);
 
         uint256 zkpAmountOutRounded;
+        uint256 depositAmountPrp = inputs[4];
 
         {
             uint256 zkpAmountOut = getAmountOut(
-                prpAmountIn,
+                depositAmountPrp,
                 _prpReserve,
                 _zkpReserve
             );
@@ -221,7 +219,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             cachedForestRootIndex
         );
 
-        uint256 prpVirtualBalance = _prpReserve + prpAmountIn;
+        uint256 prpVirtualBalance = _prpReserve + depositAmountPrp;
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
             ZKP_TOKEN,
             address(this)
