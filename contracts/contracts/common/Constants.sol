@@ -21,6 +21,9 @@ uint256 constant MAX_IN_CIRCUIT_AMOUNT = 2 ** 64;
 uint256 constant MAX_TIMESTAMP = 2 ** 32;
 uint256 constant MAX_ZASSET_ID = 2 ** 160;
 
+// Maximum amount for PRP
+uint256 constant MAX_PRP_AMOUNT = (2 ** 64) - 1;
+
 // Token types
 // (not `enum` to let protocol extensions use bits, if needed)
 uint8 constant ERC20_TOKEN_TYPE = 0x00;

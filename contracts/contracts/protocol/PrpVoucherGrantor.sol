@@ -5,6 +5,7 @@ pragma solidity 0.8.16;
 
 import "./interfaces/IPantherPoolV1.sol";
 import { FIELD_SIZE } from "./crypto/SnarkConstants.sol";
+import { MAX_PRP_AMOUNT } from "./../common/Constants.sol";
 
 import "../common/ImmutableOwnable.sol";
 import "../common/Utils.sol";
@@ -159,15 +160,33 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos) {
         bytes32 secretHash = bytes32(inputs[13]);
+
         uint256 rewardAmount = balance[secretHash];
+
         require(
             rewardAmount > ZERO_VALUE,
             "PrpVoucherGrantor: No reward to claim"
         );
-        require(
-            rewardAmount == inputs[3],
-            "PrpVoucherGrantor: Incorrect reward balance"
-        );
+
+        {
+            uint256 withdrawAmountPrp = inputs[4];
+            require(
+                withdrawAmountPrp == 0,
+                "PrpVoucherGrantor: Non zero withdraw amount prp"
+            );
+        }
+
+        {
+            uint256 depositAmountPrp = inputs[3];
+            require(
+                depositAmountPrp <= MAX_PRP_AMOUNT,
+                "PrpVoucherGrantor: Too large prp amount"
+            );
+            require(
+                rewardAmount == depositAmountPrp,
+                "PrpVoucherGrantor: Incorrect reward balance"
+            );
+        }
 
         {
             uint256 extraInputsHash = inputs[0];

@@ -13,7 +13,7 @@ interface IPantherPoolV1 {
         uint256 cachedForestRootIndex
     ) external returns (uint256 utxoBusQueuePos);
 
-    function createZkpAssetUtxoAndSpendPrpUtxo(
+    function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory privateMessages,
