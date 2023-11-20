@@ -15,3 +15,4 @@ string constant ERR_LOW_LIQUIDITY = "PC:E10";
 string constant ERR_LOW_CONSTANT_PRODUCT = "PC:E11";
 string constant ERR_UNAUTHORIZED = "PC:E12";
 string constant ERR_INVALID_EXTRA_INPUT_HASH = "PC:E13";
+string constant ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP = "PC:E14";

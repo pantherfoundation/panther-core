@@ -12,7 +12,7 @@ import "./interfaces/IPantherPoolV1.sol";
 import "./../common/ImmutableOwnable.sol";
 import "./../common/UtilsLib.sol";
 import { LockData } from "./../common/Types.sol";
-import { ERC20_TOKEN_TYPE } from "./../common/Constants.sol";
+import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "./../common/Constants.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
@@ -27,8 +27,6 @@ contract PantherPoolV1 is
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
     uint256[453] private __gap;
-
-    uint256 private constant MAX_PRP_AMOUNT = (2 ** 64) - 1;
 
     IVault public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
@@ -255,23 +253,20 @@ contract PantherPoolV1 is
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
+        // Note: This contract expects the PrpVoucherGrantor to check the following inputs:
+        // input[0], input[3], input[4],
+
         require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
-
-        require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
 
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[2]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
 
+        uint256 zAccountUtxoOutCommitment;
         {
-            uint256 depositAmountPrp = inputs[3];
-            uint256 withdrawAmountPrp = inputs[4];
-            require(
-                depositAmountPrp <= MAX_PRP_AMOUNT &&
-                    withdrawAmountPrp <= MAX_PRP_AMOUNT,
-                ERR_TOO_LARGE_PRP_AMOUNT
-            );
+            zAccountUtxoOutCommitment = inputs[10];
+            require(zAccountUtxoOutCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
         }
 
         {
@@ -283,6 +278,7 @@ contract PantherPoolV1 is
             );
             isSpent[zAccountUtxoInNullifier] = true;
         }
+
         {
             uint256 zNetworkChainId = inputs[11];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
@@ -302,7 +298,6 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        uint256 zAccountUtxoOutCommitment = inputs[10];
         // Trusted contract - no reentrancy guard needed
         (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
             bytes32(zAccountUtxoOutCommitment)
@@ -351,7 +346,7 @@ contract PantherPoolV1 is
     /// This data is used to spend the newly created utxo.
     /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
-    function createZkpAssetUtxoAndSpendPrpUtxo(
+    function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         bytes memory privateMessages,
@@ -367,11 +362,40 @@ contract PantherPoolV1 is
 
         require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
-        require(inputs[0] != 0, ERR_ZERO_EXTRA_INPUT_HASH);
+        {
+            uint256 extraInputsHash = inputs[0];
+            require(extraInputsHash != 0, ERR_ZERO_EXTRA_INPUT_HASH);
+        }
+
+        {
+            uint256 saltHash = inputs[13];
+            require(saltHash != 0, ERR_ZERO_SALT_HASH);
+        }
+
+        {
+            uint256 magicalConstraint = inputs[14];
+            require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
+        }
+
+        uint256 zAssetScale;
+        {
+            zAssetScale = inputs[8];
+            require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
+        }
+
+        {
+            uint256 zNetworkChainId = inputs[11];
+            require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
+        }
 
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[2]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        require(
+            isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
+            ERR_INVALID_FOREST_ROOT
+        );
 
         {
             uint256 depositAmountPrp = inputs[3];
@@ -382,9 +406,6 @@ contract PantherPoolV1 is
                 ERR_TOO_LARGE_PRP_AMOUNT
             );
         }
-
-        uint256 zAssetScale = inputs[8];
-        require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
 
         // Generating the new zAsset utxo commitment
         // Define zAssetUtxoCommitment here to avoid `stack too deep` error
@@ -407,26 +428,6 @@ contract PantherPoolV1 is
                 ERR_SPENT_ZACCOUNT_NULLIFIER
             );
             isSpent[zAccountUtxoInNullifier] = true;
-        }
-
-        {
-            uint256 zNetworkChainId = inputs[11];
-            require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
-        }
-
-        require(
-            isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
-            ERR_INVALID_FOREST_ROOT
-        );
-
-        {
-            uint256 saltHash = inputs[13];
-            require(saltHash != 0, ERR_ZERO_SALT_HASH);
-        }
-
-        {
-            uint256 magicalConstraint = inputs[14];
-            require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
 
         // Trusted contract - no reentrancy guard needed

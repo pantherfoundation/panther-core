@@ -185,16 +185,23 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             );
         }
 
+        {
+            // this function is not supposed to add (aka deposit) prp to zAccount
+            uint256 depositAmountPrp = inputs[3];
+            require(depositAmountPrp == 0, ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP);
+        }
+
         (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
 
         require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);
 
         uint256 zkpAmountOutRounded;
-        uint256 depositAmountPrp = inputs[4];
+        // amount to be withdrawn from zAccount UTXO and added to the converter's prpVirtualBalance
+        uint256 withdrawAmountPrp = inputs[4];
 
         {
             uint256 zkpAmountOut = getAmountOut(
-                depositAmountPrp,
+                withdrawAmountPrp,
                 _prpReserve,
                 _zkpReserve
             );
@@ -211,7 +218,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
         }
 
-        firstUtxoBusQueuePos = _createZkpAssetUtxoAndSpendPrpUtxo(
+        firstUtxoBusQueuePos = _createZzkpUtxoAndSpendPrpUtxo(
             inputs,
             proof,
             privateMessages,
@@ -219,7 +226,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             cachedForestRootIndex
         );
 
-        uint256 prpVirtualBalance = _prpReserve + depositAmountPrp;
+        uint256 prpVirtualBalance = _prpReserve + withdrawAmountPrp;
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
             ZKP_TOKEN,
             address(this)
@@ -242,7 +249,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         emit Sync(prpReserve, zkpReserve);
     }
 
-    function _createZkpAssetUtxoAndSpendPrpUtxo(
+    function _createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof memory proof,
         bytes memory privateMessages,
@@ -252,7 +259,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         // Trusted contract - no reentrancy guard needed
         // pool contract triggers vault to transfer `amountOut` from prpConverter
         try
-            IPantherPoolV1(PANTHER_POOL).createZkpAssetUtxoAndSpendPrpUtxo(
+            IPantherPoolV1(PANTHER_POOL).createZzkpUtxoAndSpendPrpUtxo(
                 inputs,
                 proof,
                 privateMessages,
