@@ -8,8 +8,8 @@ import {generateRandomKeypair} from '../../src/base/keypairs';
 import {
     encryptAndPackZAccountUTXOMessage,
     unpackAndDecryptZAccountUTXOMessage,
-    encryptAndPackZAssetUTXOMessage,
-    unpackAndDecryptZAssetUTXOMessage,
+    encryptAndPackZAssetPrivUTXOMessage,
+    unpackAndDecryptZAssetPrivUTXOMessage,
     encryptAndPackCommitmentMessage,
     unpackAndDecryptCommitmentMessage,
 } from '../../src/panther/messages';
@@ -77,14 +77,14 @@ describe('Panther messages encryption', () => {
         });
     });
 
-    describe('zAssets UTXO', () => {
+    describe('zAssets Private UTXO', () => {
         it('encrypts and decrypts correctly', () => {
-            const message = encryptAndPackZAssetUTXOMessage(
+            const message = encryptAndPackZAssetPrivUTXOMessage(
                 commonValues as ZAssetUTXOMessage,
                 keypair.publicKey,
             );
 
-            const result = unpackAndDecryptZAssetUTXOMessage(
+            const result = unpackAndDecryptZAssetPrivUTXOMessage(
                 message,
                 keypair.privateKey,
             );
