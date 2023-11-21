@@ -108,6 +108,14 @@ const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
     },
 };
 
+/**
+ * Function to decrypt a message and unpack it into a ZAccountUTXOMessage
+ * object.
+ * @param {string} message - Represents the encrypted message string.
+ * @param {PrivateKey} rootReadingPrivateKey - The root reading private key used
+ * to decrypt the message.
+ * @returns {ZAccountUTXOMessage} Returns a ZAccountUTXOMessage object.
+ */
 export function unpackAndDecryptZAccountUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
@@ -122,6 +130,13 @@ export function unpackAndDecryptZAccountUTXOMessage(
     return zAccountMsg;
 }
 
+/**
+ * Function to unpack and decrypt a message related to a ZAsset.
+ * @param {string} message - Represents the encrypted message string.
+ * @param {PrivateKey} rootReadingPrivateKey - The root reading private key used
+ * to decrypt the message.
+ * @returns {ZAssetUTXOMessage} Returns a ZAssetUTXOMessage object.
+ */
 export function unpackAndDecryptZAssetUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
@@ -142,6 +157,16 @@ export function unpackAndDecryptZAssetUTXOMessage(
     return zAssetMsg;
 }
 
+/**
+ * Unpacks and decrypts a commitment message.
+ * @param {string} message - The commitment message to unpack and decrypt.
+ * @param {PrivateKey} zAccountSecretRandom - The secret random for the
+ * zAccount.
+ * @param {PrivateKey} rootReadingPrivateKey - The root reading private key used
+ * to decrypt the message.
+ * @returns {CommitmentMessage} Returns an object with a decrypted commitment
+ * message.
+ */
 export function unpackAndDecryptCommitmentMessage(
     message: string,
     zAccountSecretRandom: PrivateKey,
@@ -160,6 +185,14 @@ export function unpackAndDecryptCommitmentMessage(
     };
 }
 
+/**
+ * Function to encrypt and pack a ZAssetUTXOMessage object into a string.
+ * @param {ZAssetUTXOMessage} secrets - The secrets object to be encrypted and
+ * packed in the UTXO message.
+ * @param {PublicKey} rootReadingPubKey - The root reading public key, used to
+ * encrypt the UTXO message.
+ * @returns {string} Returns the encrypted and packed UTXO message as a string.
+ */
 export function encryptAndPackZAssetUTXOMessage(
     secrets: ZAssetUTXOMessage,
     rootReadingPubKey: PublicKey,
@@ -184,6 +217,14 @@ export function encryptAndPackZAssetUTXOMessage(
     );
 }
 
+/**
+ * Encrypts and packs a ZAccountUTXOMessage into a string.
+ * @param {ZAccountUTXOMessage} secrets - The secrets object to be encrypted and
+ * packed.
+ * @param {PublicKey} rootReadingPubKey - The root reading public key, used to
+ * encrypt the UTXO message.
+ * @returns {string} Returns the encrypted and packed UTXO message as a string.
+ */
 export function encryptAndPackZAccountUTXOMessage(
     secrets: ZAccountUTXOMessage,
     rootReadingPubKey: PublicKey,
@@ -209,6 +250,16 @@ export function encryptAndPackZAccountUTXOMessage(
     );
 }
 
+/**
+ * Encrypts and packs a CommitmentMessage into a string.
+ * @param {CommitmentMessage} secrets - The secrets object to be encrypted and
+ * packed.
+ * @param {PrivateKey} zAccountSecretRandom - The secret random for the
+ * zAccount.
+ * @param {PublicKey} rootReadingPubKey - The root reading public key, used to
+ * encrypt the UTXO message.
+ * @returns {string} Returns the encrypted and packed UTXO message as a string.
+ */
 export function encryptAndPackCommitmentMessage(
     secrets: CommitmentMessage,
     zAccountSecretRandom: PrivateKey,
@@ -226,6 +277,12 @@ export function encryptAndPackCommitmentMessage(
     );
 }
 
+/**
+ * Function to extract cipher key and iv from a packed key.
+ * @param {ephemeralKeyPacked} packedKey - The ephemeralKeyPacked that contains
+ * a cipher key and iv.
+ * @returns {object} Returns an object with cipher key and iv.
+ */
 export function extractCipherKeyAndIvFromPackedPoint(
     packedKey: ephemeralKeyPacked,
 ): {
@@ -395,11 +452,24 @@ function unpackUTXOMessage(
     return [ephemeralKeyPacked, cipheredText];
 }
 
-function unpackAndDecryptUTXOMessage(
+// Define a mapping between UTXOMessageType and its corresponding decoder
+// function. This allows us to dynamically call appropriate decoder function
+// based on the UTXOMessageType.
+const UtxoTypeToMessageDecoder: {
+    [key in UTXOMessageType]: (
+        bin: string,
+    ) => ReturnType<typeof decodeUTXOMessage>;
+} = {
+    [UTXOMessageType.ZAccount]: decodeZAccountUTXOMessage,
+    [UTXOMessageType.ZAsset]: decodeZAssetsUTXOMessage,
+    [UTXOMessageType.Commitment]: decodeUTXOCommitmentMessage,
+};
+
+function unpackAndDecryptUTXOMessage<T>(
     message: string,
     rootReadingPrivateKey: PrivateKey,
     type: UTXOMessageType,
-): ZAccountUTXOMessage | ZAssetUTXOMessage | CommitmentMessage {
+): T {
     const plaintextUInt8 = unpackAndDecrypt(
         message,
         rootReadingPrivateKey,
@@ -411,22 +481,9 @@ function unpackAndDecryptUTXOMessage(
         UTXO_MESSAGE_CONFIGS[type].size * 8,
     );
 
-    switch (type) {
-        case UTXOMessageType.ZAccount:
-            return decodeZAccountUTXOMessage(
-                secretRandomBin,
-            ) as ZAccountUTXOMessage;
-        case UTXOMessageType.ZAsset:
-            return decodeZAssetsUTXOMessage(
-                secretRandomBin,
-            ) as ZAssetUTXOMessage;
-        case UTXOMessageType.Commitment:
-            return decodeUTXOCommitmentMessage(
-                secretRandomBin,
-            ) as CommitmentMessage;
-        default:
-            throw new Error(`Unsupported message type: ${type}`);
-    }
+    const decoder = UtxoTypeToMessageDecoder[type];
+    if (!decoder) throw new Error(`Unsupported message type: ${type}`);
+    return decoder(secretRandomBin) as T;
 }
 
 function unpackAndDecrypt(
