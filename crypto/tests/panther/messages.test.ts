@@ -3,19 +3,30 @@
 
 import {describe, expect} from '@jest/globals';
 
+import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {generateRandomKeypair} from '../../src/base/keypairs';
 import {
     encryptAndPackZAccountUTXOMessage,
     unpackAndDecryptZAccountUTXOMessage,
     encryptAndPackZAssetUTXOMessage,
     unpackAndDecryptZAssetUTXOMessage,
+    encryptAndPackCommitmentMessage,
+    unpackAndDecryptCommitmentMessage,
 } from '../../src/panther/messages';
-import {Keypair} from '../../src/types/keypair';
-import {ZAccountUTXOMessage, ZAssetUTXOMessage} from '../../src/types/message';
+import {Keypair, PrivateKey} from '../../src/types/keypair';
+import {
+    CommitmentMessage,
+    ZAccountUTXOMessage,
+    ZAssetUTXOMessage,
+} from '../../src/types/message';
 
 describe('Panther messages encryption', () => {
     let keypair: Keypair;
-    let commonValues: ZAccountUTXOMessage | ZAssetUTXOMessage;
+    let zAccountSecretRandom: PrivateKey;
+    let commonValues:
+        | ZAccountUTXOMessage
+        | ZAssetUTXOMessage
+        | CommitmentMessage;
 
     beforeEach(() => {
         commonValues = {
@@ -33,8 +44,10 @@ describe('Panther messages encryption', () => {
             targetNetworkId: 1n,
             originZoneId: 1n,
             targetZoneId: 1n,
+            commitment: 123n,
         };
         keypair = generateRandomKeypair();
+        zAccountSecretRandom = generateRandomInBabyJubSubField();
     });
 
     // Function to handle common encryption and decryption tests
@@ -73,6 +86,24 @@ describe('Panther messages encryption', () => {
 
             const result = unpackAndDecryptZAssetUTXOMessage(
                 message,
+                keypair.privateKey,
+            );
+
+            runCommonTests(result);
+        });
+    });
+
+    describe('Commitment Message', () => {
+        it('encrypts and decrypts correctly', () => {
+            const message = encryptAndPackCommitmentMessage(
+                commonValues as CommitmentMessage,
+                zAccountSecretRandom,
+                keypair.publicKey,
+            );
+
+            const result = unpackAndDecryptCommitmentMessage(
+                message,
+                zAccountSecretRandom,
                 keypair.privateKey,
             );
 
