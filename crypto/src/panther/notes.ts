@@ -13,6 +13,7 @@ const MT = {
     ZAccount: 0x06,
     ZAssetPub: 0x63,
     ZAssetPriv: 0x07,
+    Commitment: 0x30,
 };
 
 // Length Constants
@@ -22,6 +23,7 @@ const LMT = {
     ZAccount: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
     ZAssetPub: 1 + 8, // 1 byte for message type, 8 bytes for zkpAmountScaled
     ZAssetPriv: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
+    Commitment: 1 + 32 + 32, // 1 byte for message type, 32 bytes for ephemeral public key, 32 bytes for commitmentXORRandom
 };
 
 export enum TxNoteType {
@@ -50,6 +52,7 @@ const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
         {type: MT.ZAssetPub, length: LMT.ZAssetPub},
         {type: MT.ZAccount, length: LMT.ZAccount},
         {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
+        {type: MT.Commitment, length: LMT.Commitment},
     ],
 };
 
@@ -89,8 +92,8 @@ export function decodeTxNote(
             } as TxNoteType1;
 
         case TxNoteType.PrpConversion:
-            // For PrpConversion, we additionally decode zkpAmountScaled and
-            // zAssetUTXOMessage
+            // For PrpConversion, we additionally decode zkpAmountScaled,
+            // zAssetUTXOMessage, and commitment of the newly created zAsset
             return {
                 createTime,
                 ...busTreeIds,
@@ -102,6 +105,10 @@ export function decodeTxNote(
                 zAssetUTXOMessage: prependMessageType(
                     MT.ZAssetPriv,
                     segments[4],
+                ),
+                zAssetCommitmentMessage: prependMessageType(
+                    MT.Commitment,
+                    segments[5],
                 ),
             } as TxNoteType3;
         default:
