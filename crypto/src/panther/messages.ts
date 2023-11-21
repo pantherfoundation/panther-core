@@ -115,7 +115,7 @@ const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
             'targetZoneId',
             'scaledAmount',
         ],
-        size: 64,
+        size: 64, // actual size is 452 bits but we need to round up to the nearest byte that is a multiple of 16 because of AES-128-CBC
         msgType: '08',
     },
     Commitment: {
@@ -137,14 +137,11 @@ export function unpackAndDecryptZAccountUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
 ): ZAccountUTXOMessage {
-    const zAccountMsg = unpackAndDecryptUTXOMessage(
+    return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
         UTXOMessageType.ZAccount,
-    ) as ZAccountUTXOMessage;
-
-    validateFields(zAccountMsg, ['networkId', 'zoneId']);
-    return zAccountMsg;
+    );
 }
 
 /**
@@ -158,20 +155,11 @@ export function unpackAndDecryptZAssetPrivUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
 ): ZAssetPrivUTXOMessage {
-    const zAssetMsg = unpackAndDecryptUTXOMessage(
+    return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
         UTXOMessageType.ZAssetPriv,
-    ) as ZAssetPrivUTXOMessage;
-
-    validateFields(zAssetMsg, [
-        'originNetworkId',
-        'targetNetworkId',
-        'originZoneId',
-        'targetZoneId',
-    ]);
-
-    return zAssetMsg;
+    );
 }
 
 /**
@@ -185,21 +173,11 @@ export function unpackAndDecryptZAssetUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
 ): ZAssetUTXOMessage {
-    const zAssetMsg = unpackAndDecryptUTXOMessage(
+    return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
         UTXOMessageType.ZAsset,
-    ) as ZAssetUTXOMessage;
-
-    validateFields(zAssetMsg, [
-        'originNetworkId',
-        'targetNetworkId',
-        'originZoneId',
-        'targetZoneId',
-        'scaledAmount',
-    ]);
-
-    return zAssetMsg;
+    );
 }
 
 /**
@@ -217,17 +195,12 @@ export function unpackAndDecryptCommitmentMessage(
     zAccountSecretRandom: PrivateKey,
     rootReadingPrivateKey: PrivateKey,
 ): CommitmentMessage {
-    const msg = unpackAndDecryptUTXOMessage(
+    return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
         UTXOMessageType.Commitment,
-    ) as CommitmentMessage;
-
-    validateFields(msg, ['commitment']);
-
-    return {
-        commitment: msg.commitment ^ zAccountSecretRandom,
-    };
+        zAccountSecretRandom,
+    );
 }
 
 /**
@@ -242,23 +215,10 @@ export function encryptAndPackZAssetPrivUTXOMessage(
     secrets: ZAssetPrivUTXOMessage,
     rootReadingPubKey: PublicKey,
 ): string {
-    validateFields(
+    return validateEncryptAndPackMessage(
         secrets,
-        Object.keys(secrets) as (keyof ZAssetPrivUTXOMessage)[],
-    );
-
-    return encryptAndPackUTXOMessage(
-        UTXOMessageType.ZAssetPriv,
-        [
-            secrets.secretRandom,
-            secrets.zAccountId,
-            secrets.zAssetId,
-            secrets.originNetworkId,
-            secrets.targetNetworkId,
-            secrets.originZoneId,
-            secrets.targetZoneId,
-        ],
         rootReadingPubKey,
+        UTXOMessageType.ZAssetPriv,
     );
 }
 
@@ -274,24 +234,10 @@ export function encryptAndPackZAssetUTXOMessage(
     secrets: ZAssetUTXOMessage,
     rootReadingPubKey: PublicKey,
 ): string {
-    validateFields(
+    return validateEncryptAndPackMessage(
         secrets,
-        Object.keys(secrets) as (keyof ZAssetUTXOMessage)[],
-    );
-
-    return encryptAndPackUTXOMessage(
-        UTXOMessageType.ZAsset,
-        [
-            secrets.secretRandom,
-            secrets.zAccountId,
-            secrets.zAssetId,
-            secrets.originNetworkId,
-            secrets.targetNetworkId,
-            secrets.originZoneId,
-            secrets.targetZoneId,
-            secrets.scaledAmount,
-        ],
         rootReadingPubKey,
+        UTXOMessageType.ZAsset,
     );
 }
 
@@ -307,24 +253,10 @@ export function encryptAndPackZAccountUTXOMessage(
     secrets: ZAccountUTXOMessage,
     rootReadingPubKey: PublicKey,
 ): string {
-    validateFields(
+    return validateEncryptAndPackMessage(
         secrets,
-        Object.keys(secrets) as (keyof ZAccountUTXOMessage)[],
-    );
-
-    return encryptAndPackUTXOMessage(
-        UTXOMessageType.ZAccount,
-        [
-            secrets.secretRandom,
-            secrets.networkId,
-            secrets.zoneId,
-            secrets.nonce,
-            secrets.expiryTime,
-            secrets.amountZkp,
-            secrets.amountPrp,
-            secrets.totalAmountPerTimePeriod,
-        ],
         rootReadingPubKey,
+        UTXOMessageType.ZAccount,
     );
 }
 
@@ -343,15 +275,11 @@ export function encryptAndPackCommitmentMessage(
     zAccountSecretRandom: PrivateKey,
     rootReadingPubKey: PublicKey,
 ): string {
-    validateFields(
+    return validateEncryptAndPackMessage(
         secrets,
-        Object.keys(secrets) as (keyof CommitmentMessage)[],
-    );
-
-    return encryptAndPackUTXOMessage(
-        UTXOMessageType.Commitment,
-        [secrets.commitment ^ zAccountSecretRandom],
         rootReadingPubKey,
+        UTXOMessageType.Commitment,
+        zAccountSecretRandom,
     );
 }
 
@@ -371,6 +299,80 @@ export function extractCipherKeyAndIvFromPackedPoint(
         cipherKey: Buffer.from(packedKey).slice(0, 16),
         iv: Buffer.from(packedKey).slice(16, 32),
     };
+}
+
+/**
+ * Function to unpack, decrypt and validate UTXO message.
+ *
+ * @param message - The message to be decrypted and validated.
+ * @param rootReadingPrivateKey - The private key for decryption.
+ * @param messageType - The type of the UTXO message.
+ * @param zAccountSecretRandom - The optional private key for commitment message type.
+ *
+ * @returns The decrypted and validated UTXO message.
+ */
+function unpackDecryptAndValidateMessage<
+    T extends
+        | ZAccountUTXOMessage
+        | ZAssetPrivUTXOMessage
+        | ZAssetUTXOMessage
+        | CommitmentMessage,
+>(
+    message: string,
+    rootReadingPrivateKey: PrivateKey,
+    messageType: UTXOMessageType,
+    zAccountSecretRandom?: PrivateKey,
+): T {
+    const utxoMsg = unpackAndDecryptUTXOMessage(
+        message,
+        rootReadingPrivateKey,
+        messageType,
+    ) as T;
+
+    validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
+
+    // Special handling for commitment message type
+    if (messageType === UTXOMessageType.Commitment && zAccountSecretRandom) {
+        const commitmentMessage = utxoMsg as CommitmentMessage;
+
+        return {
+            commitment: commitmentMessage.commitment ^ zAccountSecretRandom,
+        } as T;
+    }
+
+    return utxoMsg;
+}
+
+/**
+ * Function to validate, encrypt and pack UTXO messages
+ * @param secrets - UTXO message secrets
+ * @param rootReadingPubKey - Public key for root reading
+ * @param messageType - Type of the UTXO message
+ * @param zAccountSecretRandom - Optional private key for commitment message
+ * @returns - Encrypted and packed UTXO message
+ */
+function validateEncryptAndPackMessage<T extends UTXOMessage>(
+    secrets: T,
+    rootReadingPubKey: PublicKey,
+    messageType: UTXOMessageType,
+    zAccountSecretRandom?: PrivateKey,
+): string {
+    validateFields(secrets, UTXO_MESSAGE_CONFIGS[messageType].fields);
+
+    let values: bigint[] = [];
+
+    // If the message type is Commitment and zAccountSecretRandom is provided
+    // Set values to the XOR of the commitment and zAccountSecretRandom
+    // Else map the secrets to the corresponding fields of the message type
+    if (messageType === UTXOMessageType.Commitment && zAccountSecretRandom) {
+        const commitmentMessage = secrets as CommitmentMessage;
+        values = [commitmentMessage.commitment ^ zAccountSecretRandom];
+    } else {
+        const fields = UTXO_MESSAGE_CONFIGS[messageType].fields;
+        values = fields.map(field => secrets[field]) as bigint[];
+    }
+
+    return encryptAndPackUTXOMessage(messageType, values, rootReadingPubKey);
 }
 
 function generateRandomPadding(length: number): string {
@@ -601,7 +603,7 @@ function unpackAndDecrypt(
     return decryptCipherText(iCiphertext, cipherKey, iv);
 }
 
-function validateFields(values: UTXOMessage, fields: (keyof UTXOMessage)[]) {
+function validateFields(values: UTXOMessage, fields: Array<keyof UTXOMessage>) {
     for (const field of fields) {
         const value = values[field];
         if (value === undefined) {
