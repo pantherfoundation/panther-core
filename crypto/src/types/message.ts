@@ -17,6 +17,7 @@ export type UTXOMessage = {
     expiryTime?: bigint;
     amountZkp?: bigint;
     amountPrp?: bigint;
+    scaledAmount?: bigint;
     totalAmountPerTimePeriod?: bigint;
 };
 
@@ -31,7 +32,7 @@ export type ZAccountUTXOMessage = {
     totalAmountPerTimePeriod: bigint;
 };
 
-export type ZAssetUTXOMessage = {
+export type ZAssetPrivUTXOMessage = {
     secretRandom: bigint;
     zAccountId: bigint;
     zAssetId: bigint;
@@ -39,6 +40,10 @@ export type ZAssetUTXOMessage = {
     targetNetworkId: bigint;
     originZoneId: bigint;
     targetZoneId: bigint;
+};
+
+export type ZAssetUTXOMessage = ZAssetPrivUTXOMessage & {
+    scaledAmount: bigint;
 };
 
 export type CommitmentMessage = {

@@ -19,6 +19,7 @@ import {
     CommitmentMessage,
     UTXOMessage,
     ZAccountUTXOMessage,
+    ZAssetPrivUTXOMessage,
     ZAssetUTXOMessage,
 } from '../types/message';
 import {assertInBabyJubJubSubOrder, assertMaxBits} from '../utils/assertions';
@@ -47,6 +48,7 @@ const FIELD_BIT_LENGTHS = {
     expiryTime: 32,
     amountZkp: 64,
     amountPrp: 58,
+    scaledAmount: 64,
     totalAmountPerTimePeriod: 64,
 } as const;
 
@@ -62,6 +64,7 @@ const FIELD_ALLOWED_VALUES = {
 export enum UTXOMessageType {
     ZAccount = 'ZAccount',
     ZAssetPriv = 'ZAssetPriv',
+    ZAsset = 'ZAsset',
     Commitment = 'Commitment',
 }
 
@@ -100,6 +103,20 @@ const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
         ],
         size: 64, // actual size is 388 bit (49 bytes) but we need to round up to the nearest byte that is a multiple of 16 because of AES-128-CBC
         msgType: '07',
+    },
+    ZAsset: {
+        fields: [
+            'secretRandom',
+            'zAccountId',
+            'zAssetId',
+            'originNetworkId',
+            'targetNetworkId',
+            'originZoneId',
+            'targetZoneId',
+            'scaledAmount',
+        ],
+        size: 64,
+        msgType: '08',
     },
     Commitment: {
         fields: ['commitment'],
@@ -140,11 +157,38 @@ export function unpackAndDecryptZAccountUTXOMessage(
 export function unpackAndDecryptZAssetPrivUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
-): ZAssetUTXOMessage {
+): ZAssetPrivUTXOMessage {
     const zAssetMsg = unpackAndDecryptUTXOMessage(
         message,
         rootReadingPrivateKey,
         UTXOMessageType.ZAssetPriv,
+    ) as ZAssetPrivUTXOMessage;
+
+    validateFields(zAssetMsg, [
+        'originNetworkId',
+        'targetNetworkId',
+        'originZoneId',
+        'targetZoneId',
+    ]);
+
+    return zAssetMsg;
+}
+
+/**
+ * Function to unpack and decrypt a message associated to a ZAsset.
+ * @param {string} message - Represents the encrypted message string.
+ * @param {PrivateKey} rootReadingPrivateKey - The root reading private key used
+ * to decrypt the message.
+ * @returns {ZAssetUTXOMessage} Returns a ZAssetUTXOMessage object.
+ */
+export function unpackAndDecryptZAssetUTXOMessage(
+    message: string,
+    rootReadingPrivateKey: PrivateKey,
+): ZAssetUTXOMessage {
+    const zAssetMsg = unpackAndDecryptUTXOMessage(
+        message,
+        rootReadingPrivateKey,
+        UTXOMessageType.ZAsset,
     ) as ZAssetUTXOMessage;
 
     validateFields(zAssetMsg, [
@@ -152,6 +196,7 @@ export function unpackAndDecryptZAssetPrivUTXOMessage(
         'targetNetworkId',
         'originZoneId',
         'targetZoneId',
+        'scaledAmount',
     ]);
 
     return zAssetMsg;
@@ -194,12 +239,12 @@ export function unpackAndDecryptCommitmentMessage(
  * @returns {string} Returns the encrypted and packed UTXO message as a string.
  */
 export function encryptAndPackZAssetPrivUTXOMessage(
-    secrets: ZAssetUTXOMessage,
+    secrets: ZAssetPrivUTXOMessage,
     rootReadingPubKey: PublicKey,
 ): string {
     validateFields(
         secrets,
-        Object.keys(secrets) as (keyof ZAssetUTXOMessage)[],
+        Object.keys(secrets) as (keyof ZAssetPrivUTXOMessage)[],
     );
 
     return encryptAndPackUTXOMessage(
@@ -212,6 +257,39 @@ export function encryptAndPackZAssetPrivUTXOMessage(
             secrets.targetNetworkId,
             secrets.originZoneId,
             secrets.targetZoneId,
+        ],
+        rootReadingPubKey,
+    );
+}
+
+/**
+ * Encrypts and packs a ZAccountUTXOMessage into a string.
+ * @param {ZAccountUTXOMessage} secrets - The secrets object to be encrypted and
+ * packed.
+ * @param {PublicKey} rootReadingPubKey - The root reading public key, used to
+ * encrypt the UTXO message.
+ * @returns {string} Returns the encrypted and packed UTXO message as a string.
+ */
+export function encryptAndPackZAssetUTXOMessage(
+    secrets: ZAssetUTXOMessage,
+    rootReadingPubKey: PublicKey,
+): string {
+    validateFields(
+        secrets,
+        Object.keys(secrets) as (keyof ZAssetUTXOMessage)[],
+    );
+
+    return encryptAndPackUTXOMessage(
+        UTXOMessageType.ZAsset,
+        [
+            secrets.secretRandom,
+            secrets.zAccountId,
+            secrets.zAssetId,
+            secrets.originNetworkId,
+            secrets.targetNetworkId,
+            secrets.originZoneId,
+            secrets.targetZoneId,
+            secrets.scaledAmount,
         ],
         rootReadingPubKey,
     );
@@ -353,6 +431,17 @@ function decodeZAssetPrivUTXOMessage(
             .fields as keyof typeof decodeZAssetPrivUTXOMessage,
     );
 }
+
+function decodeZAssetsUTXOMessage(
+    cipherMsgBinary: string,
+): ZAssetPrivUTXOMessage {
+    return decodeUTXOMessage(
+        cipherMsgBinary,
+        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAsset]
+            .fields as keyof typeof decodeZAssetsUTXOMessage,
+    );
+}
+
 function decodeUTXOCommitmentMessage(
     cipherMsgBinary: string,
 ): CommitmentMessage {
@@ -463,6 +552,7 @@ const UtxoTypeToMessageDecoder: {
     ) => ReturnType<typeof decodeUTXOMessage>;
 } = {
     [UTXOMessageType.ZAccount]: decodeZAccountUTXOMessage,
+    [UTXOMessageType.ZAsset]: decodeZAssetsUTXOMessage,
     [UTXOMessageType.ZAssetPriv]: decodeZAssetPrivUTXOMessage,
     [UTXOMessageType.Commitment]: decodeUTXOCommitmentMessage,
 };
