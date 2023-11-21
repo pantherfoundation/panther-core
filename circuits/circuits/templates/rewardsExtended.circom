@@ -56,5 +56,9 @@ template RewardsExtended(nUtxoIn) {
     S5 <== (S4 + S2) * assetWeight;
     R <== S1 + S5;
 
-    amountPrp <== R;
+    var prpScaleFactor = 60;
+    signal R_tmp;
+    R_tmp <-- R >> prpScaleFactor;
+    R === R_tmp * prpScaleFactor;
+    amountPrp <== R_tmp;
 }

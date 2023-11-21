@@ -13,7 +13,10 @@ import {
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import assert from 'assert';
 
-import {deriveChildPubKeyFromRootPubKey} from '@panther-core/crypto/lib/base/keypairs';
+import {
+    deriveChildPubKeyFromRootPubKey,
+    deriveKeypairFromSeed,
+} from '@panther-core/crypto/lib/base/keypairs';
 
 describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness computation', async function (this: any) {
     const poseidon2or3 = (inputs: bigint[]): bigint => {
@@ -62,6 +65,54 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
     //     zAccountUtxoInDerivedPublicKeys,
     // );
 
+    // START ============= zAccountReadPubKey ======
+    // const seedForReadPubKey = moduloBabyJubSubFieldPrime(
+    //     generateRandom256Bits(),
+    // );
+    // console.log('seedForReadPubKey=>', seedForReadPubKey);
+    const fixedSeedForReadPubKey =
+        1807143148206188134925427242927492302158087995127931582887251149414169118083n;
+
+    // Generate seedForReadPubKey
+    const readPubKeyKeypair = deriveKeypairFromSeed(fixedSeedForReadPubKey);
+    const readPubKeys = readPubKeyKeypair.publicKey;
+    // console.log('readPubKeys=>', readPubKeys);
+    // read public keys - output
+    // [
+    //     1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+    //     311986042833546580202940940143769849297540181368261575540657864271112079432n
+    // ]
+
+    const readPrivateKey = readPubKeyKeypair.privateKey;
+    // console.log('readPrivateKey=>', readPrivateKey);
+    // readPrivateKey
+    // 1807143148206188134925427242927492302158087995127931582887251149414169118083n
+
+    // END ============= zAccountReadPubKey ======
+
+    // START ============= zAccountNullifierPubKey ======
+    // const seedForZAccountNullifierPubKey = moduloBabyJubSubFieldPrime(
+    //     generateRandom256Bits(),
+    // );
+    // console.log(
+    //     'seedForZAccountNullifierPubKey=>',
+    //     seedForZAccountNullifierPubKey,
+    // );
+    const fixedSeedForZAccountNullifierPubKey =
+        2081961849142627796057765042284889488177156119328724687723132407819597118232n;
+
+    // Generate seedForReadPubKey
+    const zAccountNullifierPubKeyPair = deriveKeypairFromSeed(
+        fixedSeedForZAccountNullifierPubKey,
+    );
+    const zAccountNullifierPubKeys = zAccountNullifierPubKeyPair.publicKey;
+    // console.log('zAccountNullifierPubKeys=>', zAccountNullifierPubKeys);
+    // zAccountNullifierPubKeys=> [
+    //     18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+    //     21369418187085352831313188453068285816400064790476280656092869887652115165947n
+    //   ]
+    // END ============= zAccountNullifierPubKey ======
+
     const zAccountUtxoInMasterEOA =
         407487970930055136132864974074225519407787604125n;
     const zAccountUtxoInId = 33n;
@@ -74,12 +125,20 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
     const zAccountUtxoInCreateTime = BigInt(1692284400n);
     const zAccountUtxoInNetworkId = BigInt(2n);
 
-    // zAccountUtxoInNoteHasher calculation
-    const zAccountUtxoInNoteHasher = poseidon([
+    const hash1 = poseidon([
         zAccountUtxoInDerivedPublicKeys[0],
         zAccountUtxoInDerivedPublicKeys[1],
         zAccountUtxoInRootSpendPubKey[0],
         zAccountUtxoInRootSpendPubKey[1],
+        readPubKeys[0],
+        readPubKeys[1],
+        zAccountNullifierPubKeys[0],
+        zAccountNullifierPubKeys[1],
+    ]);
+
+    // zAccountUtxoInNoteHasher calculation
+    const zAccountUtxoInNoteHasher = poseidon([
+        hash1,
         zAccountUtxoInMasterEOA,
         zAccountUtxoInId,
         zAccountUtxoInZkpAmount,
@@ -92,17 +151,17 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zAccountUtxoInNetworkId,
     ]);
 
-    // 12683686760392371723200734431415851905276545802658046731356209079680348296023n
+    // Updated - 19047992597093047336371215524754541878461093335047259582748851115004307254010n
     // console.log('zAccountUtxoInNoteHasher=>', zAccountUtxoInNoteHasher);
 
     const zAccountUtxoInSpendPrivKey =
         BigInt(
-            1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n,
         );
 
     const zAccountUtxoInCommitment =
         BigInt(
-            12683686760392371723200734431415851905276545802658046731356209079680348296023n,
+            19047992597093047336371215524754541878461093335047259582748851115004307254010n,
         );
 
     const zAccountUtxoInNullifierHasher = poseidon([
@@ -110,7 +169,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zAccountUtxoInCommitment,
     ]);
 
-    // 18922886704379180237041447172449470299960875871208753672982878926064752211589n
+    // Updated - 14914857781069603067364359915237089909255680140753506997126505326724192453553n
     // console.log(
     //     'zAccountUtxoInNullifierHasher=>',
     //     zAccountUtxoInNullifierHasher,
@@ -136,12 +195,20 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
     const createTime = BigInt(1693306152n);
 
-    // zAccountUtxoInNoteHasher calculation
-    const zAccountUtxoOutNoteHasher = poseidon([
+    const hash1ZAccountOut = poseidon([
         zAccountUtxoOutDerivedPublicKeys[0],
         zAccountUtxoOutDerivedPublicKeys[1],
         zAccountUtxoInRootSpendPubKey[0],
         zAccountUtxoInRootSpendPubKey[1],
+        readPubKeys[0],
+        readPubKeys[1],
+        zAccountNullifierPubKeys[0],
+        zAccountNullifierPubKeys[1],
+    ]);
+
+    // zAccountUtxoInNoteHasher calculation
+    const zAccountUtxoOutNoteHasher = poseidon([
+        hash1ZAccountOut,
         zAccountUtxoInMasterEOA,
         zAccountUtxoInId,
         zAccountUtxoInZkpAmount,
@@ -154,52 +221,8 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zAccountUtxoInNetworkId,
     ]);
 
-    // 13839448376386834831825066998105804542138021609451006066486200521909294447809n
+    // Updated - 883577885029992475849474167057954109513915827487763736646723184112542450368n
     // console.log('zAccountUtxoOutNoteHasher=>', zAccountUtxoOutNoteHasher);
-
-    // utxoSpendPubKey generation
-    // const random = moduloBabyJubSubFieldPrime(generateRandom256Bits());
-    // console.log('random=>', random);
-    const utxoSpendKeyRandom =
-        486680520450277763296988191529930687770613990732419092696511815390188797858n;
-
-    const utxoDerivedPublicKeys = deriveChildPubKeyFromRootPubKey(
-        [
-            BigInt(
-                9665449196631685092819410614052131494364846416353502155560380686439149087040n,
-            ),
-            BigInt(
-                13931233598534410991314026888239110837992015348186918500560502831191846288865n,
-            ),
-        ],
-        utxoSpendKeyRandom,
-    );
-
-    // [
-    //     16242144124999549881001750798061860694310000906329588094216364089104708054049n,
-    //     10560487167730454196440910098054184596052350463925947689880260088216647168026n
-    // ]
-    // console.log('utxoDerivedPublicKeys=>', utxoDerivedPublicKeys);
-
-    // utxoNoteHasher Calculation
-    const zAssetId = 0n;
-    const zNetworkId = 2n;
-
-    const utxoNoteHasher = poseidon([
-        BigInt(0n),
-        BigInt(1n),
-        zAssetId,
-        zAccountUtxoInId,
-        zNetworkId,
-        zNetworkId,
-        createTime,
-        zAccountUtxoInZoneId,
-        zAccountUtxoInZoneId,
-    ]);
-
-    const UtxoNoteLeafHasher = utxoNoteHasher;
-    // 1173379727623747128841158896541633120659529678150698137481889548475462906403n
-    // console.log('UtxoNoteLeafHasher=>', UtxoNoteLeafHasher);
 
     // ===============State of UTXO tree=======================
     // ZAccountRegistration process will create 1 UTXO i.e ZAccountUTXO
@@ -215,13 +238,13 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
     // 12604557588521919493356492354767978894799472715473645550898984861352936983014n
     // console.log('busUTXOMerkleTree root=>', busMerkleTree.root);
 
-    // zAccountUtxoInNoteHasher - 12683686760392371723200734431415851905276545802658046731356209079680348296023n
+    // zAccountUtxoInNoteHasher - 19047992597093047336371215524754541878461093335047259582748851115004307254010n
     busMerkleTree.insert(zAccountUtxoInNoteHasher);
 
     // console.log(busMerkleTree.createProof(0));
 
-    // 20700627594089994835696347073345997962355519445581685936459492995502184005172n
-    // console.log(busMerkleTree.root);
+    // Updated - 7469082661021598578966721342957393849554121759963614277226594020362804260472n
+    // console.log('busMerkleTree.root=>', busMerkleTree.root);
     // ===============State of UTXO tree=======================
 
     // Forest tree calculation
@@ -232,7 +255,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
     const busMerkleRoot =
         BigInt(
-            20700627594089994835696347073345997962355519445581685936459492995502184005172n,
+            7469082661021598578966721342957393849554121759963614277226594020362804260472n,
         );
 
     const ferryMerkleRoot =
@@ -252,7 +275,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         staticTreeMerkleRoot,
     ]);
 
-    // 11780048818013021704457402590428850237561931465869529045964064605890612072469n
+    // Updated - 12897872365987969151721335753320186442032465800886375827505461281090841127745n
     // console.log('forestTree=>', forestTree);
 
     const nonZeroInput = {
@@ -356,7 +379,26 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             BigInt(
                 2346914846639907011573200271264141030138356202571314043957571486189990605213n,
             ),
-
+        zAccountUtxoInReadPubKey: [
+            BigInt(
+                1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+            ),
+            BigInt(
+                311986042833546580202940940143769849297540181368261575540657864271112079432n,
+            ),
+        ],
+        zAccountUtxoInNullifierPubKey: [
+            BigInt(
+                18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+            ),
+            BigInt(
+                21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+            ),
+        ],
+        zAccountUtxoInNullifierPrivKey:
+            BigInt(
+                2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+            ),
         zAccountUtxoInMasterEOA:
             BigInt(407487970930055136132864974074225519407787604125n),
         zAccountUtxoInId: BigInt(33n),
@@ -370,7 +412,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
         zAccountUtxoInCommitment:
             BigInt(
-                12683686760392371723200734431415851905276545802658046731356209079680348296023n,
+                19047992597093047336371215524754541878461093335047259582748851115004307254010n,
             ),
         zNetworkId: BigInt(2n),
 
@@ -388,7 +430,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
         zAccountUtxoInNullifier:
             BigInt(
-                18922886704379180237041447172449470299960875871208753672982878926064752211589n,
+                14914857781069603067364359915237089909255680140753506997126505326724192453553n,
             ),
         zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
         zAccountUtxoInPathIndices: [
@@ -572,16 +614,13 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             ),
         zAccountUtxoOutCommitment:
             BigInt(
-                13839448376386834831825066998105804542138021609451006066486200521909294447809n,
+                883577885029992475849474167057954109513915827487763736646723184112542450368n,
             ),
 
         // GMT: Tuesday, 29 August 2023 10:49:12
         createTime: BigInt(1693306152n),
 
-        utxoCommitment:
-            BigInt(
-                19593108235650878637893509278693460179257795305603387070719951077607152456245n,
-            ),
+        utxoCommitment: BigInt(0),
         // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
         utxoSpendPubKey: [BigInt(0), BigInt(1)],
         utxoSpendKeyRandom: BigInt(0),
@@ -589,7 +628,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zZoneOriginZoneIDs: BigInt(1n),
         zZoneTargetZoneIDs: BigInt(1n),
         zZoneNetworkIDsBitMap: BigInt(3n),
-        zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(91n),
+        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(91n),
         zZoneKycExpiryTime: BigInt(10368000n), // 1 week epoch time
         zZoneKytExpiryTime: BigInt(86400n),
         zZoneDepositMaxAmount: BigInt(5 * 10 ** 10),
@@ -728,7 +767,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         forUtxoReward: BigInt(1000n),
         forDepositReward: BigInt(0n),
 
-        kycKytMerkleRoot:
+        trustProvidersMerkleRoot:
             BigInt(
                 17322022431886165400149810602305622216747412620247038711546582810646517935323n,
             ),
@@ -738,7 +777,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             ),
         forestMerkleRoot:
             BigInt(
-                11780048818013021704457402590428850237561931465869529045964064605890612072469n,
+                12897872365987969151721335753320186442032465800886375827505461281090841127745n,
             ),
         taxiMerkleRoot:
             BigInt(
@@ -746,7 +785,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             ),
         busMerkleRoot:
             BigInt(
-                20700627594089994835696347073345997962355519445581685936459492995502184005172n,
+                7469082661021598578966721342957393849554121759963614277226594020362804260472n,
             ),
         ferryMerkleRoot:
             BigInt(

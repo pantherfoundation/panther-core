@@ -6,10 +6,12 @@ const wasm_tester = circom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {wtns} from 'snarkjs';
 
-describe('MainTransactionV1Extended - ZeroInput - Witness computation', async function (this: any) {
+describe('Main z-transaction - ZeroInput - Witness computation', async function (this: any) {
     let circuit: any;
     let mainTxWasm: any;
     let mainTxWitness: any;
+
+    this.timeout(10000000);
 
     before(async () => {
         const opts = getOptions();
@@ -21,23 +23,23 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
 
         mainTxWasm = path.join(
             opts.basedir,
-            './compiled/mainTransaction_v1_extended_js/mainTransaction_v1_extended.wasm',
+            './compiled/zTransaction/circuits.wasm',
         );
 
         mainTxWitness = path.join(
             opts.basedir,
-            './compiled/mainTransaction_v1_extended',
+            './compiled/generate_witness.js',
         );
     });
 
     const zeroInput = {
         extraInputsHash: BigInt(0n),
 
-        // tx api
         depositAmount: BigInt(0n),
         depositChange: BigInt(0n),
         withdrawAmount: BigInt(0n),
         withdrawChange: BigInt(0n),
+        donatedAmountZkp: BigInt(0n),
         token: BigInt(0n),
         tokenId: BigInt(0n),
         utxoZAsset: BigInt(0n),
@@ -49,7 +51,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         zAssetNetwork: BigInt(0n),
         zAssetOffset: BigInt(0n),
         zAssetWeight: BigInt(0n),
-        zAssetScale: BigInt(0n),
+        zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
         zAssetPathIndex: [
             BigInt(0n),
@@ -88,10 +90,54 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
         ],
 
-        // reward computation params
+        zAssetIdZkp: BigInt(0n),
+        zAssetTokenZkp: BigInt(0n),
+        zAssetTokenIdZkp: BigInt(0n),
+        zAssetNetworkZkp: BigInt(0n),
+        zAssetOffsetZkp: BigInt(0n),
+        zAssetWeightZkp: BigInt(0n),
+        zAssetScaleZkp: BigInt(1n),
+        zAssetPathIndexZkp: [
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+        ],
+        zAssetPathElementsZkp: [
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+            BigInt(0n),
+        ],
+
         forTxReward: BigInt(0n),
         forUtxoReward: BigInt(0n),
         forDepositReward: BigInt(0n),
+
         spendTime: BigInt(0n),
 
         // input 'zAsset UTXOs'
@@ -104,6 +150,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         //      2) deposit & zAccount::zkpAmount
         //      3) deposit & zAccount::zkpAmount & withdraw
         //      4) deposit & withrdaw
+
         utxoInSpendPrivKey: [BigInt(0n), BigInt(0n)],
         utxoInSpendKeyRandom: [BigInt(0n), BigInt(0n)],
         utxoInAmount: [BigInt(0n), BigInt(0n)],
@@ -269,9 +316,13 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         zAccountUtxoInNonce: BigInt(0n),
         zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
         zAccountUtxoInCreateTime: BigInt(0n),
-        zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(0n)],
+        zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(1n)],
+        zAccountUtxoInReadPubKey:[BigInt(0n), BigInt(1n)],
+        zAccountUtxoInNullifierPubKey:[BigInt(0n), BigInt(1n)],
         zAccountUtxoInMasterEOA: BigInt(0n),
         zAccountUtxoInSpendPrivKey: BigInt(0n),
+        zAccountUtxoInReadPrivKey:BigInt(0n),
+        zAccountUtxoInNullifierPrivKey:BigInt(0n),
         zAccountUtxoInMerkleTreeSelector: [BigInt(0n), BigInt(0n)],
         zAccountUtxoInPathIndices: [
             BigInt(0n),
@@ -343,7 +394,6 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         ],
         zAccountUtxoInNullifier: BigInt(0n),
 
-        // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
         zAccountBlackListLeaf: BigInt(0n),
         zAccountBlackListMerkleRoot: BigInt(0n),
         zAccountBlackListPathElements: [
@@ -365,11 +415,11 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
         ],
 
-        // zAccountZoneRecord
+        // zZone
         zZoneOriginZoneIDs: BigInt(0n),
         zZoneTargetZoneIDs: BigInt(0n),
         zZoneNetworkIDsBitMap: BigInt(0n),
-        zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(0n),
+        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(0n),
         zZoneKycExpiryTime: BigInt(0n),
         zZoneKytExpiryTime: BigInt(0n),
         zZoneDepositMaxAmount: BigInt(0n),
@@ -415,23 +465,19 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         zZoneEdDsaPubKey: [BigInt(0n), BigInt(0n)],
         zZoneDataEscrowEphimeralRandom: BigInt(0n),
         zZoneDataEscrowEphimeralPubKeyAx: BigInt(0n),
-        zZoneDataEscrowEphimeralPubKeyAy: [BigInt(1n)],
+        zZoneDataEscrowEphimeralPubKeyAy: BigInt(1n),
         zZoneZAccountIDsBlackList: BigInt(
             '1766847064778384329583297500742918515827483896875618958121606201292619775',
         ),
         zZoneMaximumAmountPerTimePeriod: BigInt(0n),
         zZoneTimePeriodPerMaximumAmount: BigInt(0n),
-        zZoneDataEscrowEncryptedMessageAx: BigInt(0n),
-        zZoneDataEscrowEncryptedMessageAy: BigInt(1n),
 
-        // KYC-KYT
-        // to switch-off:
-        //      1) depositAmount = 0
-        //      2) withdrawAmount = 0
-        // switch-off control is used for internal tx
+        zZoneDataEscrowEncryptedMessageAx: [BigInt(0n)],
+        zZoneDataEscrowEncryptedMessageAy: [BigInt(1n)],
+
         kytEdDsaPubKey: [BigInt(0n), BigInt(0n)],
         kytEdDsaPubKeyExpiryTime: BigInt(0n),
-        kycKytMerkleRoot: BigInt(0n),
+        trustProvidersMerkleRoot: BigInt(0n),
         kytPathElements: [
             BigInt(0n),
             BigInt(0n),
@@ -469,7 +515,8 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
         ],
         kytMerkleTreeLeafIDsAndRulesOffset: BigInt(0n),
-        kytDepositSignedMessagePackageType: BigInt(0n),
+
+        kytDepositSignedMessagePackageType: BigInt(2n),
         kytDepositSignedMessageTimestamp: BigInt(0n),
         kytDepositSignedMessageSender: BigInt(0n),
         kytDepositSignedMessageReceiver: BigInt(0n),
@@ -477,9 +524,11 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         kytDepositSignedMessageSessionId: BigInt(0n),
         kytDepositSignedMessageRuleId: BigInt(0n),
         kytDepositSignedMessageAmount: BigInt(0n),
+        kytDepositSignedMessageSigner:BigInt(0n),
         kytDepositSignedMessageHash: BigInt(0n),
         kytDepositSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
-        kytWithdrawSignedMessagePackageType: BigInt(0n),
+
+        kytWithdrawSignedMessagePackageType: BigInt(2n),
         kytWithdrawSignedMessageTimestamp: BigInt(0n),
         kytWithdrawSignedMessageSender: BigInt(0n),
         kytWithdrawSignedMessageReceiver: BigInt(0n),
@@ -487,10 +536,10 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         kytWithdrawSignedMessageSessionId: BigInt(0n),
         kytWithdrawSignedMessageRuleId: BigInt(0n),
         kytWithdrawSignedMessageAmount: BigInt(0n),
+        kytWithdrawSignedMessageSigner:BigInt(0n),
         kytWithdrawSignedMessageHash: BigInt(0n),
         kytWithdrawSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
-        // data escrow
         dataEscrowPubKey: [BigInt(0n), BigInt(0n)],
         dataEscrowPubKeyExpiryTime: BigInt(0n),
         dataEscrowEphimeralRandom: BigInt(0n),
@@ -533,15 +582,6 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
         ],
 
-        // ------------- scalars-size --------------------------------
-        // 1) 1 x 64 (zAsset)
-        // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-        // 3) nUtxoIn x 64 amount
-        // 4) nUtxoOut x 64 amount
-        // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
-        // ------------- ec-points-size -------------
-        // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-
         dataEscrowEncryptedMessageAx: [
             BigInt(0n),
             BigInt(0n),
@@ -566,29 +606,14 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(1n),
             BigInt(1n),
         ],
-
-        // dao data escrow
         daoDataEscrowPubKey: [BigInt(0n), BigInt(0n)],
         daoDataEscrowEphimeralRandom: BigInt(0n),
         daoDataEscrowEphimeralPubKeyAx: BigInt(0n),
         daoDataEscrowEphimeralPubKeyAy: BigInt(1n),
 
-        // ------------- scalars-size --------------
-        // 1) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-        // 2) MAX(nUtxoIn,nUtxoOut) x 64 ( utxoInOriginZoneId << 16 | utxoOutTargetZoneId)
-        // ------------- ec-points-size -------------
-        // 1) 0n
         daoDataEscrowEncryptedMessageAx: [BigInt(0n), BigInt(0n), BigInt(0n)],
         daoDataEscrowEncryptedMessageAy: [BigInt(1n), BigInt(1n), BigInt(1n)],
 
-        // output 'zAsset UTXOs'
-        // to switch-off:
-        //      1) utxoOutAmount = 0n
-        // switch-off control is used for
-        //      1) withdraw only tx
-        //      2) zAccount::zkpAmount & withdraw
-        //      3) deposit & zAccount::zkpAmount & withdraw
-        //      4) deposit & withdraw
         utxoOutCreateTime: BigInt(0n),
         utxoOutAmount: [BigInt(0n), BigInt(0n)],
         utxoOutOriginNetworkId: [BigInt(0n), BigInt(0n)],
@@ -602,20 +627,12 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         ],
         utxoOutCommitment: [BigInt(0n), BigInt(0n)],
 
-        // output 'zAccount UTXO'
         zAccountUtxoOutZkpAmount: BigInt(0n),
         zAccountUtxoOutSpendKeyRandom: BigInt(0n),
         zAccountUtxoOutCommitment: BigInt(0n),
 
-        // output 'protocol + relayer fee in ZKP'
         chargedAmountZkp: BigInt(0n),
 
-        // zNetworks tree
-        // network parameters:
-        // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
-        // 2) network-id - 6 bit
-        // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
-        // 4) daoDataEscrowPubKey[2]
         zNetworkId: BigInt(0n),
         zNetworkChainId: BigInt(0n),
         zNetworkIDsBitMap: BigInt(0n),
@@ -637,14 +654,8 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
         ],
 
-        // static tree merkle root
-        // Poseidon of:
-        // 1) zAssetMerkleRoot
-        // 2) zAccountBlackListMerkleRoot
-        // 3) zNetworkTreeMerkleRoot
-        // 4) zZoneMerkleRoot
-        // 5) kycKytMerkleRoot
         staticTreeMerkleRoot: BigInt(0n),
+
         forestMerkleRoot: BigInt(0n),
         taxiMerkleRoot: BigInt(0n),
         busMerkleRoot: BigInt(0n),
@@ -658,7 +669,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         magicalConstraint: BigInt(0n),
     };
 
-    xit('should compute valid witness for zero input tx', async () => {
+    it('should compute valid witness for zero input deposit only z-tx', async () => {
         await wtns.calculate(zeroInput, mainTxWasm, mainTxWitness, null);
         console.log('Witness calculation successful!');
     });

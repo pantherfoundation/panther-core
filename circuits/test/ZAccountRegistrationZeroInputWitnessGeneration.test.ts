@@ -47,7 +47,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         zAssetNetwork: BigInt(0n),
         zAssetOffset: BigInt(0n),
         zAssetWeight: BigInt(0n),
-        zAssetScale: BigInt(0n),
+        zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
         zAssetPathIndex: [
             BigInt(0n),
@@ -96,12 +96,16 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         zAccountNonce: BigInt(0n),
         zAccountTotalAmountPerTimePeriod: BigInt(0n),
         zAccountCreateTime: BigInt(0n),
-        zAccountRootSpendPrivKey: BigInt(0n),
         zAccountRootSpendPubKey: [BigInt(0n), BigInt(1n)],
+        zAccountReadPubKey:[BigInt(0n), BigInt(1n)],
+        zAccountNullifierPubKey:[BigInt(0n), BigInt(1n)],
         zAccountMasterEOA: BigInt(0n),
+        zAccountRootSpendPrivKey: BigInt(0n),
+        zAccountReadPrivKey:BigInt(0n),
+        zAccountNullifierPrivKey:BigInt(0n),
         zAccountSpendKeyRandom: BigInt(0n),
-        zAccountCommitment: BigInt(0n),
         zAccountNullifier: BigInt(0n),
+        zAccountCommitment: BigInt(0n),
 
         // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
         zAccountBlackListLeaf: BigInt(0n),
@@ -129,7 +133,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         zZoneOriginZoneIDs: BigInt(0n),
         zZoneTargetZoneIDs: BigInt(0n),
         zZoneNetworkIDsBitMap: BigInt(0n),
-        zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(0n),
+        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(0n),
         zZoneKycExpiryTime: BigInt(0n),
         zZoneKytExpiryTime: BigInt(0n),
         zZoneDepositMaxAmount: BigInt(0n),
@@ -182,7 +186,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         // KYC
         kycEdDsaPubKey: [BigInt(0n), BigInt(0n)],
         kycEdDsaPubKeyExpiryTime: BigInt(0n),
-        kycKytMerkleRoot: BigInt(0n),
+        trustProvidersMerkleRoot: BigInt(0n),
         kycPathElements: [
             BigInt(0n),
             BigInt(0n),
@@ -227,6 +231,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         kycSignedMessageReceiver: BigInt(0n),
         kycSignedMessageSessionId: BigInt(0n),
         kycSignedMessageRuleId: BigInt(0n),
+        kycSignedMessageSigner: BigInt(0n),
         kycSignedMessageHash: BigInt(0n),
         kycSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 

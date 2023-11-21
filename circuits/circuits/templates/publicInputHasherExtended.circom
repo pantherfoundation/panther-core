@@ -33,7 +33,7 @@ template PublicInputHasherExtended( nUtxoIn,
     signal input zoneRecordDataEscrowEphimeralPubKey[2];                    // 256 bit - only `x` will be taken
     signal input zoneRecordDataEscrowEncryptedMessage[nZrDataEscrow][2];    // 256 bit - only `x` will be taken
     signal input kytSignedMessageHash;                                      // 256 bit
-    signal input kycKytMerkleRoot;                                          // 256 bit
+    signal input trustProvidersMerkleRoot;                                          // 256 bit
     signal input dataEscrowEphimeralPubKey[2];                              // 256 bit - only `x` will be taken
     signal input dataEscrowEncryptedMessage[nDataEscrow][2];                // 256 bit - only `x` will be taken
     signal input daoDataEscrowPubKey[2];                                    // 256 bit - only `x` will be taken
@@ -151,7 +151,7 @@ template PublicInputHasherExtended( nUtxoIn,
     // zoneRecordDataEscrowEphimeralPubKey[2]                   // 256 bit  <-- 6,7                  <-- 6
     // zoneRecordDataEscrowEncryptedMessage[nZrDataEscrow][2]   // 256 bit  <-- 2 x nZrDataEscrow    <-- nZrDataEscrow
     // kytSignedMessageHash                                     // 256 bit  <-- 7                    <-- 7
-    // kycKytMerkleRoot                                         // 256 bit  <-- 8                    <-- [8]        RARE CHANGE
+    // trustProvidersMerkleRoot                                         // 256 bit  <-- 8                    <-- [8]        RARE CHANGE
     // dataEscrowEphimeralPubKey[2]                             // 256 bit  <-- 9,10                 <-- 9
     // dataEscrowEncryptedMessage[nDataEscrow][2]               // 256 bit  <-- 2 x nDataEscrow      <-- nDataEscrow
     // daoDataEscrowPubKey[2]                                   // 256 bit  <-- 11,12                <-- [10]       RARE CHANGE
@@ -181,7 +181,7 @@ template PublicInputHasherExtended( nUtxoIn,
     offset++;
 
     // [8] ---------------------------------------------------------------------------
-    hash_inputs[offset] <== kycKytMerkleRoot; // [3] - RARE
+    hash_inputs[offset] <== trustProvidersMerkleRoot; // [3] - RARE
     offset++;
 
     // [9] ---------------------------------------------------------------------------

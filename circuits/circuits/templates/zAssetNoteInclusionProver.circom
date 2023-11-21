@@ -24,7 +24,6 @@ template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
     assert(token < 2**160);
     assert(tokenId < 2**252); // special case since field-element bit range
     assert(weight < 2**32);
-    assert(scale < 90);
 
     component merkleVerifier = MerkleTreeInclusionProofDoubleLeaves(ZAssetMerkleTreeDepth);
 
