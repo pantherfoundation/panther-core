@@ -6,5 +6,6 @@ yarn.lock
 compiled/*
 !compiled/zAccountRegistration
 !compiled/prpConverter
+!compiled/zTransaction
 !compiled/generate_witness.js
 *.ptau

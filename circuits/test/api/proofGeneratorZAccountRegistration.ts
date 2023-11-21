@@ -78,7 +78,7 @@ const zeroInputForZAccountRegistration = {
     zAssetNetwork: BigInt(0n),
     zAssetOffset: BigInt(0n),
     zAssetWeight: BigInt(0n),
-    zAssetScale: BigInt(0n),
+    zAssetScale: BigInt(1n),
     zAssetMerkleRoot: BigInt(0n),
     zAssetPathIndex: [
         BigInt(0n),
@@ -127,12 +127,16 @@ const zeroInputForZAccountRegistration = {
     zAccountNonce: BigInt(0n),
     zAccountTotalAmountPerTimePeriod: BigInt(0n),
     zAccountCreateTime: BigInt(0n),
-    zAccountRootSpendPrivKey: BigInt(0n),
     zAccountRootSpendPubKey: [BigInt(0n), BigInt(1n)],
+    zAccountReadPubKey:[BigInt(0n), BigInt(1n)],
+    zAccountNullifierPubKey:[BigInt(0n), BigInt(1n)],
     zAccountMasterEOA: BigInt(0n),
+    zAccountRootSpendPrivKey: BigInt(0n),
+    zAccountReadPrivKey:BigInt(0n),
+    zAccountNullifierPrivKey:BigInt(0n),
     zAccountSpendKeyRandom: BigInt(0n),
-    zAccountCommitment: BigInt(0n),
     zAccountNullifier: BigInt(0n),
+    zAccountCommitment: BigInt(0n),
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     zAccountBlackListLeaf: BigInt(0n),
@@ -160,7 +164,7 @@ const zeroInputForZAccountRegistration = {
     zZoneOriginZoneIDs: BigInt(0n),
     zZoneTargetZoneIDs: BigInt(0n),
     zZoneNetworkIDsBitMap: BigInt(0n),
-    zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(0n),
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(0n),
     zZoneKycExpiryTime: BigInt(0n),
     zZoneKytExpiryTime: BigInt(0n),
     zZoneDepositMaxAmount: BigInt(0n),
@@ -213,7 +217,7 @@ const zeroInputForZAccountRegistration = {
     // KYC
     kycEdDsaPubKey: [BigInt(0n), BigInt(0n)],
     kycEdDsaPubKeyExpiryTime: BigInt(0n),
-    kycKytMerkleRoot: BigInt(0n),
+    trustProvidersMerkleRoot: BigInt(0n),
     kycPathElements: [
         BigInt(0n),
         BigInt(0n),
@@ -258,6 +262,7 @@ const zeroInputForZAccountRegistration = {
     kycSignedMessageReceiver: BigInt(0n),
     kycSignedMessageSessionId: BigInt(0n),
     kycSignedMessageRuleId: BigInt(0n),
+    kycSignedMessageSigner: BigInt(0n),
     kycSignedMessageHash: BigInt(0n),
     kycSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
@@ -335,10 +340,10 @@ const nonZeroInputForZAccountRegistration = {
     zAssetNetwork: BigInt(1n),
     zAssetOffset: BigInt(0n),
     zAssetWeight: BigInt(1n),
-    zAssetScale: BigInt(0n),
+    zAssetScale: BigInt(1n),
     zAssetMerkleRoot:
         BigInt(
-            12291659056154266375334883320348019806271858654516961231879779711830670001842n,
+            19535843916498255092279142315735733351018771081460221571169961247339571651079n,
         ),
     zAssetPathIndex: [
         BigInt(0n),
@@ -420,11 +425,35 @@ const nonZeroInputForZAccountRegistration = {
             3806360534113678626454222391663570333911286964678234024800930715719248331406n,
         ),
     ],
+    zAccountNullifierPubKey: [
+        BigInt(
+            18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+        ),
+        BigInt(
+            21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+        ),
+    ],
+    zAccountReadPubKey: [
+        BigInt(
+            1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+        ),
+        BigInt(
+            311986042833546580202940940143769849297540181368261575540657864271112079432n,
+        ),
+    ],
     zAccountSpendKeyRandom:
         BigInt(
             2340137772334602010357676040383629302593269637370615234782832501387264356683n,
         ),
 
+    zAccountReadPrivKey:
+        BigInt(
+            1807143148206188134925427242927492302158087995127931582887251149414169118083n,
+        ),
+    zAccountNullifierPrivKey:
+        BigInt(
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+        ),
     zAccountMasterEOA: BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
     zAccountId: BigInt(1234n),
     zAccountZkpAmount: BigInt(50n),
@@ -441,7 +470,7 @@ const nonZeroInputForZAccountRegistration = {
     // ZAccountUtxo commitment verification
     zAccountCommitment:
         BigInt(
-            13683953030945782116588387268262807344430183373976224469652321118488063371846n,
+            13144629997801297520165716195490138255341464878144609947339096754816247452817n,
         ),
 
     // ZAccount nullifier verification
@@ -508,23 +537,26 @@ const nonZeroInputForZAccountRegistration = {
     // KYC signature verification
     kycSignedMessagePackageType: BigInt(1),
     kycSignedMessageTimestamp: BigInt(1687489200),
-    kycSignedMessageSender: BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
+    kycSignedMessageSender:
+        BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
+    kycSignedMessageSigner:
+        BigInt(0xecb1bf390d9fc6fe4a2589a1110c3f9dd1d535fen),
     kycSignedMessageReceiver: BigInt(0),
     kycSignedMessageSessionId: 3906n,
     kycSignedMessageRuleId: BigInt(16n), // RuleId's value can't be more than 2^8-1=255
     kycSignedMessageHash:
         BigInt(
-            4420531866412014575408224684585724661577745605424471385242083653541242299472n,
+            9885087152629455533177922067642536315083173551946042079286556563507370714740n,
         ),
     kycSignature: [
         BigInt(
-            834458324831473606631783243389498276872766277504948872488162954626615025357n,
+            2121005999002044499564841405347448402555587723184039422438334688521918381259n,
         ),
         BigInt(
-            11641340329930283083069007831002934998780161274736733641123979383052463483780n,
+            11019469704926125664550728735213125647501490479460797831114453229899757579689n,
         ),
         BigInt(
-            20930079739059236718078105952189995768043348765841153860493384092960801184861n,
+            13854963995377807573540546718176146863402996159127153864764353046667588731001n,
         ),
     ],
 
@@ -538,7 +570,7 @@ const nonZeroInputForZAccountRegistration = {
         ),
     ],
     kycEdDsaPubKeyExpiryTime: BigInt(1719111600n),
-    kycKytMerkleRoot:
+    trustProvidersMerkleRoot:
         BigInt(
             18139283499551121798144508352920340786793810282154757122124989082341271083633n,
         ),
@@ -618,7 +650,7 @@ const nonZeroInputForZAccountRegistration = {
     zZoneOriginZoneIDs: BigInt(123n),
     zZoneTargetZoneIDs: BigInt(156n),
     zZoneNetworkIDsBitMap: BigInt(1234n),
-    zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(272n),
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(272n),
     zZoneKycExpiryTime: BigInt(604800n), // 1 week epoch time
     zZoneKytExpiryTime: BigInt(3600n),
     zZoneDepositMaxAmount: BigInt(200n),
@@ -765,7 +797,7 @@ const nonZeroInputForZAccountRegistration = {
     // 5) kycKytMerkleRoot
     staticTreeMerkleRoot:
         BigInt(
-            11728486084117138299049842970728391864873855415795077492316123666247373393728n,
+            10148314721627660005834377470188837651967404256120618743230733300123301462601n,
         ),
 
     // forest root
@@ -776,7 +808,7 @@ const nonZeroInputForZAccountRegistration = {
     // 4) Static-Tree
     forestMerkleRoot:
         BigInt(
-            11038309636808859781829595886770882067715836362130672314164878094832132730791n,
+            5481873231735763496906486873300326548492829360042714004477564093809633696439n,
         ),
     taxiMerkleRoot:
         BigInt(

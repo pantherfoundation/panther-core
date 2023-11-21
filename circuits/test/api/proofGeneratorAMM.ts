@@ -70,7 +70,7 @@ const zeroInput = {
     zAssetNetwork: BigInt(0n),
     zAssetOffset: BigInt(0n),
     zAssetWeight: BigInt(0n),
-    zAssetScale: BigInt(0n),
+    zAssetScale: BigInt(1n),
     zAssetMerkleRoot: BigInt(0n),
     zAssetPathIndex: [
         BigInt(0n),
@@ -119,7 +119,10 @@ const zeroInput = {
     zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
     zAccountUtxoInCreateTime: BigInt(0n),
     zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(1n)],
+    zAccountUtxoInReadPubKey:[BigInt(0n), BigInt(1n)],
+    zAccountUtxoInNullifierPubKey:[BigInt(0n), BigInt(1n)],
     zAccountUtxoInSpendPrivKey: BigInt(0n),
+    zAccountUtxoInNullifierPrivKey:BigInt(0n),
     zAccountUtxoInMasterEOA: BigInt(0n),
     zAccountUtxoInSpendKeyRandom: BigInt(0n),
     zAccountUtxoInCommitment: BigInt(0n),
@@ -225,7 +228,7 @@ const zeroInput = {
     zZoneOriginZoneIDs: BigInt(0n),
     zZoneTargetZoneIDs: BigInt(0n),
     zZoneNetworkIDsBitMap: BigInt(0n),
-    zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(0n),
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(0n),
     zZoneKycExpiryTime: BigInt(0n),
     zZoneKytExpiryTime: BigInt(0n),
     zZoneDepositMaxAmount: BigInt(0n),
@@ -300,7 +303,7 @@ const zeroInput = {
     forUtxoReward: BigInt(0n),
     forDepositReward: BigInt(0n),
 
-    kycKytMerkleRoot: BigInt(0n),
+    trustProvidersMerkleRoot: BigInt(0n),
     staticTreeMerkleRoot: BigInt(0n),
     forestMerkleRoot: BigInt(0n),
     taxiMerkleRoot: BigInt(0n),
@@ -416,7 +419,26 @@ const nonZeroInputVoucherExchange = {
         BigInt(
             2346914846639907011573200271264141030138356202571314043957571486189990605213n,
         ),
-
+    zAccountUtxoInReadPubKey: [
+        BigInt(
+            1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+        ),
+        BigInt(
+            311986042833546580202940940143769849297540181368261575540657864271112079432n,
+        ),
+    ],
+    zAccountUtxoInNullifierPubKey: [
+        BigInt(
+            18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+        ),
+        BigInt(
+            21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+        ),
+    ],
+    zAccountUtxoInNullifierPrivKey:
+        BigInt(
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+        ),
     zAccountUtxoInMasterEOA:
         BigInt(407487970930055136132864974074225519407787604125n),
     zAccountUtxoInId: BigInt(33n),
@@ -430,7 +452,7 @@ const nonZeroInputVoucherExchange = {
 
     zAccountUtxoInCommitment:
         BigInt(
-            12683686760392371723200734431415851905276545802658046731356209079680348296023n,
+            19047992597093047336371215524754541878461093335047259582748851115004307254010n,
         ),
     zNetworkId: BigInt(2n),
 
@@ -448,7 +470,7 @@ const nonZeroInputVoucherExchange = {
 
     zAccountUtxoInNullifier:
         BigInt(
-            18922886704379180237041447172449470299960875871208753672982878926064752211589n,
+            14914857781069603067364359915237089909255680140753506997126505326724192453553n,
         ),
     zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
     zAccountUtxoInPathIndices: [
@@ -632,7 +654,7 @@ const nonZeroInputVoucherExchange = {
         ),
     zAccountUtxoOutCommitment:
         BigInt(
-            13839448376386834831825066998105804542138021609451006066486200521909294447809n,
+            883577885029992475849474167057954109513915827487763736646723184112542450368n,
         ),
 
     // GMT: Tuesday, 29 August 2023 10:49:12
@@ -649,7 +671,7 @@ const nonZeroInputVoucherExchange = {
     zZoneOriginZoneIDs: BigInt(1n),
     zZoneTargetZoneIDs: BigInt(1n),
     zZoneNetworkIDsBitMap: BigInt(3n),
-    zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(91n),
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(91n),
     zZoneKycExpiryTime: BigInt(10368000n), // 1 week epoch time
     zZoneKytExpiryTime: BigInt(86400n),
     zZoneDepositMaxAmount: BigInt(5 * 10 ** 10),
@@ -788,7 +810,7 @@ const nonZeroInputVoucherExchange = {
     forUtxoReward: BigInt(1000n),
     forDepositReward: BigInt(0n),
 
-    kycKytMerkleRoot:
+    trustProvidersMerkleRoot:
         BigInt(
             17322022431886165400149810602305622216747412620247038711546582810646517935323n,
         ),
@@ -798,7 +820,7 @@ const nonZeroInputVoucherExchange = {
         ),
     forestMerkleRoot:
         BigInt(
-            11780048818013021704457402590428850237561931465869529045964064605890612072469n,
+            12897872365987969151721335753320186442032465800886375827505461281090841127745n,
         ),
     taxiMerkleRoot:
         BigInt(
@@ -806,7 +828,7 @@ const nonZeroInputVoucherExchange = {
         ),
     busMerkleRoot:
         BigInt(
-            20700627594089994835696347073345997962355519445581685936459492995502184005172n,
+            7469082661021598578966721342957393849554121759963614277226594020362804260472n,
         ),
     ferryMerkleRoot:
         BigInt(

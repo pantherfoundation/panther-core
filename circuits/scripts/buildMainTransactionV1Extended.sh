@@ -12,7 +12,7 @@ fi
 
 circom_compile_v1_extended_step0 () {
     echo "*** circom_compile_v1_extended_step0 ***";
-    ${CIRCOM} --r1cs --wasm --sym -o compiled/ circuits/mainTransactionV1Extended.circom;
+    ${CIRCOM} --r1cs --wasm --sym -o compiled/ circuits/mainZTransactionV1.circom;
 }
 
 snarkjs_get_ptau_for_phase2 () { # main circuit is ~80k contraints, this leads to this file (from 64k upto 128k)
@@ -24,17 +24,17 @@ snarkjs_get_ptau_for_phase2 () { # main circuit is ~80k contraints, this leads t
 
 snarkjs_r1cs_info_v1_extended_step1 (){
     echo "*** snarkjs_r1cs_info_v1_extended_step1 ***";
-    ${SNARKJS} r1cs info compiled/mainTransactionV1Extended.r1cs;
+    ${SNARKJS} r1cs info compiled/mainZTransactionV1.r1cs;
 }
 
 snarkjs_export_r1cs_json_step2 () {
     echo "*** snarkjs_export_r1cs_json_step2 ***";
-    ${SNARKJS} r1cs export json compiled/mainTransactionV1Extended.r1cs compiled/mainTransaction_v1_extended.json
+    ${SNARKJS} r1cs export json compiled/mainZTransactionV1.r1cs compiled/mainTransaction_v1_extended.json
 }
 
 snarkjs_pseudo_setup_groth16_step3 () {
     echo "*** snarkjs_pseudo_setup_groth16_step3 ***";
-    ${SNARKJS} groth16 setup compiled/mainTransactionV1Extended.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_0000.zkey
+    ${SNARKJS} groth16 setup compiled/mainZTransactionV1.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_0000.zkey
 }
 
 snarkjs_phase2_contribute_1_step4 () {
@@ -54,7 +54,7 @@ snarkjs_phase2_contribute_3_step6 () {
 
 snarkjs_phase2_zkey_verify_step7 () {
     echo "*** snarkjs_phase2_zkey_verify_step7 ***";
-    ${SNARKJS} zkey verify compiled/mainTransactionV1Extended.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_0003.zkey
+    ${SNARKJS} zkey verify compiled/mainZTransactionV1.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_0003.zkey
 }
 
 snarkjs_phase2_apply_random_beacon_step8 () {
@@ -64,7 +64,7 @@ snarkjs_phase2_apply_random_beacon_step8 () {
 
 snarkjs_final_zkey_verify_step9 () {
     echo "*** snarkjs_final_zkey_verify_step9 ***";
-    ${SNARKJS} zkey verify compiled/mainTransactionV1Extended.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_final.zkey
+    ${SNARKJS} zkey verify compiled/mainZTransactionV1.r1cs ./powersOfTau28_hez_final_17.ptau compiled/mainTransaction_v1_extended_final.zkey
 }
 
 snarkjs_export_verification_key_step10 () {

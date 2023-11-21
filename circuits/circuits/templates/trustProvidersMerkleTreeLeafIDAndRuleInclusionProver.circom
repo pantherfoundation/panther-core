@@ -6,7 +6,7 @@ include "../../node_modules/circomlib/circuits/gates.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
-template KycKytMerkleTreeLeafIDAndRuleInclusionProver(){
+template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
     signal input enabled;
     signal input leafId;                // 16 bit
     signal input rule;                  // 8 bit

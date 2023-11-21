@@ -19,7 +19,7 @@ export const getOptions = (): Options => {
         basedir,
     };
     if (!!process.env.CIRCOM_DOCKER) {
-        const compiler = path.join(basedir, './scripts/circom-docker.sh');
+        const compiler = path.join(basedir, './scripts/circomDocker.sh');
         const tmpdir = path.join(basedir, './compiled/tmp/');
         options = {...options, compiler, tmpdir};
     }
