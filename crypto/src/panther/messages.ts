@@ -61,7 +61,7 @@ const FIELD_ALLOWED_VALUES = {
 
 export enum UTXOMessageType {
     ZAccount = 'ZAccount',
-    ZAsset = 'ZAsset',
+    ZAssetPriv = 'ZAssetPriv',
     Commitment = 'Commitment',
 }
 
@@ -88,7 +88,7 @@ const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
         size: 64,
         msgType: '06',
     },
-    ZAsset: {
+    ZAssetPriv: {
         fields: [
             'secretRandom',
             'zAccountId',
@@ -137,14 +137,14 @@ export function unpackAndDecryptZAccountUTXOMessage(
  * to decrypt the message.
  * @returns {ZAssetUTXOMessage} Returns a ZAssetUTXOMessage object.
  */
-export function unpackAndDecryptZAssetUTXOMessage(
+export function unpackAndDecryptZAssetPrivUTXOMessage(
     message: string,
     rootReadingPrivateKey: PrivateKey,
 ): ZAssetUTXOMessage {
     const zAssetMsg = unpackAndDecryptUTXOMessage(
         message,
         rootReadingPrivateKey,
-        UTXOMessageType.ZAsset,
+        UTXOMessageType.ZAssetPriv,
     ) as ZAssetUTXOMessage;
 
     validateFields(zAssetMsg, [
@@ -193,7 +193,7 @@ export function unpackAndDecryptCommitmentMessage(
  * encrypt the UTXO message.
  * @returns {string} Returns the encrypted and packed UTXO message as a string.
  */
-export function encryptAndPackZAssetUTXOMessage(
+export function encryptAndPackZAssetPrivUTXOMessage(
     secrets: ZAssetUTXOMessage,
     rootReadingPubKey: PublicKey,
 ): string {
@@ -203,7 +203,7 @@ export function encryptAndPackZAssetUTXOMessage(
     );
 
     return encryptAndPackUTXOMessage(
-        UTXOMessageType.ZAsset,
+        UTXOMessageType.ZAssetPriv,
         [
             secrets.secretRandom,
             secrets.zAccountId,
@@ -344,11 +344,13 @@ function decodeUTXOMessage<T extends UTXOMessage>(
     return decodedMessage as T;
 }
 
-function decodeZAssetsUTXOMessage(cipherMsgBinary: string): ZAssetUTXOMessage {
+function decodeZAssetPrivUTXOMessage(
+    cipherMsgBinary: string,
+): ZAssetUTXOMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAsset]
-            .fields as keyof typeof decodeZAssetsUTXOMessage,
+        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAssetPriv]
+            .fields as keyof typeof decodeZAssetPrivUTXOMessage,
     );
 }
 function decodeUTXOCommitmentMessage(
@@ -461,7 +463,7 @@ const UtxoTypeToMessageDecoder: {
     ) => ReturnType<typeof decodeUTXOMessage>;
 } = {
     [UTXOMessageType.ZAccount]: decodeZAccountUTXOMessage,
-    [UTXOMessageType.ZAsset]: decodeZAssetsUTXOMessage,
+    [UTXOMessageType.ZAssetPriv]: decodeZAssetPrivUTXOMessage,
     [UTXOMessageType.Commitment]: decodeUTXOCommitmentMessage,
 };
 
@@ -506,11 +508,7 @@ function unpackAndDecrypt(
         packPublicKey(ephemeralSharedKey),
     );
 
-    try {
-        return decryptCipherText(iCiphertext, cipherKey, iv);
-    } catch (error) {
-        throw new Error(`Failed to decrypt ${error}`);
-    }
+    return decryptCipherText(iCiphertext, cipherKey, iv);
 }
 
 function validateFields(values: UTXOMessage, fields: (keyof UTXOMessage)[]) {
