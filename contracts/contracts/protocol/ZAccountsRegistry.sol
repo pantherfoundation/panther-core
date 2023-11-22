@@ -226,6 +226,8 @@ contract ZAccountsRegistry is
             ERR_UNKNOWN_ZACCOUNT
         );
 
+        // TODO: both `zAccountRootSpendPubKey` and `zAccountReadPubKeyX` should be checked
+        // against the value that has been stored on registration
         {
             bytes32 zAccountRootSpendPubKey = BabyJubJub.pointPack(
                 G1Point({ x: inputs[6], y: inputs[7] })
@@ -236,6 +238,16 @@ contract ZAccountsRegistry is
                 zAccountRootSpendPubKey
             );
             require(!isBlacklisted, errMsg);
+        }
+
+        {
+            uint256 zAccountReadPubKeyX = inputs[8];
+            uint256 zAccountReadPubKeyY = inputs[9];
+
+            require(
+                zAccountReadPubKeyX != 0 && zAccountReadPubKeyY != 0,
+                ERR_UNEXPECTED_ZACCOUNT_READ_PUB_KEY
+            );
         }
 
         {
