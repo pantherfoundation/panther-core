@@ -58,7 +58,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zAssetWeight;
     signal input zAssetScale;
     signal input zAssetMerkleRoot;
-    signal input zAssetPathIndex[ZAssetMerkleTreeDepth];
+    signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
 
     // zAccount Input
@@ -108,7 +108,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneInternalMaxAmount;
     signal input zZoneMerkleRoot;
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
-    signal input zZonePathIndex[ZZoneMerkleTreeDepth];
+    signal input zZonePathIndices[ZZoneMerkleTreeDepth];
     signal input zZoneEdDsaPubKey[2];
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
@@ -119,7 +119,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input kycEdDsaPubKeyExpiryTime;
     signal input trustProvidersMerkleRoot;
     signal input kycPathElements[TrustProvidersMerkleTreeDepth];
-    signal input kycPathIndex[TrustProvidersMerkleTreeDepth];
+    signal input kycPathIndices[TrustProvidersMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
     // signed message
     signal input kycSignedMessagePackageType;         // 1 - KYC
@@ -143,7 +143,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
-    signal input zNetworkTreePathIndex[ZNetworkMerkleTreeDepth];
+    signal input zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
 
     signal input daoDataEscrowPubKey[2];
     signal input forTxReward;
@@ -198,7 +198,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAssetNoteInclusionProver.merkleRoot <== zAssetMerkleRoot;
 
     for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
-        zAssetNoteInclusionProver.pathIndex[i] <== zAssetPathIndex[i];
+        zAssetNoteInclusionProver.pathIndices[i] <== zAssetPathIndices[i];
         zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
     }
 
@@ -401,14 +401,14 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     kycKycNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
     kycKycNoteInclusionProver.expiryTime <== kycEdDsaPubKeyExpiryTime;
     for (var j=0; j< TrustProvidersMerkleTreeDepth; j++) {
-        kycKycNoteInclusionProver.pathIndex[j] <== kycPathIndex[j];
+        kycKycNoteInclusionProver.pathIndices[j] <== kycPathIndices[j];
         kycKycNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
     // [13] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
     for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
-        b2nLeafId.in[j] <== kycPathIndex[j];
+        b2nLeafId.in[j] <== kycPathIndices[j];
     }
     component kycLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kycLeafIdAndRuleInclusionProver.enabled <== trustProvidersMerkleRoot;
@@ -439,7 +439,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
     zZoneInclusionProver.root <== zZoneMerkleRoot;
     for (var j=0; j < ZZoneMerkleTreeDepth; j++) {
-        zZoneInclusionProver.pathIndices[j] <== zZonePathIndex[j];
+        zZoneInclusionProver.pathIndices[j] <== zZonePathIndices[j];
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
@@ -462,7 +462,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zNetworkNoteInclusionProver.merkleRoot <== zNetworkTreeMerkleRoot;
 
     for (var i = 0; i < ZNetworkMerkleTreeDepth; i++) {
-        zNetworkNoteInclusionProver.pathIndex[i] <== zNetworkTreePathIndex[i];
+        zNetworkNoteInclusionProver.pathIndices[i] <== zNetworkTreePathIndices[i];
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 

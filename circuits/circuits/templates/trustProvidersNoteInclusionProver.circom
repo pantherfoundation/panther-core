@@ -12,7 +12,7 @@ template TrustProvidersNoteInclusionProver(n_levels) {
     signal input root;
     signal input key[2];
     signal input expiryTime;
-    signal input pathIndex[n_levels];
+    signal input pathIndices[n_levels];
     signal input pathElements[n_levels];
 
     assert(enabled < 2);
@@ -36,7 +36,7 @@ template TrustProvidersNoteInclusionProver(n_levels) {
     component proof = MerkleTreeInclusionProofDoubleLeaves(n_levels);
     proof.leaf <== hash.out;
     for (var i = 0; i < n_levels; i++){
-        proof.pathIndices[i] <== pathIndex[i];
+        proof.pathIndices[i] <== pathIndices[i];
         proof.pathElements[i] <== pathElements[i];
     }
     // verify computed root against provided one

@@ -75,7 +75,7 @@ const zeroInput = {
     zAssetWeight: BigInt(0n),
     zAssetScale: BigInt(1n),
     zAssetMerkleRoot: BigInt(0n),
-    zAssetPathIndex: [
+    zAssetPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -119,7 +119,7 @@ const zeroInput = {
     zAssetOffsetZkp: BigInt(0n),
     zAssetWeightZkp: BigInt(0n),
     zAssetScaleZkp: BigInt(1n),
-    zAssetPathIndexZkp: [
+    zAssetPathIndicesZkp: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -466,7 +466,7 @@ const zeroInput = {
         BigInt(0n),
         BigInt(0n),
     ],
-    zZonePathIndex: [
+    zZonePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -667,7 +667,7 @@ const zeroInput = {
         BigInt(0n),
         BigInt(0n),
     ],
-    zNetworkTreePathIndex: [
+    zNetworkTreePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -723,7 +723,7 @@ const nonZeroInput = {
     zAssetMerkleRoot: BigInt(
         21135153704249495390826690606677237922449975076652949796562023680187218995691n, // CHANGED - previously 3723247354377620069387735695862260139005999863996254561023715046060291769010n
     ),
-    zAssetPathIndex: [
+    zAssetPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -799,7 +799,7 @@ const nonZeroInput = {
     zAssetOffsetZkp: BigInt(0n),
     zAssetWeightZkp: BigInt(1n),
     zAssetScaleZkp: BigInt(10 ** 12),
-    zAssetPathIndexZkp: [
+    zAssetPathIndicesZkp: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -1331,7 +1331,7 @@ const nonZeroInput = {
             12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ),
     ],
-    zZonePathIndex: [
+    zZonePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -1760,7 +1760,7 @@ const nonZeroInput = {
         BigInt(
             14012219796450685573713237305847642356367283250649627741328974142691321346497n,
         ),
-    zNetworkTreePathIndex: [
+    zNetworkTreePathIndices: [
         BigInt(1n),
         BigInt(0n),
         BigInt(0n),
