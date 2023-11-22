@@ -415,7 +415,7 @@ contract PantherPoolV1 is
         // Define zAssetUtxoCommitment here to avoid `stack too deep` error
         bytes32 zAssetUtxoCommitment;
 
-        uint256 zkpAmountScaled = zkpAmountOutRounded / (10 ** zAssetScale);
+        uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
         uint256 zAssetUtxoCommitmentPrivatePart = inputs[5];
 
         zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
