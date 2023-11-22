@@ -49,7 +49,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         zAssetWeight: BigInt(0n),
         zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -158,7 +158,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
             BigInt(0n),
             BigInt(0n),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -205,7 +205,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
             BigInt(0n),
             BigInt(0n),
         ],
-        kycPathIndex: [
+        kycPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -253,7 +253,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
             BigInt(0n),
             BigInt(0n),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),

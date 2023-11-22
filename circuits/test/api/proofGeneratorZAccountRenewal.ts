@@ -75,7 +75,7 @@ const zeroInputForZAccountRenewal = {
     zAssetWeight: BigInt(0n),
     zAssetScale: BigInt(0n),
     zAssetMerkleRoot: BigInt(0n),
-    zAssetPathIndex: [
+    zAssetPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -191,7 +191,7 @@ const zeroInputForZAccountRenewal = {
         BigInt(0n),
         BigInt(0n),
     ],
-    kycPathIndex: [
+    kycPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -245,7 +245,7 @@ const zeroInputForZAccountRenewal = {
         BigInt(0n),
         BigInt(0n),
     ],
-    zZonePathIndex: [
+    zZonePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -280,7 +280,7 @@ const zeroInputForZAccountRenewal = {
         BigInt(0n),
         BigInt(0n),
     ],
-    zNetworkTreePathIndex: [
+    zNetworkTreePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -323,7 +323,7 @@ const nonZeroInputForZAccountRenewal = {
         BigInt(
             12291659056154266375334883320348019806271858654516961231879779711830670001842n,
         ),
-    zAssetPathIndex: [
+    zAssetPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -601,7 +601,7 @@ const nonZeroInputForZAccountRenewal = {
             15819538789928229930262697811477882737253464456578333862691129291651619515538n,
         ),
     ],
-    kycPathIndex: [
+    kycPathIndices: [
         BigInt(1n),
         BigInt(0n),
         BigInt(0n),
@@ -689,7 +689,7 @@ const nonZeroInputForZAccountRenewal = {
             15819538789928229930262697811477882737253464456578333862691129291651619515538n,
         ),
     ],
-    zZonePathIndex: [
+    zZonePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -744,7 +744,7 @@ const nonZeroInputForZAccountRenewal = {
             19712377064642672829441595136074946683621277828620209496774504837737984048981n,
         ),
     ],
-    zNetworkTreePathIndex: [
+    zNetworkTreePathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),

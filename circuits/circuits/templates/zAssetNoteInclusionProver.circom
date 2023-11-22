@@ -15,7 +15,7 @@ template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
     signal input weight;      // 32 bit
     signal input scale;       // 7 bit - 10^scale MUST be < 2^252 --> scale must be < 90
     signal input merkleRoot;
-    signal input pathIndex[ZAssetMerkleTreeDepth];
+    signal input pathIndices[ZAssetMerkleTreeDepth];
     signal input pathElements[ZAssetMerkleTreeDepth];
 
     assert(zAsset < 2**64);
@@ -39,7 +39,7 @@ template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
     merkleVerifier.leaf <== hash.out;
 
     for (var i = 0; i < ZAssetMerkleTreeDepth; i++){
-        merkleVerifier.pathIndices[i] <== pathIndex[i];
+        merkleVerifier.pathIndices[i] <== pathIndices[i];
         merkleVerifier.pathElements[i] <== pathElements[i];
     }
 

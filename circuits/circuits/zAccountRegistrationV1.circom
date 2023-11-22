@@ -43,7 +43,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zAssetWeight;
     signal input zAssetScale;
     signal input zAssetMerkleRoot;
-    signal input zAssetPathIndex[ZAssetMerkleTreeDepth];
+    signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
 
     // zAccount
@@ -84,7 +84,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zZoneInternalMaxAmount;
     signal input zZoneMerkleRoot;
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
-    signal input zZonePathIndex[ZZoneMerkleTreeDepth];
+    signal input zZonePathIndices[ZZoneMerkleTreeDepth];
     signal input zZoneEdDsaPubKey[2];
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
@@ -95,7 +95,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input kycEdDsaPubKeyExpiryTime;
     signal input trustProvidersMerkleRoot;
     signal input kycPathElements[TrustProvidersMerkleTreeDepth];
-    signal input kycPathIndex[TrustProvidersMerkleTreeDepth];
+    signal input kycPathIndices[TrustProvidersMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
     // signed message
     signal input kycSignedMessagePackageType;         // 1 - KYC
@@ -119,7 +119,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
-    signal input zNetworkTreePathIndex[ZNetworkMerkleTreeDepth];
+    signal input zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
 
     signal input daoDataEscrowPubKey[2];
     signal input forTxReward;
@@ -174,7 +174,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAssetNoteInclusionProver.merkleRoot <== zAssetMerkleRoot;
 
     for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
-        zAssetNoteInclusionProver.pathIndex[i] <== zAssetPathIndex[i];
+        zAssetNoteInclusionProver.pathIndices[i] <== zAssetPathIndices[i];
         zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
     }
 
@@ -324,14 +324,14 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     trustProvidersNoteInclusionProver.key[1] <== kycEdDsaPubKey[1];
     trustProvidersNoteInclusionProver.expiryTime <== kycEdDsaPubKeyExpiryTime;
     for (var j=0; j< TrustProvidersMerkleTreeDepth; j++) {
-        trustProvidersNoteInclusionProver.pathIndex[j] <== kycPathIndex[j];
+        trustProvidersNoteInclusionProver.pathIndices[j] <== kycPathIndices[j];
         trustProvidersNoteInclusionProver.pathElements[j] <== kycPathElements[j];
     }
 
     // [9] - Verify kyc leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
     for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
-        b2nLeafId.in[j] <== kycPathIndex[j];
+        b2nLeafId.in[j] <== kycPathIndices[j];
     }
     component kycLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kycLeafIdAndRuleInclusionProver.enabled <== trustProvidersMerkleRoot;
@@ -362,7 +362,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
     zZoneInclusionProver.root <== zZoneMerkleRoot;
     for (var j=0; j < ZZoneMerkleTreeDepth; j++) {
-        zZoneInclusionProver.pathIndices[j] <== zZonePathIndex[j];
+        zZoneInclusionProver.pathIndices[j] <== zZonePathIndices[j];
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
@@ -385,7 +385,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zNetworkNoteInclusionProver.merkleRoot <== zNetworkTreeMerkleRoot;
 
     for (var i = 0; i < ZNetworkMerkleTreeDepth; i++) {
-        zNetworkNoteInclusionProver.pathIndex[i] <== zNetworkTreePathIndex[i];
+        zNetworkNoteInclusionProver.pathIndices[i] <== zNetworkTreePathIndices[i];
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 

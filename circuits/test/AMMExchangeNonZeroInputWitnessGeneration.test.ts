@@ -196,7 +196,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
             BigInt(
                 3723247354377620069387735695862260139005999863996254561023715046060291769010n,
             ),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -604,7 +604,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
                 12455859713696229724526221339047857485467607588813434501517928769317308134556n,
             ),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -663,7 +663,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
                 19603150025355661252212198237607440386334054455687766589389473805115541553727n,
             ),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(1n),
             BigInt(0n),
             BigInt(0n),

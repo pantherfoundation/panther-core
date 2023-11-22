@@ -92,7 +92,7 @@ template ZSwapV1( nUtxoIn,
     signal input zAssetWeight[zAssetArraySize];
     signal input zAssetScale[zAssetArraySize];
     signal input zAssetMerkleRoot;
-    signal input zAssetPathIndex[zAssetArraySize][ZAssetMerkleTreeDepth];
+    signal input zAssetPathIndices[zAssetArraySize][ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth];
 
     // reward computation params
@@ -122,7 +122,7 @@ template ZSwapV1( nUtxoIn,
     signal input utxoInCreateTime[nUtxoIn];
     signal input utxoInZAccountId[nUtxoIn];
     signal input utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
-    signal input utxoInPathIndex[nUtxoIn][UtxoMerkleTreeDepth];
+    signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInNullifier[nUtxoIn]; // public
 
@@ -165,7 +165,7 @@ template ZSwapV1( nUtxoIn,
     signal input zZoneInternalMaxAmount;
     signal input zZoneMerkleRoot;
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
-    signal input zZonePathIndex[ZZoneMerkleTreeDepth];
+    signal input zZonePathIndices[ZZoneMerkleTreeDepth];
     signal input zZoneEdDsaPubKey[2];
     signal input zZoneDataEscrowEphimeralRandom;
     signal input zZoneDataEscrowEphimeralPubKeyAx; // public
@@ -188,7 +188,7 @@ template ZSwapV1( nUtxoIn,
     signal input kytEdDsaPubKeyExpiryTime;
     signal input trustProvidersMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
     signal input kytPathElements[TrustProvidersMerkleTreeDepth];
-    signal input kytPathIndex[TrustProvidersMerkleTreeDepth];
+    signal input kytPathIndices[TrustProvidersMerkleTreeDepth];
     signal input kytMerkleTreeLeafIDsAndRulesOffset;     // used for both cases of deposit & withdraw
     // deposit case
     signal input kytDepositSignedMessagePackageType;
@@ -222,7 +222,7 @@ template ZSwapV1( nUtxoIn,
     signal input dataEscrowEphimeralPubKeyAx; // public
     signal input dataEscrowEphimeralPubKeyAy;
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
-    signal input dataEscrowPathIndex[TrustProvidersMerkleTreeDepth];
+    signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
     // ------------- scalars-size --------------------------------
     // 1) 1 x 64 (zAsset)
@@ -293,7 +293,7 @@ template ZSwapV1( nUtxoIn,
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
-    signal input zNetworkTreePathIndex[ZNetworkMerkleTreeDepth];
+    signal input zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
 
     // static tree merkle root
     // Poseidon of:
@@ -398,7 +398,7 @@ template ZSwapV1( nUtxoIn,
         zAssetNoteInclusionProver[i].merkleRoot <== zAssetMerkleRoot;
 
         for (var j = 0; j < ZAssetMerkleTreeDepth; j++) {
-            zAssetNoteInclusionProver[i].pathIndex[j] <== zAssetPathIndex[i][j];
+            zAssetNoteInclusionProver[i].pathIndices[j] <== zAssetPathIndices[i][j];
             zAssetNoteInclusionProver[i].pathElements[j] <== zAssetPathElements[i][j];
         }
         // verify zAsset::network is equal to the current networkId
@@ -518,7 +518,7 @@ template ZSwapV1( nUtxoIn,
         // path & index
         for(var j = 0; j < UtxoMerkleTreeDepth; j++) {
             utxoInInclusionProver[i].pathElements[j] <== utxoInPathElements[i][j];
-            utxoInInclusionProver[i].pathIndices[j] <== utxoInPathIndex[i][j];
+            utxoInInclusionProver[i].pathIndices[j] <== utxoInPathIndices[i][j];
         }
         // roots
         utxoInInclusionProver[i].root[0] <== taxiMerkleRoot;
@@ -865,14 +865,14 @@ template ZSwapV1( nUtxoIn,
     kytKycNoteInclusionProver.key[1] <== kytEdDsaPubKey[1];
     kytKycNoteInclusionProver.expiryTime <== kytEdDsaPubKeyExpiryTime;
     for (var j=0; j< TrustProvidersMerkleTreeDepth; j++) {
-        kytKycNoteInclusionProver.pathIndex[j] <== kytPathIndex[j];
+        kytKycNoteInclusionProver.pathIndices[j] <== kytPathIndices[j];
         kytKycNoteInclusionProver.pathElements[j] <== kytPathElements[j];
     }
 
     // [16] - Verify kyt leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
     for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
-        b2nLeafId.in[j] <== kytPathIndex[j];
+        b2nLeafId.in[j] <== kytPathIndices[j];
     }
     // deposit part
     component kytDepositLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
@@ -901,7 +901,7 @@ template ZSwapV1( nUtxoIn,
     dataEscrowInclusionProver.expiryTime <== dataEscrowPubKeyExpiryTime;
 
     for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
-        dataEscrowInclusionProver.pathIndex[j] <== dataEscrowPathIndex[j];
+        dataEscrowInclusionProver.pathIndices[j] <== dataEscrowPathIndices[j];
         dataEscrowInclusionProver.pathElements[j] <== dataEscrowPathElements[j];
     }
 
@@ -1013,7 +1013,7 @@ template ZSwapV1( nUtxoIn,
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
     zZoneInclusionProver.root <== zZoneMerkleRoot;
     for (var j=0; j < ZZoneMerkleTreeDepth; j++) {
-        zZoneInclusionProver.pathIndices[j] <== zZonePathIndex[j];
+        zZoneInclusionProver.pathIndices[j] <== zZonePathIndices[j];
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
@@ -1058,7 +1058,7 @@ template ZSwapV1( nUtxoIn,
     zNetworkNoteInclusionProver.merkleRoot <== zNetworkTreeMerkleRoot;
 
     for (var i = 0; i < ZNetworkMerkleTreeDepth; i++) {
-        zNetworkNoteInclusionProver.pathIndex[i] <== zNetworkTreePathIndex[i];
+        zNetworkNoteInclusionProver.pathIndices[i] <== zNetworkTreePathIndices[i];
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 

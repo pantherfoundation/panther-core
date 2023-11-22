@@ -808,7 +808,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             BigInt(
                 19535843916498255092279142315735733351018771081460221571169961247339571651079n,
             ),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -1087,7 +1087,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
                 15819538789928229930262697811477882737253464456578333862691129291651619515538n,
             ),
         ],
-        kycPathIndex: [
+        kycPathIndices: [
             BigInt(1n),
             BigInt(0n),
             BigInt(0n),
@@ -1171,7 +1171,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
                 15819538789928229930262697811477882737253464456578333862691129291651619515538n,
             ),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -1231,7 +1231,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
                 19712377064642672829441595136074946683621277828620209496774504837737984048981n,
             ),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),

@@ -48,7 +48,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zAssetWeight: BigInt(0n),
         zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -229,7 +229,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
             BigInt(0n),
             BigInt(0n),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -266,7 +266,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
             BigInt(0n),
             BigInt(0n),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
