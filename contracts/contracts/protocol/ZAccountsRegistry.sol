@@ -53,6 +53,7 @@ contract ZAccountsRegistry is
     uint256 public zAccountIdTracker;
 
     mapping(bytes32 => uint256) public zoneZAccountNullifiers;
+    mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
     mapping(address => ZACCOUNT_STATUS) public zAccountStatus;
     mapping(address => bool) public isMasterEoaBlacklisted;
     mapping(bytes32 => bool) public isPubRootSpendingKeyBlacklisted;
@@ -177,13 +178,17 @@ contract ZAccountsRegistry is
     /// @param inputs[5]  - zAccountCreateTime
     /// @param inputs[6]  - zAccountRootSpendPubKeyX
     /// @param inputs[7]  - zAccountRootSpendPubKeyY
-    /// @param inputs[8]  - zAccountMasterEOA
-    /// @param inputs[9]  - zAccountNullifier
-    /// @param inputs[10] - zAccountCommitment
-    /// @param inputs[11] - kycSignedMessageHash
-    /// @param inputs[12] - forestMerkleRoot
-    /// @param inputs[13] - saltHash
-    /// @param inputs[14] - magicalConstraint
+    /// @param inputs[8]  - zAccountReadPubKeyX
+    /// @param inputs[9]  - zAccountReadPubKeyY
+    /// @param inputs[10] - zAccountNullifierPubKeyX
+    /// @param inputs[11] - zAccountNullifierPubKeyY
+    /// @param inputs[12] - zAccountMasterEOA
+    /// @param inputs[13] - zAccountNullifier
+    /// @param inputs[14] - zAccountCommitment
+    /// @param inputs[15] - kycSignedMessageHash
+    /// @param inputs[16] - forestMerkleRoot
+    /// @param inputs[17] - saltHash
+    /// @param inputs[18] - magicalConstraint
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
@@ -214,7 +219,7 @@ contract ZAccountsRegistry is
         }
 
         uint24 zAccountId = UtilsLib.safe24(inputs[3]);
-        address zAccountMasterEOA = address(uint160(inputs[8]));
+        address zAccountMasterEOA = address(uint160(inputs[12]));
 
         require(
             masterEOAs[zAccountId] == zAccountMasterEOA,
@@ -232,9 +237,22 @@ contract ZAccountsRegistry is
             );
             require(!isBlacklisted, errMsg);
         }
+
+        {
+            bytes32 pubKeyNullifier = BabyJubJub.pointPack(
+                G1Point({ x: inputs[10], y: inputs[11] })
+            );
+            require(
+                pubKeyZAccountNullifiers[pubKeyNullifier] == 0,
+                ERR_DUPLICATED_NULLIFIER
+            );
+
+            pubKeyZAccountNullifiers[pubKeyNullifier] = block.number;
+        }
+
         {
             // Prevent double-activation for the same zone and network
-            bytes32 zAccountNullifier = bytes32(inputs[9]);
+            bytes32 zAccountNullifier = bytes32(inputs[13]);
             require(
                 zoneZAccountNullifiers[zAccountNullifier] == 0,
                 ERR_DUPLICATED_NULLIFIER
@@ -256,7 +274,7 @@ contract ZAccountsRegistry is
                 zAccountMasterEOA,
                 uint8(userPrevStatus),
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
-                abi.encodePacked(inputs[13])
+                abi.encodePacked(inputs[17])
             );
             uint256 zkpAmount = inputs[1];
             require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);

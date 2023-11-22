@@ -120,13 +120,17 @@ contract PantherPoolV1 is
     /// @param inputs[5]  - zAccountCreateTime
     /// @param inputs[6]  - zAccountRootSpendPubKeyX
     /// @param inputs[7]  - zAccountRootSpendPubKeyY
-    /// @param inputs[8]  - zAccountMasterEOA
-    /// @param inputs[9]  - zAccountNullifier
-    /// @param inputs[10] - zAccountCommitment
-    /// @param inputs[11] - kycSignedMessageHash
-    /// @param inputs[12] - forestMerkleRoot
-    /// @param inputs[13] - saltHash
-    /// @param inputs[14] - magicalConstraint
+    /// @param inputs[8]  - zAccountReadPubKeyX
+    /// @param inputs[9]  - zAccountReadPubKeyY
+    /// @param inputs[10] - zAccountNullifierPubKeyX
+    /// @param inputs[11] - zAccountNullifierPubKeyY
+    /// @param inputs[12] - zAccountMasterEOA
+    /// @param inputs[13] - zAccountNullifier
+    /// @param inputs[14] - zAccountCommitment
+    /// @param inputs[15] - kycSignedMessageHash
+    /// @param inputs[16] - forestMerkleRoot
+    /// @param inputs[17] - saltHash
+    /// @param inputs[18] - magicalConstraint
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
     /// @param privateMessages the private message that contains zAccount utxo data.
@@ -149,24 +153,24 @@ contract PantherPoolV1 is
         require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
         require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         {
-            uint256 zAccountNullifier = inputs[9];
+            uint256 zAccountNullifier = inputs[13];
             require(zAccountNullifier != 0, ERR_ZERO_ZACCOUNT_NULLIFIER);
         }
         uint256 zAccountCommitment;
         {
-            zAccountCommitment = inputs[10];
+            zAccountCommitment = inputs[14];
             require(zAccountCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
         }
         {
-            uint256 kycSignedMessageHash = inputs[11];
+            uint256 kycSignedMessageHash = inputs[15];
             require(kycSignedMessageHash != 0, ERR_ZERO_KYC_MSG_HASH);
         }
         {
-            uint256 saltHash = inputs[13];
+            uint256 saltHash = inputs[17];
             require(saltHash != 0, ERR_ZERO_SALT_HASH);
         }
         {
-            uint256 magicalConstraint = inputs[14];
+            uint256 magicalConstraint = inputs[18];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
 
@@ -178,7 +182,7 @@ contract PantherPoolV1 is
         );
 
         require(
-            isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
+            isCachedRoot(bytes32(inputs[16]), cachedForestRootIndex),
             ERR_INVALID_FOREST_ROOT
         );
 
