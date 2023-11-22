@@ -51,7 +51,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
         zAssetWeight: BigInt(0n),
         zAssetScale: BigInt(0n),
         zAssetMerkleRoot: BigInt(0n),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -394,7 +394,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
             BigInt(0n),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -628,7 +628,7 @@ describe('MainTransactionV1Extended - ZeroInput - Witness computation', async fu
             BigInt(0n),
             BigInt(0n),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),

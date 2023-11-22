@@ -16,7 +16,7 @@ template ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth){
     signal input forDepositReward;        // 40 bit
     signal input daoDataEscrowPubKey[2];  // 2 x 256 bit
     signal input merkleRoot;
-    signal input pathIndex[ZNetworkMerkleTreeDepth];
+    signal input pathIndices[ZNetworkMerkleTreeDepth];
     signal input pathElements[ZNetworkMerkleTreeDepth];
 
     component merkleVerifier = MerkleTreeInclusionProofDoubleLeaves(ZNetworkMerkleTreeDepth);
@@ -36,7 +36,7 @@ template ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth){
     merkleVerifier.leaf <== hash.out;
 
     for (var i = 0; i < ZNetworkMerkleTreeDepth; i++){
-        merkleVerifier.pathIndices[i] <== pathIndex[i];
+        merkleVerifier.pathIndices[i] <== pathIndices[i];
         merkleVerifier.pathElements[i] <== pathElements[i];
     }
 

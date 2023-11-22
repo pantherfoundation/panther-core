@@ -53,7 +53,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zAssetWeight: BigInt(0n),
         zAssetScale: BigInt(1n),
         zAssetMerkleRoot: BigInt(0n),
-        zAssetPathIndex: [
+        zAssetPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -97,7 +97,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zAssetOffsetZkp: BigInt(0n),
         zAssetWeightZkp: BigInt(0n),
         zAssetScaleZkp: BigInt(1n),
-        zAssetPathIndexZkp: [
+        zAssetPathIndicesZkp: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -164,7 +164,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             [BigInt(0n), BigInt(0n)],
             [BigInt(0n), BigInt(0n)],
         ],
-        utxoInPathIndex: [
+        utxoInPathIndices: [
             [
                 BigInt(0n),
                 BigInt(0n),
@@ -444,7 +444,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             BigInt(0n),
             BigInt(0n),
         ],
-        zZonePathIndex: [
+        zZonePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -496,7 +496,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             BigInt(0n),
             BigInt(0n),
         ],
-        kytPathIndex: [
+        kytPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -563,7 +563,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             BigInt(0n),
             BigInt(0n),
         ],
-        dataEscrowPathIndex: [
+        dataEscrowPathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
@@ -645,7 +645,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             BigInt(0n),
             BigInt(0n),
         ],
-        zNetworkTreePathIndex: [
+        zNetworkTreePathIndices: [
             BigInt(0n),
             BigInt(0n),
             BigInt(0n),
