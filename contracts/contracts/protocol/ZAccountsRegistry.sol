@@ -183,7 +183,7 @@ contract ZAccountsRegistry is
     /// @param inputs[10] - zAccountNullifierPubKeyX
     /// @param inputs[11] - zAccountNullifierPubKeyY
     /// @param inputs[12] - zAccountMasterEOA
-    /// @param inputs[13] - zAccountNullifier
+    /// @param inputs[13] - zAccountNullifierZone
     /// @param inputs[14] - zAccountCommitment
     /// @param inputs[15] - kycSignedMessageHash
     /// @param inputs[16] - forestMerkleRoot
@@ -252,13 +252,13 @@ contract ZAccountsRegistry is
 
         {
             // Prevent double-activation for the same zone and network
-            bytes32 zAccountNullifier = bytes32(inputs[13]);
+            bytes32 zoneNullifier = bytes32(inputs[13]);
             require(
-                zoneZAccountNullifiers[zAccountNullifier] == 0,
+                zoneZAccountNullifiers[zoneNullifier] == 0,
                 ERR_DUPLICATED_NULLIFIER
             );
 
-            zoneZAccountNullifiers[zAccountNullifier] = block.number;
+            zoneZAccountNullifiers[zoneNullifier] = block.number;
         }
 
         ZACCOUNT_STATUS userPrevStatus = zAccountStatus[zAccountMasterEOA];
