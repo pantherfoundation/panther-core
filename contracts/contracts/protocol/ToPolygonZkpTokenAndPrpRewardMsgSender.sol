@@ -33,10 +33,10 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
     /// @notice address of PrpConverter on Polygon
     address public immutable PRP_CONVERTER;
 
-    /// @notice address of protocolMessageRelayer on Polygon
+    /// @notice address of protocolRewardMessageRelayer on Polygon
     address public immutable PROTOCOL_REWARD_MESSAGE_RELAYER;
 
-    /// @notice address of PrpConverter on Polygon
+    /// @notice address of RewardController on Polygon
     address public immutable PANTHER_REWARD_CONTROLLER;
 
     /// @notice Address of the $ZKP token contract
@@ -100,15 +100,15 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
         ).vestRewards();
 
         if (releasable > 0) {
-            bridgeZkpTokens(releasable);
+            _bridgeZkpTokens(releasable);
 
-            bridgePrpRewardMessage(secret);
+            _bridgePrpRewardMessage(secret);
 
             lastBridgeExecution = uint128(block.timestamp);
         }
     }
 
-    function bridgeZkpTokens(uint256 _amount) private {
+    function _bridgeZkpTokens(uint256 _amount) private {
         TransferHelper.safeApprove(ZKP_TOKEN, ERC20_PREDICATE_PROXY, _amount);
 
         IPolygonRootChainManager(ROOR_CHAIN_MANAGER_PROXY).depositFor(
@@ -120,11 +120,13 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
         emit ZkpTokenSent(_amount);
     }
 
-    function bridgePrpRewardMessage(bytes32 secret) private {
+    function _bridgePrpRewardMessage(bytes32 secret) private {
         // Overflow ignored as the nonce is unexpected ever be that big
         uint32 _nonce = uint32(nonce + 1);
         nonce = uint128(_nonce);
 
+        // TODO: the contract is better to include the `PRP_CONVERTER` address so that
+        // `PROTOCOL_REWARD_MESSAGE_RELAYER` get the address and execute updateZkpReserve()
         bytes memory content = _encodeBridgedData(
             _nonce,
             GT_ZKP_RELEASE,
