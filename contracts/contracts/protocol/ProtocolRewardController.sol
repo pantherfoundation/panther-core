@@ -3,9 +3,11 @@
 pragma solidity ^0.8.16;
 
 import "../common/ImmutableOwnable.sol";
+// TODO: moving this interfaces to common folder?
 import "../staking/interfaces/IRewardPool.sol";
-// import "./interfaces/IVestingPools.sol";
 import "../staking/interfaces/IVestingPools.sol";
+
+import "../common/UtilsLib.sol";
 
 /**
  * @title ProtocolRewardController
@@ -22,10 +24,8 @@ import "../staking/interfaces/IVestingPools.sol";
 contract ProtocolRewardController is ImmutableOwnable {
     // solhint-disable var-name-mixedcase
 
-    /// @notice undefined pool id
-    uint8 private constant UNDEF_POOL_ID = (2 ** 8) - 1;
     /// @notice The maximum number of pool ids
-    uint256 private constant MAX_POOL_IDS_LENGTH = 4;
+    uint256 private constant MAX_POOL_IDS_LENGTH = 5;
 
     // Address of the $ZKP token contract
     address private immutable ZKP_TOKEN;
@@ -35,11 +35,11 @@ contract ProtocolRewardController is ImmutableOwnable {
 
     // solhint-enable var-name-mixedcase
 
-    /// @notice ID of the pool (in the VestingPools) to vest from
-    uint256[MAX_POOL_IDS_LENGTH] public poolIds;
-
     /// @notice Keep track of the RewardSenders
     mapping(address => bool) public rewardSenders;
+
+    /// @notice 5 pool ids, 8 bytes for each of them
+    uint40 public poolIds;
 
     /// @notice Emitted on parameters initialized.
     event VestingPoolUpdated(uint256 _poolId);
@@ -62,37 +62,29 @@ contract ProtocolRewardController is ImmutableOwnable {
 
         ZKP_TOKEN = _zkpToken;
         VESTING_POOLS = _vestingPools;
-
-        for (uint256 i = 0; i < MAX_POOL_IDS_LENGTH; i++) {
-            poolIds[i] = UNDEF_POOL_ID;
-        }
     }
 
-    /// @notice Get array of pool ids
-    function getPoolIds()
-        external
-        view
-        returns (uint256[MAX_POOL_IDS_LENGTH] memory)
-    {
-        return poolIds;
-    }
-
-    /// @notice Sets/Updates the poolId
-    /// @dev Owner only may call, once only
-    /// This contract address must be set in the VestingPools as the wallet for the pool
-    function updatePoolIds(uint8 _poolId, uint8 _index) external onlyOwner {
-        require(_index < MAX_POOL_IDS_LENGTH, "PRC: invalid index");
-
-        // this contract must be registered with the VestingPools
+    // TODO: let contoller works works with pool with id 0
+    function setPoolId(uint40 newPoolId, uint8 pos) external onlyOwner {
+        require(pos > 0 && pos <= MAX_POOL_IDS_LENGTH, "PRC: invalid position");
         require(
             // slither-disable-next-line unused-return,reentrancy-events
-            IVestingPools(VESTING_POOLS).getWallet(_poolId) == address(this),
+            IVestingPools(VESTING_POOLS).getWallet(newPoolId) == address(this),
             "PRC:E2"
         );
 
-        poolIds[_index] = _poolId;
+        uint256 _poolIds = poolIds;
+        uint256 currentPoolId = _getPoolId(pos);
 
-        emit VestingPoolUpdated(_poolId);
+        if (currentPoolId > 0) {
+            _poolIds = _removePoolId(_poolIds, currentPoolId, pos);
+        }
+
+        if (newPoolId > 0) {
+            _poolIds = _addPoolId(_poolIds, newPoolId, pos);
+        }
+
+        poolIds = uint40(_poolIds);
     }
 
     /// @notice Update the RewardSender contract address that will be able to release tokens
@@ -114,10 +106,10 @@ contract ProtocolRewardController is ImmutableOwnable {
     /// @notice Calls VestingPools to transfer 'pool wallet' role to given address
     /// @dev Owner only may call, once only
     function transferVestingPoolWallet(
-        uint8 _index,
+        uint8 _poolIdPos,
         address _newWallet
     ) external onlyOwner nonZeroAddress(_newWallet) {
-        uint256 _poolId = poolIds[_index];
+        uint256 _poolId = _getPoolId(_poolIdPos);
 
         // this contract must be registered with the VestingPools
         require(
@@ -126,10 +118,10 @@ contract ProtocolRewardController is ImmutableOwnable {
             "PRC:E2"
         );
 
-        poolIds[_index] = UNDEF_POOL_ID;
-
         // slither-disable-next-line reentrancy-benign
         IVestingPools(VESTING_POOLS).updatePoolWallet(_poolId, _newWallet);
+
+        poolIds = UtilsLib.safe40(_removePoolId(poolIds, _poolId, _poolIdPos));
     }
 
     /// @notice Release the tokens from VestingPools
@@ -137,24 +129,23 @@ contract ProtocolRewardController is ImmutableOwnable {
     function vestRewards() external returns (uint256 totalReleasable) {
         require(rewardSenders[msg.sender], "PRC:unauthorized");
 
-        for (uint8 i; i < MAX_POOL_IDS_LENGTH; ) {
-            uint256 _poolId = poolIds[i];
+        for (uint8 i = 1; i <= MAX_POOL_IDS_LENGTH; ) {
+            uint256 _poolId = _getPoolId(i);
 
-            if (_poolId == UNDEF_POOL_ID) continue;
+            if (_poolId > 0) {
+                // slither-disable-next-line reentrancy-benign
+                uint256 releasable = IVestingPools(VESTING_POOLS)
+                    .releasableAmount(_poolId);
 
-            // slither-disable-next-line reentrancy-benign
-            uint256 releasable = IVestingPools(VESTING_POOLS).releasableAmount(
-                _poolId
-            );
+                if (releasable != 0) {
+                    IVestingPools(VESTING_POOLS).releaseTo(
+                        _poolId,
+                        msg.sender,
+                        releasable
+                    );
 
-            if (releasable != 0) {
-                IVestingPools(VESTING_POOLS).releaseTo(
-                    _poolId,
-                    msg.sender,
-                    releasable
-                );
-
-                totalReleasable += releasable;
+                    totalReleasable += releasable;
+                }
             }
 
             unchecked {
@@ -171,20 +162,41 @@ contract ProtocolRewardController is ImmutableOwnable {
         view
         returns (uint256 _releasableAmount)
     {
-        for (uint8 i; i < MAX_POOL_IDS_LENGTH; ) {
-            uint256 _poolId = poolIds[i];
+        //TODO: Define minimum amount which can be released.
+        for (uint8 i = 1; i <= MAX_POOL_IDS_LENGTH; ) {
+            uint256 _poolId = _getPoolId(i);
 
-            if (_poolId == UNDEF_POOL_ID) continue;
-
-            // slither-disable-next-line reentrancy-benign
-            _releasableAmount += IVestingPools(VESTING_POOLS).releasableAmount(
-                _poolId
-            );
+            if (_poolId > 0) {
+                // slither-disable-next-line reentrancy-benign
+                _releasableAmount += IVestingPools(VESTING_POOLS)
+                    .releasableAmount(_poolId);
+            }
 
             unchecked {
                 ++i;
             }
         }
+    }
+
+    function _addPoolId(
+        uint256 _poolIds,
+        uint256 _poolId,
+        uint8 _pos
+    ) private pure returns (uint256 _updatedPoolIds) {
+        _updatedPoolIds = _poolIds + (_poolId << ((_pos - 1) * 8));
+    }
+
+    function _removePoolId(
+        uint256 _poolIds,
+        uint256 _poolId,
+        uint8 _pos
+    ) private pure returns (uint256 _updatedPoolIds) {
+        _updatedPoolIds = _poolIds - (_poolId << ((_pos - 1) * 8));
+    }
+
+    function _getPoolId(uint8 pos) private view returns (uint256) {
+        uint256 res = (poolIds >> ((pos - 1) * 8)) & 255;
+        return res;
     }
 
     modifier nonZeroAddress(address account) {

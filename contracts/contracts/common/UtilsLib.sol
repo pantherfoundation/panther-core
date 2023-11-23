@@ -14,6 +14,11 @@ library UtilsLib {
         return uint32(n);
     }
 
+    function safe40(uint256 n) internal pure returns (uint40) {
+        require(n < 2 ** 40, "UNSAFE40");
+        return uint40(n);
+    }
+
     function safe64(uint256 n) internal pure returns (uint64) {
         require(n < 2 ** 64, "UNSAFE64");
         return uint64(n);
