@@ -12,4 +12,5 @@ export type TxNoteType1 = {
 export type TxNoteType3 = TxNoteType1 & {
     zkpAmountScaled: bigint;
     zAssetUTXOMessage: string;
+    zAssetCommitmentMessage: string;
 };
