@@ -8,15 +8,18 @@ import {generateRandomKeypair} from '../../src/base/keypairs';
 import {
     encryptAndPackZAccountUTXOMessage,
     unpackAndDecryptZAccountUTXOMessage,
-    encryptAndPackZAssetUTXOMessage,
-    unpackAndDecryptZAssetUTXOMessage,
+    encryptAndPackZAssetPrivUTXOMessage,
+    unpackAndDecryptZAssetPrivUTXOMessage,
     encryptAndPackCommitmentMessage,
     unpackAndDecryptCommitmentMessage,
+    encryptAndPackZAssetUTXOMessage,
+    unpackAndDecryptZAssetUTXOMessage,
 } from '../../src/panther/messages';
 import {Keypair, PrivateKey} from '../../src/types/keypair';
 import {
     CommitmentMessage,
     ZAccountUTXOMessage,
+    ZAssetPrivUTXOMessage,
     ZAssetUTXOMessage,
 } from '../../src/types/message';
 
@@ -25,6 +28,7 @@ describe('Panther messages encryption', () => {
     let zAccountSecretRandom: PrivateKey;
     let commonValues:
         | ZAccountUTXOMessage
+        | ZAssetPrivUTXOMessage
         | ZAssetUTXOMessage
         | CommitmentMessage;
 
@@ -45,6 +49,7 @@ describe('Panther messages encryption', () => {
             originZoneId: 1n,
             targetZoneId: 1n,
             commitment: 123n,
+            scaledAmount: 123n,
         };
         keypair = generateRandomKeypair();
         zAccountSecretRandom = generateRandomInBabyJubSubField();
@@ -69,6 +74,22 @@ describe('Panther messages encryption', () => {
             );
 
             const result = unpackAndDecryptZAccountUTXOMessage(
+                message,
+                keypair.privateKey,
+            );
+
+            runCommonTests(result);
+        });
+    });
+
+    describe('zAssets Private UTXO', () => {
+        it('encrypts and decrypts correctly', () => {
+            const message = encryptAndPackZAssetPrivUTXOMessage(
+                commonValues as ZAssetPrivUTXOMessage,
+                keypair.publicKey,
+            );
+
+            const result = unpackAndDecryptZAssetPrivUTXOMessage(
                 message,
                 keypair.privateKey,
             );
