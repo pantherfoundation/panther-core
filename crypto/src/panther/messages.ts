@@ -17,10 +17,12 @@ import {PublicKey, PrivateKey, ephemeralKeyPacked} from '../types/keypair';
 import {
     ICiphertext,
     CommitmentMessage,
-    UTXOMessage,
+    Message,
     ZAccountUTXOMessage,
     ZAssetPrivUTXOMessage,
     ZAssetUTXOMessage,
+    PrivateMessage,
+    MessageType,
 } from '../types/message';
 import {assertInBabyJubJubSubOrder, assertMaxBits} from '../utils/assertions';
 import {
@@ -61,22 +63,15 @@ const FIELD_ALLOWED_VALUES = {
     targetNetworkId: 2n,
 } as const;
 
-export enum UTXOMessageType {
-    ZAccount = 'ZAccount',
-    ZAssetPriv = 'ZAssetPriv',
-    ZAsset = 'ZAsset',
-    Commitment = 'Commitment',
-}
-
-type UtxoMessageConfig = {
-    [key in UTXOMessageType]: {
-        fields: Array<keyof UTXOMessage>;
+type MessageConfig = {
+    [key in MessageType]: {
+        fields: Array<keyof Message>;
         size: number;
         msgType: string;
     };
 };
 
-const UTXO_MESSAGE_CONFIGS: UtxoMessageConfig = {
+const UTXO_MESSAGE_CONFIGS: MessageConfig = {
     ZAccount: {
         fields: [
             'secretRandom',
@@ -140,7 +135,7 @@ export function unpackAndDecryptZAccountUTXOMessage(
     return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
-        UTXOMessageType.ZAccount,
+        MessageType.ZAccount,
     );
 }
 
@@ -158,7 +153,7 @@ export function unpackAndDecryptZAssetPrivUTXOMessage(
     return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
-        UTXOMessageType.ZAssetPriv,
+        MessageType.ZAssetPriv,
     );
 }
 
@@ -176,7 +171,7 @@ export function unpackAndDecryptZAssetUTXOMessage(
     return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
-        UTXOMessageType.ZAsset,
+        MessageType.ZAsset,
     );
 }
 
@@ -198,7 +193,7 @@ export function unpackAndDecryptCommitmentMessage(
     return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
-        UTXOMessageType.Commitment,
+        MessageType.Commitment,
         zAccountSecretRandom,
     );
 }
@@ -218,7 +213,7 @@ export function encryptAndPackZAssetPrivUTXOMessage(
     return validateEncryptAndPackMessage(
         secrets,
         rootReadingPubKey,
-        UTXOMessageType.ZAssetPriv,
+        MessageType.ZAssetPriv,
     );
 }
 
@@ -237,7 +232,7 @@ export function encryptAndPackZAssetUTXOMessage(
     return validateEncryptAndPackMessage(
         secrets,
         rootReadingPubKey,
-        UTXOMessageType.ZAsset,
+        MessageType.ZAsset,
     );
 }
 
@@ -256,7 +251,7 @@ export function encryptAndPackZAccountUTXOMessage(
     return validateEncryptAndPackMessage(
         secrets,
         rootReadingPubKey,
-        UTXOMessageType.ZAccount,
+        MessageType.ZAccount,
     );
 }
 
@@ -278,7 +273,7 @@ export function encryptAndPackCommitmentMessage(
     return validateEncryptAndPackMessage(
         secrets,
         rootReadingPubKey,
-        UTXOMessageType.Commitment,
+        MessageType.Commitment,
         zAccountSecretRandom,
     );
 }
@@ -311,16 +306,10 @@ export function extractCipherKeyAndIvFromPackedPoint(
  *
  * @returns The decrypted and validated UTXO message.
  */
-function unpackDecryptAndValidateMessage<
-    T extends
-        | ZAccountUTXOMessage
-        | ZAssetPrivUTXOMessage
-        | ZAssetUTXOMessage
-        | CommitmentMessage,
->(
+function unpackDecryptAndValidateMessage<T extends PrivateMessage>(
     message: string,
     rootReadingPrivateKey: PrivateKey,
-    messageType: UTXOMessageType,
+    messageType: MessageType,
     zAccountSecretRandom?: PrivateKey,
 ): T {
     const utxoMsg = unpackAndDecryptUTXOMessage(
@@ -332,7 +321,7 @@ function unpackDecryptAndValidateMessage<
     validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
 
     // Special handling for commitment message type
-    if (messageType === UTXOMessageType.Commitment && zAccountSecretRandom) {
+    if (messageType === MessageType.Commitment && zAccountSecretRandom) {
         const commitmentMessage = utxoMsg as CommitmentMessage;
 
         return {
@@ -351,10 +340,10 @@ function unpackDecryptAndValidateMessage<
  * @param zAccountSecretRandom - Optional private key for commitment message
  * @returns - Encrypted and packed UTXO message
  */
-function validateEncryptAndPackMessage<T extends UTXOMessage>(
+function validateEncryptAndPackMessage<T extends Message>(
     secrets: T,
     rootReadingPubKey: PublicKey,
-    messageType: UTXOMessageType,
+    messageType: MessageType,
     zAccountSecretRandom?: PrivateKey,
 ): string {
     validateFields(secrets, UTXO_MESSAGE_CONFIGS[messageType].fields);
@@ -364,7 +353,7 @@ function validateEncryptAndPackMessage<T extends UTXOMessage>(
     // If the message type is Commitment and zAccountSecretRandom is provided
     // Set values to the XOR of the commitment and zAccountSecretRandom
     // Else map the secrets to the corresponding fields of the message type
-    if (messageType === UTXOMessageType.Commitment && zAccountSecretRandom) {
+    if (messageType === MessageType.Commitment && zAccountSecretRandom) {
         const commitmentMessage = secrets as CommitmentMessage;
         values = [commitmentMessage.commitment ^ zAccountSecretRandom];
     } else {
@@ -382,7 +371,7 @@ function generateRandomPadding(length: number): string {
         .join('');
 }
 
-function encodeUTXOMessage(type: UTXOMessageType, values: bigint[]): string {
+function encodeUTXOMessage(type: MessageType, values: bigint[]): string {
     const config = UTXO_MESSAGE_CONFIGS[type];
 
     config.fields.forEach((field, index) => {
@@ -407,7 +396,7 @@ function encodeUTXOMessage(type: UTXOMessageType, values: bigint[]): string {
     return bigintToBytes(BigInt(binaryString), config.size);
 }
 
-function decodeUTXOMessage<T extends UTXOMessage>(
+function decodeUTXOMessage<T extends PrivateMessage>(
     encodedMessageBinary: string,
     fields: (keyof T)[],
 ): T {
@@ -429,7 +418,7 @@ function decodeZAssetPrivUTXOMessage(
 ): ZAssetUTXOMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAssetPriv]
+        UTXO_MESSAGE_CONFIGS[MessageType.ZAssetPriv]
             .fields as keyof typeof decodeZAssetPrivUTXOMessage,
     );
 }
@@ -439,7 +428,7 @@ function decodeZAssetsUTXOMessage(
 ): ZAssetPrivUTXOMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAsset]
+        UTXO_MESSAGE_CONFIGS[MessageType.ZAsset]
             .fields as keyof typeof decodeZAssetsUTXOMessage,
     );
 }
@@ -449,7 +438,7 @@ function decodeUTXOCommitmentMessage(
 ): CommitmentMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[UTXOMessageType.Commitment]
+        UTXO_MESSAGE_CONFIGS[MessageType.Commitment]
             .fields as keyof typeof decodeUTXOCommitmentMessage,
     );
 }
@@ -459,7 +448,7 @@ function decodeZAccountUTXOMessage(
 ): ZAccountUTXOMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[UTXOMessageType.ZAccount]
+        UTXO_MESSAGE_CONFIGS[MessageType.ZAccount]
             .fields as keyof typeof decodeZAccountUTXOMessage,
     );
 }
@@ -501,7 +490,7 @@ function encryptAndPackMessage(
 }
 
 function encryptAndPackUTXOMessage(
-    type: UTXOMessageType,
+    type: MessageType,
     values: bigint[],
     rootReadingPubKey: PublicKey,
 ): string {
@@ -515,7 +504,7 @@ function encryptAndPackUTXOMessage(
 
 function unpackUTXOMessage(
     ciphertextMsg: string,
-    type: UTXOMessageType,
+    type: MessageType,
 ): [Uint8Array, ICiphertext] {
     const {size, msgType} = UTXO_MESSAGE_CONFIGS[type];
 
@@ -549,20 +538,18 @@ function unpackUTXOMessage(
 // function. This allows us to dynamically call appropriate decoder function
 // based on the UTXOMessageType.
 const UtxoTypeToMessageDecoder: {
-    [key in UTXOMessageType]: (
-        bin: string,
-    ) => ReturnType<typeof decodeUTXOMessage>;
+    [key in MessageType]: (bin: string) => PrivateMessage;
 } = {
-    [UTXOMessageType.ZAccount]: decodeZAccountUTXOMessage,
-    [UTXOMessageType.ZAsset]: decodeZAssetsUTXOMessage,
-    [UTXOMessageType.ZAssetPriv]: decodeZAssetPrivUTXOMessage,
-    [UTXOMessageType.Commitment]: decodeUTXOCommitmentMessage,
+    [MessageType.ZAccount]: decodeZAccountUTXOMessage,
+    [MessageType.ZAsset]: decodeZAssetsUTXOMessage,
+    [MessageType.ZAssetPriv]: decodeZAssetPrivUTXOMessage,
+    [MessageType.Commitment]: decodeUTXOCommitmentMessage,
 };
 
 function unpackAndDecryptUTXOMessage<T>(
     message: string,
     rootReadingPrivateKey: PrivateKey,
-    type: UTXOMessageType,
+    type: MessageType,
 ): T {
     const plaintextUInt8 = unpackAndDecrypt(
         message,
@@ -583,7 +570,7 @@ function unpackAndDecryptUTXOMessage<T>(
 function unpackAndDecrypt(
     ciphertextMsg: string,
     rootReadingPrivateKey: PrivateKey,
-    type: UTXOMessageType,
+    type: MessageType,
 ): Uint8Array {
     const [ephemeralKeyPacked, iCiphertext] = unpackUTXOMessage(
         ciphertextMsg,
@@ -603,7 +590,7 @@ function unpackAndDecrypt(
     return decryptCipherText(iCiphertext, cipherKey, iv);
 }
 
-function validateFields(values: UTXOMessage, fields: Array<keyof UTXOMessage>) {
+function validateFields(values: Message, fields: Array<keyof Message>) {
     for (const field of fields) {
         const value = values[field];
         if (value === undefined) {
