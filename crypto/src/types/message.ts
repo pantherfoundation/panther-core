@@ -3,7 +3,8 @@ export type ICiphertext = Uint8Array;
 export type Plaintext = bigint[];
 
 export type UTXOMessage = {
-    secretRandom: bigint;
+    secretRandom?: bigint;
+    commitment?: bigint;
     zAccountId?: bigint;
     zAssetId?: bigint;
     originNetworkId?: bigint;
@@ -38,4 +39,8 @@ export type ZAssetUTXOMessage = {
     targetNetworkId: bigint;
     originZoneId: bigint;
     targetZoneId: bigint;
+};
+
+export type CommitmentMessage = {
+    commitment: bigint;
 };
