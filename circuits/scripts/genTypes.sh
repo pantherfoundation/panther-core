@@ -36,6 +36,7 @@ main() {
     emit_types circom_tester
     emit_types circomlibjs
     emit_types snarkjs
+    emit_types ffjavascript
     # This is needed to avoid errors unless we have --skipLibCheck:
     # rm $TYPEDIR/circomlibjs/src/smt.d.ts
 }

@@ -11,7 +11,7 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     signal input ephimeralRandom;                               // randomness
     signal input scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
     signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
-    signal input pubKey[2];                                     // public key
+    signal input pubKey[2];                                     // public key (assumed to be priv-key * B8)
     signal output ephimeralPubKey[2];                           // ephimeral public-key
     signal output encryptedMessage[ScalarsSize+PointsSize][2];  // encrypted data
 
@@ -31,7 +31,7 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     component n2b = Num2Bits(253);
 
     n2b.in <== ephimeralRandom;
-
+    // G8 is used in case of pubKey[x,y] = [0,0]
     component drv_ephimeralRandomPublicKey = EscalarMulAny(253);
 
     drv_ephimeralRandomPublicKey.p[0] <== pubKey[0];
@@ -44,7 +44,7 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     component drv_mGrY[ScalarsSize + PointsSize];
 
     for (var j = 0; j < ScalarsSize; j++) {
-        // M = m * G
+        // M = m * B8
         drv_mG[j] = BabyPbk();
         drv_mG[j].in <== scalarMessage[j];
         // require `m < 2^64` - otherwise brute-force will be near to imposible
@@ -94,6 +94,110 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
     signal input utxoInOriginZoneId[nUtxoIn];    // 16 bit
     signal input utxoOutTargetZoneId[nUtxoOut];  // 16 bit
 
+    // each signal will be < 2^64
+    signal output out[1+1+nUtxoIn+nUtxoOut+nUtxoIn+nUtxoOut];
+
+    // ---------------- Scalars ----------------------
+    // 1) 1 x 64 (zAsset) ----------------------------
+    assert(zAsset < 2**32);
+    out[0] <== zAsset;
+
+    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId) --
+    assert(zAccountId < 2**24);
+    assert(zAccountZoneId < 2**16);
+
+    component n2b_zAccountId = Num2Bits(24);
+    n2b_zAccountId.in <== zAccountId;
+
+    component n2b_zAccountZoneId = Num2Bits(16);
+    n2b_zAccountZoneId.in <== zAccountZoneId;
+
+    component b2n_zAccountId_zAccountZoneId = Bits2Num(24+16);
+    for(var i = 0; i < 16; i++) {
+        b2n_zAccountId_zAccountZoneId.in[i] <== n2b_zAccountZoneId.out[i];
+    }
+
+    for(var i = 0; i < 24; i++) {
+        b2n_zAccountId_zAccountZoneId.in[i+16] <== n2b_zAccountId.out[i];
+    }
+
+    out[1] <== b2n_zAccountId_zAccountZoneId.out;
+
+    // 3) nUtxoIn x 64 amount
+    for (var j = 0; j < nUtxoIn; j++) {
+        assert(utxoInAmount[j] < 2**64);
+        out[1+1+j] <== utxoInAmount[j];
+    }
+    // 4) nUtxoOut x 64 amount ------------------
+    for (var j = 0; j < nUtxoOut; j++) {
+        assert(utxoOutAmount[j] < 2**64);
+        out[1+1+nUtxoIn+j] <== utxoOutAmount[j];
+    }
+
+    // 5) nUtxoIn x originZoneId + nUtxoOut x targetZoneId
+    component n2b_utxoInOriginZoneId[nUtxoIn];
+    for (var j = 0; j < nUtxoIn; j++) {
+        n2b_utxoInOriginZoneId[j] = Num2Bits(16);
+        n2b_utxoInOriginZoneId[j].in <== utxoInOriginZoneId[j];
+    }
+
+    component n2b_utxoOutTargetZoneId[nUtxoOut];
+    for (var j = 0; j < nUtxoOut; j++) {
+        n2b_utxoOutTargetZoneId[j] = Num2Bits(16);
+        n2b_utxoOutTargetZoneId[j].in <== utxoOutTargetZoneId[j];
+    }
+
+    var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
+    component b2n_utxoInOriginZoneId_utxoOutTargetZoneId[max_nUtxoIn_nUtxoOut];
+
+    for (var j = 0; j < max_nUtxoIn_nUtxoOut; j++) {
+        b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j] = Bits2Num(32);
+        if( j < nUtxoIn && j < nUtxoOut ) {
+            for(var i = 0; i < 16; i++) {
+                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+            }
+            for(var i = 0; i < 16; i++) {
+                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+            }
+        } else {
+            if( j < nUtxoIn ) { // j > nUtxoOut ---> utxo-out-targetZoneId - set to be zero - assimetric case
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== 0;
+                }
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+                }
+            } else {            // j > nUtxoIn  ---> utxo-in-originZoneId -  set to be zero - assimetric case
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+                }
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== 0;
+                }
+            }
+        }
+        out[1+1+nUtxoIn+nUtxoOut+j] <== b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].out;
+    }
+}
+
+// ------------- scalars-size --------------------------------
+// 1) 1 x 64 (zAsset)
+// 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
+// 3) nUtxoIn x 64 amount
+// 4) nUtxoOut x 64 amount
+// 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
+// ------------------------------------------------------------
+template DataEscrowSerializerTest(nUtxoIn,nUtxoOut) {
+    signal input zAsset;                         // 64 bit
+    signal input zAccountId;                     // 24 bit
+    signal input zAccountZoneId;                 // 16 bit
+
+    signal input utxoInAmount[nUtxoIn];          // 64 bit
+    signal input utxoOutAmount[nUtxoOut];        // 64 bit
+
+    signal input utxoInOriginZoneId[nUtxoIn];    // 16 bit
+    signal input utxoOutTargetZoneId[nUtxoOut];  // 16 bit
+
     // signal input utxoInTargetZoneId[nUtxoIn];    // 16 bit
     // signal input utxoOutOriginZoneId[nUtxoOut];  // 16 bit
 
@@ -104,12 +208,16 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
     // 1) 1 x 64 (zAsset) ----------------------------
     assert(zAsset < 2**32);
     out[0] <== zAsset;
+
     // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId) --
     assert(zAccountId < 2**24);
     assert(zAccountZoneId < 2**16);
+
     signal zAccountId_zAccountZoneId;
     zAccountId_zAccountZoneId <-- zAccountId << 16 | zAccountZoneId;
+
     out[1] <== zAccountId_zAccountZoneId;
+
     // 3) nUtxoIn x 64 amount
     for (var j = 0; j < nUtxoIn; j++) {
         assert(utxoInAmount[j] < 2**64);
@@ -140,26 +248,6 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
         }
         out[1+1+nUtxoIn+nUtxoOut+j] <== utxoInOriginZoneIdUtxoOutTargetZoneIdOR[j];
     }
-    /*
-    // 5) nUtxoIn x ( zones-ids - 32 bit ) ------
-    signal utxoInOriginZoneIdShifted[nUtxoIn];
-    signal utxoInOriginZoneIdOr[nUtxoIn];
-    for (var j = 0; j < nUtxoIn; j++) {
-        utxoInOriginZoneIdShifted[j] <-- utxoInOriginZoneId[j] << 16;
-        utxoInOriginZoneIdOr[j] <-- utxoInOriginZoneIdShifted[j] | utxoInTargetZoneId[j];
-
-        out[1+nUtxoIn+nUtxoOut+j] <== utxoInOriginZoneIdOr[j];
-    }
-    // 6) nUtxoOut x ( zones-ids - 32 bit ) -----
-    signal utxoOutOriginZoneIdShifted[nUtxoOut];
-    signal utxoOutOriginZoneIdOr[nUtxoOut];
-    for (var j = 0; j < nUtxoOut; j++) {
-        utxoOutOriginZoneIdShifted[j] <-- utxoOutOriginZoneId[j] << 16;
-        utxoOutOriginZoneIdOr[j] <-- utxoOutOriginZoneIdShifted[j] | utxoOutTargetZoneId[j];
-
-        out[1+nUtxoIn+nUtxoOut+nUtxoIn+j] <== utxoOutOriginZoneIdOr[j];
-    }
-    */
 }
 
 template DataEscrowElGamalEncryptionScalar(ScalarsSize) {
@@ -217,6 +305,86 @@ template DataEscrowElGamalEncryptionScalar(ScalarsSize) {
 }
 
 template DaoDataEscrowSerializer(nUtxoIn,nUtxoOut) {
+    signal input zAccountId;                     // 24 bit
+    signal input zAccountZoneId;                 // 16 bit
+
+    signal input utxoInOriginZoneId[nUtxoIn];    // 16 bit
+    signal input utxoOutTargetZoneId[nUtxoOut];  // 16 bit
+
+    // each signal will be < 2^64
+    signal output out[1+nUtxoIn+nUtxoOut];
+
+    // ---------------- Scalars ----------------
+    // 1) 1 x 64 (zAccount | zAccountZoneID) ---
+
+    assert(zAccountId < 2**24);
+    assert(zAccountZoneId < 2**16);
+
+    component n2b_zAccountId = Num2Bits(24);
+    n2b_zAccountId.in <== zAccountId;
+
+    component n2b_zAccountZoneId = Num2Bits(16);
+    n2b_zAccountZoneId.in <== zAccountZoneId;
+
+    component b2n_zAccountId_zAccountZoneId = Bits2Num(24+16);
+    for(var i = 0; i < 16; i++) {
+        b2n_zAccountId_zAccountZoneId.in[i] <== n2b_zAccountZoneId.out[i];
+    }
+
+    for(var i = 0; i < 24; i++) {
+        b2n_zAccountId_zAccountZoneId.in[i+16] <== n2b_zAccountId.out[i];
+    }
+
+    out[0] <== b2n_zAccountId_zAccountZoneId.out;
+
+
+    // 1) nUtxoIn x originZoneId + nUtxoOut x targetZoneId
+    component n2b_utxoInOriginZoneId[nUtxoIn];
+    for (var j = 0; j < nUtxoIn; j++) {
+        n2b_utxoInOriginZoneId[j] = Num2Bits(16);
+        n2b_utxoInOriginZoneId[j].in <== utxoInOriginZoneId[j];
+    }
+
+    component n2b_utxoOutTargetZoneId[nUtxoOut];
+    for (var j = 0; j < nUtxoOut; j++) {
+        n2b_utxoOutTargetZoneId[j] = Num2Bits(16);
+        n2b_utxoOutTargetZoneId[j].in <== utxoOutTargetZoneId[j];
+    }
+
+    var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
+    component b2n_utxoInOriginZoneId_utxoOutTargetZoneId[max_nUtxoIn_nUtxoOut];
+
+    for (var j = 0; j < max_nUtxoIn_nUtxoOut; j++) {
+        b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j] = Bits2Num(32);
+        if( j < nUtxoIn && j < nUtxoOut ) {
+            for(var i = 0; i < 16; i++) {
+                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+            }
+            for(var i = 0; i < 16; i++) {
+                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+            }
+        } else {
+            if( j < nUtxoIn ) { // j > nUtxoOut ---> utxo-out-targetZoneId - set to be zero - assimetric case
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== 0;
+                }
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+                }
+            } else {            // j > nUtxoIn  ---> utxo-in-originZoneId -  set to be zero - assimetric case
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+                }
+                for(var i = 0; i < 16; i++) {
+                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== 0;
+                }
+            }
+        }
+        out[1+j] <== b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].out;
+    }
+}
+
+template DaoDataEscrowSerializerTest(nUtxoIn,nUtxoOut) {
     signal input zAccountId;                     // 24 bit
     signal input zAccountZoneId;                 // 16 bit
 
