@@ -112,6 +112,7 @@ abstract contract TransactionNoteEmitter {
     // - MT_UTXO_ZACCOUNT
     // - MT_UTXO_ZASSET
     // - MT_UTXO_ZASSET
+    // - MT_SPENT_2UTXO
     // Then free-content messages MAY follow.
 
     // ***********************
@@ -185,6 +186,19 @@ abstract contract TransactionNoteEmitter {
     // - originZoneId (16 bit)
     // - targetZoneId (16 bit)
     // - bytes64 scaledAmount
+
+    // (Private) Message with commitments to two UTXOs spent in the same transaction:
+    // It is designated to the spender of UTXOs, so It reuses the ephemeral key from
+    // the same transaction's MT_UTXO_ZACCOUNT message
+    uint8 internal constant MT_SPENT_2UTXO = 0x09;
+    // `msgContainer` MUST contain the following data:
+    // - bytes[64] cypherText
+    // (the ephemeral key omitted to avoid duplication)
+    // Length in bytes (msgType, msgContainer)
+    uint256 internal constant LMT_SPENT_2UTXO = 1 + 64;
+    // Preimage of `cipherText` MUST contain (512 bit):
+    // - spentUtxoCommitment1 XOR createdZaccountUtxoRandom
+    // - spentUtxoCommitment2 XOR createdZaccountUtxoRandom
 
     /// Free-content private messages
     // Purposely commented out as smart contracts do not use these constants
