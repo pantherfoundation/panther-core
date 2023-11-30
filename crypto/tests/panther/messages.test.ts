@@ -10,52 +10,43 @@ import {
     unpackAndDecryptZAccountUTXOMessage,
     encryptAndPackZAssetPrivUTXOMessage,
     unpackAndDecryptZAssetPrivUTXOMessage,
-    encryptAndPackCommitmentMessage,
-    unpackAndDecryptCommitmentMessage,
+    unpackAndDecryptSpentUTXOMessage,
     encryptAndPackZAssetUTXOMessage,
     unpackAndDecryptZAssetUTXOMessage,
+    encryptAndPackSpentUTXOMessage,
 } from '../../src/panther/messages';
-import {Keypair, PrivateKey} from '../../src/types/keypair';
 import {
-    CommitmentMessage,
+    Message,
+    SpentUTXOMessage,
     ZAccountUTXOMessage,
     ZAssetPrivUTXOMessage,
     ZAssetUTXOMessage,
 } from '../../src/types/message';
 
+const commonValues: Message = {
+    secretRandom: 123n,
+    networkId: 1n,
+    zoneId: 1n,
+    nonce: 1n,
+    expiryTime: 1000n,
+    amountZkp: 5000n,
+    amountPrp: 2000n,
+    totalAmountPerTimePeriod: 10_000n,
+    zAccountId: 1n,
+    zAssetId: 1n,
+    originNetworkId: 1n,
+    targetNetworkId: 1n,
+    originZoneId: 1n,
+    targetZoneId: 1n,
+    spentUtxoCommitment1: 123n,
+    spentUtxoCommitment2: 321n,
+    scaledAmount: 123n,
+};
+
+const keypair = generateRandomKeypair();
+const zAccountSecretRandom = generateRandomInBabyJubSubField();
+
 describe('Panther messages encryption', () => {
-    let keypair: Keypair;
-    let zAccountSecretRandom: PrivateKey;
-    let commonValues:
-        | ZAccountUTXOMessage
-        | ZAssetPrivUTXOMessage
-        | ZAssetUTXOMessage
-        | CommitmentMessage;
-
-    beforeEach(() => {
-        commonValues = {
-            secretRandom: 123n,
-            networkId: 1n,
-            zoneId: 1n,
-            nonce: 1n,
-            expiryTime: 1000n,
-            amountZkp: 5000n,
-            amountPrp: 2000n,
-            totalAmountPerTimePeriod: 10_000n,
-            zAccountId: 1n,
-            zAssetId: 1n,
-            originNetworkId: 1n,
-            targetNetworkId: 1n,
-            originZoneId: 1n,
-            targetZoneId: 1n,
-            commitment: 123n,
-            scaledAmount: 123n,
-        };
-        keypair = generateRandomKeypair();
-        zAccountSecretRandom = generateRandomInBabyJubSubField();
-    });
-
-    // Function to handle common encryption and decryption tests
     const runCommonTests = (result: any) => {
         for (const key in commonValues) {
             if (Object.prototype.hasOwnProperty.call(result, key)) {
@@ -66,69 +57,63 @@ describe('Panther messages encryption', () => {
         }
     };
 
-    describe('zAccount UTXO', () => {
+    const runTest = (
+        encryptFunc: any,
+        decryptFunc: any,
+        values:
+            | ZAccountUTXOMessage
+            | ZAssetPrivUTXOMessage
+            | ZAssetUTXOMessage
+            | SpentUTXOMessage,
+        extraArgsEncrypt: any[] = [],
+        extraArgsDecrypt: any[] = [],
+    ) => {
         it('encrypts and decrypts correctly', () => {
-            const message = encryptAndPackZAccountUTXOMessage(
-                commonValues as ZAccountUTXOMessage,
+            const message = encryptFunc(
+                values,
                 keypair.publicKey,
+                ...extraArgsEncrypt,
             );
-
-            const result = unpackAndDecryptZAccountUTXOMessage(
+            const result = decryptFunc(
                 message,
                 keypair.privateKey,
+                ...extraArgsDecrypt,
             );
-
             runCommonTests(result);
         });
+    };
+
+    describe('zAccount UTXO', () => {
+        runTest(
+            encryptAndPackZAccountUTXOMessage,
+            unpackAndDecryptZAccountUTXOMessage,
+            commonValues as ZAccountUTXOMessage,
+        );
     });
 
     describe('zAssets Private UTXO', () => {
-        it('encrypts and decrypts correctly', () => {
-            const message = encryptAndPackZAssetPrivUTXOMessage(
-                commonValues as ZAssetPrivUTXOMessage,
-                keypair.publicKey,
-            );
-
-            const result = unpackAndDecryptZAssetPrivUTXOMessage(
-                message,
-                keypair.privateKey,
-            );
-
-            runCommonTests(result);
-        });
+        runTest(
+            encryptAndPackZAssetPrivUTXOMessage,
+            unpackAndDecryptZAssetPrivUTXOMessage,
+            commonValues as ZAssetPrivUTXOMessage,
+        );
     });
 
     describe('zAssets UTXO', () => {
-        it('encrypts and decrypts correctly', () => {
-            const message = encryptAndPackZAssetUTXOMessage(
-                commonValues as ZAssetUTXOMessage,
-                keypair.publicKey,
-            );
-
-            const result = unpackAndDecryptZAssetUTXOMessage(
-                message,
-                keypair.privateKey,
-            );
-
-            runCommonTests(result);
-        });
+        runTest(
+            encryptAndPackZAssetUTXOMessage,
+            unpackAndDecryptZAssetUTXOMessage,
+            commonValues as ZAssetUTXOMessage,
+        );
     });
 
-    describe('Commitment Message', () => {
-        it('encrypts and decrypts correctly', () => {
-            const message = encryptAndPackCommitmentMessage(
-                commonValues as CommitmentMessage,
-                zAccountSecretRandom,
-                keypair.publicKey,
-            );
-
-            const result = unpackAndDecryptCommitmentMessage(
-                message,
-                zAccountSecretRandom,
-                keypair.privateKey,
-            );
-
-            runCommonTests(result);
-        });
+    describe('SpentUTXO Message', () => {
+        runTest(
+            encryptAndPackSpentUTXOMessage,
+            unpackAndDecryptSpentUTXOMessage,
+            commonValues as SpentUTXOMessage,
+            [zAccountSecretRandom],
+            [zAccountSecretRandom],
+        );
     });
 });
