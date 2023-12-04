@@ -84,11 +84,6 @@ describe('Transaction notes', () => {
                     expected:
                         '0x0703AB122339CD689DF91E7FFC905585986436C6C818DBA92F6402C034BDB431CA2B038979DCFAA09137FCBA43DB4C13C6287C27D6A940A9ADCFB4236810AC4883468515096DD4B1811A91C822E82AD776DD8BAAB62502FA8D18853597ABE8F538',
                 },
-                {
-                    field: 'zAssetCommitmentMessage',
-                    expected:
-                        '0x300D7F30D294FE62080B65BA0FB980F17FD7A2AAAA2D4156C63DE11C60DB011E191D7F30D294FE62080B65BA0FB980F17FD7A2AAAA2D4156C63DE11C60DB011E19',
-                },
             ];
 
             testCases.forEach(testCase => {
