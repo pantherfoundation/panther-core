@@ -7,11 +7,18 @@ import crypto from 'crypto';
 import {babyjub} from 'circomlibjs';
 import {mulPointEscalar} from 'circomlibjs/src/babyjub';
 
-import {PrivateKey, PublicKey, EcdhSharedKey, Point} from '../types/keypair';
+import {
+    PrivateKey,
+    PublicKey,
+    EcdhSharedKey,
+    Point,
+    Keypair,
+} from '../types/keypair';
 import {ICiphertext} from '../types/message';
 import {assertInBabyJubJubSubOrder} from '../utils/assertions';
 
 import {generateRandomInBabyJubSubField} from './field-operations';
+import {deriveKeypairFromPrivKey} from './keypairs';
 
 export function generateEcdhSharedKey(
     privateKey: PrivateKey,
@@ -134,18 +141,15 @@ export function encryptPointsElGamal(
     publicKey: PublicKey,
 ): {
     encryptedPoints: Point[];
-    ephemeralPublicKey: PublicKey;
+    ephemeralKeypair: Keypair;
 } {
     const sessionKey = generateRandomInBabyJubSubField();
-    const ephemeralPublicKey = mulPointEscalar(
-        babyjub.Base8,
-        sessionKey,
-    ) as PublicKey;
+    const ephemeralKeypair = deriveKeypairFromPrivKey(sessionKey);
     const encryptedPoints = originalPoints.map(point =>
         encryptPointElGamal(point, publicKey, sessionKey),
     );
     return {
         encryptedPoints,
-        ephemeralPublicKey,
+        ephemeralKeypair,
     };
 }
