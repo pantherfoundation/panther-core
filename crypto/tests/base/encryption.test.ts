@@ -2,87 +2,160 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {describe, expect} from '@jest/globals';
+import {babyjub} from 'circomlibjs';
+import {mulPointEscalar} from 'circomlibjs/src/babyjub';
 
 import {
     generateEcdhSharedKey,
     encryptPlainText,
     decryptCipherText,
+    decryptPointElGamal,
+    encryptPointElGamal,
+    encryptPointsElGamal,
 } from '../../src/base/encryption';
+import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {generateRandomKeypair, packPublicKey} from '../../src/base/keypairs';
 import {extractCipherKeyAndIvFromPackedPoint} from '../../src/panther/messages';
+import {Keypair, Point} from '../../src/types/keypair';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
 } from '../../src/utils/bigint-conversions';
-import {SNARK_FIELD_SIZE} from '../../src/utils/constants';
 
-describe('Cryptographic operations', () => {
-    const keypair1 = generateRandomKeypair();
-    const keypair2 = generateRandomKeypair();
-
+function generateKeysAndEncryptedText(
+    keypair1: Keypair,
+    keypair2: Keypair,
+    plaintext: bigint,
+): Uint8Array {
     const ecdhSharedKey12 = generateEcdhSharedKey(
         keypair1.privateKey,
         keypair2.publicKey,
     );
+    const extractCipherKeysFromEcdh12 = extractCipherKeyAndIvFromPackedPoint(
+        packPublicKey(ecdhSharedKey12),
+    );
+
+    return encryptPlainText(
+        bigIntToUint8Array(plaintext),
+        extractCipherKeysFromEcdh12.cipherKey,
+        extractCipherKeysFromEcdh12.iv,
+    );
+}
+
+function decryptCiphertext(
+    ciphertext: Uint8Array,
+    keypair1: Keypair,
+    keypair2: Keypair,
+): bigint {
     const ecdhSharedKey21 = generateEcdhSharedKey(
         keypair2.privateKey,
         keypair1.publicKey,
     );
-
-    const plaintext = generateRandomKeypair().privateKey;
-    const {iv: ivSpending, cipherKey: ckSpending} =
-        extractCipherKeyAndIvFromPackedPoint(packPublicKey(ecdhSharedKey12));
-    const ciphertext = encryptPlainText(
-        bigIntToUint8Array(plaintext),
-        ckSpending,
-        ivSpending,
+    const extractCipherKeysFromEcdh21 = extractCipherKeyAndIvFromPackedPoint(
+        packPublicKey(ecdhSharedKey21),
     );
 
-    const {iv: ivReading, cipherKey: ckReading} =
-        extractCipherKeyAndIvFromPackedPoint(packPublicKey(ecdhSharedKey21));
-
-    const decryptedCiphertext = uint8ArrayToBigInt(
-        decryptCipherText(ciphertext, ckReading, ivReading),
+    return uint8ArrayToBigInt(
+        decryptCipherText(
+            ciphertext,
+            extractCipherKeysFromEcdh21.cipherKey,
+            extractCipherKeysFromEcdh21.iv,
+        ),
     );
+}
 
-    describe('Private key', () => {
-        it('should be smaller than the SNARK field size (BN254)', () => {
-            expect(keypair1.privateKey < SNARK_FIELD_SIZE).toBeTruthy();
-            // TODO: add tests to ensure that the prune buffer step worked
-        });
-    });
+function generateSecretPoint(): Point {
+    const secret = generateRandomInBabyJubSubField();
+    return mulPointEscalar(babyjub.Base8, secret) as Point;
+}
 
-    describe("Public key's constituent values ", () => {
-        it('should be smaller than the SNARK field size (BN254)', () => {
-            // TODO: Figure out if these checks are correct and enough
-            expect(keypair1.publicKey[0] < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypair1.publicKey[1] < SNARK_FIELD_SIZE).toBeTruthy();
-        });
-    });
+function generateEphemeralPublicKey(sessionKey: bigint): Point {
+    return mulPointEscalar(babyjub.Base8, sessionKey) as Point;
+}
 
-    describe('ECDH shared keys', () => {
-        it('should match', () => {
-            expect(ecdhSharedKey12.toString()).toEqual(
-                ecdhSharedKey21.toString(),
+describe('Encryption Test Suite', () => {
+    describe('AES-128-CBC', () => {
+        let keypair1: Keypair;
+        let keypair2: Keypair;
+        let plaintext: bigint;
+        let ciphertext: Uint8Array;
+        let decryptedCiphertext: bigint;
+
+        beforeEach(() => {
+            keypair1 = generateRandomKeypair();
+            keypair2 = generateRandomKeypair();
+            plaintext = generateRandomKeypair().privateKey;
+            ciphertext = generateKeysAndEncryptedText(
+                keypair1,
+                keypair2,
+                plaintext,
+            );
+            decryptedCiphertext = decryptCiphertext(
+                ciphertext,
+                keypair1,
+                keypair2,
             );
         });
-    });
 
-    describe('Ciphertext', () => {
-        it('should differ from the plaintext', () => {
-            expect(bigIntToUint8Array(plaintext) !== ciphertext).toBeTruthy();
+        it('Ciphertext should differ from the plaintext', () => {
+            expect(bigIntToUint8Array(plaintext) !== ciphertext).toBe(true);
         });
 
-        it('should have 32 bytes of data', () => {
+        it('Ciphertext should have 32 bytes of data', () => {
             expect(ciphertext.length).toEqual(32);
         });
-    });
 
-    describe('The decrypted ciphertext', () => {
-        it('should be correct', () => {
+        it('The decrypted ciphertext should be correct', () => {
             expect(decryptedCiphertext.toString()).toEqual(
                 plaintext.toString(),
             );
+        });
+    });
+
+    describe('El Gamal', () => {
+        let secretPoint: Point;
+        let keypair: Keypair;
+        let sessionKey: bigint;
+        let secretPoints: Point[];
+
+        beforeEach(() => {
+            secretPoint = generateSecretPoint();
+            sessionKey = generateRandomInBabyJubSubField();
+            keypair = generateRandomKeypair();
+            secretPoints = Array.from({length: 10}, generateSecretPoint);
+        });
+
+        it('encrypts and decrypts single point', () => {
+            const encryptedPoint = encryptPointElGamal(
+                secretPoint,
+                keypair.publicKey,
+                sessionKey,
+            );
+            const ephemeralPublicKey = generateEphemeralPublicKey(sessionKey);
+            const decryptedPoint = decryptPointElGamal(
+                encryptedPoint,
+                keypair.privateKey,
+                ephemeralPublicKey,
+            );
+
+            expect(secretPoint).toEqual(decryptedPoint);
+        });
+
+        it('encrypts and decrypts multiple points', () => {
+            const {encryptedPoints, ephemeralPublicKey} = encryptPointsElGamal(
+                secretPoints,
+                keypair.publicKey,
+            );
+
+            const decryptedPoints = encryptedPoints.map(encryptedPoint =>
+                decryptPointElGamal(
+                    encryptedPoint,
+                    keypair.privateKey,
+                    ephemeralPublicKey,
+                ),
+            );
+
+            expect(secretPoints).toEqual(decryptedPoints);
         });
     });
 });
