@@ -17,6 +17,7 @@ import {
     derivePrivKeyFromSignature,
     extractSecretsPair,
 } from '../../src/panther/keys';
+import {PublicKey} from '../../src/types/keypair';
 import {SNARK_FIELD_SIZE} from '../../src/utils/constants';
 
 describe('Keychain', () => {
@@ -154,15 +155,15 @@ describe('Keychain', () => {
             const pubKeyWithinSnark = [
                 SNARK_FIELD_SIZE - bigOne,
                 SNARK_FIELD_SIZE - bigOne,
-            ];
+            ] as PublicKey;
             const pubKeyXNotWithinSnark = [
                 SNARK_FIELD_SIZE + bigOne,
                 SNARK_FIELD_SIZE - bigOne,
-            ];
+            ] as PublicKey;
             const pubKeyNotWithinSnark = [
                 SNARK_FIELD_SIZE - bigOne,
                 SNARK_FIELD_SIZE + bigOne,
-            ];
+            ] as PublicKey;
             describe('validity check in isChildPubKeyValid()', () => {
                 describe('Child public key', () => {
                     it('should throw error for X coordinate', () => {
@@ -214,15 +215,15 @@ describe('Keychain', () => {
         const validChildPubKey = babyjub.mulPointEscalar(
             rootKeypair.publicKey,
             secret,
-        );
+        ) as PublicKey;
         const invalidChildPubKeyX = [
             validChildPubKey[0] + bigOne,
             validChildPubKey[1],
-        ];
+        ] as PublicKey;
         const invalidChildPubKeyY = [
             validChildPubKey[0],
             validChildPubKey[1] + bigOne,
-        ];
+        ] as PublicKey;
 
         describe('Child public key', () => {
             it('should return true if the key is valid', () => {

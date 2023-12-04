@@ -67,7 +67,7 @@ export const deriveKeypairFromSeed = (seed: bigint): Keypair => {
 
 export const derivePubKeyFromPrivKey = (privateKey: PrivateKey): PublicKey => {
     assertInBabyJubJubSubOrder(privateKey, 'privateKey');
-    return babyjub.mulPointEscalar(babyjub.Base8, privateKey);
+    return babyjub.mulPointEscalar(babyjub.Base8, privateKey) as PublicKey;
 };
 
 export const deriveChildPubKeyFromRootPubKey = (
@@ -78,7 +78,7 @@ export const deriveChildPubKeyFromRootPubKey = (
     assertInBabyJubJubSubOrder(random, 'random');
     assertInSnarkField(rootPubKey[0], 'Root public key X');
     assertInSnarkField(rootPubKey[1], 'Root public key Y');
-    return babyjub.mulPointEscalar(rootPubKey, random);
+    return babyjub.mulPointEscalar(rootPubKey, random) as PublicKey;
 };
 
 export const deriveChildPrivKeyFromRootPrivKey = (
@@ -99,7 +99,7 @@ export function packPublicKey(pubKey: PublicKey): Uint8Array {
 // unpackPublicKey switches representation from big-endian to little-endian and
 // unpacks the pub key
 export function unpackPublicKey(packedPubKey: Uint8Array): PublicKey {
-    return babyjub.unpackPoint([...packedPubKey].reverse());
+    return babyjub.unpackPoint([...packedPubKey].reverse()) as PublicKey;
 }
 
 export const generateRandomKeypair = () =>
