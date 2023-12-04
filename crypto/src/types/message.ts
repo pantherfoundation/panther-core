@@ -27,27 +27,28 @@ export type ZAssetUTXOMessage = ZAssetPrivUTXOMessage & {
     scaledAmount: bigint;
 };
 
-export type CommitmentMessage = {
-    commitment: bigint;
+export type SpentUTXOMessage = {
+    spentUtxoCommitment1: bigint;
+    spentUtxoCommitment2: bigint;
 };
 
 export type PrivateMessage =
     | ZAccountUTXOMessage
     | ZAssetUTXOMessage
     | ZAssetPrivUTXOMessage
-    | CommitmentMessage;
+    | SpentUTXOMessage;
 
 type OptionalKeys<T> = {[P in keyof T]?: T[P]};
 export type Message = OptionalKeys<
     ZAccountUTXOMessage &
         ZAssetUTXOMessage &
         ZAssetPrivUTXOMessage &
-        CommitmentMessage
+        SpentUTXOMessage
 >;
 
 export enum MessageType {
     ZAccount = 'ZAccount',
     ZAssetPriv = 'ZAssetPriv',
     ZAsset = 'ZAsset',
-    Commitment = 'Commitment',
+    SpentUTXO = 'SpentUTXO',
 }

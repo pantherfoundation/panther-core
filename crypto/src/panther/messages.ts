@@ -16,7 +16,7 @@ import {
 import {PublicKey, PrivateKey, ephemeralKeyPacked} from '../types/keypair';
 import {
     ICiphertext,
-    CommitmentMessage,
+    SpentUTXOMessage,
     Message,
     ZAccountUTXOMessage,
     ZAssetPrivUTXOMessage,
@@ -38,6 +38,8 @@ const MSG_TYPE_WIDTH = 2;
 const FIELD_BIT_LENGTHS = {
     secretRandom: 256,
     commitment: 256,
+    spentUtxoCommitment1: 256,
+    spentUtxoCommitment2: 256,
     zAccountId: 24,
     zAssetId: 64,
     originNetworkId: 6,
@@ -113,10 +115,10 @@ const UTXO_MESSAGE_CONFIGS: MessageConfig = {
         size: 64, // actual size is 452 bits but we need to round up to the nearest byte that is a multiple of 16 because of AES-128-CBC
         msgType: '08',
     },
-    Commitment: {
-        fields: ['commitment'],
-        size: 32,
-        msgType: '30',
+    SpentUTXO: {
+        fields: ['spentUtxoCommitment1', 'spentUtxoCommitment2'],
+        size: 64,
+        msgType: '09',
     },
 };
 
@@ -176,24 +178,24 @@ export function unpackAndDecryptZAssetUTXOMessage(
 }
 
 /**
- * Unpacks and decrypts a commitment message.
- * @param {string} message - The commitment message to unpack and decrypt.
- * @param {PrivateKey} zAccountSecretRandom - The secret random for the
- * zAccount.
+ * Unpacks and decrypts a Spent UTXO message.
+ * @param {string} message - The Spent UTXO message to unpack and decrypt.
  * @param {PrivateKey} rootReadingPrivateKey - The root reading private key used
  * to decrypt the message.
- * @returns {CommitmentMessage} Returns an object with a decrypted commitment
+ * @param {PrivateKey} zAccountSecretRandom - The secret random for the
+ * zAccount.
+ * @returns {SpentUTXOMessage} Returns an object with a decrypted Spent UTXO
  * message.
  */
-export function unpackAndDecryptCommitmentMessage(
+export function unpackAndDecryptSpentUTXOMessage(
     message: string,
-    zAccountSecretRandom: PrivateKey,
     rootReadingPrivateKey: PrivateKey,
-): CommitmentMessage {
+    zAccountSecretRandom: PrivateKey,
+): SpentUTXOMessage {
     return unpackDecryptAndValidateMessage(
         message,
         rootReadingPrivateKey,
-        MessageType.Commitment,
+        MessageType.SpentUTXO,
         zAccountSecretRandom,
     );
 }
@@ -256,24 +258,24 @@ export function encryptAndPackZAccountUTXOMessage(
 }
 
 /**
- * Encrypts and packs a CommitmentMessage into a string.
- * @param {CommitmentMessage} secrets - The secrets object to be encrypted and
+ * Encrypts and packs a SpentUTXOMessage into a string.
+ * @param {SpentUTXOMessage} secrets - The secrets object to be encrypted and
  * packed.
- * @param {PrivateKey} zAccountSecretRandom - The secret random for the
- * zAccount.
  * @param {PublicKey} rootReadingPubKey - The root reading public key, used to
  * encrypt the UTXO message.
+ * @param {PrivateKey} zAccountSecretRandom - The secret random for the
+ * zAccount.
  * @returns {string} Returns the encrypted and packed UTXO message as a string.
  */
-export function encryptAndPackCommitmentMessage(
-    secrets: CommitmentMessage,
-    zAccountSecretRandom: PrivateKey,
+export function encryptAndPackSpentUTXOMessage(
+    secrets: SpentUTXOMessage,
     rootReadingPubKey: PublicKey,
+    zAccountSecretRandom: PrivateKey,
 ): string {
     return validateEncryptAndPackMessage(
         secrets,
         rootReadingPubKey,
-        MessageType.Commitment,
+        MessageType.SpentUTXO,
         zAccountSecretRandom,
     );
 }
@@ -302,7 +304,8 @@ export function extractCipherKeyAndIvFromPackedPoint(
  * @param message - The message to be decrypted and validated.
  * @param rootReadingPrivateKey - The private key for decryption.
  * @param messageType - The type of the UTXO message.
- * @param zAccountSecretRandom - The optional private key for commitment message type.
+ * @param zAccountSecretRandom - The optional private key for Spent UTXO message
+ * type.
  *
  * @returns The decrypted and validated UTXO message.
  */
@@ -312,24 +315,27 @@ function unpackDecryptAndValidateMessage<T extends PrivateMessage>(
     messageType: MessageType,
     zAccountSecretRandom?: PrivateKey,
 ): T {
-    const utxoMsg = unpackAndDecryptUTXOMessage(
+    let utxoMsg = unpackAndDecryptUTXOMessage(
         message,
         rootReadingPrivateKey,
         messageType,
     ) as T;
 
-    validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
+    // Special handling for SpentUTXOMessage type
+    if (messageType === MessageType.SpentUTXO && zAccountSecretRandom) {
+        const spentUTXOMessage = utxoMsg as SpentUTXOMessage;
 
-    // Special handling for commitment message type
-    if (messageType === MessageType.Commitment && zAccountSecretRandom) {
-        const commitmentMessage = utxoMsg as CommitmentMessage;
-
-        return {
-            commitment: commitmentMessage.commitment ^ zAccountSecretRandom,
+        utxoMsg = {
+            spentUtxoCommitment1:
+                spentUTXOMessage.spentUtxoCommitment1 ^ zAccountSecretRandom,
+            spentUtxoCommitment2:
+                spentUTXOMessage.spentUtxoCommitment2 ^ zAccountSecretRandom,
         } as T;
     }
 
-    return utxoMsg;
+    validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
+
+    return utxoMsg as T;
 }
 
 /**
@@ -350,12 +356,15 @@ function validateEncryptAndPackMessage<T extends Message>(
 
     let values: bigint[] = [];
 
-    // If the message type is Commitment and zAccountSecretRandom is provided
-    // Set values to the XOR of the commitment and zAccountSecretRandom
+    // If the message type is SpentUTXO and zAccountSecretRandom is provided
+    // Set values to the XOR of the commitments and zAccountSecretRandom
     // Else map the secrets to the corresponding fields of the message type
-    if (messageType === MessageType.Commitment && zAccountSecretRandom) {
-        const commitmentMessage = secrets as CommitmentMessage;
-        values = [commitmentMessage.commitment ^ zAccountSecretRandom];
+    if (messageType === MessageType.SpentUTXO && zAccountSecretRandom) {
+        const spentUTXOMessage = secrets as SpentUTXOMessage;
+        values = [
+            spentUTXOMessage.spentUtxoCommitment1 ^ zAccountSecretRandom,
+            spentUTXOMessage.spentUtxoCommitment2 ^ zAccountSecretRandom,
+        ];
     } else {
         const fields = UTXO_MESSAGE_CONFIGS[messageType].fields;
         values = fields.map(field => secrets[field]) as bigint[];
@@ -433,13 +442,11 @@ function decodeZAssetsUTXOMessage(
     );
 }
 
-function decodeUTXOCommitmentMessage(
-    cipherMsgBinary: string,
-): CommitmentMessage {
+function decodeSpentUTXOMessage(cipherMsgBinary: string): SpentUTXOMessage {
     return decodeUTXOMessage(
         cipherMsgBinary,
-        UTXO_MESSAGE_CONFIGS[MessageType.Commitment]
-            .fields as keyof typeof decodeUTXOCommitmentMessage,
+        UTXO_MESSAGE_CONFIGS[MessageType.SpentUTXO]
+            .fields as keyof typeof decodeSpentUTXOMessage,
     );
 }
 
@@ -543,7 +550,7 @@ const UtxoTypeToMessageDecoder: {
     [MessageType.ZAccount]: decodeZAccountUTXOMessage,
     [MessageType.ZAsset]: decodeZAssetsUTXOMessage,
     [MessageType.ZAssetPriv]: decodeZAssetPrivUTXOMessage,
-    [MessageType.Commitment]: decodeUTXOCommitmentMessage,
+    [MessageType.SpentUTXO]: decodeSpentUTXOMessage,
 };
 
 function unpackAndDecryptUTXOMessage<T>(
