@@ -142,7 +142,7 @@ describe('Encryption Test Suite', () => {
         });
 
         it('encrypts and decrypts multiple points', () => {
-            const {encryptedPoints, ephemeralPublicKey} = encryptPointsElGamal(
+            const {encryptedPoints, ephemeralKeypair} = encryptPointsElGamal(
                 secretPoints,
                 keypair.publicKey,
             );
@@ -151,7 +151,7 @@ describe('Encryption Test Suite', () => {
                 decryptPointElGamal(
                     encryptedPoint,
                     keypair.privateKey,
-                    ephemeralPublicKey,
+                    ephemeralKeypair.publicKey,
                 ),
             );
 
