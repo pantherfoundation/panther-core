@@ -15,7 +15,7 @@ template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
 
     assert(offset < 10);
     var ellement_offset = offset * 24;
-    component n2b = Num2Bits(24);
+    component n2b = Num2Bits(240);
     signal temp;
     temp <-- leafIDsAndRulesList >> ellement_offset;
     n2b.in <== temp;
