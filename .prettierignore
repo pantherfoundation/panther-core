@@ -1,3 +1,5 @@
+CODEOWNERS
+
 build/
 circuits/compiled/
 circuits/circuits/*.circom
