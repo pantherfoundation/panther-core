@@ -1,24 +1,26 @@
-crypto/* @pycckuu
+crypto/ @pycckuu
 
-dapp/* @pycckuu
+dapp/ @pycckuu
 
-dapp/src/workers/* @oleksii9450320
+dapp/src/workers/ @oleksii9450320
 dapp/webpack.config.js @oleksii9450320
 dapp/tsconfig.json @oleksii9450320
 dapp/babel.config.json @oleksii9450320
 
-dapp/src/services/* @neuodev
-dapp/src/redux/* @neuodev
-dapp/src/hooks/* @neuodev
+dapp/src/services/ @neuodev
+dapp/src/redux/ @neuodev
+dapp/src/hooks/ @neuodev
 
-dapp/.storybook/* @dcheglakov
-dapp/public/* @dcheglakov
-dapp/src/assets/* @dcheglakov
-dapp/src/components/* @dcheglakov
-dapp/src/images/* @dcheglakov
-dapp/src/pages/* @dcheglakov
-dapp/src/styles/* @dcheglakov
+dapp/.storybook/ @dcheglakov
+dapp/public/ @dcheglakov
+dapp/src/assets/ @dcheglakov
+dapp/src/components/ @dcheglakov
+dapp/src/images/ @dcheglakov
+dapp/src/pages/ @dcheglakov
+dapp/src/styles/ @dcheglakov
 dapp/src/App.tsx @dcheglakov
+*.scss @dcheglakov
+*.tsx @dcheglakov
 dapp/src/index.tsx @dcheglakov
 dapp/src/mixins.scss @dcheglakov
 dapp/src/styles.scss @dcheglakov
