@@ -27,3 +27,5 @@ dapp/src/styles.scss @dcheglakov
 dapp/postcss.config.js @dcheglakov
 dapp/tailwind.config.js @dcheglakov
 
+
+subgraph/ @pycckuu
