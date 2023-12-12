@@ -1,4 +1,3 @@
-import {BigInt, Bytes} from '@graphprotocol/graph-ts';
 import {
     RootUpdated as RootUpdatedEvent,
     TransactionNote as TransactionNoteEvent,
@@ -6,7 +5,7 @@ import {
 import {TransactionNote, RootUpdated} from '../generated/schema';
 
 export function handleTransactionNote(event: TransactionNoteEvent): void {
-    let entity = new TransactionNote(
+    const entity = new TransactionNote(
         event.transaction.hash.concatI32(event.logIndex.toI32()),
     );
     entity.txType = event.params.txType;
@@ -20,7 +19,9 @@ export function handleTransactionNote(event: TransactionNoteEvent): void {
 }
 
 export function handleRootUpdated(event: RootUpdatedEvent): void {
-    let entity = new RootUpdated(event.params.updatedRoot);
+    const entity = new RootUpdated(
+        event.transaction.hash.concatI32(event.logIndex.toI32()),
+    );
     entity.leafIndex = event.params.leafIndex;
     entity.updatedLeaf = event.params.updatedLeaf;
     entity.updatedRoot = event.params.updatedRoot;
