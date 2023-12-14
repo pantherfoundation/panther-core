@@ -90,6 +90,7 @@ contract PantherStaticTree is
         _staticTreeRoot = hash(leafs);
     }
 
+    // TODO: to be removed in production
     function setDebugRoot() external onlyOwner {
         for (uint8 i; i < NUM_LEAFS; ) {
             leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
@@ -100,6 +101,11 @@ contract PantherStaticTree is
         }
 
         _staticTreeRoot = hash(leafs);
+
+        ITreeRootUpdater(PANTHER_FOREST).updateRoot(
+            _staticTreeRoot,
+            STATIC_TREE_FOREST_LEAF_INDEX
+        );
     }
 
     function getRoot() external view returns (bytes32) {
