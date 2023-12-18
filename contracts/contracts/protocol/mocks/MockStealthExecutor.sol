@@ -2,15 +2,29 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
-import "../vault/StealthExecutor.sol";
+import "../vault/StealthExec.sol";
 
-contract MockStealthExecutor is StealthExecutor {
-    function stealthExec(
-        uint256 amount,
+contract MockStealthExecutor {
+    using StealthExec for bytes32;
+
+    event DEBUG(address);
+
+    function internalStealthCall(
         bytes32 salt,
         address to,
-        bytes calldata data
+        bytes memory data,
+        uint256 value
     ) external returns (address) {
-        return _stealthExec(amount, salt, to, data);
+        address stealth = salt.stealthCall(to, data, value);
+        emit DEBUG(stealth);
+        return stealth;
+    }
+
+    function internalGetStealthAddr(
+        bytes32 salt,
+        address to,
+        bytes memory data
+    ) external view returns (address) {
+        return salt.getStealthAddr(to, data);
     }
 }

@@ -1,26 +1,69 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.16;
 
 import { Create2 } from "@openzeppelin/contracts/utils/Create2.sol";
 
-abstract contract StealthExecutor {
-    /***
-       @dev It returns the creation code of the "stealthExec" "contract". Being called by the
-       "deployer", unlike creation code of a "normal" contract, this init code does not create
-       a new contract, but instead:
-       - executes the CALL to the given address `to` and with the given `data`
-       - self-destructs in the end, sending remaining native token balance to the "deployer".
+/***
+  @title StealthExec library
+  @notice Library to execute the `CALL` from a "stealth" account defined by the "salt".
 
-       So, this code runs inside the CREATE or CREATE2 call and gets destroyed in the end.
-
-       Being "deployed" via CREATE2, the caller (msg.sender) inside the CALL (to the address
-       `to`) may be computed deterministically, from the deployer address, CREATE2's salt, and
-        from `to` and `data`.
-     */
-    function getStealthExecInitCode(
+  @dev In order to execute the CALL with the caller address (`msg.sender`) different than
+  the account invoking this library, the library code "deploys" at that address a special
+  contract, "StealthCaller", the creation code ("init code") of which executes the CALL.
+  The StealthCaller is an unusual ("stealth") contract. Its runtime code ("deployed code")
+  does not exist - the creation code leaves no bytecode at all to deploy on the chain. The
+  `CALL` execution, rather than the runtime code deployment, is the sole purpose of the
+  creation code invocation.
+  The caller (`msg.sender`) inside the `CALL` is the address of the StealthCaller. This
+  address is computable upfront and linked to the address to be CALLed and the call data -
+  thanks to the `CREATE2` that invokes the creation code.
+  Precisely, this address is a function of the following known in advance params:
+  - the hash of the creation code (which the `CALL` address and data is a part of)
+  - contract address that calls the `function callWithSalt`
+  - (user-defined) `salt` provided on the `callWithSalt` function call.
+  */
+library StealthExec {
+    /// @dev Execute the CALL with given params and from the deterministic `msg.sender`
+    /// @param salt The salt (to deterministically derive the unique `msg.sender`)
+    /// @param to The contract (address) to CALL to
+    /// @param data The call data to CALL with
+    /// @param value Wei amount to CALL with
+    /// @return Caller address (`msg.sender` inside the CALL)
+    function stealthCall(
+        bytes32 salt,
         address to,
-        bytes calldata data
-    ) public pure returns (bytes memory) {
+        bytes memory data,
+        uint256 value
+    ) internal returns (address) {
+        bytes memory initCode = _getStealthCallerInitCode(to, data);
+        // Execute `initCode` in the context of the newly created contract
+        return Create2.deploy(value, salt, initCode);
+    }
+
+    /// @dev Compute the deterministic `msg.sender` for the params given
+    /// @param salt The salt (to deterministically derive a unique `msg.sender`)
+    /// @param to The contract address to CALL to
+    /// @param data The call data to CALL with
+    /// @return Caller address (`msg.sender` inside the CALL)
+    function getStealthAddr(
+        bytes32 salt,
+        address to,
+        bytes memory data
+    ) internal view returns (address) {
+        bytes32 initCodeHash = keccak256(_getStealthCallerInitCode(to, data));
+        return Create2.computeAddress(salt, initCodeHash);
+    }
+
+    // It returns the creation code of the StealthCaller "contract" with given params.
+    //  Being invoked via CREATE2 this creation code subsequently executes:
+    //  - `CALL` to the given address with the given call data from the context of the
+    //    "contract" being created (as `msg.sender`), passing all `GAS` and `CALLVALUE`
+    //  - return without generating the runtime code to deploy.
+    // (`CREATE` would also work, but `msg.sender` is not deterministic then)
+    function _getStealthCallerInitCode(
+        address to,
+        bytes memory data
+    ) private pure returns (bytes memory) {
         /*
         =Offs =Bytecode =Opcode          =Stack                                      =Memory
 
@@ -68,54 +111,22 @@ abstract contract StealthExecutor {
         [24]  3e        RETURNDATACOPY  0,rds                                        [0,rds]=ret_data
                                         // stack_expected:offset,size
         [25]  fd        REVERT          –                                            [0,rds]=ret_data
-        // Destroy contract & transfer balance to caller
-        [26]  5b        JUMPDEST        0                                            [0,cs-dataOffs]=data
-        [27]  50        POP             -                                            [0,cs-dataOffs]=data
-        [28]  33        CALLER          caller                                       [0,cs-dataOffs]=data
-        [29]  FF        SELFDESTRUCT    -                                            -
-        [2a]  00        STOP            -                                            -
-        // Appended 20 bytes of `to` addr and ("packed") `data` bytes
-        [2b]  <addr>
-        [3f]  <data>
-
-        / -- OPTION 2 (unused) - w/o self-destruction
         // Return empty runtime code on success
         [26]  5b        JUMPDEST        0                                            [0,cs-dataOffs]=data
         [27]  80        DUP1            0,0                                          [0,cs-dataOffs]=data
                                         // stack_expected:offset,size
         [28]  f3        RETURN          0                                            [0,cs-dataOffs]=data
         [29]  00        STOP            -                                            [0,cs-dataOffs]=data
+
         // Appended 20 bytes of `to` addr and ("packed") `data` bytes
         [2a]  <addr>
         [3e]  <data>
-        // 0x3d6014602a3d395160601C3d3d603e80380380913d393d343d955af16026573d908181803efd5b80f300<addr><data>
-        --/
         */
         return
             abi.encodePacked(
-                hex"3d6014602b3d395160601C3d3d603f80380380913d393d343d955af16026573d908181803efd5b5033ff00",
+                hex"3d6014602a3d395160601C3d3d603e80380380913d393d343d955af16026573d908181803efd5b80f300",
                 to,
                 data
             );
-    }
-
-    // @dev Compute (deterministic) "stealthExec" address
-    function computeStealthExecAddress(
-        bytes32 salt,
-        address to,
-        bytes calldata data
-    ) external view returns (address) {
-        bytes32 bytecodeHash = keccak256(getStealthExecInitCode(to, data));
-        return Create2.computeAddress(salt, bytecodeHash);
-    }
-
-    // @dev Execute the CALL `to` with `data` from the "stealthExec" address
-    function _stealthExec(
-        uint256 amount,
-        bytes32 salt,
-        address to,
-        bytes calldata data
-    ) internal returns (address) {
-        return Create2.deploy(amount, salt, getStealthExecInitCode(to, data));
     }
 }
