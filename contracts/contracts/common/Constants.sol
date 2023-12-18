@@ -29,9 +29,7 @@ uint256 constant MAX_PRP_AMOUNT = (2 ** 64) - 1;
 uint8 constant ERC20_TOKEN_TYPE = 0x00;
 uint8 constant ERC721_TOKEN_TYPE = 0x10;
 uint8 constant ERC1155_TOKEN_TYPE = 0x11;
-// defined for every tokenId rather than for all tokens on the contract
-// (unsupported in the V0 and V1 of the MASP)
-uint8 constant BY_TOKENID_TOKEN_TYPE = 0xFF;
+uint8 constant NATIVE_TOKEN_TYPE = 0xFF;
 
 // ZAsset statuses
 // (not `enum` to let protocol extensions use bits, if needed)
