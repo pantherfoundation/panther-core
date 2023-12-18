@@ -139,6 +139,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
         uint96 reward = basePerUtxoReward * uint96(utxos.length);
 
+        // TODO: add `reward` as a param and uncomment this line
         // _checkReward(reward, utxos.length);
 
         (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);

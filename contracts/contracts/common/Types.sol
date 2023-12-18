@@ -67,3 +67,18 @@ struct LockData {
     // The token amount to transfer to/from the Vault (on `lock`/`unlock`)
     uint96 extAmount;
 }
+
+struct SaltedLockData {
+    // Refer to Constants.sol
+    uint8 tokenType;
+    // Token contract address
+    address token;
+    // For ERC-721, ERC-1155 tokens
+    uint256 tokenId;
+    // The salt to use w/ CREATE2
+    bytes32 salt;
+    // The account to transfer the token from/to (on `lock`/`unlock`)
+    address extAccount;
+    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)
+    uint256 extAmount;
+}
