@@ -13,18 +13,21 @@ library TransferHelper {
     // It may be misinterpreted as a successful call to a deployed token contract.
     // So, the code calling a token contract must insure the contract code exists.
     modifier onlyDeployedToken(address token) {
-        uint256 codeSize;
-        // slither-disable-next-line assembly
-        assembly {
-            codeSize := extcodesize(token)
-        }
-        require(codeSize > 0, "TransferHelper: zero codesize");
+        require(isDeployedContract(token), "TransferHelper: zero codesize");
         _;
     }
 
+    /// @dev Return true if the given account has deployed code
+    function isDeployedContract(address account) internal view returns (bool) {
+        uint256 codeSize;
+        // slither-disable-next-line assembly
+        assembly {
+            codeSize := extcodesize(account)
+        }
+        return codeSize > 0;
+    }
+
     /// @dev Approve the `operator` to spend all of ERC720 tokens on behalf of `owner`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeSetApprovalForAll(
         address token,
         address operator,
@@ -39,8 +42,6 @@ library TransferHelper {
     }
 
     /// @dev Get the ERC20 balance of `account`
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeBalanceOf(
         address token,
         address account
@@ -59,9 +60,44 @@ library TransferHelper {
         balance = abi.decode(data, (uint256));
     }
 
+    /// @dev Get the owner of the ERC-721 token
+    function safe721OwnerOf(
+        address token,
+        uint256 tokenId
+    ) internal returns (address owner) {
+        // slither-disable-next-line low-level-calls
+        (bool success, bytes memory data) = token.call(
+            // bytes4(keccak256(bytes('ownerOf(uint256)')));
+            abi.encodeWithSelector(0x6352211e, tokenId)
+        );
+        require(
+            // since `data` can't be empty, `onlyDeployedToken` unneeded
+            success && (data.length != 0),
+            "TransferHelper: ownerOf call failed"
+        );
+        owner = abi.decode(data, (address));
+    }
+
+    /// @dev Get the ERC-1155 token balance of `account`
+    function safe1155BalanceOf(
+        address token,
+        address account,
+        uint256 tokenId
+    ) internal returns (uint256 balance) {
+        // slither-disable-next-line low-level-calls
+        (bool success, bytes memory data) = token.call(
+            // bytes4(keccak256(bytes('balanceOf(address,uint256)')));
+            abi.encodeWithSelector(0x00fdd58e, account, tokenId)
+        );
+        require(
+            // since `data` can't be empty, `onlyDeployedToken` unneeded
+            success && (data.length != 0),
+            "TransferHelper: balanceOf call failed"
+        );
+        balance = abi.decode(data, (uint256));
+    }
+
     /// @dev Get the ERC20 allowance of `spender`
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeAllowance(
         address token,
         address owner,
@@ -82,8 +118,6 @@ library TransferHelper {
     }
 
     /// @dev Approve the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeApprove(
         address token,
         address to,
@@ -98,8 +132,6 @@ library TransferHelper {
     }
 
     /// @dev Increase approval of the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeIncreaseAllowance(
         address token,
         address to,
@@ -114,8 +146,6 @@ library TransferHelper {
     }
 
     /// @dev Transfer `value` ERC20 tokens from caller to `to`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeTransfer(
         address token,
         address to,
@@ -130,8 +160,6 @@ library TransferHelper {
     }
 
     /// @dev Transfer `value` ERC20 tokens on behalf of `from` to `to`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeTransferFrom(
         address token,
         address from,
@@ -147,8 +175,6 @@ library TransferHelper {
     }
 
     /// @dev Transfer an ERC721 token with id of `tokenId` on behalf of `from` to `to`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function erc721SafeTransferFrom(
         address token,
         uint256 tokenId,
@@ -164,8 +190,6 @@ library TransferHelper {
     }
 
     /// @dev Transfer `amount` ERC1155 token with id of `tokenId` on behalf of `from` to `to`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function erc1155SafeTransferFrom(
         address token,
         address from,
@@ -183,8 +207,6 @@ library TransferHelper {
     }
 
     /// @dev Transfer `value` Ether from caller to `to`.
-    // disabled since false positive
-    // slither-disable-next-line dead-code
     function safeTransferETH(address to, uint256 value) internal {
         // slither-disable-next-line low-level-calls
         (bool success, ) = to.call{ value: value }(new bytes(0));
