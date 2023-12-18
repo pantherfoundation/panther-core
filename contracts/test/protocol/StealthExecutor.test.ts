@@ -6,11 +6,12 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import chai, {expect} from 'chai';
 import {ethers} from 'hardhat';
 
+import {revertSnapshot, takeSnapshot} from '../../lib/hardhat';
 import {MockStealthExecutor, IMockErc20} from '../../types/contracts';
 
 chai.use(smock.matchers);
 
-describe('StealthExec contract', function () {
+describe('StealthExec library', function () {
     const oneToken = ethers.constants.WeiPerEther;
     const oneEth = ethers.constants.WeiPerEther;
     const salt =
@@ -23,7 +24,9 @@ describe('StealthExec contract', function () {
 
     let calldata: string;
     let stealthExecInitcode: string;
-    let stealthExecAddr: string;
+    let stealthCallerAddr: string;
+
+    let snapshotId: number;
 
     before(async function () {
         [user, vault] = await ethers.getSigners();
@@ -51,44 +54,40 @@ describe('StealthExec contract', function () {
         stealthExecInitcode = ethers.utils.solidityPack(
             ['bytes', 'address', 'bytes'],
             [
-                '0x3d6014602b3d395160601C3d3d603f80380380913d393d343d955af16026573d908181803efd5b5033ff00',
+                '0x3d6014602a3d395160601C3d3d603e80380380913d393d343d955af16026573d908181803efd5b80f300',
                 token.address,
                 calldata,
             ],
         );
 
-        stealthExecAddr = ethers.utils.getCreate2Address(
+        stealthCallerAddr = ethers.utils.getCreate2Address(
             stealthExecutor.address,
             salt,
             ethers.utils.keccak256(stealthExecInitcode),
         );
     });
 
-    describe('before "stealthExec" called', () => {
-        it('should compute stealthExec initCode', async () => {
-            await ensureCorrectReturnedInitCode();
+    beforeEach(async () => {
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertSnapshot(snapshotId);
+    });
+
+    describe('before "stealthCall" called', () => {
+        it('should compute deterministic stealth exec address', async () => {
+            await ensureCorrectStealthCallerAddrReturned();
         });
 
-        it('should compute stealthExec address', async () => {
-            const returnedAddress =
-                await stealthExecutor.computeStealthExecAddress(
-                    salt,
-                    token.address,
-                    calldata,
-                );
-            expect(returnedAddress.toLowerCase()).to.be.equal(
-                stealthExecAddr.toLowerCase(),
-            );
-        });
-
-        describe('stealthExec address', () => {
+        describe('stealthCaller address', () => {
             it('should NOT have bytecode deployed', async () => {
                 await ensureEmptyBytecodeAtStealthExecAddr();
             });
         });
     });
 
-    describe('being called "stealthExec"', () => {
+    describe('being called "stealthCall"', () => {
         beforeEach(async () => {
             await callStealthExecAndEnsureTargetCalled();
         });
@@ -102,16 +101,16 @@ describe('StealthExec contract', function () {
         });
     });
 
-    describe('after "stealthExec" called', () => {
+    describe('after "stealthCall" called', () => {
         beforeEach(async () => {
             await callStealthExecAndEnsureTargetCalled();
         });
 
-        it('should compute stealthExec address', async () => {
-            await ensureCorrectReturnedInitCode();
+        it('should compute deterministic stealth exec address', async () => {
+            await ensureCorrectStealthCallerAddrReturned();
         });
 
-        describe('stealthExec address', () => {
+        describe('stealthCaller address', () => {
             it('should NOT have bytecode deployed', async () => {
                 await ensureEmptyBytecodeAtStealthExecAddr();
             });
@@ -121,36 +120,40 @@ describe('StealthExec contract', function () {
             });
         });
 
-        it('should allow same "stealthExec" call again', async () => {
-            await callStealthExecAndEnsureTargetCalled();
+        it('should NOT allow same "stealthCall" call again', async () => {
+            await expect(
+                callStealthExecAndEnsureTargetCalled(),
+            ).to.be.revertedWith('Create2: Failed on deploy');
         });
     });
 
-    describe('if stealthExecAddr had ETH balance before "stealthExec" call', () => {
-        describe('after "stealthExec" called', () => {
-            it('should transfer entire ETH balance to StealthExec', async () => {
+    describe('if stealthCaller address had ETH balance before "stealthCall" call', () => {
+        describe('after "stealthCall" called', () => {
+            it('should leave ETH balance unchanged', async () => {
                 await user.sendTransaction({
-                    to: stealthExecAddr,
+                    to: stealthCallerAddr,
                     value: oneEth,
                 });
-                const balanceBefore = await ethers.provider.getBalance(
-                    stealthExecutor.address,
-                );
+                const balanceBefore =
+                    await ethers.provider.getBalance(stealthCallerAddr);
+                expect(balanceBefore).to.be.equal(oneEth);
 
                 await callStealthExecAndEnsureTargetCalled();
-                await ensureZeroEthBalanceOfStealthExecAddr();
+                const balanceAfter =
+                    await ethers.provider.getBalance(stealthCallerAddr);
 
-                const balanceAfter = await ethers.provider.getBalance(
-                    stealthExecutor.address,
-                );
-                const addition = balanceAfter.sub(balanceBefore);
-                expect(addition.toString()).to.be.equal(oneEth.toString());
+                expect(balanceBefore).to.be.equal(balanceAfter);
             });
         });
     });
     async function callStealthExecAndEnsureTargetCalled() {
         token.transferFrom.returns(true);
-        await stealthExecutor.stealthExec(0, salt, token.address, calldata);
+        await stealthExecutor.internalStealthCall(
+            salt,
+            token.address,
+            calldata,
+            0,
+        );
         expect(token.transferFrom).to.have.been.calledWith(
             user.address,
             vault.address,
@@ -158,20 +161,22 @@ describe('StealthExec contract', function () {
         );
     }
 
-    async function ensureCorrectReturnedInitCode() {
-        const returnedInitCode = await stealthExecutor.getStealthExecInitCode(
+    async function ensureCorrectStealthCallerAddrReturned() {
+        const returnedAddress = await stealthExecutor.internalGetStealthAddr(
+            salt,
             token.address,
             calldata,
         );
-        expect(returnedInitCode).to.be.equal(stealthExecInitcode);
+        expect(returnedAddress).to.be.equal(stealthCallerAddr);
     }
     async function ensureEmptyBytecodeAtStealthExecAddr() {
-        const returnedBytecode = await ethers.provider.getCode(stealthExecAddr);
+        const returnedBytecode =
+            await ethers.provider.getCode(stealthCallerAddr);
         expect(returnedBytecode).to.be.equal('0x');
     }
     async function ensureZeroEthBalanceOfStealthExecAddr() {
         expect(
-            (await ethers.provider.getBalance(stealthExecAddr)).toString(),
+            (await ethers.provider.getBalance(stealthCallerAddr)).toString(),
         ).to.be.equal('0');
     }
 });
