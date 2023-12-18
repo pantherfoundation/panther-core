@@ -4,9 +4,11 @@
 // solhint-disable no-inline-assembly
 pragma solidity ^0.8.16;
 
-string constant ERR_ZERO_TO = "MC:E2";
+import { RevertMsgGetter } from "./misc/RevertMsgGetter.sol";
 
-abstract contract Multicall {
+string constant ERR_ZERO_TO_ADDR = "MC:E2";
+
+abstract contract Multicall is RevertMsgGetter {
     function _multicall(
         bytes[] calldata data
     ) internal returns (bytes[] memory results) {
@@ -18,30 +20,14 @@ abstract contract Multicall {
                 (address, bytes)
             );
 
-            require(to != address(0), ERR_ZERO_TO);
+            require(to != address(0), ERR_ZERO_TO_ADDR);
 
             (bool success, bytes memory result) = to.call(_data);
 
-            if (!success) revert(_getRevertMsg(result));
+            if (!success) revert(getRevertMsg(result));
 
             results[i] = result;
         }
-    }
-
-    // TODO: check if it may be simplified to `revert(add(result, 32), mload(result))`
-    // Borrowed from https://ethereum.stackexchange.com/a/83577
-    function _getRevertMsg(
-        bytes memory _returnData
-    ) internal pure returns (string memory) {
-        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_returnData.length < 68) return "Transaction reverted silently";
-
-        assembly {
-            // Slice the sighash.
-            _returnData := add(_returnData, 0x04)
-        }
-        // All that remains is the revert string
-        return abi.decode(_returnData, (string));
     }
 }
 
