@@ -60,6 +60,7 @@ dapp/tests/data/*.index.html
 .yarn/
 *.orig
 *.png
+*.webp
 *.puml
 *.svg
 node_modules/
