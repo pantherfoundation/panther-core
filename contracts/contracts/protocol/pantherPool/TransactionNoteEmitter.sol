@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
+import "../errMsgs/TransactionNoteEmitterErrMsgs.sol";
+
 /***
  * @dev Every MASP transaction is accompanied by the "Transaction Note" - data
  * a front-end needs to process the transaction (e.g. open UTXOs), reconstruct
@@ -78,8 +80,6 @@ abstract contract TransactionNoteEmitter {
     // The range for `uint8 txType` divided into sub-ranges:
     //  - 0x00 .. 0x1F allowed
     //  - 0x20 .. 0xFF reserved (unused)
-
-    // solhint-disable var-name-mixedcase
 
     uint8 internal constant TT_ZACCOUNT_ACTIVATION = 0x01;
     // TransactionNote for this tx type MUST contain in the specified sequence:
@@ -264,5 +264,130 @@ abstract contract TransactionNoteEmitter {
     uint8 internal constant LMT_FREE_PUB_TWO_BLOCKS = 1 + 32;
     */
 
-    // solhint-enable var-name-mixedcase
+    /**
+     * @notice Sanitizes private msg for zAccountActivation tx
+     * @param privateMessages the message to be sanitized
+     * @dev privateMessages for zAccountActivation tx is expected to contain a MT_UTXO_ZACCOUNT.
+     * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
+     */
+    function _sanitizeZAccountActivationMessage(
+        bytes memory privateMessages
+    ) private pure {
+        require(
+            privateMessages.length >= LMT_UTXO_ZACCOUNT,
+            ERR_LOW_MESSAGE_LENGTH
+        );
+    }
+
+    /**
+     * @notice Sanitizes private msg for prpClaim tx
+     * @param privateMessages the message to be sanitized
+     * @dev privateMessages for prpClaim tx is expected to contain a MT_UTXO_ZACCOUNT.
+     * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
+     */
+    function _sanitizePrpClaimMessage(
+        bytes memory privateMessages
+    ) private pure {
+        require(
+            privateMessages.length >= LMT_UTXO_ZACCOUNT,
+            ERR_LOW_MESSAGE_LENGTH
+        );
+    }
+
+    /**
+     * @notice Sanitizes private msg for prpConversion tx
+     * @param privateMessages the message to be sanitized
+     * @dev privateMessages for prpConversion tx is expected to contain a MT_UTXO_ZACCOUNT and
+     * a `MT_UTXO_ZASSET_PRIV` message.
+     * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
+     * The MT_UTXO_ZASSET_PRIV contains 97 bytes (search for `LMT_UTXO_ZASSET` in the current file)
+     * and it is expected to be started at index 97.
+     */
+    function _sanitizePrpConversionMessage(
+        bytes memory privateMessages
+    ) private pure {
+        uint8 mtUtxoZAssetPrivIndex = 97;
+
+        require(
+            privateMessages.length >= LMT_UTXO_ZACCOUNT + LMT_UTXO_ZASSET_PRIV,
+            ERR_LOW_MESSAGE_LENGTH
+        );
+
+        // privateMessages for prp conversion is expected to containd
+        // `MT_UTXO_ZASSET_PRIV` at index 97
+        require(
+            uint8(privateMessages[mtUtxoZAssetPrivIndex]) ==
+                MT_UTXO_ZASSET_PRIV,
+            ERR_INVALID_MT_UTXO_ZASSET_PRIV
+        );
+    }
+
+    /**
+     * @notice Sanitizes private msg for main tx
+     * @param privateMessages the message to be sanitized
+     * @dev privateMessages for main tx is expected to contain a MT_UTXO_ZACCOUNT and
+     * two `MT_UTXO_ZASSET_PRIV`s messages and a MT_SPENT_2UTXO message.
+     * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
+     * Each MT_UTXO_ZASSET_PRIV contains 97 bytes (search for `LMT_UTXO_ZASSET` in the current file)
+     * First MT_UTXO_ZASSET_PRIV is expected to be started at index 97 and ended at index 194 (97 + 97)
+     * Second MT_UTXO_ZASSET_PRIV is expected to be started at index 194 and ended at index 291 (194 + 97)
+     * The `MT_SPENT_2UTXO` is expected to start at index 291
+     */
+    function _sanitizeMainMessage(bytes memory privateMessages) private pure {
+        ///@dev check `LMT_UTXO_ZASSET` description
+        uint8 mtFirstUtxoZAssetIndex = 97;
+        uint8 mtSecondUtxoZAssetIndex = 194;
+        uint16 mtSpend2UtxoIndex = 291;
+
+        require(
+            privateMessages.length >=
+                LMT_UTXO_ZACCOUNT + LMT_UTXO_ZASSET * 2 + LMT_SPENT_2UTXO,
+            ERR_LOW_MESSAGE_LENGTH
+        );
+
+        // privateMessages for main tx is expected to contain
+        // 2 `MT_UTXO_ZASSET_PRIV`s (first must be at index 97 and
+        // second one must be at index 194)
+        require(
+            uint8(privateMessages[mtFirstUtxoZAssetIndex]) == MT_UTXO_ZASSET &&
+                uint8(privateMessages[mtSecondUtxoZAssetIndex]) ==
+                MT_UTXO_ZASSET,
+            ERR_INVALID_MT_UTXO_ZASSET
+        );
+
+        // It is also expected to contain `MT_SPENT_2UTXO` started at index 291
+        require(
+            uint8(privateMessages[mtSpend2UtxoIndex]) == MT_SPENT_2UTXO,
+            ERR_INVALID_MT_UTXO_SPEND_2UTXO
+        );
+    }
+
+    function _sanitizePrivateMessage(
+        bytes memory privateMessages,
+        uint8 txType
+    ) internal pure {
+        uint8 mtUtxoZAccountIndex = 0;
+
+        // All kind of privateMessages are expected to be started with `MT_UTXO_ZACCOUNT`
+        require(
+            uint8(privateMessages[mtUtxoZAccountIndex]) == MT_UTXO_ZACCOUNT,
+            ERR_INVALID_MT_UTXO_ZACCOUNT
+        );
+
+        if (txType == TT_ZACCOUNT_ACTIVATION) {
+            _sanitizeZAccountActivationMessage(privateMessages);
+        }
+
+        if (txType == TT_PRP_CLAIM) {
+            _sanitizePrpClaimMessage(privateMessages);
+        }
+
+        if (txType == TT_PRP_CONVERSION) {
+            _sanitizePrpConversionMessage(privateMessages);
+        }
+
+        if (txType == TT_MAIN_TRANSACTION) {
+            _sanitizeMainMessage(privateMessages);
+        }
+    }
 }
