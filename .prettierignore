@@ -62,6 +62,7 @@ dapp/tests/data/*.index.html
 *.png
 *.webp
 *.puml
+*.sh
 *.svg
 node_modules/
 package-lock.json
