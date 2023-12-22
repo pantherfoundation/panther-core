@@ -10,7 +10,7 @@
     "build:dapp:production": "yarn workspace @panther-core/dapp build:prod",
     "build:dapp:staging": "yarn workspace @panther-core/dapp build:staging",
     "build:graph": "yarn workspace @panther-core/subgraph codegen && yarn workspace @panther-core/subgraph build",
-    "build:types": "yarn build:crypto && HARDHAT_NO_MNEMONIC=yes yarn build:contracts && yarn workspace @panther-core/contracts build:types && yarn workspace @panther-core/dapp build:types",
+    "build:types": "yarn build:crypto && yarn workspace @panther-core/dapp build:types",
     "chain": "yarn workspace @panther-core/contracts chain",
     "ci:check": "yarn install && git log --format=%B -n 1 | yarn commitlint && yarn lint && yarn build:types && yarn test && yarn run build:dapp:staging",
     "circuits:compile:docker": "yarn workspace @panther-core/circuits compile:docker",
