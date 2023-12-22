@@ -534,9 +534,12 @@ async function main() {
     // ========= END - Static Merkle Root Computation =========
 }
 
+// Uncomment below code for generating the static merkle tree root
+/*
 main()
     .then(() => process.exit(0))
     .catch(err => {
         console.log(err);
         process.exit(1);
-    });
+    }); 
+*/
