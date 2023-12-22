@@ -943,6 +943,27 @@ const nonZeroInputAMMExchange = {
             13931233598534410991314026888239110837992015348186918500560502831191846288865n,
         ),
     ],
+    zAccountUtxoInReadPubKey: [
+        BigInt(
+            1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+        ),
+        BigInt(
+            311986042833546580202940940143769849297540181368261575540657864271112079432n,
+        ),
+    ],
+    zAccountUtxoInNullifierPubKey: [
+        BigInt(
+            18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+        ),
+        BigInt(
+            21369418187085352831313188453068285816400064790476280656092869887652115165947n,
+        ),
+    ],
+    zAccountUtxoInNullifierPrivKey:
+        BigInt(
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+        ),
+
     zAccountUtxoInSpendKeyRandom:
         BigInt(
             185557730709061450306117592388043477299652441972445952549541952981196070710n,
@@ -961,7 +982,7 @@ const nonZeroInputAMMExchange = {
 
     zAccountUtxoInCommitment:
         BigInt(
-            13839448376386834831825066998105804542138021609451006066486200521909294447809n,
+            883577885029992475849474167057954109513915827487763736646723184112542450368n,
         ),
     zNetworkId: BigInt(2n),
 
@@ -979,7 +1000,7 @@ const nonZeroInputAMMExchange = {
 
     zAccountUtxoInNullifier:
         BigInt(
-            3291833592367315262335295508952325841159274385097904397686350470034819319668n,
+            1438653281840950534109019528877092118253883422005659805831554379740541303576n,
         ),
     zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
     zAccountUtxoInPathIndices: [
@@ -1018,7 +1039,7 @@ const nonZeroInputAMMExchange = {
     ],
     zAccountUtxoInPathElements: [
         BigInt(
-            12683686760392371723200734431415851905276545802658046731356209079680348296023n,
+            19047992597093047336371215524754541878461093335047259582748851115004307254010n,
         ),
         BigInt(
             15915358021544645824948763611506574620607002248967455613245207713011512736724n,
@@ -1163,10 +1184,9 @@ const nonZeroInputAMMExchange = {
         ),
     zAccountUtxoOutCommitment:
         BigInt(
-            935319887505152748021614381040091584552887424656728224834606587957151460066n,
+            20753934111959939620197373452022491283879273374456256225221477995858226219663n,
         ),
 
-    // GMT: Tuesday, 29 August 2023 10:49:12
     createTime: BigInt(1695282515n),
 
     utxoCommitment:
@@ -1190,7 +1210,7 @@ const nonZeroInputAMMExchange = {
     zZoneOriginZoneIDs: BigInt(1n),
     zZoneTargetZoneIDs: BigInt(1n),
     zZoneNetworkIDsBitMap: BigInt(3n),
-    zZoneKycKytMerkleTreeLeafIDsAndRulesList: BigInt(91n),
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(91n),
     zZoneKycExpiryTime: BigInt(10368000n), // 1 week epoch time
     zZoneKytExpiryTime: BigInt(86400n),
     zZoneDepositMaxAmount: BigInt(5 * 10 ** 10),
@@ -1329,7 +1349,7 @@ const nonZeroInputAMMExchange = {
     forUtxoReward: BigInt(1000n),
     forDepositReward: BigInt(0n),
 
-    kycKytMerkleRoot:
+    trustProvidersMerkleRoot:
         BigInt(
             17322022431886165400149810602305622216747412620247038711546582810646517935323n,
         ),
@@ -1339,7 +1359,7 @@ const nonZeroInputAMMExchange = {
         ),
     forestMerkleRoot:
         BigInt(
-            10091344302907633233964965764818193333260134440237844301232016667130342534178n,
+            20557090278631251535517221207134967577228485466429579353724229553206573093976n,
         ),
     taxiMerkleRoot:
         BigInt(
@@ -1347,7 +1367,7 @@ const nonZeroInputAMMExchange = {
         ),
     busMerkleRoot:
         BigInt(
-            9926248082059649731489095676205847527373104860286405716807427673757770522821n,
+            19737251934703046596098128694620290692612524266227769076521218008050765724331n,
         ),
     ferryMerkleRoot:
         BigInt(
@@ -1385,4 +1405,11 @@ async function main() {
 }
 
 // Uncomment to generate proof
-// main();
+/*
+main()
+    .then(() => process.exit(0))
+    .catch(err => {
+        console.log(err);
+        process.exit(1);
+    }); 
+*/

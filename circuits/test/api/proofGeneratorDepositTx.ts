@@ -793,7 +793,8 @@ const nonZeroInput = {
     ],
 
     zAssetIdZkp: BigInt(0n),
-    zAssetTokenZkp: BigInt(365481738974395054943628650313028055219811856521n),
+    zAssetTokenZkp:
+        BigInt(365481738974395054943628650313028055219811856521n),
     zAssetTokenIdZkp: BigInt(0n),
     zAssetNetworkZkp: BigInt(2n),
     zAssetOffsetZkp: BigInt(0n),
@@ -897,7 +898,7 @@ const nonZeroInput = {
         [BigInt(0n), BigInt(0n)],
         [BigInt(0n), BigInt(0n)],
     ],
-    utxoInPathIndex: [
+    utxoInPathIndices: [
         [
             BigInt(0n),
             BigInt(0n),
@@ -1451,7 +1452,7 @@ const nonZeroInput = {
             12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ),
     ],
-    kytPathIndex: [
+    kytPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -1583,7 +1584,7 @@ const nonZeroInput = {
             12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ),
     ],
-    dataEscrowPathIndex: [
+    dataEscrowPathIndices: [
         BigInt(1n),
         BigInt(0n),
         BigInt(0n),
@@ -1760,7 +1761,7 @@ const nonZeroInput = {
         BigInt(
             14012219796450685573713237305847642356367283250649627741328974142691321346497n,
         ),
-    zNetworkTreePathIndices: [
+        zNetworkTreePathIndices: [
         BigInt(1n),
         BigInt(0n),
         BigInt(0n),
@@ -1835,4 +1836,11 @@ async function main() {
 }
 
 // Uncomment to generate proof
-// main();
+/*
+main()
+    .then(() => process.exit(0))
+    .catch(err => {
+        console.log(err);
+        process.exit(1);
+    }); 
+*/
