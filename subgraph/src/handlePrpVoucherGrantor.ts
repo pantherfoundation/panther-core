@@ -18,6 +18,7 @@ export function handleRewardClaimed(event: RewardClaimedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -34,6 +35,7 @@ export function handleRewardVoucherGenerated(
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -52,6 +54,7 @@ export function handleVoucherTermsUpdated(
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }

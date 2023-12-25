@@ -14,6 +14,7 @@ export function handleTransactionNote(event: TransactionNoteEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -30,6 +31,7 @@ export function handleRootUpdated(event: RootUpdatedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
