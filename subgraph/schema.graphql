@@ -9,6 +9,7 @@ type BusBatchOnboarded @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type BusBranchFilled @entity(immutable: true) {
@@ -18,6 +19,7 @@ type BusBranchFilled @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type BusQueueOpened @entity(immutable: false) {
@@ -27,6 +29,7 @@ type BusQueueOpened @entity(immutable: false) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
     isOnboarded: Boolean!
+    from: String!
 }
 
 type BusQueueProcessed @entity(immutable: true) {
@@ -35,6 +38,7 @@ type BusQueueProcessed @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type MinerRewarded @entity(immutable: true) {
@@ -44,6 +48,7 @@ type MinerRewarded @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type UtxoBusQueued @entity(immutable: true) {
@@ -54,6 +59,7 @@ type UtxoBusQueued @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type TransactionNote @entity(immutable: true) {
@@ -63,6 +69,7 @@ type TransactionNote @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type RewardClaimed @entity(immutable: true) {
@@ -71,6 +78,7 @@ type RewardClaimed @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type RewardVoucherGenerated @entity(immutable: true) {
@@ -80,6 +88,7 @@ type RewardVoucherGenerated @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type VoucherTermsUpdated @entity(immutable: true) {
@@ -91,6 +100,7 @@ type VoucherTermsUpdated @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }
 
 type RootUpdated @entity(immutable: true) {
@@ -102,4 +112,5 @@ type RootUpdated @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
+    from: String!
 }

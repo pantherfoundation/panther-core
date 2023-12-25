@@ -32,6 +32,7 @@ export function handleBusBatchOnboarded(event: BusBatchOnboardedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     // update the corresponding BusQueueOpened entity
     const queue = BusQueueOpened.load(event.params.queueId.toString());
@@ -51,6 +52,7 @@ export function handleBusBranchFilled(event: BusBranchFilledEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -62,6 +64,7 @@ export function handleBusQueueOpened(event: BusQueueOpenedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.isOnboarded = false;
 
@@ -75,6 +78,7 @@ export function handleBusQueueProcessed(event: BusQueueProcessedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -87,6 +91,7 @@ export function handleMinerRewarded(event: MinerRewardedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
@@ -100,6 +105,7 @@ export function handleUtxoBusQueued(event: UtxoBusQueuedEvent): void {
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
+    entity.from = event.transaction.from.toHex();
 
     entity.save();
 }
