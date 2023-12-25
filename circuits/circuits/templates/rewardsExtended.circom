@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 include "../../node_modules/circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template RewardsExtended(nUtxoIn) {
     signal input depositAmount;             // 64 bit
@@ -57,8 +58,13 @@ template RewardsExtended(nUtxoIn) {
     R <== S1 + S5;
 
     var prpScaleFactor = 60;
-    signal R_tmp;
-    R_tmp <-- R >> prpScaleFactor;
-    R === R_tmp * prpScaleFactor;
-    amountPrp <== R_tmp;
+    component n2b = Num2Bits(253);
+    n2b.in <== R;
+
+    component b2n = Bits2Num(253-prpScaleFactor);
+    for (var i = prpScaleFactor; i < 253; i++) {
+        b2n.in[i-prpScaleFactor] <== n2b.out[i];
+    }
+
+    amountPrp <== b2n.out;
 }
