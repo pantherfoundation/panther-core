@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {TxNoteType, decodeTxNote} from '../../src/panther/notes';
-import {TxNoteType1, TxNoteType3} from '../../src/types/note';
+import {TxNoteType1, TxNoteType3, TxNoteType4} from '../../src/types/note';
 
 describe('Transaction notes', () => {
     describe('#decodeTxNote', () => {
@@ -90,6 +90,64 @@ describe('Transaction notes', () => {
                 it(`decodes ${testCase.field}`, () => {
                     expect(
                         decodedNote3[testCase.field as keyof TxNoteType3],
+                    ).toEqual(testCase.expected);
+                });
+            });
+
+            it('throws an error when input is invalid', () => {
+                expect(() =>
+                    decodeTxNote('wrong-string', TxNoteType.PrpConversion),
+                ).toThrowError('Invalid input');
+            });
+        });
+
+        describe('Type 0x04', () => {
+            let decodedNote4: TxNoteType4;
+            const content =
+                '0x60658a6fea62000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f0000002a0006000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f08000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f08000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f09000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f';
+
+            beforeAll(async () => {
+                decodedNote4 = decodeTxNote(
+                    content,
+                    TxNoteType.ZTransaction,
+                ) as TxNoteType4;
+            });
+
+            const testCases = [
+                {field: 'createTime', expected: 1703571434},
+                {
+                    field: 'commitment',
+                    expected:
+                        '0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
+                },
+                {field: 'queueId', expected: 42},
+                {field: 'indexInQueue', expected: 0},
+                {
+                    field: 'zAccount',
+                    expected:
+                        '0x06000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f',
+                },
+                {
+                    field: 'zAsset1',
+                    expected:
+                        '0x08000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f',
+                },
+                {
+                    field: 'zAsset2',
+                    expected:
+                        '0x08000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f',
+                },
+                {
+                    field: 'spentUTXO',
+                    expected:
+                        '0x09000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f',
+                },
+            ];
+
+            testCases.forEach(testCase => {
+                it(`decodes ${testCase.field}`, () => {
+                    expect(
+                        decodedNote4[testCase.field as keyof TxNoteType4],
                     ).toEqual(testCase.expected);
                 });
             });

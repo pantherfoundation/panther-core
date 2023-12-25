@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {TxNoteType1, TxNoteType3} from 'types/note';
+import {TxNoteType1, TxNoteType3, TxNoteType4} from 'types/note';
 
 import {bigintToBytes} from '../utils/bigint-conversions';
 
@@ -13,6 +13,8 @@ const MT = {
     ZAccount: 0x06,
     ZAssetPub: 0x63,
     ZAssetPriv: 0x07,
+    ZAsset: 0x08,
+    SpentUTXO: 0x09,
 };
 
 // Length Constants
@@ -22,12 +24,15 @@ const LMT = {
     ZAccount: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
     ZAssetPub: 1 + 8, // 1 byte for message type, 8 bytes for zkpAmountScaled
     ZAssetPriv: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
+    ZAsset: 1 + 32 + 64, // 1 byte for message type, 32 byte random, 64 byte secret message
+    SpentUTXO: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes spentUtxoCommitment1 spentUtxoCommitment2
 };
 
 export enum TxNoteType {
     ZAccountActivation = 0x01, // Type1
     PrpClaiming = 0x02, // Type2
     PrpConversion = 0x03, // Type3
+    ZTransaction = 0x4, // Type4
 }
 
 type Segment = {type: number; length: number};
@@ -51,6 +56,14 @@ const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
         {type: MT.ZAccount, length: LMT.ZAccount},
         {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
     ],
+    [TxNoteType.ZTransaction]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+    ],
 };
 
 const BYTES_TO_STRING_LENGTH_FACTOR = 2;
@@ -59,13 +72,13 @@ const BYTES_TO_STRING_LENGTH_FACTOR = 2;
  * Function to decode transaction note
  * @param {string} encodedNoteContentHex - The encoded Note Content Hex
  * @param {TxNoteType} noteType - The Note Type
- * @returns {TxNoteType1 | TxNoteType3} - returns either a TxNoteType1 or
- * TxNoteType3 depending on noteType
+ * @returns {TxNoteType1 | TxNoteType3 | TxNoteType4} - returns either a TxNoteType1,
+ * TxNoteType3 or TxNoteType4 depending on noteType
  */
 export function decodeTxNote(
     encodedNoteContentHex: string,
     noteType: TxNoteType,
-): TxNoteType1 | TxNoteType3 {
+): TxNoteType1 | TxNoteType3 | TxNoteType4 {
     const config = SegmentConfigs[noteType];
     validateInput(encodedNoteContentHex, 1 + getRequiredLength(config));
     const segments = parseSegments(encodedNoteContentHex, config);
@@ -104,6 +117,18 @@ export function decodeTxNote(
                     segments[4],
                 ),
             } as TxNoteType3;
+
+        case TxNoteType.ZTransaction:
+            const [, , zAccount, zAsset1, zAsset2, spentUTXO] = segments;
+            return {
+                createTime,
+                ...busTreeIds,
+                zAccount: prependMessageType(MT.ZAccount, zAccount),
+                zAsset1: prependMessageType(MT.ZAsset, zAsset1),
+                zAsset2: prependMessageType(MT.ZAsset, zAsset2),
+                spentUTXO: prependMessageType(MT.SpentUTXO, spentUTXO),
+            } as TxNoteType4;
+        // ZTransaction
         default:
             throw new Error(`Unsupported note type: ${noteType}`);
     }
