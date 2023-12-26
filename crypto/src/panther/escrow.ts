@@ -88,10 +88,10 @@ function convertEscrowDataToScalars(
         return [
             zAssetID,
             shift16AndBOr(zAccountID, zAccountZoneId),
-            shift16AndBOr(utxoInOriginZoneIds[0], utxoOutTargetZoneIds[0]),
-            shift16AndBOr(utxoInOriginZoneIds[1], utxoOutTargetZoneIds[1]),
             ...utxoInAmounts,
             ...utxoOutAmounts,
+            shift16AndBOr(utxoInOriginZoneIds[0], utxoOutTargetZoneIds[0]),
+            shift16AndBOr(utxoInOriginZoneIds[1], utxoOutTargetZoneIds[1]),
         ];
     }
 
