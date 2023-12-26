@@ -15,11 +15,13 @@ const MT = {
     ZAssetPriv: 0x07,
     ZAsset: 0x08,
     SpentUTXO: 0x09,
+    SpendTime: 0x61,
 };
 
 // Length Constants
 const LMT = {
     CreateTime: 1 + 4, // 1 byte for message type, 4 bytes for createTime
+    SpendTime: 1 + 4, // 1 byte for message type, 4 bytes for spendTime
     BusTreeIds: 1 + 37, // 1 byte for message type, 32 bytes for commitment, 4 bytes for queueId, 1 byte for indexInQueue
     ZAccount: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes for encrypted private message
     ZAssetPub: 1 + 8, // 1 byte for message type, 8 bytes for zkpAmountScaled
@@ -32,7 +34,7 @@ export enum TxNoteType {
     ZAccountActivation = 0x01, // Type1
     PrpClaiming = 0x02, // Type2
     PrpConversion = 0x03, // Type3
-    ZTransaction = 0x4, // Type4
+    ZTransaction = 0x04, // Type4
 }
 
 type Segment = {type: number; length: number};
@@ -58,6 +60,7 @@ const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
     ],
     [TxNoteType.ZTransaction]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.SpendTime, length: LMT.SpendTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
         {type: MT.ZAccount, length: LMT.ZAccount},
         {type: MT.ZAsset, length: LMT.ZAsset},
@@ -84,7 +87,7 @@ export function decodeTxNote(
     const segments = parseSegments(encodedNoteContentHex, config);
 
     const createTime = parseInt(segments[0], 16);
-    const busTreeIds = decodeBusTreeIds(segments[1]);
+    let busTreeIds = decodeBusTreeIds(segments[1]);
 
     // Use switch for future extensibility
     switch (noteType) {
@@ -119,14 +122,30 @@ export function decodeTxNote(
             } as TxNoteType3;
 
         case TxNoteType.ZTransaction:
-            const [, , zAccount, zAsset1, zAsset2, spentUTXO] = segments;
+            const [
+                ,
+                spendTime,
+                busTreeIdsSegment,
+                zAccount,
+                zAsset1,
+                zAsset2,
+                spentUTXO,
+            ] = segments;
+            busTreeIds = decodeBusTreeIds(busTreeIdsSegment);
+
             return {
                 createTime,
                 ...busTreeIds,
-                zAccount: prependMessageType(MT.ZAccount, zAccount),
-                zAsset1: prependMessageType(MT.ZAsset, zAsset1),
-                zAsset2: prependMessageType(MT.ZAsset, zAsset2),
-                spentUTXO: prependMessageType(MT.SpentUTXO, spentUTXO),
+                spendTime: parseInt(spendTime, 16),
+                zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
+                zAssetUTXOMessages: [
+                    prependMessageType(MT.ZAsset, zAsset1),
+                    prependMessageType(MT.ZAsset, zAsset2),
+                ],
+                spentUTXOCommitmentMessage: prependMessageType(
+                    MT.SpentUTXO,
+                    spentUTXO,
+                ),
             } as TxNoteType4;
         // ZTransaction
         default:
@@ -167,7 +186,7 @@ function parseSegments(
 ): string[] {
     let startStrIndex = 1 * BYTES_TO_STRING_LENGTH_FACTOR;
 
-    return segments.map(({type, length}) => {
+    return segments.map(({type, length}, index) => {
         const lengthInStr = length * BYTES_TO_STRING_LENGTH_FACTOR;
         const msgType = parseInt(
             encodedNoteContentHex.slice(
@@ -179,7 +198,7 @@ function parseSegments(
 
         if (msgType !== type) {
             throw new Error(
-                `Invalid msgType: Expected ${type.toString(
+                `Invalid msgType[${index}]: Expected ${type.toString(
                     16,
                 )}, got ${msgType.toString(16)}`,
             );

@@ -15,13 +15,8 @@ export type TxNoteType3 = TxNoteType1 & {
     zAssetCommitmentMessage: string;
 };
 
-export type TxNoteType4 = {
-    createTime: number;
-    commitment: string;
-    queueId: number;
-    indexInQueue: number;
-    zAccount: string;
-    zAsset1: string;
-    zAsset2: string;
-    spentUTXO: string;
+export type TxNoteType4 = TxNoteType1 & {
+    spendTime: number;
+    zAssetUTXOMessages: [string, string];
+    spentUTXOCommitmentMessage: string;
 };
