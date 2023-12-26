@@ -148,6 +148,7 @@ export function encryptPointsElGamal(
     const encryptedPoints = originalPoints.map(point =>
         encryptPointElGamal(point, publicKey, sessionKey),
     );
+
     return {
         encryptedPoints,
         ephemeralKeypair,
