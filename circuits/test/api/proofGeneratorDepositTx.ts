@@ -186,7 +186,7 @@ const zeroInput = {
         [BigInt(0n), BigInt(0n)],
         [BigInt(0n), BigInt(0n)],
     ],
-    utxoInPathIndex: [
+    utxoInPathIndices: [
         [
             BigInt(0n),
             BigInt(0n),
@@ -339,12 +339,12 @@ const zeroInput = {
     zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
     zAccountUtxoInCreateTime: BigInt(0n),
     zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(1n)],
-    zAccountUtxoInReadPubKey: [BigInt(0n), BigInt(1n)],
-    zAccountUtxoInNullifierPubKey: [BigInt(0n), BigInt(1n)],
+    zAccountUtxoInReadPubKey:[BigInt(0n), BigInt(1n)],
+    zAccountUtxoInNullifierPubKey:[BigInt(0n), BigInt(1n)],
     zAccountUtxoInMasterEOA: BigInt(0n),
     zAccountUtxoInSpendPrivKey: BigInt(0n),
-    zAccountUtxoInReadPrivKey: BigInt(0n),
-    zAccountUtxoInNullifierPrivKey: BigInt(0n),
+    zAccountUtxoInReadPrivKey:BigInt(0n),
+    zAccountUtxoInNullifierPrivKey:BigInt(0n),
     zAccountUtxoInMerkleTreeSelector: [BigInt(0n), BigInt(0n)],
     zAccountUtxoInPathIndices: [
         BigInt(0n),
@@ -518,7 +518,7 @@ const zeroInput = {
         BigInt(0n),
         BigInt(0n),
     ],
-    kytPathIndex: [
+    kytPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -546,7 +546,7 @@ const zeroInput = {
     kytDepositSignedMessageSessionId: BigInt(0n),
     kytDepositSignedMessageRuleId: BigInt(0n),
     kytDepositSignedMessageAmount: BigInt(0n),
-    kytDepositSignedMessageSigner: BigInt(0n),
+    kytDepositSignedMessageSigner:BigInt(0n),
     kytDepositSignedMessageHash: BigInt(0n),
     kytDepositSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
@@ -558,7 +558,7 @@ const zeroInput = {
     kytWithdrawSignedMessageSessionId: BigInt(0n),
     kytWithdrawSignedMessageRuleId: BigInt(0n),
     kytWithdrawSignedMessageAmount: BigInt(0n),
-    kytWithdrawSignedMessageSigner: BigInt(0n),
+    kytWithdrawSignedMessageSigner:BigInt(0n),
     kytWithdrawSignedMessageHash: BigInt(0n),
     kytWithdrawSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
@@ -585,7 +585,7 @@ const zeroInput = {
         BigInt(0n),
         BigInt(0n),
     ],
-    dataEscrowPathIndex: [
+    dataEscrowPathIndices: [
         BigInt(0n),
         BigInt(0n),
         BigInt(0n),
@@ -625,8 +625,8 @@ const zeroInput = {
         BigInt(1n),
         BigInt(1n),
         BigInt(1n),
-        BigInt(1n),
-        BigInt(1n),
+        BigInt(0n),
+        BigInt(0n),
     ],
     daoDataEscrowPubKey: [BigInt(0n), BigInt(0n)],
     daoDataEscrowEphimeralRandom: BigInt(0n),
@@ -1629,10 +1629,10 @@ const nonZeroInput = {
             13116190464256158497839887597524501812846680459236688248532348621490241197945n,
         ),
         BigInt(
-            13116190464256158497839887597524501812846680459236688248532348621490241197945n,
+            18744201253481422226438434813860352434658954913657752337718781751398308763479n,
         ),
         BigInt(
-            8545989893275276231799888565301908912318543399332021915998096176909753199105n,
+            0,
         ),
     ],
     dataEscrowEncryptedMessageAy: [
@@ -1661,10 +1661,10 @@ const nonZeroInput = {
             20000738990158911673922080741335508851223507369672887792062131046520480743662n,
         ),
         BigInt(
-            20000738990158911673922080741335508851223507369672887792062131046520480743662n,
+            8929824373598886743562981117116305940874044564661515434013850128079030287133n,
         ),
         BigInt(
-            20637416069479879785001161881462675658184199290896901419191315646291334864295n,
+            0,
         ),
     ],
     daoDataEscrowPubKey: [
