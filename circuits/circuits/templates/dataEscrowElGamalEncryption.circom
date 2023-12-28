@@ -71,8 +71,8 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
         drv_mGrY[ScalarsSize+j].y2 <== drv_ephimeralRandomPublicKey.out[1];
 
         // ecrypted data
-        encryptedMessage[ScalarsSize+j][0] <== drv_mGrY[j].xout;
-        encryptedMessage[ScalarsSize+j][1] <== drv_mGrY[j].yout;
+        encryptedMessage[ScalarsSize+j][0] <== drv_mGrY[ScalarsSize+j].xout;
+        encryptedMessage[ScalarsSize+j][1] <== drv_mGrY[ScalarsSize+j].yout;
     }
 }
 
