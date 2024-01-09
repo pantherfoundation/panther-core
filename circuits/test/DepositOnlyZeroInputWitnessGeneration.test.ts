@@ -317,12 +317,12 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zAccountUtxoInTotalAmountPerTimePeriod: BigInt(0n),
         zAccountUtxoInCreateTime: BigInt(0n),
         zAccountUtxoInRootSpendPubKey: [BigInt(0n), BigInt(1n)],
-        zAccountUtxoInReadPubKey:[BigInt(0n), BigInt(1n)],
-        zAccountUtxoInNullifierPubKey:[BigInt(0n), BigInt(1n)],
+        zAccountUtxoInReadPubKey: [BigInt(0n), BigInt(1n)],
+        zAccountUtxoInNullifierPubKey: [BigInt(0n), BigInt(1n)],
         zAccountUtxoInMasterEOA: BigInt(0n),
         zAccountUtxoInSpendPrivKey: BigInt(0n),
-        zAccountUtxoInReadPrivKey:BigInt(0n),
-        zAccountUtxoInNullifierPrivKey:BigInt(0n),
+        zAccountUtxoInReadPrivKey: BigInt(0n),
+        zAccountUtxoInNullifierPrivKey: BigInt(0n),
         zAccountUtxoInMerkleTreeSelector: [BigInt(0n), BigInt(0n)],
         zAccountUtxoInPathIndices: [
             BigInt(0n),
@@ -524,7 +524,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         kytDepositSignedMessageSessionId: BigInt(0n),
         kytDepositSignedMessageRuleId: BigInt(0n),
         kytDepositSignedMessageAmount: BigInt(0n),
-        kytDepositSignedMessageSigner:BigInt(0n),
+        kytDepositSignedMessageSigner: BigInt(0n),
         kytDepositSignedMessageHash: BigInt(0n),
         kytDepositSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
@@ -536,7 +536,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         kytWithdrawSignedMessageSessionId: BigInt(0n),
         kytWithdrawSignedMessageRuleId: BigInt(0n),
         kytWithdrawSignedMessageAmount: BigInt(0n),
-        kytWithdrawSignedMessageSigner:BigInt(0n),
+        kytWithdrawSignedMessageSigner: BigInt(0n),
         kytWithdrawSignedMessageHash: BigInt(0n),
         kytWithdrawSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
 
@@ -629,7 +629,10 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
 
         zAccountUtxoOutZkpAmount: BigInt(0n),
         zAccountUtxoOutSpendKeyRandom: BigInt(0n),
-        zAccountUtxoOutCommitment: BigInt(0n),
+        zAccountUtxoOutCommitment:
+            BigInt(
+                16885803331448709892763712024861110241825210009328264441474415468494162175579n,
+            ),
 
         chargedAmountZkp: BigInt(0n),
 

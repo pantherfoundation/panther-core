@@ -33,22 +33,29 @@ template RewardsExtended(nUtxoIn) {
     signal S4;
     signal S5;
     signal R;
-    S1 <== forTxReward;
+
+    assert(spendTime <= 2**32);
+    assert(utxoInCreateTime[0] <= 2**32);
+
+    var prpScaleFactor = 60;
+    S1 <== forTxReward * (2 ** prpScaleFactor);
     S2 <== forDepositReward * depositAmount;
     signal sum[nUtxoIn];
     component lessThen[nUtxoIn];
     lessThen[0] = LessThan(32);
-    lessThen[0].in[0] <== spendTime;
-    lessThen[0].in[1] <== utxoInCreateTime[0];
+    lessThen[0].in[0] <== utxoInCreateTime[0];
+    lessThen[0].in[1] <== spendTime;
     signal mult[nUtxoIn];
     mult[0] <== lessThen[0].out * (spendTime - utxoInCreateTime[0]);
     sum[0] <==  mult[0] * utxoInAmount[0];
     for (var i = 1; i < nUtxoIn; i++) {
         // if spendTime < createTime --> spendTime - createTime = 0
         // so sum[i] <== sum[i-1];
+
+        assert(utxoInCreateTime[i] <= 2**32);
         lessThen[i] = LessThan(32);
-        lessThen[i].in[0] <== spendTime;
-        lessThen[i].in[1] <== utxoInCreateTime[i];
+        lessThen[i].in[0] <== utxoInCreateTime[i];
+        lessThen[i].in[1] <== spendTime;
         mult[i] <== lessThen[i].out * (spendTime - utxoInCreateTime[i]);
         sum[i] <== sum[i-1] + mult[i] * utxoInAmount[i];
     }
@@ -57,7 +64,6 @@ template RewardsExtended(nUtxoIn) {
     S5 <== (S4 + S2) * assetWeight;
     R <== S1 + S5;
 
-    var prpScaleFactor = 60;
     component n2b = Num2Bits(253);
     n2b.in <== R;
 
