@@ -24,7 +24,7 @@ import {
     PrivateMessage,
     MessageType,
 } from '../types/message';
-import {assertInBabyJubJubSubOrder, assertMaxBits} from '../utils/assertions';
+import {assert, assertInSnarkField, assertMaxBits} from '../utils/assertions';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
@@ -56,7 +56,7 @@ const FIELD_BIT_LENGTHS = {
     totalAmountPerTimePeriod: 64,
 } as const;
 
-const FIELD_ALLOWED_VALUES = {
+const ALLOWED_MAX_VALUES: {[key in keyof Message]: bigint} = {
     zoneId: 2n,
     originZoneId: 1n,
     targetZoneId: 1n,
@@ -384,8 +384,12 @@ function encodeUTXOMessage(type: MessageType, values: bigint[]): string {
     const config = UTXO_MESSAGE_CONFIGS[type];
 
     config.fields.forEach((field, index) => {
-        assertInBabyJubJubSubOrder(values[index], field);
+        assertInSnarkField(values[index], field);
         assertMaxBits(values[index], FIELD_BIT_LENGTHS[field], field);
+        const maxAllowedValue = ALLOWED_MAX_VALUES[field];
+        if (maxAllowedValue) {
+            assert(values[index] <= maxAllowedValue, `Invalid ${field}`);
+        }
     });
 
     let binaryString = config.fields.reduce((result, field, index) => {
@@ -604,9 +608,12 @@ function validateFields(values: Message, fields: Array<keyof Message>) {
             throw new Error(`Failed to decrypt. Incorrect ${field}`);
         }
 
-        assertInBabyJubJubSubOrder(value, field);
-        if (field in FIELD_ALLOWED_VALUES) {
-            assertMaxBits(value, FIELD_BIT_LENGTHS[field], field);
+        assertMaxBits(value, FIELD_BIT_LENGTHS[field], field);
+        if (field in ALLOWED_MAX_VALUES) {
+            const maxAllowedValue = ALLOWED_MAX_VALUES[field];
+            if (maxAllowedValue) {
+                assert(value <= maxAllowedValue, `Invalid ${field}`);
+            }
         }
     }
 }
