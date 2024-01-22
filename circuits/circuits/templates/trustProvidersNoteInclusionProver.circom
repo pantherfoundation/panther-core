@@ -16,6 +16,7 @@ template TrustProvidersNoteInclusionProver(n_levels) {
     signal input pathElements[n_levels];
 
     assert(enabled < 2);
+    enabled * enabled - enabled === 0;
 
     // verify expiryTime
     component expiryTimeIsZero = IsZero();

@@ -830,7 +830,7 @@ template ZTransactionV1( nUtxoIn,
     // withdraw Master EOA check
     component kytWithdrawMasterEOAIsEqual = ForceEqualIfEnabled();
     kytWithdrawMasterEOAIsEqual.enabled <== isKytWithdrawCheckEnabled;
-    kytWithdrawMasterEOAIsEqual.in[0] <== kytDepositSignedMessageSigner;
+    kytWithdrawMasterEOAIsEqual.in[0] <== kytWithdrawSignedMessageSigner;
     kytWithdrawMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
 
     // withdraw kyt hash
@@ -1061,7 +1061,19 @@ template ZTransactionV1( nUtxoIn,
 
     // [25] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
-    assert(kytEdDsaPubKeyExpiryTime >= utxoOutCreateTime);
+    
+    // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
+    component isLessThanEqDepositTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    isLessThanEqDepositTimeAndKytExpiryTime.enabled <== isKytDepositCheckEnabled;
+    isLessThanEqDepositTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
+    isLessThanEqDepositTimeAndKytExpiryTime.in[1] <== kytDepositSignedMessageTimestamp;
+
+    // assert(kytWithdrawSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
+    component isLessThanEqWithdrawTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    isLessThanEqWithdrawTimeAndKytExpiryTime.enabled <== isKytWithdrawCheckEnabled;
+    isLessThanEqWithdrawTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
+    isLessThanEqWithdrawTimeAndKytExpiryTime.in[1] <== kytWithdrawSignedMessageTimestamp;
+
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
 
     // [25.1] - deposit
