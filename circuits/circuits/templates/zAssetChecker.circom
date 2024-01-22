@@ -29,6 +29,12 @@ template ZAssetChecker() {
     isZAssetTokenEqualToToken.in[1] <== token;
     isZAssetTokenEqualToToken.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
 
+    // [0.5] - token == 0 for internal tx
+    component isTokenEqualToZeroForInternalTx = ForceEqualIfEnabled();
+    isTokenEqualToZeroForInternalTx.in[0] <== 0;
+    isTokenEqualToZeroForInternalTx.in[1] <== token;
+    isTokenEqualToZeroForInternalTx.enabled <== enable_If_ExternalAmountsAre_Zero;
+
     // [1] - zAsset::ID == UTXO:zAssetID with respect to offset
     component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
     isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
@@ -49,6 +55,12 @@ template ZAssetChecker() {
     isUtxoTokenIdEqualToTokenId.tokenId <== tokenId;
     isUtxoTokenIdEqualToTokenId.offset <== zAssetOffset;
     isUtxoTokenIdEqualToTokenId.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+
+    // [3.5] - tokenId == 0 for internal tx
+    component isTokenIdEqualToZeroForInternalTx = ForceEqualIfEnabled();
+    isTokenIdEqualToZeroForInternalTx.in[0] <== 0;
+    isTokenIdEqualToZeroForInternalTx.in[1] <== tokenId;
+    isTokenIdEqualToZeroForInternalTx.enabled <== enable_If_ExternalAmountsAre_Zero;
 
     // NOTE: zZKP zAssetID is alwase zero
     var zZKP = 0;

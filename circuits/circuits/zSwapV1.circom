@@ -728,7 +728,7 @@ template ZSwapV1( nUtxoIn,
     zAccountUtxoOutHasher.totalAmountPerTimePeriod <== zAccountUtxoOutTotalAmountPerTimePeriod;
     zAccountUtxoOutHasher.createTime <== utxoOutCreateTime;
     zAccountUtxoOutHasher.networkId <== zAccountUtxoInNetworkId;
-    // zAccountUtxoOutCommitment === zAccountUtxoOutHasher.out;
+    zAccountUtxoOutCommitment === zAccountUtxoOutHasher.out;
 
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
     zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
@@ -833,7 +833,7 @@ template ZSwapV1( nUtxoIn,
     // withdraw Master EOA check
     component kytWithdrawMasterEOAIsEqual = ForceEqualIfEnabled();
     kytWithdrawMasterEOAIsEqual.enabled <== isKytWithdrawCheckEnabled;
-    kytWithdrawMasterEOAIsEqual.in[0] <== kytDepositSignedMessageSigner;
+    kytWithdrawMasterEOAIsEqual.in[0] <== kytWithdrawSignedMessageSigner;
     kytWithdrawMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
 
     // withdraw kyt hash
@@ -1044,7 +1044,7 @@ template ZSwapV1( nUtxoIn,
         zZoneDataEscrowEncryptedMessageAy[i] === zZoneDataEscrow.encryptedMessage[i][1];
     }
 
-    // [24] - Verify zAsset's membership and decode its weight
+    // [24] - Verify zNetwork's membership and decode its weight
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -1066,18 +1066,18 @@ template ZSwapV1( nUtxoIn,
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
     assert(kytEdDsaPubKeyExpiryTime >= utxoOutCreateTime);
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
-    assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
-    assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
 
+    // [25.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytDepositSignedMessageTimestampZero = IsZero();
     iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
 
-    component isLessThanEqDepsoit = LessThanWhenEnabled(252);
-    isLessThanEqDepsoit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
-    isLessThanEqDepsoit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
-    isLessThanEqDepsoit.in[1] <== utxoOutCreateTime;
+    component isLessThanEqDeposit = LessThanWhenEnabled(252);
+    isLessThanEqDeposit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
+    isLessThanEqDeposit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
+    isLessThanEqDeposit.in[1] <== utxoOutCreateTime;
 
+    // [25.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytWithdrawSignedMessageTimestampZero = IsZero();
     iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
