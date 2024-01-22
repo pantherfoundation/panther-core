@@ -236,14 +236,9 @@ export class BusTree {
 
     /**
      * Validates that the batch index matches the UTXO batch index.
-     * @throws Will throw an Error if the batch index does not match.
      */
-    private validateBatchIndex(batchIndex: number): void {
-        if (batchIndex !== this.utxoBatchIndex) {
-            throw new Error(
-                `Batch index ${batchIndex} is not in the same UTXO batch as the bus tree ${this.utxoBatchIndex}`,
-            );
-        }
+    private isValidBatchIndex(batchIndex: number): boolean {
+        return batchIndex === this.utxoBatchIndex;
     }
 
     /**
@@ -251,8 +246,6 @@ export class BusTree {
      * @param {bigint} leaf - The leaf to verify.
      * @param {number} leafIndex - The index of the leaf.
      * @param {bigint[]} merklePath - The Merkle proof to verify.
-     * @throws Will throw an Error if the UTXO batch index does not match.
-     * @throws Will throw an Error if the leaf does not match.
      * @returns {boolean} True if the proof is valid, false otherwise.
      */
     public verifyProof(
@@ -266,12 +259,13 @@ export class BusTree {
             this.branchDepth,
         );
 
-        this.validateBatchIndex(utxoBatchIndex);
+        if (!this.isValidBatchIndex(utxoBatchIndex)) return false;
 
         const leafInBatch = this.utxoBatchTree.getLeaf(
             leafIndex % 2 ** this.utxoBatchDepth,
         );
-        this.validateLeaf(leaf, leafInBatch);
+
+        if (leaf !== leafInBatch) return false;
 
         return (
             this.calculateHash(leaf, leafIndex, merklePath) === this.getRoot()
@@ -300,17 +294,5 @@ export class BusTree {
             index >>= 1;
         }
         return currentNodeHash;
-    }
-
-    /**
-     * Validates that a leaf matches a specified leaf.
-     * @throws Will throw an Error if the leaves do not match.
-     */
-    private validateLeaf(leaf: bigint, leafInBatch: bigint): void {
-        if (leafInBatch !== leaf) {
-            throw new Error(
-                `Leaf ${leaf} does not match the leaf ${leafInBatch} in the UTXO batch`,
-            );
-        }
     }
 }
