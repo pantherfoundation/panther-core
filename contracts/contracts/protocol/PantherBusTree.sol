@@ -33,6 +33,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
 
     // TODO: Remove lastUtxoSimulationTimestamp after Testnet (required for Stage #0..2 only)
     // keeps track of the timestamp of the latest added utxos
+    // lastUtxoUpdateBlockNum
     uint32 public lastUtxoSimulationTimestamp;
 
     // timestamp to start adding utxo
@@ -114,7 +115,6 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     ) external onlyPantherPool returns (uint32 queueId, uint8 indexInQueue) {
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = utxo;
-
         (queueId, indexInQueue) = addUtxos(utxos, basePerUtxoReward);
     }
 
@@ -141,6 +141,20 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
 
         // TODO: add `reward` as a param and uncomment this line
         // _checkReward(reward, utxos.length);
+        (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);
+    }
+
+    function addUtxosToBusQueue(
+        bytes32[] memory utxos,
+        uint96 reward
+    )
+        external
+        onlyPantherPool
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
+    {
+        require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
+
+        _checkReward(reward, utxos.length);
 
         (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);
     }
