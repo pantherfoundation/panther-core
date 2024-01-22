@@ -161,11 +161,7 @@ contract PantherPoolV1 is
         address zkpPayer,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
-    )
-        external
-        validatePrivateMessage(privateMessages)
-        returns (uint256 utxoBusQueuePos)
-    {
+    ) external returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -199,6 +195,8 @@ contract PantherPoolV1 is
             uint256(createTime) == inputs[5] && createTime >= block.timestamp,
             ERR_INVALID_CREATE_TIME
         );
+
+        _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
 
         require(
             isCachedRoot(bytes32(inputs[16]), cachedForestRootIndex),
@@ -267,12 +265,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
-    )
-        external
-        validatePrivateMessage(privateMessages)
-        returns (uint256 utxoBusQueuePos)
-    // solhint-disable-next-line no-empty-blocks
-    {
+    ) external returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -285,6 +278,8 @@ contract PantherPoolV1 is
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[2]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
         uint256 zAccountUtxoOutCommitment;
         {
@@ -375,11 +370,7 @@ contract PantherPoolV1 is
         bytes memory privateMessages,
         uint256 zkpAmountOutRounded,
         uint256 cachedForestRootIndex
-    )
-        external
-        validatePrivateMessage(privateMessages)
-        returns (uint256 zAccountUtxoBusQueuePos)
-    {
+    ) external returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -414,6 +405,8 @@ contract PantherPoolV1 is
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[2]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        _sanitizePrivateMessage(privateMessages, TT_PRP_CONVERSION);
 
         require(
             isCachedRoot(bytes32(inputs[12]), cachedForestRootIndex),
