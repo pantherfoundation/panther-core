@@ -45,6 +45,7 @@ crypto/LICENSE*
 
 dapp/public/preparation/
 dapp/src/types/modules/
+dapp/circuits/
 dapp/LICENSE*
 dapp/stats.json
 dapp/tests/data/*.index.html

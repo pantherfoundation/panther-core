@@ -75,7 +75,7 @@ describe('BusTree', () => {
         });
     });
 
-    it('throws an error for invalid leaf index', () => {
+    it('return false for invalid leaf index', () => {
         const smt = createBusTree(
             0,
             defaultLeaves,
@@ -86,12 +86,10 @@ describe('BusTree', () => {
             depth,
         );
 
-        expect(() => smt.verifyProof(BigInt(0), 5, smt.getProof(0))).to.throw(
-            'Batch index 1 is not in the same UTXO batch as the bus tree 0',
-        );
+        expect(smt.verifyProof(BigInt(0), 5, smt.getProof(0))).to.be.false;
     });
 
-    it('throws an error for zero leaf', () => {
+    it('return false for zero leaf', () => {
         const smt = createBusTree(
             0,
             [0].map(BigInt),
@@ -102,9 +100,7 @@ describe('BusTree', () => {
             depth,
         );
 
-        expect(() => smt.verifyProof(BigInt(1), 1, smt.getProof(1))).to.throw(
-            'Leaf 1 does not match the leaf 0 in the UTXO batch',
-        );
+        expect(smt.verifyProof(BigInt(1), 1, smt.getProof(1))).to.be.false;
     });
 
     it('fails to verify an incorrect proof', () => {
