@@ -7,6 +7,11 @@ interface IBusTree {
         bytes32[] calldata utxo
     ) external returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue);
 
+    function addUtxosToBusQueue(
+        bytes32[] calldata utxo,
+        uint96 rewards
+    ) external returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue);
+
     function addUtxoToBusQueue(
         bytes32 utxo
     ) external returns (uint32 queueId, uint8 indexInQueue);
