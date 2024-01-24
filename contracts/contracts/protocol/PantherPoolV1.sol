@@ -534,7 +534,8 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex,
         bytes memory privateMessages,
-        uint8 tokenType
+        uint8 tokenType,
+        uint256 /*zkpChargedAmount*/
     ) external payable returns (uint256 zAccountUtxoBusQueuePos) {
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
@@ -605,55 +606,17 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 dataEscrowEncryptedMessageAx1 = inputs[19];
-            uint256 dataEscrowEncryptedMessageAx2 = inputs[20];
-            uint256 dataEscrowEncryptedMessageAx3 = inputs[21];
-            uint256 dataEscrowEncryptedMessageAx4 = inputs[22];
-            uint256 dataEscrowEncryptedMessageAx5 = inputs[23];
-            uint256 dataEscrowEncryptedMessageAx6 = inputs[24];
-            uint256 dataEscrowEncryptedMessageAx7 = inputs[25];
-            uint256 dataEscrowEncryptedMessageAx8 = inputs[26];
-            uint256 dataEscrowEncryptedMessageAx9 = inputs[27];
-            uint256 dataEscrowEncryptedMessageAx10 = inputs[28];
-
             require(
-                dataEscrowEncryptedMessageAx1 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx2 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx3 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx4 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx5 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx6 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx7 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx8 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx9 != 0,
-                ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-            );
-            require(
-                dataEscrowEncryptedMessageAx10 != 0,
+                inputs[19] != 0 &&
+                    inputs[20] != 0 &&
+                    inputs[21] != 0 &&
+                    inputs[22] != 0 &&
+                    inputs[23] != 0 &&
+                    inputs[24] != 0 &&
+                    inputs[25] != 0 &&
+                    inputs[26] != 0 &&
+                    inputs[27] != 0 &&
+                    inputs[28] != 0,
                 ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
             );
         }
@@ -733,6 +696,9 @@ contract PantherPoolV1 is
                 // internal tx
                 require(token == 0, ERR_NON_ZERO_TOKEN);
             else {
+                // depost or withdraw tx
+                // NOTE: This contract expects the Vault will check the token (inputs[4]) to
+                // be non-zero only if the tokenType is not native.
                 _processDepositAndWithdraw(inputs, tokenType);
             }
         }
