@@ -125,9 +125,7 @@ const config: HardhatUserConfig = {
         timeout: 2000000000,
     },
     // @ts-ignore
-    namedAccounts: {
-        deployer: 0,
-    },
+    namedAccounts: getNamedAccounts(),
     paths: {
         artifacts: './artifacts',
         cache: './cache',
@@ -214,6 +212,39 @@ const config: HardhatUserConfig = {
         target: 'ethers-v5',
     },
 };
+
+function getNamedAccounts() {
+    const namedAccounts = {
+        deployer: {
+            localhost: 0, // here this will by default take the first account as deployer
+            hardhat: 0, // here this will by default take the first account as deployer
+            mainnet: 0,
+            goerli: 0,
+
+            polygon: 0,
+            mumbai: 0,
+        },
+
+        multisig: {
+            localhost: 0,
+            hardhat: 0,
+            mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
+            goerli: 0,
+
+            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0',
+            mumbai: 0,
+        },
+
+        zkp: {
+            mainnet: '0x909E34d3f6124C324ac83DccA84b74398a6fa173',
+        },
+        pzk: {
+            polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
+        },
+    };
+
+    return namedAccounts;
+}
 
 function getAccounts(network: string): HttpNetworkAccountsUserConfig {
     if (process.env.PRIVATE_KEY) {

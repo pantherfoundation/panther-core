@@ -7,6 +7,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     reuseEnvAddress,
     verifyUserConsentOnProd,
+    getNamedAccount,
 } from '../../lib/deploymentHelpers';
 import {
     getPoseidonT3Contract,
@@ -16,11 +17,12 @@ import {
 } from '../../lib/poseidonBuilder';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
 
     if (!reuseEnvAddress(hre, 'POSEIDON_T3')) {

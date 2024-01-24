@@ -9,15 +9,15 @@ import {
     bytecode,
 } from '../../deployments/ARCHIVE/externalAbis/ZKPToken.json';
 import {isProd} from '../../lib/checkNetwork';
+import {getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
+    const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
 
     await deploy('Zkp_token', {
         contract: {
@@ -33,4 +33,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['zkp-imp', 'dev-dependency'];
+func.tags = ['zkp-token', 'protocol-token', 'dev-dependency'];

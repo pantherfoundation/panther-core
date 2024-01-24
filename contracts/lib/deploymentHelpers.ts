@@ -4,9 +4,21 @@
 import assert from 'assert';
 
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {ethers} from 'ethers';
+import {Contract, ethers} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import inq from 'inquirer';
+
+function logInfo(message: string) {
+    console.log('\x1b[32m', message, '\x1b[0m');
+}
+
+async function getNamedAccount(
+    hre: HardhatRuntimeEnvironment,
+    accountName: string,
+) {
+    const {getNamedAccounts} = hre;
+    return (await getNamedAccounts())[accountName];
+}
 
 function getContractEnvVariable(
     hre: HardhatRuntimeEnvironment,
@@ -220,6 +232,61 @@ async function getContractAddress(
 
         throw new Error(error.message);
     }
+}
+
+async function getZkpToken(hre: HardhatRuntimeEnvironment): Promise<Contract> {
+    const zkpAbi = (
+        await import('../deployments/ARCHIVE/externalAbis/ZKPToken.json')
+    ).abi;
+
+    const zkpAddress =
+        (await getNamedAccount(hre, 'zkp')) ||
+        (await getContractAddress(hre, 'Zkp_token', 'ZKP_TOKEN'));
+
+    return await hre.ethers.getContractAt(zkpAbi, zkpAddress);
+}
+
+async function getPZkpToken(hre: HardhatRuntimeEnvironment): Promise<Contract> {
+    const pZkpAbi = (
+        await import('../deployments/ARCHIVE/externalAbis/PZkpToken.json')
+    ).abi;
+
+    const pZkpAddress =
+        (await getNamedAccount(hre, 'pZkp')) ||
+        (await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN'));
+
+    return await hre.ethers.getContractAt(pZkpAbi, pZkpAddress);
+}
+
+async function getVestingPoolsContract(
+    hre: HardhatRuntimeEnvironment,
+): Promise<Contract> {
+    const vestingPoolsAbi = (
+        await import('../deployments/ARCHIVE/externalAbis/VestingPools.json')
+    ).abi;
+
+    const vestingPoolsAddress = await getContractAddress(
+        hre,
+        'VESTING_POOLS',
+        '',
+    );
+
+    return await hre.ethers.getContractAt(vestingPoolsAbi, vestingPoolsAddress);
+}
+
+async function getContract(
+    hre: HardhatRuntimeEnvironment,
+    deploymentName: string,
+    envWithoutNetworkSuffix: string,
+): Promise<Contract> {
+    const address = await getContractAddress(
+        hre,
+        deploymentName,
+        envWithoutNetworkSuffix,
+    );
+    const {abi} = await hre.artifacts.readArtifact(deploymentName);
+
+    return await hre.ethers.getContractAt(abi, address);
 }
 
 async function upgradeEIP1967Proxy(
@@ -444,6 +511,12 @@ function getDefaultSalt() {
 
 export {
     reuseEnvAddress,
+    logInfo,
+    getNamedAccount,
+    getContract,
+    getZkpToken,
+    getPZkpToken,
+    getVestingPoolsContract,
     getContractAddress,
     getContractEnvAddress,
     getContractEnvVariable,

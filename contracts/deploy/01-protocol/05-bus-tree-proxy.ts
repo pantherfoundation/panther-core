@@ -5,17 +5,19 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
+    getNamedAccount,
     reuseEnvAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+
     const {
         deployments: {deploy},
         ethers,
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
     if (reuseEnvAddress(hre, 'MOCK_BUS_TREE_PROXY')) return;
 

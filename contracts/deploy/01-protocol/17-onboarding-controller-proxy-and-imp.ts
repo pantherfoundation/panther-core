@@ -6,23 +6,20 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     getContractAddress,
+    getNamedAccount,
     reuseEnvAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
     if (reuseEnvAddress(hre, 'ORC')) return;
-
-    const multisig =
-        process.env.DAO_MULTISIG_ADDRESS ||
-        (await getNamedAccounts()).multisig ||
-        deployer;
 
     const zAccountsRegistryProxy = await getContractAddress(
         hre,

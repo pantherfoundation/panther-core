@@ -74,8 +74,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 'PantherPoolV0_Implementation',
             );
 
-            console.log(pantherPoolV0Impl.address);
-
             await upgradeEIP1967Proxy(
                 hre,
                 deployer,

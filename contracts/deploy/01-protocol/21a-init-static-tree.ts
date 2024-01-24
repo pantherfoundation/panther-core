@@ -22,11 +22,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const staticTree = await ethers.getContractAt(abi, staticTreeAddress);
 
     const root = await staticTree.getRoot();
-    if (
-        root ==
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
-    ) {
-        console.log('initialize panther static tree', root);
+    if (root == ethers.constants.HashZero) {
+        console.log('initialize panther static tree');
 
         const tx = await staticTree.initialize();
         const res = await tx.wait();

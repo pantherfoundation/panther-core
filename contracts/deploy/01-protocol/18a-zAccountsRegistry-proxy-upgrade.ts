@@ -6,12 +6,12 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     getContractAddress,
+    getNamedAccount,
     upgradeEIP1967Proxy,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const {getNamedAccounts} = hre;
-    const {deployer} = await getNamedAccounts();
+    const deployer = await getNamedAccount(hre, 'deployer');
 
     const zAccountRegistryProxy = await getContractAddress(
         hre,

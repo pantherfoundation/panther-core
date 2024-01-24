@@ -6,15 +6,17 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     getContractEnvAddress,
+    getNamedAccount,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+
     const {
         deployments: {deploy, get},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
 
     const poseidonT3 =

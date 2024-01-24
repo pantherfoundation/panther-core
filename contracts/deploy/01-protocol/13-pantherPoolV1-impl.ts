@@ -7,24 +7,19 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     getContractAddress,
     getContractEnvAddress,
-    verifyUserConsentOnProd,
+    getNamedAccount,
+    getPZkpToken,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy, get},
-        getNamedAccounts,
     } = hre;
 
-    const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
-
-    const multisig =
-        process.env.DAO_MULTISIG_ADDRESS ||
-        (await getNamedAccounts()).multisig ||
-        deployer;
-
-    const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
+    const pZkp = await getPZkpToken(hre);
 
     const vaultProxy = await getContractAddress(
         hre,
@@ -50,12 +45,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         '',
     );
 
+    const prpVoucherGrantor = await getContractAddress(
+        hre,
+        'PrpVoucherGrantor_Proxy',
+        '',
+    );
+
     const pantherVerifier = await getContractAddress(
         hre,
         'PantherVerifier',
         'PANTHER_VERIFIER',
     );
 
+    const poseidonT4 =
+        getContractEnvAddress(hre, 'POSEIDON_T4') ||
+        (await get('PoseidonT4')).address;
     const poseidonT5 =
         getContractEnvAddress(hre, 'POSEIDON_T5') ||
         (await get('PoseidonT5')).address;
@@ -65,16 +69,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [
             multisig,
-            pzkp,
+            pZkp.address,
             taxiTree,
             busTreeProxy,
             ferryTree,
             staticTreeProxy,
             vaultProxy,
             zAccountsRegistryProxy,
+            prpVoucherGrantor,
             pantherVerifier,
         ],
         libraries: {
+            PoseidonT4: poseidonT4,
             PoseidonT5: poseidonT5,
         },
         log: true,
@@ -84,5 +90,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['pool-v1', 'forest', 'protocol'];
-func.dependencies = ['check-params'];
+func.tags = ['pool-v1-imp', 'forest', 'protocol'];
+func.dependencies = ['check-params', 'protocol-token'];

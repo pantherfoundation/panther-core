@@ -8,20 +8,17 @@ import {
     getContractEnvAddress,
     verifyUserConsentOnProd,
     getContractAddress,
+    getNamedAccount,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy, get},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
     await verifyUserConsentOnProd(hre, deployer);
-
-    const multisig =
-        process.env.DAO_MULTISIG_ADDRESS ||
-        (await getNamedAccounts()).multisig ||
-        deployer;
 
     const pantherPool = await getContractAddress(
         hre,
@@ -45,18 +42,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
 
-    const constructorArgs = [
-        multisig,
-        1,
-        pantherPool,
-        staticTree,
-        onboardingController,
-    ];
-
     await deploy('ZAccountsRegistry_Implementation', {
         contract: 'ZAccountsRegistry',
         from: deployer,
-        args: constructorArgs,
+        args: [multisig, 1, pantherPool, staticTree, onboardingController],
         libraries: {
             PoseidonT3: poseidonT3,
             BabyJubJub: babyJubJub,

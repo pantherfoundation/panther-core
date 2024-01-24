@@ -7,20 +7,18 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     verifyUserConsentOnProd,
     getContractAddress,
+    getNamedAccount,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
 
-    const multisig =
-        process.env.DAO_MULTISIG_ADDRESS ||
-        (await getNamedAccounts()).multisig ||
-        deployer;
+    await verifyUserConsentOnProd(hre, deployer);
 
     const pantherPoolV1Proxy = await getContractAddress(
         hre,

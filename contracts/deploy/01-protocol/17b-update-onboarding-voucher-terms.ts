@@ -53,4 +53,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['update-voucher-terms', 'protocol'];
+func.tags = ['update-onboarding-voucher-terms', 'protocol'];
