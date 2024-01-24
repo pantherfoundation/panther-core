@@ -4,11 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    reuseEnvAddress,
-    verifyUserConsentOnProd,
-    getNamedAccount,
-} from '../../lib/deploymentHelpers';
+import {reuseEnvAddress, getNamedAccount} from '../../lib/deploymentHelpers';
 import {
     getPoseidonT3Contract,
     getPoseidonT4Contract,
@@ -22,8 +18,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
     } = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     if (!reuseEnvAddress(hre, 'POSEIDON_T3')) {
         const PoseidonT3 = await getPoseidonT3Contract();
@@ -94,4 +88,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['crypto-libs', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = ['check-params', 'deployment-consent'];

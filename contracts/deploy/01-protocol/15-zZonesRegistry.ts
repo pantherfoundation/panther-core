@@ -41,3 +41,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['z-zones-registry', 'forest', 'protocol'];
+func.dependencies = ['deployment-consent'];

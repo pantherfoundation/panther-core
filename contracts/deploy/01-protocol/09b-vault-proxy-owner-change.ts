@@ -4,7 +4,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isProd} from '../../lib/checkNetwork';
 import {getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -31,4 +30,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['vault-owner', 'pchain', 'protocol'];
-func.dependencies = ['check-params', 'vault-upgrade'];
+func.dependencies = ['check-params', 'deployment-consent', 'vault-upgrade'];

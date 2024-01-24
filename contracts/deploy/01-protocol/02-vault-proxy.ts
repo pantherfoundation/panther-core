@@ -36,4 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['vault-proxy', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = ['check-params', 'deployment-consent'];

@@ -4,11 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    verifyUserConsentOnProd,
-    getContractAddress,
-    getNamedAccount,
-} from '../../lib/deploymentHelpers';
+import {getContractAddress, getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
@@ -17,8 +13,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
     } = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const pantherPoolV1Proxy = await getContractAddress(
         hre,
@@ -41,4 +35,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['prp-voucher-grantor', 'protocol'];
-func.dependencies = ['pool-v1-proxy'];
+func.dependencies = ['pool-v1-proxy', 'deployment-consent'];

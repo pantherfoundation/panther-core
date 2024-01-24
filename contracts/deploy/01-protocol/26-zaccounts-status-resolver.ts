@@ -4,11 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getContractAddress,
-    getNamedAccount,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {getContractAddress, getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
@@ -16,8 +12,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
     } = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const zAccountRegistryProxy = await getContractAddress(
         hre,
@@ -35,4 +29,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['z-accounts-resolver', 'forest', 'protocol'];
-func.dependencies = ['z-accounts-registry-proxy'];
+func.dependencies = ['deployment-consent', 'z-accounts-registry-proxy'];

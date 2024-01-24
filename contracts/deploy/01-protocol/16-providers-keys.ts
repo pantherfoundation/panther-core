@@ -8,7 +8,6 @@ import {
     getContractAddress,
     getContractEnvAddress,
     getNamedAccount,
-    verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -18,8 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy, get},
     } = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
@@ -51,4 +48,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['providers-keys', 'forest', 'protocol'];
-func.dependencies = ['crypto-libs', 'static-tree-proxy'];
+func.dependencies = ['crypto-libs', 'deployment-consent', 'static-tree-proxy'];

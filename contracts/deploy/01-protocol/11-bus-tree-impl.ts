@@ -19,8 +19,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployments: {deploy, get},
     } = hre;
 
-    await verifyUserConsentOnProd(hre, deployer);
-
     const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
@@ -65,6 +63,7 @@ export default func;
 func.tags = ['bus-tree-imp', 'forest', 'protocol'];
 func.dependencies = [
     'crypto-libs',
+    'deployment-consent',
     'pool-v1-proxy',
     'verifier',
     'add-verification-key',

@@ -4,18 +4,14 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getContractAddress,
-    getNamedAccount,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {isProd} from '../../lib/checkNetwork';
+import {getContractAddress, getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    if (isProd(hre)) return;
     const deployer = await getNamedAccount(hre, 'deployer');
 
     const {artifacts, ethers} = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const providersKeyAddress = await getContractAddress(
         hre,

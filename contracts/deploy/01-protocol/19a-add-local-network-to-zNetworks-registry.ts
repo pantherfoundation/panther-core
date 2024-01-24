@@ -6,20 +6,12 @@ import {poseidon} from 'circomlibjs';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getContractAddress,
-    getNamedAccount,
-    getTokenContracts,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
-import {BigNumber} from 'ethers';
+import {isProd} from '../../lib/checkNetwork';
+import {getContractAddress} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const deployer = await getNamedAccount(hre, 'deployer');
-
+    if (isProd(hre)) return;
     const {artifacts, ethers} = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const zNetworkRegistryAddress = await getContractAddress(
         hre,
@@ -43,7 +35,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             1,
             BigInt((await hre.ethers.provider.getNetwork()).chainId),
             1,
-            3, // two networks are enabled
+            1, // 1 network is enabled
             10,
             1828,
             57646075,

@@ -4,22 +4,15 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {getNamedAccount} from '../../lib/deploymentHelpers';
+import {
+    getNamedAccount,
+    verifyUserConsentOnProd,
+} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
-
-    const {
-        deployments: {deploy},
-    } = hre;
-
-    await deploy('PantherFerryTree', {
-        from: deployer,
-        log: true,
-        autoMine: true,
-    });
+    await verifyUserConsentOnProd(hre, deployer);
 };
-export default func;
 
-func.tags = ['ferry-tree', 'forest', 'protocol'];
-func.dependencies = ['crypto-libs', 'deployment-consent'];
+export default func;
+func.tags = ['deployment-consent'];

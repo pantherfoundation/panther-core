@@ -7,7 +7,6 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     reuseEnvAddress,
     getContractAddress,
-    verifyUserConsentOnProd,
     getNamedAccount,
 } from '../../lib/deploymentHelpers';
 
@@ -18,7 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployments: {deploy},
     } = hre;
 
-    await verifyUserConsentOnProd(hre, deployer);
     if (reuseEnvAddress(hre, 'VAULT_IMP')) return;
 
     const pantherPool = await getContractAddress(
@@ -38,4 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['vault-impl', 'protocol'];
-func.dependencies = ['check-params', 'pool-v1-proxy'];
+func.dependencies = ['check-params', 'deployment-consent', 'pool-v1-proxy'];

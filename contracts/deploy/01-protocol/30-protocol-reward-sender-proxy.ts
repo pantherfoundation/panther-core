@@ -4,7 +4,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {verifyUserConsentOnProd} from '../../lib/deploymentHelpers';
 import {isLocal, isProd} from '../../lib/checkNetwork';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -17,7 +16,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     } = hre;
 
     const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
 
     await deploy('ToPolygonZkpTokenAndPrpRewardMsgSender_Proxy', {
         contract: 'EIP173Proxy',
@@ -35,3 +33,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['reward-sender-proxy', 'protocol'];
+func.dependencies = ['deployment-consent'];
