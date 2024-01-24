@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.0.0;
+pragma circom 2.1.6;
 
  // Switches one of 3 inputs to the output based upon the `sel` signal.
  template Selector3() {

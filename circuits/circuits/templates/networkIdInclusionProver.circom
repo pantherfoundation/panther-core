@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
+include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
@@ -10,21 +11,23 @@ template NetworkIdInclusionProver(){
     signal input networkIdsBitMap;  // 64 bit
 
     // [0] - Check only single bit is up
-    // assert(networkId & (networkId-1) == 0);
     assert(networkId < 64);
-    signal t1;
-    t1 <-- 1 << networkId;
 
-    // [1] - Inclusion proof
-    component and = AND();
-    and.a <== t1;
-    and.b <== networkIdsBitMap;
+    // switch-on single bit
+    component n2b_networkIdsBitMap = Num2Bits(64);
+    n2b_networkIdsBitMap.in <== networkIdsBitMap;
 
-    component isZero = IsZero();
-    isZero.in <== and.out;
+    component is_zero[64];
+    signal enabled_bit_check0[64];
+    signal enabled_bit_check1[64];
+    for(var i = 0; i < 64; i++) {
+        is_zero[i] = IsZero();
+        is_zero[i].in <== i - networkId;
 
-    component isEqual = ForceEqualIfEnabled();
-    isEqual.in[0] <== isZero.out;
-    isEqual.in[1] <== 0;
-    isEqual.enabled <== enabled;
+        // enabled_bit_check will be something only when is_zero[i].out == 1
+        enabled_bit_check0[i] <== is_zero[i].out * n2b_networkIdsBitMap.out[i];
+        enabled_bit_check1[i] <== enabled_bit_check0[i] * enabled;
+        // make sure that when is_zero[i].out == 1 (bit we interesting in), same bit - n2b_networkIdsBitMap.out[i]
+        enabled_bit_check1[i] === is_zero[i].out * enabled;
+    }
 }

@@ -40,15 +40,20 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
 
     assert(b2n_zAccountIdInsideLeaf.out < 254); // regular scalar field size
 
-    signal temp;
-    temp <-- 1 << b2n_zAccountIdInsideLeaf.out; // switch-on single bit
+    // switch-on single bit
+    component n2b_leaf = Num2Bits(254);
+    n2b_leaf.in <== leaf;
 
-    component and = AND(); // check that this bit it 1
-    and.a <== leaf;
-    and.b <== temp;
+    component is_zero[254];
+    signal enabled_bit_check[254];
+    for(var i = 0; i < 254; i++) {
+        // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out (
+        is_zero[i] = IsZero();
+        is_zero[i].in <== i - b2n_zAccountIdInsideLeaf.out;
 
-    component isZero = IsZero(); // require to be zero
-    isZero.in <== and.out;
-
-    isZero.out === 1;
+        // enabled_bit_check will be something only when is_zero[i].out == 1
+        enabled_bit_check[i] <== is_zero[i].out * n2b_leaf.out[i];
+        // make sure that is is_zero[i].out == 1 --> is_zero[i].out * ( 1 - is_zero[i].out ) == 0
+        enabled_bit_check[i] === is_zero[i].out * ( 1 - is_zero[i].out );
+    }
 }
