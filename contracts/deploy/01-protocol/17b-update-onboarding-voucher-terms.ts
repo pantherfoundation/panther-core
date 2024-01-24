@@ -54,3 +54,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-onboarding-voucher-terms', 'protocol'];
+func.dependencies = ['onboarding-reward-ctrl', 'prp-voucher-grantor'];

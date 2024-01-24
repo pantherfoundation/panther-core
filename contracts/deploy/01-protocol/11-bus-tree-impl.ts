@@ -65,7 +65,7 @@ export default func;
 func.tags = ['bus-tree-imp', 'forest', 'protocol'];
 func.dependencies = [
     'crypto-libs',
-    'pool-v1',
+    'pool-v1-proxy',
     'verifier',
     'add-verification-key',
     'protocol-token',

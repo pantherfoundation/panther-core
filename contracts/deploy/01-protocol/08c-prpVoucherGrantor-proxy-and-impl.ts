@@ -41,3 +41,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['prp-voucher-grantor', 'protocol'];
+func.dependencies = ['pool-v1-proxy'];

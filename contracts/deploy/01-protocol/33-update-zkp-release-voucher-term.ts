@@ -54,3 +54,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-voucher-terms-bridge', 'protocol'];
+func.dependencies = ['protocol-reward-relayer', 'prp-voucher-grantor'];

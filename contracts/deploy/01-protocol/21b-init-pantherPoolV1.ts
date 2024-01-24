@@ -36,3 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['init-forest', 'protocol'];
+func.dependencies = ['pool-v1-proxy'];

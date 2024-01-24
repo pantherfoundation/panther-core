@@ -35,4 +35,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['add-main-key-to-pool', 'protocol'];
-func.dependencies = ['check-params', 'add-verification-key'];
+func.dependencies = ['check-params', 'pool-v1-proxy', 'add-verification-key'];

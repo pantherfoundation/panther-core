@@ -45,3 +45,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['whitelist-reward-sender'];
+func.dependencies = ['protocol-reward-ctrl', 'reward-sender-proxy'];

@@ -43,3 +43,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-onboarding-reward-params', 'protocol'];
+func.dependencies = ['onboarding-reward-ctrl'];

@@ -91,4 +91,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['pool-v1-imp', 'forest', 'protocol'];
-func.dependencies = ['check-params', 'protocol-token'];
+func.dependencies = [
+    'check-params',
+    'protocol-token',
+    'taxi-tree',
+    'bus-tree-proxy',
+    'ferry-tree',
+    'static-tree-proxy',
+    'z-accounts-registry-proxy',
+    'prp-voucher-grantor',
+    'verifier',
+    'crypto-libs',
+    'vault-proxy',
+];
