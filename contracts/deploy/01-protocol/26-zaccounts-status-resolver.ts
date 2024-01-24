@@ -6,15 +6,17 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     getContractAddress,
+    getNamedAccount,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
 
     const zAccountRegistryProxy = await getContractAddress(

@@ -9,22 +9,15 @@ import {
     bytecode,
 } from '../../deployments/ARCHIVE/externalAbis/PZkpToken.json';
 import {isProd} from '../../lib/checkNetwork';
-import {getContractAddress} from '../../lib/deploymentHelpers';
+import {getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
+    const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
         deployments: {deploy},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
-
-    const MockFxPortalProxy = await getContractAddress(
-        hre,
-        'MockFxPortal_Proxy',
-        '',
-    );
 
     await deploy('PZkp_token', {
         contract: {
@@ -32,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             bytecode,
         },
         from: deployer,
-        args: [MockFxPortalProxy],
+        args: [deployer],
         log: true,
         autoMine: true,
     });
@@ -40,4 +33,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['pzkp-token', 'dev-dependency'];
+func.tags = ['pzkp-token', 'protocol-token', 'dev-dependency'];

@@ -4,24 +4,27 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isProd} from '../../lib/checkNetwork';
+import {verifyUserConsentOnProd} from '../../lib/deploymentHelpers';
+import {isLocal, isProd} from '../../lib/checkNetwork';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    if (isProd(hre)) return;
+    if (isProd(hre) || isLocal(hre)) return;
 
     const {
         deployments: {deploy},
-        ethers,
         getNamedAccounts,
+        ethers,
     } = hre;
-    const {deployer} = await getNamedAccounts();
 
-    await deploy('MockFxPortal_Proxy', {
+    const {deployer} = await getNamedAccounts();
+    await verifyUserConsentOnProd(hre, deployer);
+
+    await deploy('ToPolygonZkpTokenAndPrpRewardMsgSender_Proxy', {
         contract: 'EIP173Proxy',
         from: deployer,
         args: [
             ethers.constants.AddressZero, // implementation will be changed
-            deployer, // owner
+            deployer, // owner will be changed
             [], // data
         ],
         log: true,
@@ -31,4 +34,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['fx-portal', 'fx-portal-proxy', 'dev-dependency'];
+func.tags = ['reward-sender-proxy', 'protocol'];

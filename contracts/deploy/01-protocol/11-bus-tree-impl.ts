@@ -7,15 +7,18 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     getContractAddress,
     getContractEnvAddress,
-    verifyUserConsentOnProd,
+    getNamedAccount,
+    getPZkpToken,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy, get},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
 
     const poseidonT3 =
@@ -36,13 +39,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PANTHER_POOL_V1_PROXY',
     );
 
-    const pzkp = await getContractAddress(hre, 'PZkp_token', 'PZKP_TOKEN');
+    const pZkp = await getPZkpToken(hre);
 
     if (pointer) {
         await deploy('PantherBusTree_Implementation', {
             contract: 'PantherBusTree',
             from: deployer,
-            args: [deployer, pzkp, pantherPool, pantherVerifier, pointer],
+            args: [
+                multisig,
+                pZkp.address,
+                pantherPool,
+                pantherVerifier,
+                pointer,
+            ],
             libraries: {
                 PoseidonT3: poseidonT3,
             },
@@ -59,4 +68,5 @@ func.dependencies = [
     'pool-v1',
     'verifier',
     'add-verification-key',
+    'protocol-token',
 ];

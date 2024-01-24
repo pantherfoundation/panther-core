@@ -4,13 +4,16 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {isProd} from '../../lib/checkNetwork';
+import {getNamedAccount} from '../../lib/deploymentHelpers';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const {getNamedAccounts, ethers} = hre;
-    const {deployer} = await getNamedAccounts();
-    const multisig =
-        process.env.DAO_MULTISIG_ADDRESS ||
-        (await getNamedAccounts()).multisig ||
-        deployer;
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
+    if (!isProd(hre)) return;
+
+    const {ethers} = hre;
 
     const busTreeProxy = await ethers.getContract('PantherBusTree_Proxy');
 

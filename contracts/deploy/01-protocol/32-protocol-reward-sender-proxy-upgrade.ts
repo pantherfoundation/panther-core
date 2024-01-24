@@ -8,32 +8,34 @@ import {
     getContractAddress,
     upgradeEIP1967Proxy,
 } from '../../lib/deploymentHelpers';
+import {isLocal, isProd} from '../../lib/checkNetwork';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    if (isProd(hre) || isLocal(hre)) return;
+
     const {getNamedAccounts} = hre;
     const {deployer} = await getNamedAccounts();
 
-    const pantherPoolV1Proxy = await getContractAddress(
+    const polygonZkpTokenAndPrpRewardMsgSenderProxy = await getContractAddress(
         hre,
-        'PantherPoolV1_Proxy',
+        'ToPolygonZkpTokenAndPrpRewardMsgSender_Proxy',
         '',
     );
-    const pantherPoolV1Impl = await getContractAddress(
+    const polygonZkpTokenAndPrpRewardMsgSenderImpl = await getContractAddress(
         hre,
-        'PantherPoolV1_Implementation',
+        'ToPolygonZkpTokenAndPrpRewardMsgSender_Implementation',
         '',
     );
 
     await upgradeEIP1967Proxy(
         hre,
         deployer,
-        pantherPoolV1Proxy,
-        pantherPoolV1Impl,
-        'pool v1',
+        polygonZkpTokenAndPrpRewardMsgSenderProxy,
+        polygonZkpTokenAndPrpRewardMsgSenderImpl,
+        'polygonZkpTokenAndPrpRewardMsgSender',
     );
 };
 
 export default func;
 
-func.tags = ['pool-v1-upgrade', 'protocol'];
-func.dependencies = ['check-params'];
+func.tags = ['protocol-reward-sender-upgrade', 'protocol'];

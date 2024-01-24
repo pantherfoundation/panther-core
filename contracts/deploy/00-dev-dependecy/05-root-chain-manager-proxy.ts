@@ -4,25 +4,26 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isProd} from '../../lib/checkNetwork';
-import {getContractAddress} from '../../lib/deploymentHelpers';
+import {isLocal, isProd} from '../../lib/checkNetwork';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    if (isProd(hre)) return;
+    if (isProd(hre) || isLocal(hre)) return;
 
     const {
         deployments: {deploy},
+        ethers,
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
 
-    const zkp = await getContractAddress(hre, 'Zkp_token', '');
-    const pzkp = await getContractAddress(hre, 'PZkp_token', '');
-
-    await deploy('MockFxPortal_Implementation', {
-        contract: 'MockFxPortal',
+    await deploy('MockRootChainManager_Proxy', {
+        contract: 'EIP173Proxy',
         from: deployer,
-        args: [deployer, zkp, pzkp],
+        args: [
+            ethers.constants.AddressZero, // implementation will be changed
+            deployer, // owner
+            [], // data
+        ],
         log: true,
         autoMine: true,
     });
@@ -30,5 +31,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['fx-portal', 'fx-portal-imp', 'dev-dependency'];
-func.dependencies = ['zkp-imp', 'pzkp-token'];
+func.tags = ['root-chain-manager-proxy', 'dev-dependency'];

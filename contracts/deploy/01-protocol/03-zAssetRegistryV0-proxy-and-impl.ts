@@ -71,5 +71,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['registry', 'protocol'];
+func.tags = ['z-asset-registry', 'protocol'];
 func.dependencies = ['check-params'];

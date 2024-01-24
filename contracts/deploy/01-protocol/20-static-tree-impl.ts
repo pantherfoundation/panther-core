@@ -7,15 +7,18 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     getContractAddress,
     getContractEnvAddress,
+    getNamedAccount,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
+
     const {
         deployments: {deploy, get},
-        getNamedAccounts,
     } = hre;
-    const {deployer} = await getNamedAccounts();
+
     await verifyUserConsentOnProd(hre, deployer);
 
     const poseidonT6 =
@@ -50,7 +53,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         contract: 'PantherStaticTree',
         from: deployer,
         args: [
-            deployer,
+            multisig,
             pantherPool,
             zAssetsRegistryV1,
             zAccountsRegistry,

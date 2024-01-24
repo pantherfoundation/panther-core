@@ -9,6 +9,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {isProd} from '../../lib/checkNetwork';
 import {
     getContractAddress,
+    getNamedAccount,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
@@ -49,9 +50,9 @@ async function mismatchParams(
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
+    const deployer = await getNamedAccount(hre, 'deployer');
 
-    const {getNamedAccounts, artifacts, ethers} = hre;
-    const {deployer} = await getNamedAccounts();
+    const {artifacts, ethers} = hre;
 
     await verifyUserConsentOnProd(hre, deployer);
 

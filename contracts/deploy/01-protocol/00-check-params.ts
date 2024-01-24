@@ -11,7 +11,7 @@ import {
 } from '../../lib/deploymentHelpers';
 
 const scaledConvertibleZkp = 1e6;
-const scaledVaultBalance = 1e6;
+const scaledMinerRewards = 1e6;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {getNamedAccounts, network} = hre;
@@ -27,8 +27,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         if (!process.env.DAO_MULTISIG_ADDRESS)
             throw 'Undefined DAO_MULTISIG_ADDRESS';
     } else {
-        if (!fulfillLocalAddress(hre, 'ZKP_TOKEN'))
-            throw 'Undefined ZKP_TOKEN_LOCALHOST';
+        // if (!fulfillLocalAddress(hre, 'ZKP_TOKEN'))
+        //     throw 'Undefined ZKP_TOKEN_LOCALHOST';
 
         if (
             process.env.POOL_EXIT_TIME &&
@@ -38,8 +38,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         }
     }
 
-    process.env['VAULT_BALANCE'] = hre.ethers.utils.parseEther(
-        scaledVaultBalance.toString(),
+    process.env['MINER_REWARDS'] = hre.ethers.utils.parseEther(
+        scaledMinerRewards.toString(),
     );
 
     process.env['CONVERTIBLE_ZKP'] = hre.ethers.utils.parseEther(

@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {DeployFunction} from 'hardhat-deploy/types';
+
+import {isLocal} from '../../lib/checkNetwork';
+import {getContractAddress, getPZkpToken} from '../../lib/deploymentHelpers';
+
+//? Note: This script is supposed to be deleted
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    if (!isLocal(hre)) return;
+
+    const vaultProxy = await getContractAddress(
+        hre,
+        'Vault_Proxy',
+        'VAULT_PROXY',
+    );
+
+    const pZkp = await getPZkpToken(hre);
+
+    const minerRewards = process.env.MINER_REWARDS as string;
+    const data = hre.ethers.utils.defaultAbiCoder.encode(
+        ['uint256'],
+        [minerRewards],
+    );
+
+    const tx = await pZkp.deposit(vaultProxy, data);
+    const res = await tx.wait();
+
+    console.log('Transaction confirmed', res.transactionHash);
+};
+
+export default func;
+
+func.tags = ['allocate-miner-rewards', 'protocol'];
+func.dependencies = ['check-params', 'protocol-token', 'vault-proxy'];

@@ -22,11 +22,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pantherPool = await ethers.getContractAt(abi, pantherPoolAddress);
 
     const root = await pantherPool.getRoot();
-    if (
-        root ==
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
-    ) {
-        console.log('initialize panther forest', root);
+    if (root == ethers.constants.HashZero) {
+        console.log('initialize panther forest');
 
         const tx = await pantherPool.initialize();
         const res = await tx.wait();
