@@ -535,7 +535,7 @@ contract PantherPoolV1 is
         uint256 cachedForestRootIndex,
         bytes memory privateMessages,
         uint8 tokenType
-    ) external returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external payable returns (uint256 zAccountUtxoBusQueuePos) {
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
@@ -730,9 +730,9 @@ contract PantherPoolV1 is
             uint256 token = inputs[4];
 
             if (depositAmount == 0 && withdrawAmount == 0)
+                // internal tx
                 require(token == 0, ERR_NON_ZERO_TOKEN);
             else {
-                require(token != 0, ERR_ZERO_TOKEN);
                 _processDepositAndWithdraw(inputs, tokenType);
             }
         }
@@ -897,7 +897,7 @@ contract PantherPoolV1 is
 
     function _lockAssetWithSalt(SaltedLockData memory slData) private {
         // solhint-disable-next-line no-empty-blocks
-        try VAULT.lockAssetWithSalt(slData) {} catch Error(
+        try VAULT.lockAssetWithSalt{ value: msg.value }(slData) {} catch Error(
             string memory reason
         ) {
             revert(reason);
@@ -943,7 +943,7 @@ contract PantherPoolV1 is
 
         address token = address(uint160(inputs[4]));
         uint256 tokenId = inputs[5];
-        bytes32 saltHash = bytes32(inputs[38]);
+        bytes32 saltHash = bytes32(inputs[40]);
 
         address kytDepositSignedMessageSender = address(uint160(inputs[12]));
         address kytDepositSignedMessageReceiver = address(uint160(inputs[13]));
