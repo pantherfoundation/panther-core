@@ -7,18 +7,17 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     reuseEnvAddress,
     getContractEnvAddress,
-    verifyUserConsentOnProd,
     upgradeEIP1967Proxy,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    //TODO: add protocol-v0 tag to deploy this contract
     return;
     const {
         deployments: {deploy},
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
 
     const multisig =
         process.env.DAO_MULTISIG_ADDRESS ||
@@ -72,4 +71,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['z-asset-registry', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = ['check-params', 'deployment-consent'];

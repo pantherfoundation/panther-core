@@ -8,7 +8,6 @@ import {isLocal, isProd} from '../../lib/checkNetwork';
 import {
     getContractAddress,
     getContractEnvAddress,
-    verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -19,7 +18,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
 
     const polygonRewardSender = '0xfffD2E141581006eA0c1e91bd5D109A8a72C71C8';
     const fxChild = getContractEnvAddress(hre, 'FX_CHILD');
@@ -48,4 +46,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['protocol-reward-relayer', 'protocol'];
-func.dependencies = ['check-params', 'prp-voucher-grantor', 'prp-converter'];
+func.dependencies = [
+    'check-params',
+    'deployment-consent',
+    'prp-voucher-grantor',
+    'prp-converter',
+];

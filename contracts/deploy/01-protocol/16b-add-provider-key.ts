@@ -3,7 +3,6 @@
 
 // eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
-import {moduloBabyJubSubFieldPrime} from '@panther-core/crypto/lib/base/field-operations';
 import {packPublicKey} from '@panther-core/crypto/lib/base/keypairs';
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import {poseidon, eddsa} from 'circomlibjs';
@@ -11,19 +10,14 @@ import {fromRpcSig} from 'ethereumjs-util';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getContractAddress,
-    getNamedAccount,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {isProd} from '../../lib/checkNetwork';
+import {getContractAddress} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    if (isProd(hre)) return;
     const {artifacts, ethers} = hre;
 
-    const deployer = await getNamedAccount(hre, 'deployer');
     const [signer] = await ethers.getSigners();
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const providersKeyAddress = await getContractAddress(
         hre,
@@ -47,9 +41,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'hex',
     );
     const pubKey = eddsa.prv2pub(prvKey);
-
-    // 13277427435165878497778222415993513565335242147425444199013288855685581939618n
-    // 13622229784656158136036771217484571176836296686641868549125388198837476602820n
 
     const publicKey = [BigInt(pubKey[0]), BigInt(pubKey[1])] as [
         bigint,

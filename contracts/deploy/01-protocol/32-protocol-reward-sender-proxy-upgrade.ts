@@ -39,4 +39,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['protocol-reward-sender-upgrade', 'protocol'];
-func.dependencies = ['protocol-reward-sender-imp'];
+func.dependencies = ['deployment-consent', 'protocol-reward-sender-imp'];

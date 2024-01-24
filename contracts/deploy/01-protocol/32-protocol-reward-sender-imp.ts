@@ -8,7 +8,6 @@ import {isLocal, isProd} from '../../lib/checkNetwork';
 import {
     getContractAddress,
     getContractEnvAddress,
-    verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -19,7 +18,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getNamedAccounts,
     } = hre;
     const {deployer} = await getNamedAccounts();
-    await verifyUserConsentOnProd(hre, deployer);
 
     const multisig =
         process.env.DAO_MULTISIG_ADDRESS ||
@@ -82,6 +80,7 @@ export default func;
 func.tags = ['protocol-reward-sender-imp', 'protocol'];
 func.dependencies = [
     'check-params',
+    'deployment-consent',
     'protocol-reward-relayer',
     'protocol-reward-ctrl',
     'protocol-token',

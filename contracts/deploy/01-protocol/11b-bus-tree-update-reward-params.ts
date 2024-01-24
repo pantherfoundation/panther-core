@@ -7,11 +7,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isProd} from '../../lib/checkNetwork';
-import {
-    getContractAddress,
-    getNamedAccount,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {getContractAddress} from '../../lib/deploymentHelpers';
 
 type PantherBusTreeParams = {
     perMinuteUtxosLimit: BigNumberish;
@@ -50,11 +46,8 @@ async function mismatchParams(
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
-    const deployer = await getNamedAccount(hre, 'deployer');
 
     const {artifacts, ethers} = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const busTreeAddress = await getContractAddress(
         hre,

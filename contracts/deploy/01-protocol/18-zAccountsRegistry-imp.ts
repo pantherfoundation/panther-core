@@ -6,7 +6,6 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {
     getContractEnvAddress,
-    verifyUserConsentOnProd,
     getContractAddress,
     getNamedAccount,
 } from '../../lib/deploymentHelpers';
@@ -18,7 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy, get},
     } = hre;
-    await verifyUserConsentOnProd(hre, deployer);
 
     const pantherPool = await getContractAddress(
         hre,
@@ -60,6 +58,7 @@ export default func;
 func.tags = ['z-accounts-registry-imp', 'protocol'];
 func.dependencies = [
     'check-params',
+    'deployment-consent',
     'pool-v1-proxy',
     'protocol-token',
     'static-tree-proxy',

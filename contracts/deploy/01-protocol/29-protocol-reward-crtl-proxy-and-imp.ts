@@ -39,4 +39,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['protocol-reward-ctrl', 'protocol'];
-func.dependencies = ['check-params', 'protocol-token'];
+func.dependencies = ['check-params', 'deployment-consent', 'protocol-token'];

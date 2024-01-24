@@ -10,11 +10,9 @@ import {isProd} from '../../lib/checkNetwork';
 import {getContractAddress, getPZkpToken} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const deployer = await getNamedAccount(hre, 'deployer');
+    if (isProd(hre)) return;
 
     const {artifacts, ethers} = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     const zAssetRegistryAddress = await getContractAddress(
         hre,

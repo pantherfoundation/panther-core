@@ -40,4 +40,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['z-accounts-registry-owner', 'protocol'];
-func.dependencies = ['z-accounts-registry-proxy'];
+func.dependencies = ['deployment-consent', 'z-accounts-registry-proxy'];

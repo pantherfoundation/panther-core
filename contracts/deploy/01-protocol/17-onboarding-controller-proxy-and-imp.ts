@@ -8,7 +8,6 @@ import {
     getContractAddress,
     getNamedAccount,
     reuseEnvAddress,
-    verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -18,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
     } = hre;
-    await verifyUserConsentOnProd(hre, deployer);
+
     if (reuseEnvAddress(hre, 'ORC')) return;
 
     const zAccountsRegistryProxy = await getContractAddress(
@@ -63,6 +62,7 @@ export default func;
 func.tags = ['onboarding-reward-ctrl', 'protocol'];
 func.dependencies = [
     'check-params',
+    'deployment-consent',
     'protocol-token',
     'z-accounts-registry-proxy',
     'prp-voucher-grantor',

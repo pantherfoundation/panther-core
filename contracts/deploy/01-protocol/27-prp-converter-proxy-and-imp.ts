@@ -52,6 +52,7 @@ export default func;
 func.tags = ['prp-converter', 'protocol'];
 func.dependencies = [
     'check-params',
+    'deployment-consent',
     'protocol-token',
     'pool-v1-proxy',
     'vault-proxy',

@@ -93,6 +93,7 @@ export default func;
 func.tags = ['pool-v1-imp', 'forest', 'protocol'];
 func.dependencies = [
     'check-params',
+    'deployment-consent',
     'protocol-token',
     'taxi-tree',
     'bus-tree-proxy',

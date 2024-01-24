@@ -45,4 +45,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['pool-v1-owner', 'protocol'];
-func.dependencies = ['pool-v1-proxy'];
+func.dependencies = ['pool-v1-proxy', 'deployment-consent'];

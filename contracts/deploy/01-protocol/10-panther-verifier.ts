@@ -4,10 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    getNamedAccount,
-    verifyUserConsentOnProd,
-} from '../../lib/deploymentHelpers';
+import {getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
@@ -15,8 +12,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {deploy},
     } = hre;
-
-    await verifyUserConsentOnProd(hre, deployer);
 
     await deploy('PantherVerifier', {
         from: deployer,
@@ -27,3 +22,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['verifier', 'forest', 'zwallet', 'protocol'];
+func.dependencies = ['deployment-consent'];
