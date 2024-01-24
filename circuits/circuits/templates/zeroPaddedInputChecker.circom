@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.0.0;
+pragma circom 2.1.6;
 
-include "circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/comparators.circom";
 
 // Enforces that for `i >= nInputs` all inputs[i] are zero values
 template ZeroPaddedInputChecker(max_nInputs, zeroValue){

@@ -11,7 +11,9 @@ include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
 include "./templates/nullifierHasher.circom";
 include "./templates/pubKeyDeriver.circom";
-include "./templates/publicInputHasherExtended.circom";
+include "./templates/zAccountBlackListLeafInclusionProver.circom";
+include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAccountNullifierHasher.circom";
 include "./templates/rewardsExtended.circom";
 include "./templates/utxoNoteHasher.circom";
 include "./templates/utxoNoteInclusionProver.circom";
@@ -26,6 +28,7 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utxoNoteHasher.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -60,9 +63,9 @@ template ZSwapV1( nUtxoIn,
 
     // tx api
     signal input depositAmount;    // public
-    signal input depositChange;    // public
+    signal input depositChange;
     signal input withdrawAmount;   // public
-    signal input withdrawChange;   // public
+    signal input withdrawChange;
     signal input donatedAmountZkp; // public
 
     assert(0 <= isSwap < 2);
@@ -193,8 +196,8 @@ template ZSwapV1( nUtxoIn,
     // deposit case
     signal input kytDepositSignedMessagePackageType;
     signal input kytDepositSignedMessageTimestamp;
-    signal input kytDepositSignedMessageSender;
-    signal input kytDepositSignedMessageReceiver;
+    signal input kytDepositSignedMessageSender;         // public
+    signal input kytDepositSignedMessageReceiver;       // public
     signal input kytDepositSignedMessageToken;
     signal input kytDepositSignedMessageSessionId;
     signal input kytDepositSignedMessageRuleId;
@@ -205,8 +208,8 @@ template ZSwapV1( nUtxoIn,
     // withdraw case
     signal input kytWithdrawSignedMessagePackageType;
     signal input kytWithdrawSignedMessageTimestamp;
-    signal input kytWithdrawSignedMessageSender;
-    signal input kytWithdrawSignedMessageReceiver;
+    signal input kytWithdrawSignedMessageSender;            // public
+    signal input kytWithdrawSignedMessageReceiver;          // public
     signal input kytWithdrawSignedMessageToken;
     signal input kytWithdrawSignedMessageSessionId;
     signal input kytWithdrawSignedMessageRuleId;
@@ -1064,7 +1067,19 @@ template ZSwapV1( nUtxoIn,
 
     // [25] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
-    assert(kytEdDsaPubKeyExpiryTime >= utxoOutCreateTime);
+
+    // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
+    component isLessThanEqDepositTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    isLessThanEqDepositTimeAndKytExpiryTime.enabled <== isKytDepositCheckEnabled;
+    isLessThanEqDepositTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
+    isLessThanEqDepositTimeAndKytExpiryTime.in[1] <== kytDepositSignedMessageTimestamp;
+
+    // assert(kytWithdrawSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
+    component isLessThanEqWithdrawTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    isLessThanEqWithdrawTimeAndKytExpiryTime.enabled <== isKytWithdrawCheckEnabled;
+    isLessThanEqWithdrawTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
+    isLessThanEqWithdrawTimeAndKytExpiryTime.in[1] <== kytWithdrawSignedMessageTimestamp;
+
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
 
     // [25.1] - deposit

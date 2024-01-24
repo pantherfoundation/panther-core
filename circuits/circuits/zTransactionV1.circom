@@ -11,7 +11,9 @@ include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
 include "./templates/nullifierHasher.circom";
 include "./templates/pubKeyDeriver.circom";
-include "./templates/publicInputHasherExtended.circom";
+include "./templates/zAccountBlackListLeafInclusionProver.circom";
+include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAccountNullifierHasher.circom";
 include "./templates/rewardsExtended.circom";
 include "./templates/utxoNoteHasher.circom";
 include "./templates/utxoNoteInclusionProver.circom";
@@ -26,6 +28,7 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utxoNoteHasher.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -1061,7 +1064,7 @@ template ZTransactionV1( nUtxoIn,
 
     // [25] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
-    
+
     // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
     component isLessThanEqDepositTimeAndKytExpiryTime = LessThanWhenEnabled(252);
     isLessThanEqDepositTimeAndKytExpiryTime.enabled <== isKytDepositCheckEnabled;

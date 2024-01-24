@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./multiOR.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
