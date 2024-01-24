@@ -28,3 +28,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-v-pool', 'protocol'];
+func.dependencies = ['protocol-reward-ctrl'];

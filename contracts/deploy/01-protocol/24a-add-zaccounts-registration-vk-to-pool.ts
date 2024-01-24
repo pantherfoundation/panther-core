@@ -35,4 +35,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['add-zaccount-registration-key-to-pool', 'protocol'];
-func.dependencies = ['check-params', 'zaccount-vk', 'add-verification-key'];
+func.dependencies = [
+    'check-params',
+    'pool-v1-proxy',
+    'zaccount-vk',
+    'add-verification-key',
+];

@@ -36,3 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['init-static', 'protocol'];
+func.dependencies = ['static-tree-proxy'];

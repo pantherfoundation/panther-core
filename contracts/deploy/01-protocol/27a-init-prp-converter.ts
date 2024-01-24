@@ -47,3 +47,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['init-prp-converter', 'protocol'];
+func.dependencies = ['prp-converter'];

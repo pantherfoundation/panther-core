@@ -50,4 +50,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['prp-converter', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = [
+    'check-params',
+    'protocol-token',
+    'pool-v1-proxy',
+    'vault-proxy',
+];

@@ -4,13 +4,12 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {isLocal, isProd} from '../../lib/checkNetwork';
 import {
     getContractAddress,
     getContractEnvAddress,
-    reuseEnvAddress,
     verifyUserConsentOnProd,
 } from '../../lib/deploymentHelpers';
-import {isLocal, isProd} from '../../lib/checkNetwork';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre) || isLocal(hre)) return;
@@ -49,4 +48,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['protocol-reward-relayer', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = ['check-params', 'prp-voucher-grantor', 'prp-converter'];

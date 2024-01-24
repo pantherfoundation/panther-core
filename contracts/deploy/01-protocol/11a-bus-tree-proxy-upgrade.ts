@@ -36,4 +36,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['bus-tree-upgrade', 'protocol'];
-func.dependencies = ['check-params', 'bus-tree-impl'];
+func.dependencies = ['check-params', 'bus-tree-proxy', 'bus-tree-impl'];

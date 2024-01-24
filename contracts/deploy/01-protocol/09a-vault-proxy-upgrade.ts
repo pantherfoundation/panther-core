@@ -30,4 +30,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['vault-upgrade', 'protocol'];
-func.dependencies = ['check-params', 'vault-impl'];
+func.dependencies = ['check-params', 'vault-proxy', 'vault-impl'];

@@ -58,4 +58,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['z-accounts-registry-imp', 'protocol'];
-func.dependencies = ['check-params'];
+func.dependencies = [
+    'check-params',
+    'pool-v1-proxy',
+    'protocol-token',
+    'static-tree-proxy',
+    'onboarding-reward-ctrl',
+];

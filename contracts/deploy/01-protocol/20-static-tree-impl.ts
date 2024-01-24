@@ -71,4 +71,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['static-tree-imp', 'forest', 'protocol'];
-func.dependencies = ['crypto-libs'];
+func.dependencies = [
+    'crypto-libs',
+    'pool-v1-proxy',
+    'z-assets-registry',
+    'z-zones-registry',
+    'providers-keys',
+    'z-accounts-registry-imp',
+    'z-networks-registry',
+];

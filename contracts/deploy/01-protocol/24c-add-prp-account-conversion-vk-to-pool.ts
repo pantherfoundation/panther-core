@@ -8,7 +8,6 @@ import {isProd} from '../../lib/checkNetwork';
 import {
     getContractAddress,
     getContractEnvAddress,
-    getContract,
 } from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -38,6 +37,7 @@ export default func;
 func.tags = ['add-prp-account-conversion-key-to-pool', 'protocol'];
 func.dependencies = [
     'check-params',
+    'pool-v1-proxy',
     'prp-account-conversion',
     'add-verification-key',
 ];

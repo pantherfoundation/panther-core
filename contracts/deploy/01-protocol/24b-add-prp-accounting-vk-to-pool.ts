@@ -37,6 +37,7 @@ export default func;
 func.tags = ['add-prp-accounting-key-to-pool', 'protocol'];
 func.dependencies = [
     'check-params',
+    'pool-v1-proxy',
     'prp-accounting-vk',
     'add-verification-key',
 ];
