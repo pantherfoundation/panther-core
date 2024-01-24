@@ -1,0 +1,241 @@
+{
+  "address": "0x983008D9ac4B2b2E8B25Cde40aA30a331FF6a90D",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_toPolygonRewardSender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_fxChild",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_prpVoucherGrantor",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_prpConverter",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_nonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "PrpRewardMsgRelayed",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "FX_CHILD",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PRP_CONVERTER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PRP_VOUCHER_GRANTOR",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TO_POLYGON_REWARD_SENDER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "rootMessageSender",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "content",
+          "type": "bytes"
+        }
+      ],
+      "name": "processMessageFromRoot",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xa190fb43ab475e29155754e1f1c04d7d8ca920e995d3736fdd99545578cd5fd0",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0x983008D9ac4B2b2E8B25Cde40aA30a331FF6a90D",
+    "transactionIndex": 9,
+    "gasUsed": "449065",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008004002000020000000000000000000000000000000000000000000000800000000000000000040100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000040000000004000000000000000000001000002000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0xdb8878c0b29f7f47578b02849e674e8d598926803f4a2e729133b4bc296eaf5b",
+    "transactionHash": "0xa190fb43ab475e29155754e1f1c04d7d8ca920e995d3736fdd99545578cd5fd0",
+    "logs": [
+      {
+        "transactionIndex": 9,
+        "blockNumber": 42229409,
+        "transactionHash": "0xa190fb43ab475e29155754e1f1c04d7d8ca920e995d3736fdd99545578cd5fd0",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000c275dc8be39f50d12f66b6a63629c39da5bae5bd"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000003fd0e3b83e1000000000000000000000000000000000000000000000000000ac9f2da8ea45708000000000000000000000000000000000000000000001368ccfc6b1faa3af4230000000000000000000000000000000000000000000000000ac5f5cc53207608000000000000000000000000000000000000000000001368cd00682de5bed523",
+        "logIndex": 35,
+        "blockHash": "0xdb8878c0b29f7f47578b02849e674e8d598926803f4a2e729133b4bc296eaf5b"
+      }
+    ],
+    "blockNumber": 42229409,
+    "cumulativeGasUsed": "4110865",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x9619bd59411a8387a4119e548017C5b86c7bCec5",
+    "0xCf73231F28B7331BBe3124B907840A94851f9f11",
+    "0x0b8D09a40B696d8173088cdA505DaD0167394B4C",
+    "0x2ca8E95f31B6576aEe0559189bdC7b655ba72132"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "86e3d9f2d99a962ecd4b506d1a57c1b9",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_toPolygonRewardSender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fxChild\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_prpVoucherGrantor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_prpConverter\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_nonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"PrpRewardMsgRelayed\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"FX_CHILD\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PRP_CONVERTER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PRP_VOUCHER_GRANTOR\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TO_POLYGON_REWARD_SENDER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"rootMessageSender\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"processMessageFromRoot\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"constructor\":{\"params\":{\"_fxChild\":\"Address of the `FxChild` (Bridge) contract on Polygon/Mumbai\",\"_toPolygonRewardSender\":\"Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli\"}},\"processMessageFromRoot(uint256,address,bytes)\":{\"params\":{\"content\":\"Message data\",\"rootMessageSender\":\"Address on the mainnet/Goerli that sent the message\"}}},\"stateVariables\":{\"FX_CHILD\":{\"details\":\"`FxChild` is the contract of the \\\"Fx-Portal\\\" on the Polygon/Mumbai\"},\"TO_POLYGON_REWARD_SENDER\":{\"details\":\"It sends messages over the PoS bridge to this contract\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"FX_CHILD()\":{\"notice\":\"Address of the `FxChild` contract on the Polygon/Mumbai network\"},\"TO_POLYGON_REWARD_SENDER()\":{\"notice\":\"Address of the PolygonRewardSender on the mainnet/Goerli\"},\"nonce()\":{\"notice\":\"Message nonce (i.e. sequential number of the latest message)\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/PolygonPrpRewardMsgRelayer.sol\":\"PolygonPrpRewardMsgRelayer\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/PolygonPrpRewardMsgRelayer.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"./interfaces/IPrpVoucherGrantor.sol\\\";\\nimport \\\"./interfaces/IPrpConverter.sol\\\";\\nimport \\\"../staking/interfaces/IActionMsgReceiver.sol\\\";\\nimport \\\"../staking/interfaces/IFxMessageProcessor.sol\\\";\\nimport \\\"./actions/PrpRewardBridgedDataCoder.sol\\\";\\n\\n/***\\n * @title PolygonPrpRewardMsgRelayer\\n * @notice It decodes PRP reward messages which come from Mainnet/Goerli\\n * @dev It is assumed to run on the Polygon (or Mumbai) network.\\n * It receives PRP reward messages from the `FxChild` contract (a contract of the \\\"Fx-Portal\\\" PoS bridge),\\n * sanitizes and relays messages.\\n */\\ncontract PolygonPrpRewardMsgRelayer is\\n    PrpRewardBridgedDataCoder,\\n    IFxMessageProcessor\\n{\\n    event PrpRewardMsgRelayed(uint256 _nonce, bytes data);\\n\\n    // solhint-disable var-name-mixedcase\\n\\n    /// @notice Address of the `FxChild` contract on the Polygon/Mumbai network\\n    /// @dev `FxChild` is the contract of the \\\"Fx-Portal\\\" on the Polygon/Mumbai\\n    address public immutable FX_CHILD;\\n\\n    /// @notice Address of the PolygonRewardSender on the mainnet/Goerli\\n    /// @dev It sends messages over the PoS bridge to this contract\\n    address public immutable TO_POLYGON_REWARD_SENDER;\\n\\n    address public immutable PRP_VOUCHER_GRANTOR;\\n\\n    address public immutable PRP_CONVERTER;\\n\\n    // solhint-enable var-name-mixedcase\\n\\n    /// @notice Message nonce (i.e. sequential number of the latest message)\\n    uint256 public nonce;\\n\\n    /// @param _toPolygonRewardSender Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli\\n    /// @param _fxChild Address of the `FxChild` (Bridge) contract on Polygon/Mumbai\\n    constructor(\\n        // slither-disable-next-line similar-names\\n        address _toPolygonRewardSender,\\n        address _fxChild,\\n        address _prpVoucherGrantor,\\n        address _prpConverter\\n    ) {\\n        require(\\n            _fxChild != address(0) &&\\n                _toPolygonRewardSender != address(0) &&\\n                _prpVoucherGrantor != address(0) &&\\n                _prpConverter != address(0),\\n            \\\"PMR:E01\\\"\\n        );\\n\\n        FX_CHILD = _fxChild;\\n        TO_POLYGON_REWARD_SENDER = _toPolygonRewardSender;\\n        PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;\\n        PRP_CONVERTER = _prpConverter;\\n    }\\n\\n    /// @param rootMessageSender Address on the mainnet/Goerli that sent the message\\n    /// @param content Message data\\n    function processMessageFromRoot(\\n        uint256, // stateId (Polygon PoS Bridge state sync ID, unused)\\n        address rootMessageSender,\\n        bytes calldata content\\n    ) external override {\\n        require(msg.sender == FX_CHILD, \\\"PMR:INVALID_CALLER\\\");\\n        require(\\n            rootMessageSender == TO_POLYGON_REWARD_SENDER,\\n            \\\"PMR:INVALID_SENDER\\\"\\n        );\\n\\n        (\\n            uint256 _nonce,\\n            bytes4 prpGrantType,\\n            bytes32 secret\\n        ) = _decodeBridgedData(content);\\n\\n        // Protection against replay attacks/errors. It's supposed that:\\n        // - failed `.onAction` shall not stop further messages bridging\\n        // - nonce is expected never be large enough to overflow.\\n        require(_nonce > nonce, \\\"PMR:INVALID_NONCE\\\");\\n        nonce = _nonce;\\n\\n        IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(\\n            secret,\\n            0, // amount defined for prpGrantType will be used\\n            prpGrantType\\n        );\\n\\n        IPrpConverter(PRP_CONVERTER).updateZkpReserve();\\n\\n        emit PrpRewardMsgRelayed(_nonce, content);\\n    }\\n}\\n\",\"keccak256\":\"0x1b9d8de669a85b78f57e2d4c33445eb6d4ce090db3409926257613a6db2a1d6e\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/actions/PrpRewardBridgedDataCoder.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\n/***\\n * @title PrpRewardBridgedDataCoder\\n * @dev It encode (pack) and decodes (unpack) messages for bridging them between networks\\n */\\nabstract contract PrpRewardBridgedDataCoder {\\n    function _encodeBridgedData(\\n        uint32 _nonce,\\n        bytes4 prpGrantType,\\n        bytes32 secret\\n    ) internal pure returns (bytes memory content) {\\n        content = abi.encodePacked(_nonce, prpGrantType, secret);\\n    }\\n\\n    // For efficiency we use \\\"packed\\\" (rather than \\\"ABI\\\") encoding.\\n    // It results in shorter data, but requires custom unpack function.\\n    function _decodeBridgedData(\\n        bytes memory content\\n    )\\n        internal\\n        pure\\n        returns (uint256 nonce, bytes4 prpGrantType, bytes32 secret)\\n    {\\n        require(content.length == 40, \\\"PBD: WRONG_LENGTH\\\");\\n\\n        nonce =\\n            (uint256(uint8(content[0])) << 24) |\\n            (uint256(uint8(content[1])) << 16) |\\n            (uint256(uint8(content[2])) << 8) |\\n            (uint256(uint8(content[3])));\\n\\n        prpGrantType = bytes4(\\n            uint32(\\n                (uint256(uint8(content[4])) << 24) |\\n                    (uint256(uint8(content[5])) << 16) |\\n                    (uint256(uint8(content[6])) << 8) |\\n                    uint256(uint8(content[7]))\\n            )\\n        );\\n\\n        // solhint-disable-next-line no-inline-assembly\\n        assembly {\\n            secret := div(mload(add(add(content, 0x20), 8)), 0x1)\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xf7afc670cbd02f635147137c8a94c8d5f268cb344c2d04be0f0a4a151bae2a35\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/interfaces/IPrpConverter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\ninterface IPrpConverter {\\n    function updateZkpReserve() external;\\n}\\n\",\"keccak256\":\"0xadb16fec35c1d61b6afdfe27ca33dc560331fef9fed388fdcbfbc32c0b510c14\",\"license\":\"MIT\"},\"contracts/protocol/interfaces/IPrpVoucherGrantor.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\n/**\\n * @title IPrpVoucherGrantor\\n * @notice Interface for the `PrpVoucherGrantor` contract\\n */\\ninterface IPrpVoucherGrantor {\\n    function generateRewards(\\n        bytes32 _secretHash,\\n        uint64 _amount,\\n        bytes4 _voucherType\\n    ) external returns (uint256);\\n}\\n\",\"keccak256\":\"0x031ed3975490c1b035d53960605dd97596d3a6ad7f8d93fbfb3cc8cbf409a29c\",\"license\":\"BUSL-1.1\"},\"contracts/staking/interfaces/IActionMsgReceiver.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\ninterface IActionMsgReceiver {\\n    function onAction(bytes4 action, bytes memory message) external;\\n}\\n\",\"keccak256\":\"0xe1607584324bdd12416ec4dff14e2f4f871b33f03f09a574d60193e6dfd6989e\",\"license\":\"MIT\"},\"contracts/staking/interfaces/IFxMessageProcessor.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\n/***\\n * @dev A receiver on the Polygon (or Mumbai) network of a message sent over the\\n * \\\"Fx-Portal\\\" must implement this interface.\\n * The \\\"Fx-Portal\\\" is the PoS bridge run by the Polygon team.\\n * See https://docs.polygon.technology/docs/develop/l1-l2-communication/fx-portal\\n */\\ninterface IFxMessageProcessor {\\n    function processMessageFromRoot(\\n        uint256 stateId,\\n        address rootMessageSender,\\n        bytes calldata data\\n    ) external;\\n}\\n\",\"keccak256\":\"0xef2f4ca5a0d36f4e1d9b13d065c304595398ec685e78f33325dffca63781bb40\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x61010060405234801561001157600080fd5b506040516108ab3803806108ab833981016040819052610030916100f0565b6001600160a01b0383161580159061005057506001600160a01b03841615155b801561006457506001600160a01b03821615155b801561007857506001600160a01b03811615155b6100b25760405162461bcd60e51b8152602060048201526007602482015266504d523a45303160c81b604482015260640160405180910390fd5b6001600160a01b0392831660805292821660a052811660c0521660e052610144565b80516001600160a01b03811681146100eb57600080fd5b919050565b6000806000806080858703121561010657600080fd5b61010f856100d4565b935061011d602086016100d4565b925061012b604086016100d4565b9150610139606086016100d4565b905092959194509250565b60805160a05160c05160e0516107156101966000396000818161013a01526103b801526000818160c0015261034001526000818160e701526101db015260008181607c015261016701526107156000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c80639a7c4b71116100505780639a7c4b7114610109578063affed0e01461011e578063ef92a79f1461013557600080fd5b806382f9deb5146100775780638c1ce02c146100bb5780638f4a5f3a146100e2575b600080fd5b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b61011c61011736600461060e565b61015c565b005b61012760005481565b6040519081526020016100b2565b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101d95760405162461bcd60e51b815260206004820152601260248201527f504d523a494e56414c49445f43414c4c4552000000000000000000000000000060448201526064015b60405180910390fd5b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316836001600160a01b03161461025a5760405162461bcd60e51b815260206004820152601260248201527f504d523a494e56414c49445f53454e444552000000000000000000000000000060448201526064016101d0565b600080600061029e85858080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061046d92505050565b92509250925060005483116102f55760405162461bcd60e51b815260206004820152601160248201527f504d523a494e56414c49445f4e4f4e434500000000000000000000000000000060448201526064016101d0565b6000838155604051638abfdf8760e01b81526004810183905260248101919091527fffffffff00000000000000000000000000000000000000000000000000000000831660448201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690638abfdf87906064016020604051808303816000875af1158015610391573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103b591906106a3565b507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03166377ec1ac06040518163ffffffff1660e01b8152600401600060405180830381600087803b15801561041157600080fd5b505af1158015610425573d6000803e3d6000fd5b505050507f9e5dc335520bb7700837e98ae74f5e35d2cc96c7a0d4d89f5570da421396ae2683868660405161045c939291906106bc565b60405180910390a150505050505050565b600080600083516028146104c35760405162461bcd60e51b815260206004820152601160248201527f5042443a2057524f4e475f4c454e47544800000000000000000000000000000060448201526064016101d0565b836003815181106104d6576104d66106f2565b602001015160f81c60f81b60f81c60ff166008856002815181106104fc576104fc6106f2565b602001015160f81c60f81b60f81c60ff16901b601086600181518110610524576105246106f2565b602001015160f81c60f81b60f81c60ff16901b60188760008151811061054c5761054c6106f2565b602001015160f81c60f81b60f81c60ff16901b171717925083600781518110610577576105776106f2565b602001015160f81c60f81b60f81c60ff1660088560068151811061059d5761059d6106f2565b602001015160f81c60f81b60f81c60ff16901b6010866005815181106105c5576105c56106f2565b602001015160f81c60f81b60f81c60ff16901b6018876004815181106105ed576105ed6106f2565b0160200151602890980151969860f89890981c901b17171760e01b93915050565b6000806000806060858703121561062457600080fd5b8435935060208501356001600160a01b038116811461064257600080fd5b9250604085013567ffffffffffffffff8082111561065f57600080fd5b818701915087601f83011261067357600080fd5b81358181111561068257600080fd5b88602082850101111561069457600080fd5b95989497505060200194505050565b6000602082840312156106b557600080fd5b5051919050565b83815260406020820152816040820152818360608301376000818301606090810191909152601f909201601f1916010192915050565b634e487b7160e01b600052603260045260246000fdfea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100725760003560e01c80639a7c4b71116100505780639a7c4b7114610109578063affed0e01461011e578063ef92a79f1461013557600080fd5b806382f9deb5146100775780638c1ce02c146100bb5780638f4a5f3a146100e2575b600080fd5b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b61011c61011736600461060e565b61015c565b005b61012760005481565b6040519081526020016100b2565b61009e7f000000000000000000000000000000000000000000000000000000000000000081565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101d95760405162461bcd60e51b815260206004820152601260248201527f504d523a494e56414c49445f43414c4c4552000000000000000000000000000060448201526064015b60405180910390fd5b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316836001600160a01b03161461025a5760405162461bcd60e51b815260206004820152601260248201527f504d523a494e56414c49445f53454e444552000000000000000000000000000060448201526064016101d0565b600080600061029e85858080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061046d92505050565b92509250925060005483116102f55760405162461bcd60e51b815260206004820152601160248201527f504d523a494e56414c49445f4e4f4e434500000000000000000000000000000060448201526064016101d0565b6000838155604051638abfdf8760e01b81526004810183905260248101919091527fffffffff00000000000000000000000000000000000000000000000000000000831660448201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690638abfdf87906064016020604051808303816000875af1158015610391573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103b591906106a3565b507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03166377ec1ac06040518163ffffffff1660e01b8152600401600060405180830381600087803b15801561041157600080fd5b505af1158015610425573d6000803e3d6000fd5b505050507f9e5dc335520bb7700837e98ae74f5e35d2cc96c7a0d4d89f5570da421396ae2683868660405161045c939291906106bc565b60405180910390a150505050505050565b600080600083516028146104c35760405162461bcd60e51b815260206004820152601160248201527f5042443a2057524f4e475f4c454e47544800000000000000000000000000000060448201526064016101d0565b836003815181106104d6576104d66106f2565b602001015160f81c60f81b60f81c60ff166008856002815181106104fc576104fc6106f2565b602001015160f81c60f81b60f81c60ff16901b601086600181518110610524576105246106f2565b602001015160f81c60f81b60f81c60ff16901b60188760008151811061054c5761054c6106f2565b602001015160f81c60f81b60f81c60ff16901b171717925083600781518110610577576105776106f2565b602001015160f81c60f81b60f81c60ff1660088560068151811061059d5761059d6106f2565b602001015160f81c60f81b60f81c60ff16901b6010866005815181106105c5576105c56106f2565b602001015160f81c60f81b60f81c60ff16901b6018876004815181106105ed576105ed6106f2565b0160200151602890980151969860f89890981c901b17171760e01b93915050565b6000806000806060858703121561062457600080fd5b8435935060208501356001600160a01b038116811461064257600080fd5b9250604085013567ffffffffffffffff8082111561065f57600080fd5b818701915087601f83011261067357600080fd5b81358181111561068257600080fd5b88602082850101111561069457600080fd5b95989497505060200194505050565b6000602082840312156106b557600080fd5b5051919050565b83815260406020820152816040820152818360608301376000818301606090810191909152601f909201601f1916010192915050565b634e487b7160e01b600052603260045260246000fdfea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "_fxChild": "Address of the `FxChild` (Bridge) contract on Polygon/Mumbai",
+          "_toPolygonRewardSender": "Address of the AdvancedStakeRewardAdviserAndMsgSender on the mainnet/Goerli"
+        }
+      },
+      "processMessageFromRoot(uint256,address,bytes)": {
+        "params": {
+          "content": "Message data",
+          "rootMessageSender": "Address on the mainnet/Goerli that sent the message"
+        }
+      }
+    },
+    "stateVariables": {
+      "FX_CHILD": {
+        "details": "`FxChild` is the contract of the \"Fx-Portal\" on the Polygon/Mumbai"
+      },
+      "TO_POLYGON_REWARD_SENDER": {
+        "details": "It sends messages over the PoS bridge to this contract"
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "FX_CHILD()": {
+        "notice": "Address of the `FxChild` contract on the Polygon/Mumbai network"
+      },
+      "TO_POLYGON_REWARD_SENDER()": {
+        "notice": "Address of the PolygonRewardSender on the mainnet/Goerli"
+      },
+      "nonce()": {
+        "notice": "Message nonce (i.e. sequential number of the latest message)"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 8314,
+        "contract": "contracts/protocol/PolygonPrpRewardMsgRelayer.sol:PolygonPrpRewardMsgRelayer",
+        "label": "nonce",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

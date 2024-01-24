@@ -1,0 +1,379 @@
+{
+  "address": "0xadb04777Cfa3898863A3b230F2789Be89b397de2",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_zkpToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_vestingPools",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "rewardSender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "whitelisted",
+          "type": "bool"
+        }
+      ],
+      "name": "RewardSenderUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "released",
+          "type": "uint256"
+        }
+      ],
+      "name": "Vested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_poolId",
+          "type": "uint256"
+        }
+      ],
+      "name": "VestingPoolUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "OWNER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VESTING_POOLS",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPoolIds",
+      "outputs": [
+        {
+          "internalType": "uint256[4]",
+          "name": "",
+          "type": "uint256[4]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "poolIds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "releasableAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "_releasableAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "rewardSenders",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "_index",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "_newWallet",
+          "type": "address"
+        }
+      ],
+      "name": "transferVestingPoolWallet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "_poolId",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "_index",
+          "type": "uint8"
+        }
+      ],
+      "name": "updatePoolIds",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_rewardSender",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "_whitelisted",
+          "type": "bool"
+        }
+      ],
+      "name": "updateRewardSender",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vestRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "totalReleasable",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6ebddfe4b581b384c1f95513cca6bb2d383bbd07630ec8bd97427d8828797b7b",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xadb04777Cfa3898863A3b230F2789Be89b397de2",
+    "transactionIndex": 18,
+    "gasUsed": "849617",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xae83fa449d2e200e24610dc8d021637bd1573eddcab17953a63f7b5c9aa5bd54",
+    "transactionHash": "0x6ebddfe4b581b384c1f95513cca6bb2d383bbd07630ec8bd97427d8828797b7b",
+    "logs": [],
+    "blockNumber": 10059378,
+    "cumulativeGasUsed": "3389869",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "0x542c2c3e6BBfD5979E5FEC6708764B93Ba210c51",
+    "0xfD466eF2c700E2f66b2d05D92896b95d541e66e5"
+  ],
+  "numDeployments": 3,
+  "solcInputHash": "934450f037d195365d01a4d5bb9b40e3",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_zkpToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_vestingPools\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"rewardSender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\"}],\"name\":\"RewardSenderUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"released\",\"type\":\"uint256\"}],\"name\":\"Vested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_poolId\",\"type\":\"uint256\"}],\"name\":\"VestingPoolUpdated\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"OWNER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"VESTING_POOLS\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPoolIds\",\"outputs\":[{\"internalType\":\"uint256[4]\",\"name\":\"\",\"type\":\"uint256[4]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"poolIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"releasableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_releasableAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"rewardSenders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"_index\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"_newWallet\",\"type\":\"address\"}],\"name\":\"transferVestingPoolWallet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"_poolId\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"_index\",\"type\":\"uint8\"}],\"name\":\"updatePoolIds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_rewardSender\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"_whitelisted\",\"type\":\"bool\"}],\"name\":\"updateRewardSender\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vestRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"totalReleasable\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Pantherprotocol Contributors\",\"details\":\"This contract lives on Ethereum chain and is able to release tokens from VestingPools contract. It can whitelist the RewardSenders. Only whitelisted RewardSenders can trigger this contract to release tokens. Each RewardSender can use a portion of releasable amount. So, after triggering the release method by a RewardSender, if the is any releasable amount, it does the math to calculate the portion that is allocated for RewardSender and transfer the amount to it.\",\"kind\":\"dev\",\"methods\":{\"transferVestingPoolWallet(uint8,address)\":{\"details\":\"Owner only may call, once only\"},\"updatePoolIds(uint8,uint8)\":{\"details\":\"Owner only may call, once only This contract address must be set in the VestingPools as the wallet for the pool\"},\"updateRewardSender(address,bool)\":{\"details\":\"Owner only may call\"},\"vestRewards()\":{\"details\":\"RewardSender only may call\"}},\"title\":\"ProtocolRewardController\",\"version\":1},\"userdoc\":{\"events\":{\"RewardSenderUpdated(address,bool)\":{\"notice\":\"Emitted on adding RewardSender\"},\"Vested(address,uint256)\":{\"notice\":\"Emitted on vesting releasable amount to the recipient\"},\"VestingPoolUpdated(uint256)\":{\"notice\":\"Emitted on parameters initialized.\"}},\"kind\":\"user\",\"methods\":{\"OWNER()\":{\"notice\":\"The owner who has privileged rights\"},\"VESTING_POOLS()\":{\"notice\":\"Address of the VestingPools instance\"},\"getPoolIds()\":{\"notice\":\"Get array of pool ids\"},\"poolIds(uint256)\":{\"notice\":\"ID of the pool (in the VestingPools) to vest from\"},\"releasableAmount()\":{\"notice\":\"Get how many ZKP can be released at the moment\"},\"rewardSenders(address)\":{\"notice\":\"Keep track of the RewardSenders\"},\"transferVestingPoolWallet(uint8,address)\":{\"notice\":\"Calls VestingPools to transfer 'pool wallet' role to given address\"},\"updatePoolIds(uint8,uint8)\":{\"notice\":\"Sets/Updates the poolId\"},\"updateRewardSender(address,bool)\":{\"notice\":\"Update the RewardSender contract address that will be able to release tokens\"},\"vestRewards()\":{\"notice\":\"Release the tokens from VestingPools\"}},\"notice\":\"It has right to release tokens from the VestingPools. Only the whitelisted RewardSenders can trigger this contract to release tokens.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/ProtocolRewardController.sol\":\"ProtocolRewardController\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/ImmutableOwnable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title ImmutableOwnable\\nabstract contract ImmutableOwnable {\\n    /// @notice The owner who has privileged rights\\n    address public immutable OWNER;\\n\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() {\\n        require(OWNER == msg.sender, \\\"ImmOwn: unauthorized\\\");\\n        _;\\n    }\\n\\n    constructor(address _owner) {\\n        require(_owner != address(0), \\\"ImmOwn: zero owner address\\\");\\n        OWNER = _owner;\\n    }\\n}\\n\",\"keccak256\":\"0x06d3e09256c510bd1a5c8f6f05cc99fbc0d51919f2a64e022395bc169c349d90\",\"license\":\"MIT\"},\"contracts/protocol/ProtocolRewardController.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport \\\"../common/ImmutableOwnable.sol\\\";\\nimport \\\"../staking/interfaces/IRewardPool.sol\\\";\\n// import \\\"./interfaces/IVestingPools.sol\\\";\\nimport \\\"../staking/interfaces/IVestingPools.sol\\\";\\n\\n/**\\n * @title ProtocolRewardController\\n * @author Pantherprotocol Contributors\\n * @notice It has right to release tokens from the VestingPools. Only the\\n * whitelisted RewardSenders can trigger this contract to release tokens.\\n * @dev This contract lives on Ethereum chain and is able to release tokens from\\n * VestingPools contract. It can whitelist the RewardSenders. Only whitelisted RewardSenders\\n * can trigger this contract to release tokens. Each RewardSender can use a portion of\\n * releasable amount. So, after triggering the release method by a RewardSender, if the is any\\n * releasable amount, it does the math to calculate the portion that is allocated for\\n * RewardSender and transfer the amount to it.\\n */\\ncontract ProtocolRewardController is ImmutableOwnable {\\n    // solhint-disable var-name-mixedcase\\n\\n    /// @notice undefined pool id\\n    uint8 private constant UNDEF_POOL_ID = (2 ** 8) - 1;\\n    /// @notice The maximum number of pool ids\\n    uint256 private constant MAX_POOL_IDS_LENGTH = 4;\\n\\n    // Address of the $ZKP token contract\\n    address private immutable ZKP_TOKEN;\\n\\n    /// @notice Address of the VestingPools instance\\n    address public immutable VESTING_POOLS;\\n\\n    // solhint-enable var-name-mixedcase\\n\\n    /// @notice ID of the pool (in the VestingPools) to vest from\\n    uint256[MAX_POOL_IDS_LENGTH] public poolIds;\\n\\n    /// @notice Keep track of the RewardSenders\\n    mapping(address => bool) public rewardSenders;\\n\\n    /// @notice Emitted on parameters initialized.\\n    event VestingPoolUpdated(uint256 _poolId);\\n\\n    /// @notice Emitted on adding RewardSender\\n    event RewardSenderUpdated(address rewardSender, bool whitelisted);\\n\\n    /// @notice Emitted on vesting releasable amount to the recipient\\n    event Vested(address recipient, uint256 released);\\n\\n    constructor(\\n        address _owner,\\n        address _zkpToken,\\n        address _vestingPools\\n    ) ImmutableOwnable(_owner) {\\n        require(\\n            _vestingPools != address(0) && _zkpToken != address(0),\\n            \\\"PRC:E1\\\"\\n        );\\n\\n        ZKP_TOKEN = _zkpToken;\\n        VESTING_POOLS = _vestingPools;\\n\\n        for (uint256 i = 0; i < MAX_POOL_IDS_LENGTH; i++) {\\n            poolIds[i] = UNDEF_POOL_ID;\\n        }\\n    }\\n\\n    /// @notice Get array of pool ids\\n    function getPoolIds()\\n        external\\n        view\\n        returns (uint256[MAX_POOL_IDS_LENGTH] memory)\\n    {\\n        return poolIds;\\n    }\\n\\n    /// @notice Sets/Updates the poolId\\n    /// @dev Owner only may call, once only\\n    /// This contract address must be set in the VestingPools as the wallet for the pool\\n    function updatePoolIds(uint8 _poolId, uint8 _index) external onlyOwner {\\n        require(_index < MAX_POOL_IDS_LENGTH, \\\"PRC: invalid index\\\");\\n\\n        // this contract must be registered with the VestingPools\\n        require(\\n            // slither-disable-next-line unused-return,reentrancy-events\\n            IVestingPools(VESTING_POOLS).getWallet(_poolId) == address(this),\\n            \\\"PRC:E2\\\"\\n        );\\n\\n        poolIds[_index] = _poolId;\\n\\n        emit VestingPoolUpdated(_poolId);\\n    }\\n\\n    /// @notice Update the RewardSender contract address that will be able to release tokens\\n    /// @dev Owner only may call\\n    function updateRewardSender(\\n        address _rewardSender,\\n        bool _whitelisted\\n    ) external onlyOwner nonZeroAddress(_rewardSender) {\\n        require(\\n            rewardSenders[_rewardSender] != _whitelisted,\\n            \\\"PRC: Sender is already updated\\\"\\n        );\\n\\n        rewardSenders[_rewardSender] = _whitelisted;\\n\\n        emit RewardSenderUpdated(_rewardSender, _whitelisted);\\n    }\\n\\n    /// @notice Calls VestingPools to transfer 'pool wallet' role to given address\\n    /// @dev Owner only may call, once only\\n    function transferVestingPoolWallet(\\n        uint8 _index,\\n        address _newWallet\\n    ) external onlyOwner nonZeroAddress(_newWallet) {\\n        uint256 _poolId = poolIds[_index];\\n\\n        // this contract must be registered with the VestingPools\\n        require(\\n            // slither-disable-next-line unused-return,reentrancy-events\\n            IVestingPools(VESTING_POOLS).getWallet(_poolId) == address(this),\\n            \\\"PRC:E2\\\"\\n        );\\n\\n        poolIds[_index] = UNDEF_POOL_ID;\\n\\n        // slither-disable-next-line reentrancy-benign\\n        IVestingPools(VESTING_POOLS).updatePoolWallet(_poolId, _newWallet);\\n    }\\n\\n    /// @notice Release the tokens from VestingPools\\n    /// @dev RewardSender only may call\\n    function vestRewards() external returns (uint256 totalReleasable) {\\n        require(rewardSenders[msg.sender], \\\"PRC:unauthorized\\\");\\n\\n        for (uint8 i; i < MAX_POOL_IDS_LENGTH; ) {\\n            uint256 _poolId = poolIds[i];\\n\\n            if (_poolId == UNDEF_POOL_ID) continue;\\n\\n            // slither-disable-next-line reentrancy-benign\\n            uint256 releasable = IVestingPools(VESTING_POOLS).releasableAmount(\\n                _poolId\\n            );\\n\\n            if (releasable != 0) {\\n                IVestingPools(VESTING_POOLS).releaseTo(\\n                    _poolId,\\n                    msg.sender,\\n                    releasable\\n                );\\n\\n                totalReleasable += releasable;\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n\\n        emit Vested(msg.sender, totalReleasable);\\n    }\\n\\n    /// @notice Get how many ZKP can be released at the moment\\n    function releasableAmount()\\n        external\\n        view\\n        returns (uint256 _releasableAmount)\\n    {\\n        for (uint8 i; i < MAX_POOL_IDS_LENGTH; ) {\\n            uint256 _poolId = poolIds[i];\\n\\n            if (_poolId != UNDEF_POOL_ID) {\\n                // slither-disable-next-line reentrancy-benign\\n                _releasableAmount += IVestingPools(VESTING_POOLS)\\n                    .releasableAmount(_poolId);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    modifier nonZeroAddress(address account) {\\n        require(account != address(0), \\\"RP: zero address\\\");\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0x93adecf3dd4f5f509f566774509f4249a8bae211349c073a18e934ebbfdf4b33\",\"license\":\"BUSL-1.1\"},\"contracts/staking/interfaces/IRewardPool.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\ninterface IRewardPool {\\n    /// @notice Returns token amount that may be released (vested) now\\n    function releasableAmount() external view returns (uint256);\\n\\n    /// @notice Vests releasable token amount to the {recipient}\\n    /// @dev {recipient} only may call\\n    function vestRewards() external returns (uint256 amount);\\n\\n    /// @notice Emitted on vesting to the {recipient}\\n    event Vested(uint256 amount);\\n\\n    /// @notice Emitted on parameters initialized.\\n    event Initialized(uint256 _poolId, address _recipient, uint256 _endTime);\\n}\\n\",\"keccak256\":\"0x4a0b76fb529327c73835b238907d6b01942655b932f4d8613ee095f747bb9c19\",\"license\":\"BUSL-1.1\"},\"contracts/staking/interfaces/IVestingPools.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\ninterface IVestingPools {\\n    /**\\n     * @notice Returns Token address.\\n     */\\n    function token() external view returns (address);\\n\\n    /**\\n     * @notice Returns the wallet address of the specified pool.\\n     */\\n    function getWallet(uint256 poolId) external view returns (address);\\n\\n    /**\\n     * @notice Returns the amount that may be vested now from the given pool.\\n     */\\n    function releasableAmount(uint256 poolId) external view returns (uint256);\\n\\n    /**\\n     * @notice Returns the amount that has been vested from the given pool\\n     */\\n    function vestedAmount(uint256 poolId) external view returns (uint256);\\n\\n    /**\\n     * @notice Vests the specified amount from the given pool to the pool wallet.\\n     * If the amount is zero, it vests the entire \\\"releasable\\\" amount.\\n     * @dev Pool wallet may call only.\\n     * @return released - Amount released.\\n     */\\n    function release(\\n        uint256 poolId,\\n        uint256 amount\\n    ) external returns (uint256 released);\\n\\n    /**\\n     * @notice Vests the specified amount from the given pool to the given address.\\n     * If the amount is zero, it vests the entire \\\"releasable\\\" amount.\\n     * @dev Pool wallet may call only.\\n     * @return released - Amount released.\\n     */\\n    function releaseTo(\\n        uint256 poolId,\\n        address account,\\n        uint256 amount\\n    ) external returns (uint256 released);\\n\\n    /**\\n     * @notice Updates the wallet for the given pool.\\n     * @dev Only address with the 'wallet' role may call.\\n     */\\n    function updatePoolWallet(uint256 poolId, address newWallet) external;\\n\\n    /// @notice Emitted on an amount vesting.\\n    event Released(uint256 indexed poolId, address to, uint256 amount);\\n}\\n\",\"keccak256\":\"0xb8e56ca96201c192983120229bb3effa3f35f58fa3876f0526a8ab79b191f894\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e06040523480156200001157600080fd5b5060405162000f0738038062000f07833981016040819052620000349162000165565b826001600160a01b038116620000915760405162461bcd60e51b815260206004820152601a60248201527f496d6d4f776e3a207a65726f206f776e6572206164647265737300000000000060448201526064015b60405180910390fd5b6001600160a01b03908116608052811615801590620000b857506001600160a01b03821615155b620000ef5760405162461bcd60e51b81526020600482015260066024820152655052433a453160d01b604482015260640162000088565b6001600160a01b0380831660a052811660c05260005b60048110156200013e5760ff60008260048110620001275762000127620001af565b0155806200013581620001c5565b91505062000105565b50505050620001ed565b80516001600160a01b03811681146200016057600080fd5b919050565b6000806000606084860312156200017b57600080fd5b620001868462000148565b9250620001966020850162000148565b9150620001a66040850162000148565b90509250925092565b634e487b7160e01b600052603260045260246000fd5b600060018201620001e657634e487b7160e01b600052601160045260246000fd5b5060010190565b60805160a05160c051610caf62000258600039600081816101650152818161045801528181610609015281816106a7015281816107b90152818161098d0152610a760152600050506000818160c8015281816101e401528181610376015261089a0152610caf6000f3fe608060405234801561001057600080fd5b50600436106100be5760003560e01c806369883b4e11610076578063a042f77c1161005b578063a042f77c14610187578063b4f2bb6d146101ba578063dd7545a3146101cf57600080fd5b806369883b4e1461014d5780637054ac251461016057600080fd5b806337a94c1f116100a757806337a94c1f1461011c5780633c43059d1461012f5780635b9400811461014557600080fd5b8063117803e3146100c35780633193861814610107575b600080fd5b6100ea7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61011a610115366004610b0e565b6101e2565b005b61011a61012a366004610b62565b610374565b610137610558565b6040519081526020016100fe565b610137610770565b61013761015b366004610b95565b610846565b6100ea7f000000000000000000000000000000000000000000000000000000000000000081565b6101aa610195366004610bae565b60046020526000908152604090205460ff1681565b60405190151581526020016100fe565b6101c261085d565b6040516100fe9190610bd2565b61011a6101dd366004610c03565b610898565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146102565760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064015b60405180910390fd5b816001600160a01b0381166102a05760405162461bcd60e51b815260206004820152601060248201526f52503a207a65726f206164647265737360801b604482015260640161024d565b6001600160a01b03831660009081526004602052604090205482151560ff9091161515036103105760405162461bcd60e51b815260206004820152601e60248201527f5052433a2053656e64657220697320616c726561647920757064617465640000604482015260640161024d565b6001600160a01b038316600081815260046020908152604091829020805460ff19168615159081179091558251938452908301527f78e69fe3ea66f1cac5d67fd3e6db6bf70aaa9e2febe6ae51a61ccc1a65f791cf910160405180910390a1505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146103e35760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b604482015260640161024d565b60048160ff16106104365760405162461bcd60e51b815260206004820152601260248201527f5052433a20696e76616c696420696e6465780000000000000000000000000000604482015260640161024d565b604051635470b13b60e01b815260ff8316600482015230906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635470b13b90602401602060405180830381865afa15801561049f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104c39190610c2f565b6001600160a01b0316146105025760405162461bcd60e51b81526020600482015260066024820152652829219d229960d11b604482015260640161024d565b8160ff1660008260ff166004811061051c5761051c610c4c565b015560405160ff831681527f671620e6c62c2159e90ff36d2a625f6284d5dffdde16581a0ab9227b554b1f7e9060200160405180910390a15050565b3360009081526004602052604081205460ff166105b75760405162461bcd60e51b815260206004820152601060248201527f5052433a756e617574686f72697a656400000000000000000000000000000000604482015260640161024d565b60005b60048160ff161015610734576000808260ff16600481106105dd576105dd610c4c565b0154905060fe1981016105f057506105ba565b604051632c93fe5160e11b8152600481018290526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690635927fca290602401602060405180830381865afa158015610658573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061067c9190610c62565b9050801561072a57604051632a7d7bc560e01b815260048101839052336024820152604481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632a7d7bc5906064016020604051808303816000875af11580156106f8573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061071c9190610c62565b506107278185610c7b565b93505b50506001016105ba565b5060408051338152602081018390527ed5958799b183a7b738d3ad5e711305293dd5076a37a4e3b7e6611dea6114f3910160405180910390a190565b6000805b60048160ff161015610842576000808260ff166004811061079757610797610c4c565b0154905060ff811461083957604051632c93fe5160e11b8152600481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690635927fca290602401602060405180830381865afa158015610808573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061082c9190610c62565b6108369084610c7b565b92505b50600101610774565b5090565b6000816004811061085657600080fd5b0154905081565b610865610ad8565b6040805160808101918290529060009060049082845b81548152602001906001019080831161087b575050505050905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146109075760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b604482015260640161024d565b806001600160a01b0381166109515760405162461bcd60e51b815260206004820152601060248201526f52503a207a65726f206164647265737360801b604482015260640161024d565b6000808460ff166004811061096857610968610c4c565b0154604051635470b13b60e01b81526004810182905290915030906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635470b13b90602401602060405180830381865afa1580156109d4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109f89190610c2f565b6001600160a01b031614610a375760405162461bcd60e51b81526020600482015260066024820152652829219d229960d11b604482015260640161024d565b60ff600085821660048110610a4e57610a4e610c4c565b015560405163085cb13f60e01b8152600481018290526001600160a01b0384811660248301527f0000000000000000000000000000000000000000000000000000000000000000169063085cb13f90604401600060405180830381600087803b158015610aba57600080fd5b505af1158015610ace573d6000803e3d6000fd5b5050505050505050565b60405180608001604052806004906020820280368337509192915050565b6001600160a01b0381168114610b0b57600080fd5b50565b60008060408385031215610b2157600080fd5b8235610b2c81610af6565b915060208301358015158114610b4157600080fd5b809150509250929050565b803560ff81168114610b5d57600080fd5b919050565b60008060408385031215610b7557600080fd5b610b7e83610b4c565b9150610b8c60208401610b4c565b90509250929050565b600060208284031215610ba757600080fd5b5035919050565b600060208284031215610bc057600080fd5b8135610bcb81610af6565b9392505050565b60808101818360005b6004811015610bfa578151835260209283019290910190600101610bdb565b50505092915050565b60008060408385031215610c1657600080fd5b610c1f83610b4c565b91506020830135610b4181610af6565b600060208284031215610c4157600080fd5b8151610bcb81610af6565b634e487b7160e01b600052603260045260246000fd5b600060208284031215610c7457600080fd5b5051919050565b80820180821115610c9c57634e487b7160e01b600052601160045260246000fd5b9291505056fea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100be5760003560e01c806369883b4e11610076578063a042f77c1161005b578063a042f77c14610187578063b4f2bb6d146101ba578063dd7545a3146101cf57600080fd5b806369883b4e1461014d5780637054ac251461016057600080fd5b806337a94c1f116100a757806337a94c1f1461011c5780633c43059d1461012f5780635b9400811461014557600080fd5b8063117803e3146100c35780633193861814610107575b600080fd5b6100ea7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61011a610115366004610b0e565b6101e2565b005b61011a61012a366004610b62565b610374565b610137610558565b6040519081526020016100fe565b610137610770565b61013761015b366004610b95565b610846565b6100ea7f000000000000000000000000000000000000000000000000000000000000000081565b6101aa610195366004610bae565b60046020526000908152604090205460ff1681565b60405190151581526020016100fe565b6101c261085d565b6040516100fe9190610bd2565b61011a6101dd366004610c03565b610898565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146102565760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064015b60405180910390fd5b816001600160a01b0381166102a05760405162461bcd60e51b815260206004820152601060248201526f52503a207a65726f206164647265737360801b604482015260640161024d565b6001600160a01b03831660009081526004602052604090205482151560ff9091161515036103105760405162461bcd60e51b815260206004820152601e60248201527f5052433a2053656e64657220697320616c726561647920757064617465640000604482015260640161024d565b6001600160a01b038316600081815260046020908152604091829020805460ff19168615159081179091558251938452908301527f78e69fe3ea66f1cac5d67fd3e6db6bf70aaa9e2febe6ae51a61ccc1a65f791cf910160405180910390a1505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146103e35760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b604482015260640161024d565b60048160ff16106104365760405162461bcd60e51b815260206004820152601260248201527f5052433a20696e76616c696420696e6465780000000000000000000000000000604482015260640161024d565b604051635470b13b60e01b815260ff8316600482015230906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635470b13b90602401602060405180830381865afa15801561049f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104c39190610c2f565b6001600160a01b0316146105025760405162461bcd60e51b81526020600482015260066024820152652829219d229960d11b604482015260640161024d565b8160ff1660008260ff166004811061051c5761051c610c4c565b015560405160ff831681527f671620e6c62c2159e90ff36d2a625f6284d5dffdde16581a0ab9227b554b1f7e9060200160405180910390a15050565b3360009081526004602052604081205460ff166105b75760405162461bcd60e51b815260206004820152601060248201527f5052433a756e617574686f72697a656400000000000000000000000000000000604482015260640161024d565b60005b60048160ff161015610734576000808260ff16600481106105dd576105dd610c4c565b0154905060fe1981016105f057506105ba565b604051632c93fe5160e11b8152600481018290526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690635927fca290602401602060405180830381865afa158015610658573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061067c9190610c62565b9050801561072a57604051632a7d7bc560e01b815260048101839052336024820152604481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632a7d7bc5906064016020604051808303816000875af11580156106f8573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061071c9190610c62565b506107278185610c7b565b93505b50506001016105ba565b5060408051338152602081018390527ed5958799b183a7b738d3ad5e711305293dd5076a37a4e3b7e6611dea6114f3910160405180910390a190565b6000805b60048160ff161015610842576000808260ff166004811061079757610797610c4c565b0154905060ff811461083957604051632c93fe5160e11b8152600481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690635927fca290602401602060405180830381865afa158015610808573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061082c9190610c62565b6108369084610c7b565b92505b50600101610774565b5090565b6000816004811061085657600080fd5b0154905081565b610865610ad8565b6040805160808101918290529060009060049082845b81548152602001906001019080831161087b575050505050905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146109075760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b604482015260640161024d565b806001600160a01b0381166109515760405162461bcd60e51b815260206004820152601060248201526f52503a207a65726f206164647265737360801b604482015260640161024d565b6000808460ff166004811061096857610968610c4c565b0154604051635470b13b60e01b81526004810182905290915030906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690635470b13b90602401602060405180830381865afa1580156109d4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109f89190610c2f565b6001600160a01b031614610a375760405162461bcd60e51b81526020600482015260066024820152652829219d229960d11b604482015260640161024d565b60ff600085821660048110610a4e57610a4e610c4c565b015560405163085cb13f60e01b8152600481018290526001600160a01b0384811660248301527f0000000000000000000000000000000000000000000000000000000000000000169063085cb13f90604401600060405180830381600087803b158015610aba57600080fd5b505af1158015610ace573d6000803e3d6000fd5b5050505050505050565b60405180608001604052806004906020820280368337509192915050565b6001600160a01b0381168114610b0b57600080fd5b50565b60008060408385031215610b2157600080fd5b8235610b2c81610af6565b915060208301358015158114610b4157600080fd5b809150509250929050565b803560ff81168114610b5d57600080fd5b919050565b60008060408385031215610b7557600080fd5b610b7e83610b4c565b9150610b8c60208401610b4c565b90509250929050565b600060208284031215610ba757600080fd5b5035919050565b600060208284031215610bc057600080fd5b8135610bcb81610af6565b9392505050565b60808101818360005b6004811015610bfa578151835260209283019290910190600101610bdb565b50505092915050565b60008060408385031215610c1657600080fd5b610c1f83610b4c565b91506020830135610b4181610af6565b600060208284031215610c4157600080fd5b8151610bcb81610af6565b634e487b7160e01b600052603260045260246000fd5b600060208284031215610c7457600080fd5b5051919050565b80820180821115610c9c57634e487b7160e01b600052601160045260246000fd5b9291505056fea164736f6c6343000810000a",
+  "devdoc": {
+    "author": "Pantherprotocol Contributors",
+    "details": "This contract lives on Ethereum chain and is able to release tokens from VestingPools contract. It can whitelist the RewardSenders. Only whitelisted RewardSenders can trigger this contract to release tokens. Each RewardSender can use a portion of releasable amount. So, after triggering the release method by a RewardSender, if the is any releasable amount, it does the math to calculate the portion that is allocated for RewardSender and transfer the amount to it.",
+    "kind": "dev",
+    "methods": {
+      "transferVestingPoolWallet(uint8,address)": {
+        "details": "Owner only may call, once only"
+      },
+      "updatePoolIds(uint8,uint8)": {
+        "details": "Owner only may call, once only This contract address must be set in the VestingPools as the wallet for the pool"
+      },
+      "updateRewardSender(address,bool)": {
+        "details": "Owner only may call"
+      },
+      "vestRewards()": {
+        "details": "RewardSender only may call"
+      }
+    },
+    "title": "ProtocolRewardController",
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "RewardSenderUpdated(address,bool)": {
+        "notice": "Emitted on adding RewardSender"
+      },
+      "Vested(address,uint256)": {
+        "notice": "Emitted on vesting releasable amount to the recipient"
+      },
+      "VestingPoolUpdated(uint256)": {
+        "notice": "Emitted on parameters initialized."
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "OWNER()": {
+        "notice": "The owner who has privileged rights"
+      },
+      "VESTING_POOLS()": {
+        "notice": "Address of the VestingPools instance"
+      },
+      "getPoolIds()": {
+        "notice": "Get array of pool ids"
+      },
+      "poolIds(uint256)": {
+        "notice": "ID of the pool (in the VestingPools) to vest from"
+      },
+      "releasableAmount()": {
+        "notice": "Get how many ZKP can be released at the moment"
+      },
+      "rewardSenders(address)": {
+        "notice": "Keep track of the RewardSenders"
+      },
+      "transferVestingPoolWallet(uint8,address)": {
+        "notice": "Calls VestingPools to transfer 'pool wallet' role to given address"
+      },
+      "updatePoolIds(uint8,uint8)": {
+        "notice": "Sets/Updates the poolId"
+      },
+      "updateRewardSender(address,bool)": {
+        "notice": "Update the RewardSender contract address that will be able to release tokens"
+      },
+      "vestRewards()": {
+        "notice": "Release the tokens from VestingPools"
+      }
+    },
+    "notice": "It has right to release tokens from the VestingPools. Only the whitelisted RewardSenders can trigger this contract to release tokens.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 70,
+        "contract": "contracts/protocol/ProtocolRewardController.sol:ProtocolRewardController",
+        "label": "poolIds",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_array(t_uint256)4_storage"
+      },
+      {
+        "astId": 75,
+        "contract": "contracts/protocol/ProtocolRewardController.sol:ProtocolRewardController",
+        "label": "rewardSenders",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_address,t_bool)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_uint256)4_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[4]",
+        "numberOfBytes": "128"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
