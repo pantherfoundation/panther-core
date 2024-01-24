@@ -2,7 +2,15 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
+
+import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
+import "./crypto/PoseidonHashers.sol";
+import "../common/ImmutableOwnable.sol";
+
+import { ZASSET_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
+import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
 
 /**
  * @title ZAssetsRegistryV1
@@ -11,10 +19,71 @@ import "./pantherForest/interfaces/ITreeRootGetter.sol";
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
 
-contract ZAssetsRegistryV1 is ITreeRootGetter {
+contract ZAssetsRegistryV1 is
+    ImmutableOwnable,
+    BinaryUpdatableTree,
+    ITreeRootGetter
+{
+    ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
+
+    // The current root of merkle tree.
+    // If it's undefined, the `zeroRoot()` shall be called.
+    bytes32 private _currentRoot;
+
+    event ZAssetTreeUpdated(bytes32 newRoot);
+
+    constructor(
+        address _owner,
+        address pantherStaticTree
+    ) ImmutableOwnable(_owner) {
+        require(pantherStaticTree != address(0), "Init");
+
+        PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);
+    }
+
+    function getRoot() external view returns (bytes32) {
+        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+    }
+
+    function addZAsset(
+        bytes32 curRoot,
+        bytes32 curLeaf,
+        bytes32 newLeaf,
+        uint256 leafIndex,
+        bytes32[] calldata proofSiblings
+    ) external onlyOwner {
+        bytes32 zAssetsTreeRoot = update(
+            curRoot,
+            curLeaf,
+            newLeaf,
+            leafIndex,
+            proofSiblings
+        );
+
+        // Trusted contract - no reentrancy guard needed
+        PANTHER_STATIC_TREE.updateRoot(
+            zAssetsTreeRoot,
+            ZASSET_STATIC_LEAF_INDEX
+        );
+
+        emit ZAssetTreeUpdated(zAssetsTreeRoot);
+    }
+
+    //@dev returns the root of tree with depth 16 where each leaf is ZERO_VALUE
+    function zeroRoot() internal pure override returns (bytes32) {
+        return SIXTEEN_LEVEL_EMPTY_TREE_ROOT;
+    }
+
+    function hash(
+        bytes32[2] memory input
+    ) internal pure override returns (bytes32) {
+        return PoseidonHashers.poseidonT3(input);
+    }
+
     /** 
-    Consists of a two leafs: testZKP on Mumbai, matic on Mumbai
-    root: 0x23ab72c51302b4c48a739b16a00c52586fc1b3970af5d92f00fe14064258b861
+    In the Public Stage Contracts:
+        Consists of a two leafs: testZKP on Mumbai, matic on Mumbai
+        root: 0x23ab72c51302b4c48a739b16a00c52586fc1b3970af5d92f00fe14064258b861
 
     leaf 0: (public testnet) testZKP token on Mumbai
     leaf index: 0,
@@ -109,8 +178,4 @@ contract ZAssetsRegistryV1 is ITreeRootGetter {
     '0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c'
     ]
 */
-    function getRoot() external pure returns (bytes32) {
-        return
-            0x23ab72c51302b4c48a739b16a00c52586fc1b3970af5d92f00fe14064258b861;
-    }
 }

@@ -2,12 +2,88 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 pragma solidity 0.8.16;
 
+import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 import "./pantherForest/interfaces/ITreeRootGetter.sol";
 
-contract ZNetworksRegistry is ITreeRootGetter {
+import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
+import "./crypto/PoseidonHashers.sol";
+import "../common/ImmutableOwnable.sol";
+
+import { ZNETWORK_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
+import { SIX_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+
+/**
+ * @title ZNetworksRegistry
+ * @author Pantherprotocol Contributors
+ * @notice Registry and whitelist of assets (tokens) supported by the Panther
+ * Protocol Multi-Asset Shielded Pool (aka "MASP")
+ */
+
+contract ZNetworksRegistry is
+    ImmutableOwnable,
+    BinaryUpdatableTree,
+    ITreeRootGetter
+{
+    ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
+
+    // The current root of merkle tree.
+    // If it's undefined, the `zeroRoot()` shall be called.
+    bytes32 private _currentRoot;
+
+    event ZNetworkTreeUpdated(bytes32 newRoot);
+
+    constructor(
+        address _owner,
+        address pantherStaticTree
+    ) ImmutableOwnable(_owner) {
+        require(pantherStaticTree != address(0), "Init");
+
+        PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);
+    }
+
+    function getRoot() external view returns (bytes32) {
+        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+    }
+
+    function addNetwork(
+        bytes32 curRoot,
+        bytes32 curLeaf,
+        bytes32 newLeaf,
+        uint256 leafIndex,
+        bytes32[] calldata proofSiblings
+    ) external onlyOwner {
+        bytes32 zNetworkTreeRoot = update(
+            curRoot,
+            curLeaf,
+            newLeaf,
+            leafIndex,
+            proofSiblings
+        );
+
+        // Trusted contract - no reentrancy guard needed
+        PANTHER_STATIC_TREE.updateRoot(
+            zNetworkTreeRoot,
+            ZNETWORK_STATIC_LEAF_INDEX
+        );
+
+        emit ZNetworkTreeUpdated(zNetworkTreeRoot);
+    }
+
+    //@dev returns the root of tree with depth 16 where each leaf is ZERO_VALUE
+    function zeroRoot() internal pure override returns (bytes32) {
+        return SIX_LEVEL_EMPTY_TREE_ROOT;
+    }
+
+    function hash(
+        bytes32[2] memory input
+    ) internal pure override returns (bytes32) {
+        return PoseidonHashers.poseidonT3(input);
+    }
+
     /**
-    Consists of two leafs: for Goerli and Munbai
-    root: 0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4
+    In the Public Stage Contracts:
+        Consists of two leafs: for Goerli and Munbai
+        root: 0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4
 
     Leaf for Goerli
     leaf index: 0
@@ -81,9 +157,4 @@ contract ZNetworksRegistry is ITreeRootGetter {
     '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f'
     ]
 */
-
-    function getRoot() external pure returns (bytes32) {
-        return
-            0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4;
-    }
 }
