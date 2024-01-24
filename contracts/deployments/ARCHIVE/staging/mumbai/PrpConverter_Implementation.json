@@ -1,0 +1,504 @@
+{
+  "address": "0xb79BE04044c287eEdd152e9219b7A84B2d26Aa1b",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "zkpToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "pantherPool",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "prpVirtualAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "prpReserve",
+          "type": "uint112"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "zkpReserve",
+          "type": "uint112"
+        }
+      ],
+      "name": "Sync",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "OWNER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PANTHER_POOL",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VAULT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ZKP_TOKEN",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "inputs",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes",
+          "name": "privateMessages",
+          "type": "bytes"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "a",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct G2Point",
+              "name": "b",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct G1Point",
+              "name": "c",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SnarkProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zkpAmountOutMin",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cachedForestRootIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "convert",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "firstUtxoBusQueuePos",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserveIn",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserveOut",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAmountOut",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getReserves",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "_prpReserve",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_zkpReserve",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_blockTimestampLast",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "prpVirtualAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "initPool",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "initialized",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "rescueErc20",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "prpVirtualBalance",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zkpBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "update",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updateZkpReserve",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x13ad3f70701d85214885fd9b5d93cfc2417dac77bb8f9415039b8d3c7255a7fd",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xb79BE04044c287eEdd152e9219b7A84B2d26Aa1b",
+    "transactionIndex": 2,
+    "gasUsed": "1456625",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008004000000020000000000000000000000000000000000000000000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000002000000000000000000000000100040000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x861d2da685f50735cffe4374e504f4329beaaf8bc8973490e0fd384549d1d89f",
+    "transactionHash": "0x13ad3f70701d85214885fd9b5d93cfc2417dac77bb8f9415039b8d3c7255a7fd",
+    "logs": [
+      {
+        "transactionIndex": 2,
+        "blockNumber": 44814013,
+        "transactionHash": "0x13ad3f70701d85214885fd9b5d93cfc2417dac77bb8f9415039b8d3c7255a7fd",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000ac3919f4228f000000000000000000000000000000000000000000000000007e994c39025c0250000000000000000000000000000000000000000000035ee87987dd33891c94200000000000000000000000000000000000000000000000007ded131f0e397350000000000000000000000000000000000000000000035ee87a34164d7d3f232",
+        "logIndex": 5,
+        "blockHash": "0x861d2da685f50735cffe4374e504f4329beaaf8bc8973490e0fd384549d1d89f"
+      }
+    ],
+    "blockNumber": 44814013,
+    "cumulativeGasUsed": "1771797",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "0x4004C49aBb96B11D89A52DeCCa2D1522da7f3089",
+    "0xfDfD920F2152565E9D7b589e4e9faeE6699AD4bd",
+    "0x9619bd59411a8387a4119e548017C5b86c7bCec5"
+  ],
+  "numDeployments": 5,
+  "solcInputHash": "49b44ec4e11a0ae4e40669eb63e560b0",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zkpToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"pantherPool\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"prpVirtualAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint112\",\"name\":\"prpReserve\",\"type\":\"uint112\"},{\"indexed\":false,\"internalType\":\"uint112\",\"name\":\"zkpReserve\",\"type\":\"uint112\"}],\"name\":\"Sync\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"OWNER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PANTHER_POOL\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"VAULT\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ZKP_TOKEN\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"inputs\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"privateMessages\",\"type\":\"bytes\"},{\"components\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"a\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"x\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"y\",\"type\":\"uint256[2]\"}],\"internalType\":\"struct G2Point\",\"name\":\"b\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"c\",\"type\":\"tuple\"}],\"internalType\":\"struct SnarkProof\",\"name\":\"proof\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"zkpAmountOutMin\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cachedForestRootIndex\",\"type\":\"uint256\"}],\"name\":\"convert\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"firstUtxoBusQueuePos\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserveIn\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserveOut\",\"type\":\"uint256\"}],\"name\":\"getAmountOut\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReserves\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_prpReserve\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_zkpReserve\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"_blockTimestampLast\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"prpVirtualAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"}],\"name\":\"initPool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"rescueErc20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"prpVirtualBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"zkpBalance\",\"type\":\"uint256\"}],\"name\":\"update\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updateZkpReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"convert(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256)\":{\"details\":\"It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter. This function also spend the old zAccount utxo and creates new one with decreased prp balance.\",\"params\":{\"cachedForestRootIndex\":\"forest merkle root index. 0 means the most updated root.\",\"inputs\":\"[14] - magicalConstraint;\",\"privateMessages\":\"the private message that contains zAccount utxo data. zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText This data is used to spend the newly created utxo.\",\"proof\":\"A proof associated with the zAccount and a secret.\",\"zkpAmountOutMin\":\"Minimum zZkp to receive.\"}},\"rescueErc20(address,address,uint256)\":{\"details\":\"May be only called by the {OWNER}\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"OWNER()\":{\"notice\":\"The owner who has privileged rights\"},\"PANTHER_POOL()\":{\"notice\":\"Address of the PantherPool contract\"},\"VAULT()\":{\"notice\":\"Address of the Vault contract\"},\"ZKP_TOKEN()\":{\"notice\":\"Address of the $ZKP token contract\"},\"convert(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256)\":{\"notice\":\"Accounts prp conversion\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/PrpConverter.sol\":\"PrpConverter\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/Claimable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nimport \\\"./TransferHelper.sol\\\";\\n\\n/**\\n * @title Claimable\\n * @notice It withdraws accidentally sent tokens or ETH from this contract.\\n */\\nabstract contract Claimable {\\n    /// @dev Withdraws ERC20 tokens from this contract\\n    /// (take care of reentrancy attack risk mitigation)\\n    function _claimErc20(address token, address to, uint256 amount) internal {\\n        // withdraw ERC20\\n        TransferHelper.safeTransfer(token, to, amount);\\n    }\\n\\n    /// @dev Withdraws ERC20 tokens from this contract\\n    /// (take care of reentrancy attack risk mitigation)\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function _claimEthOrErc20(\\n        address token,\\n        address to,\\n        uint256 amount\\n    ) internal {\\n        if (token == address(0)) {\\n            // withdraw ETH\\n            TransferHelper.safeTransferETH(to, amount);\\n        } else {\\n            // withdraw ERC20\\n            TransferHelper.safeTransfer(token, to, amount);\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xc217d19c0e6d330ce2bd507394e9a0b4a04dd43e1fbe293ce46602698291a6fd\",\"license\":\"MIT\"},\"contracts/common/ImmutableOwnable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title ImmutableOwnable\\nabstract contract ImmutableOwnable {\\n    /// @notice The owner who has privileged rights\\n    address public immutable OWNER;\\n\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() {\\n        require(OWNER == msg.sender, \\\"ImmOwn: unauthorized\\\");\\n        _;\\n    }\\n\\n    constructor(address _owner) {\\n        require(_owner != address(0), \\\"ImmOwn: zero owner address\\\");\\n        OWNER = _owner;\\n    }\\n}\\n\",\"keccak256\":\"0x06d3e09256c510bd1a5c8f6f05cc99fbc0d51919f2a64e022395bc169c349d90\",\"license\":\"MIT\"},\"contracts/common/TransferHelper.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-or-later\\n// solhint-disable avoid-low-level-calls\\n// solhint-disable no-inline-assembly\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title TransferHelper library\\n/// @dev Helper methods for interacting with ERC20, ERC721, ERC1155 tokens and sending ETH\\n/// Based on the Uniswap/solidity-lib/contracts/libraries/TransferHelper.sol\\nlibrary TransferHelper {\\n    /// @dev Throws if the deployed code of the `token` is empty.\\n    // Low-level CALL to a non-existing contract returns `success` of 1 and empty `data`.\\n    // It may be misinterpreted as a successful call to a deployed token contract.\\n    // So, the code calling a token contract must insure the contract code exists.\\n    modifier onlyDeployedToken(address token) {\\n        require(isDeployedContract(token), \\\"TransferHelper: zero codesize\\\");\\n        _;\\n    }\\n\\n    /// @dev Return true if the given account has deployed code\\n    function isDeployedContract(address account) internal view returns (bool) {\\n        uint256 codeSize;\\n        // slither-disable-next-line assembly\\n        assembly {\\n            codeSize := extcodesize(account)\\n        }\\n        return codeSize > 0;\\n    }\\n\\n    /// @dev Approve the `operator` to spend all of ERC720 tokens on behalf of `owner`.\\n    function safeSetApprovalForAll(\\n        address token,\\n        address operator,\\n        bool approved\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('setApprovalForAll(address,bool)'));\\n            abi.encodeWithSelector(0xa22cb465, operator, approved)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Get the ERC20 balance of `account`\\n    function safeBalanceOf(\\n        address token,\\n        address account\\n    ) internal returns (uint256 balance) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(bytes('balanceOf(address)')));\\n            abi.encodeWithSelector(0x70a08231, account)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: balanceOf call failed\\\"\\n        );\\n\\n        balance = abi.decode(data, (uint256));\\n    }\\n\\n    /// @dev Get the owner of the ERC-721 token\\n    function safe721OwnerOf(\\n        address token,\\n        uint256 tokenId\\n    ) internal returns (address owner) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(bytes('ownerOf(uint256)')));\\n            abi.encodeWithSelector(0x6352211e, tokenId)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: ownerOf call failed\\\"\\n        );\\n        owner = abi.decode(data, (address));\\n    }\\n\\n    /// @dev Get the ERC-1155 token balance of `account`\\n    function safe1155BalanceOf(\\n        address token,\\n        address account,\\n        uint256 tokenId\\n    ) internal returns (uint256 balance) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(bytes('balanceOf(address,uint256)')));\\n            abi.encodeWithSelector(0x00fdd58e, account, tokenId)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: balanceOf call failed\\\"\\n        );\\n        balance = abi.decode(data, (uint256));\\n    }\\n\\n    /// @dev Get the ERC20 allowance of `spender`\\n    function safeAllowance(\\n        address token,\\n        address owner,\\n        address spender\\n    ) internal onlyDeployedToken(token) returns (uint256 allowance) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(\\\"allowance(address,address)\\\"));\\n            abi.encodeWithSelector(0xdd62ed3e, owner, spender)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: allowance call failed\\\"\\n        );\\n\\n        allowance = abi.decode(data, (uint256));\\n    }\\n\\n    /// @dev Approve the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.\\n    function safeApprove(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('approve(address,uint256)'));\\n            abi.encodeWithSelector(0x095ea7b3, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Increase approval of the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.\\n    function safeIncreaseAllowance(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(\\\"increaseAllowance(address,uint256)\\\"));\\n            abi.encodeWithSelector(0x39509351, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` ERC20 tokens from caller to `to`.\\n    function safeTransfer(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('transfer(address,uint256)'));\\n            abi.encodeWithSelector(0xa9059cbb, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` ERC20 tokens on behalf of `from` to `to`.\\n    function safeTransferFrom(\\n        address token,\\n        address from,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('transferFrom(address,address,uint256)'));\\n            abi.encodeWithSelector(0x23b872dd, from, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer an ERC721 token with id of `tokenId` on behalf of `from` to `to`.\\n    function erc721SafeTransferFrom(\\n        address token,\\n        uint256 tokenId,\\n        address from,\\n        address to\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('safeTransferFrom(address,address,uint256)'));\\n            abi.encodeWithSelector(0x42842e0e, from, to, tokenId)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `amount` ERC1155 token with id of `tokenId` on behalf of `from` to `to`.\\n    function erc1155SafeTransferFrom(\\n        address token,\\n        address from,\\n        address to,\\n        uint256 tokenId,\\n        uint256 amount,\\n        bytes memory _data\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('safeTransferFrom(address,address,uint256,uint256,bytes)'));\\n            abi.encodeWithSelector(0xf242432a, from, to, tokenId, amount, _data)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` Ether from caller to `to`.\\n    function safeTransferETH(address to, uint256 value) internal {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, ) = to.call{ value: value }(new bytes(0));\\n        require(success, \\\"TransferHelper: ETH transfer failed\\\");\\n    }\\n\\n    function _requireSuccess(bool success, bytes memory res) private pure {\\n        require(\\n            success && (res.length == 0 || abi.decode(res, (bool))),\\n            \\\"TransferHelper: token contract call failed\\\"\\n        );\\n    }\\n}\\n\",\"keccak256\":\"0x99384813b8e99545ffc4f760081f88a7bfcc6da8177336a6287231fbefa820d4\",\"license\":\"GPL-3.0-or-later\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct PluginData {\\n    address contractAddress;\\n    bytes callData;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\\nstruct SaltedLockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The salt to use w/ CREATE2\\n    bytes32 salt;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint256 extAmount;\\n}\\n\",\"keccak256\":\"0xb086580b8c0d95db80863b6775cc19ba85206cc3197e1577592872e2fee610e7\",\"license\":\"MIT\"},\"contracts/common/UtilsLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.16;\\n\\nlibrary UtilsLib {\\n    function safe24(uint256 n) internal pure returns (uint24) {\\n        require(n < 2 ** 24, \\\"UNSAFE24\\\");\\n        return uint24(n);\\n    }\\n\\n    function safe32(uint256 n) internal pure returns (uint32) {\\n        require(n < 2 ** 32, \\\"UNSAFE32\\\");\\n        return uint32(n);\\n    }\\n\\n    function safe40(uint256 n) internal pure returns (uint40) {\\n        require(n < 2 ** 40, \\\"UNSAFE40\\\");\\n        return uint40(n);\\n    }\\n\\n    function safe64(uint256 n) internal pure returns (uint64) {\\n        require(n < 2 ** 64, \\\"UNSAFE64\\\");\\n        return uint64(n);\\n    }\\n\\n    function safe96(uint256 n) internal pure returns (uint96) {\\n        require(n < 2 ** 96, \\\"UNSAFE96\\\");\\n        return uint96(n);\\n    }\\n\\n    function safe128(uint256 n) internal pure returns (uint128) {\\n        require(n < 2 ** 128, \\\"UNSAFE128\\\");\\n        return uint128(n);\\n    }\\n\\n    function safe160(uint256 n) internal pure returns (uint160) {\\n        require(n < 2 ** 160, \\\"UNSAFE160\\\");\\n        return uint160(n);\\n    }\\n\\n    function safe32TimeNow() internal view returns (uint32) {\\n        uint256 t = block.timestamp;\\n        require(t < 2 ** 32, \\\"UNSAFE32TIME\\\");\\n        return uint32(t);\\n    }\\n\\n    function safe32BlockNow() internal view returns (uint32) {\\n        uint256 b = block.number;\\n        require(b < 2 ** 32, \\\"UNSAFE32BLOCK\\\");\\n        return uint32(b);\\n    }\\n\\n    function revertZeroAddress(address account) internal pure {\\n        require(account != address(0), \\\"UNEXPECTED_ZERO_ADDRESS\\\");\\n    }\\n}\\n\",\"keccak256\":\"0x1c3aaef98d25b0e694bff9ec693d4d22586b21a197bc004ef1e8c8b12882516b\",\"license\":\"MIT\"},\"contracts/protocol/PrpConverter.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\n// solhint-disable one-contract-per-file\\npragma solidity 0.8.16;\\n// TODO: add one contract per file\\n\\nimport \\\"../protocol/interfaces/IPantherPoolV1.sol\\\";\\nimport { FIELD_SIZE } from \\\"../protocol/crypto/SnarkConstants.sol\\\";\\n\\nimport \\\"../common/TransferHelper.sol\\\";\\nimport \\\"../common/ImmutableOwnable.sol\\\";\\nimport \\\"../common/Claimable.sol\\\";\\nimport \\\"../common/UtilsLib.sol\\\";\\n\\nimport \\\"./errMsgs/PrpConverterErrMsgs.sol\\\";\\n\\ncontract PrpConverter is ImmutableOwnable, Claimable {\\n    // The contract is supposed to run behind a proxy DELEGATECALLing it.\\n    // On upgrades, adjust `__gap` to match changes of the storage layout.\\n    // slither-disable-next-line shadowing-state unused-state\\n    uint256[50] private __gap;\\n\\n    /// @notice Address of the $ZKP token contract\\n    address public immutable ZKP_TOKEN;\\n\\n    /// @notice Address of the PantherPool contract\\n    address public immutable PANTHER_POOL;\\n\\n    /// @notice Address of the Vault contract\\n    address public immutable VAULT;\\n\\n    uint64 private prpReserve;\\n    uint96 private zkpReserve;\\n    uint32 private blockTimestampLast;\\n\\n    bool public initialized;\\n\\n    event Initialized(uint256 prpVirtualAmount, uint256 zkpAmount);\\n    event Sync(uint112 prpReserve, uint112 zkpReserve);\\n\\n    constructor(\\n        address _owner,\\n        address zkpToken,\\n        address pantherPool,\\n        address vault\\n    ) ImmutableOwnable(_owner) {\\n        require(\\n            zkpToken != address(0) &&\\n                pantherPool != address(0) &&\\n                vault != address(0),\\n            ERR_ZERO_ADDRESS\\n        );\\n\\n        ZKP_TOKEN = zkpToken;\\n        PANTHER_POOL = pantherPool;\\n        VAULT = vault;\\n    }\\n\\n    function initPool(\\n        uint256 prpVirtualAmount,\\n        uint256 zkpAmount\\n    ) external onlyOwner {\\n        require(!initialized, ERR_ALREADY_INITIALIZED);\\n\\n        uint256 zkpBalance = TransferHelper.safeBalanceOf(\\n            ZKP_TOKEN,\\n            address(this)\\n        );\\n        require(zkpBalance >= zkpAmount, ERR_LOW_INIT_ZKP_BALANCE);\\n\\n        initialized = true;\\n\\n        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmount);\\n\\n        _update(prpVirtualAmount, zkpAmount);\\n\\n        emit Initialized(prpVirtualAmount, zkpAmount);\\n    }\\n\\n    function updateZkpReserve() external {\\n        require(initialized, ERR_NOT_INITIALIZED);\\n\\n        uint256 zkpBalance = TransferHelper.safeBalanceOf(\\n            ZKP_TOKEN,\\n            address(this)\\n        );\\n\\n        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();\\n\\n        if (zkpBalance <= _zkpReserve) return;\\n\\n        uint256 zkpAmountIn = zkpBalance - _zkpReserve;\\n\\n        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmountIn);\\n\\n        uint256 prpAmountOut = getAmountOut(\\n            zkpAmountIn,\\n            _zkpReserve,\\n            _prpReserve\\n        );\\n\\n        uint256 prpVirtualBalance = _prpReserve - prpAmountOut;\\n\\n        _update(prpVirtualBalance, zkpBalance);\\n    }\\n\\n    function getAmountOut(\\n        uint256 amountIn,\\n        uint256 reserveIn,\\n        uint256 reserveOut\\n    ) public pure returns (uint256 amountOut) {\\n        require(\\n            amountIn > 0 && reserveIn > 0 && reserveOut > 0,\\n            ERR_INSUFFICIENT_AMOUNT_IN_OR_RESERVES\\n        );\\n\\n        uint256 numerator = amountIn * reserveOut;\\n        uint256 denominator = reserveIn + amountIn;\\n        amountOut = numerator / denominator;\\n    }\\n\\n    function getReserves()\\n        public\\n        view\\n        returns (\\n            uint256 _prpReserve,\\n            uint256 _zkpReserve,\\n            uint32 _blockTimestampLast\\n        )\\n    {\\n        _prpReserve = prpReserve;\\n        _zkpReserve = zkpReserve;\\n        _blockTimestampLast = blockTimestampLast;\\n    }\\n\\n    /// @notice Accounts prp conversion\\n    /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the\\n    /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.\\n    /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.\\n    /// @param inputs The public input parameters to be passed to verifier.\\n    /// @param inputs[0]  - extraInputsHash;\\n    /// @param inputs[1]  - chargedAmountZkp;\\n    /// @param inputs[2]  - createTime;\\n    /// @param inputs[3]  - depositAmountPrp;\\n    /// @param inputs[4]  - withdrawAmountPrp;\\n    /// @param inputs[5]  - utxoCommitmentPrivatePart;\\n    /// @param inputs[6]  - utxoSpendPubKeyX\\n    /// @param inputs[7]  - utxoSpendPubKeyY\\n    /// @param inputs[8]  - zAssetScale;\\n    /// @param inputs[9]  - zAccountUtxoInNullifier;\\n    /// @param inputs[10] - zAccountUtxoOutCommitment;\\n    /// @param inputs[11] - zNetworkChainId;\\n    /// @param inputs[12] - forestMerkleRoot;\\n    /// @param inputs[13] - saltHash;\\n    /// @param inputs[14] - magicalConstraint;\\n    /// @param privateMessages the private message that contains zAccount utxo data.\\n    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText\\n    /// This data is used to spend the newly created utxo.\\n    /// @param proof A proof associated with the zAccount and a secret.\\n    /// @param zkpAmountOutMin Minimum zZkp to receive.\\n    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.\\n    function convert(\\n        uint256[] calldata inputs,\\n        bytes calldata privateMessages,\\n        SnarkProof memory proof,\\n        uint256 zkpAmountOutMin,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256 firstUtxoBusQueuePos) {\\n        // Note: This contract expects the Verifier to check the `inputs[]` are\\n        // less than the field size\\n\\n        // NOTE: This contract expects the Pool will check the createTime (inputs[2]) which\\n        // acts as a deadline\\n\\n        {\\n            uint256 extraInputsHash = inputs[0];\\n            bytes memory extraInp = abi.encodePacked(\\n                privateMessages,\\n                cachedForestRootIndex,\\n                zkpAmountOutMin\\n            );\\n            require(\\n                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,\\n                ERR_INVALID_EXTRA_INPUT_HASH\\n            );\\n        }\\n\\n        {\\n            // this function is not supposed to add (aka deposit) prp to zAccount\\n            uint256 depositAmountPrp = inputs[3];\\n            require(depositAmountPrp == 0, ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP);\\n        }\\n\\n        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();\\n\\n        require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);\\n\\n        uint256 zkpAmountOutRounded;\\n        // amount to be withdrawn from zAccount UTXO and added to the converter's prpVirtualBalance\\n        uint256 withdrawAmountPrp = inputs[4];\\n\\n        {\\n            uint256 zkpAmountOut = getAmountOut(\\n                withdrawAmountPrp,\\n                _prpReserve,\\n                _zkpReserve\\n            );\\n\\n            uint256 scale = inputs[8];\\n            require(zkpAmountOut >= scale, ERR_INSUFFICIENT_AMOUNT_OUT);\\n            require(zkpAmountOut >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);\\n\\n            unchecked {\\n                // rounding the amount (leaving the changes in the contract)\\n                zkpAmountOutRounded = (zkpAmountOut / scale) * scale;\\n            }\\n\\n            require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);\\n        }\\n\\n        firstUtxoBusQueuePos = _createZzkpUtxoAndSpendPrpUtxo(\\n            inputs,\\n            proof,\\n            privateMessages,\\n            zkpAmountOutRounded,\\n            cachedForestRootIndex\\n        );\\n\\n        uint256 prpVirtualBalance = _prpReserve + withdrawAmountPrp;\\n        uint256 zkpBalance = TransferHelper.safeBalanceOf(\\n            ZKP_TOKEN,\\n            address(this)\\n        );\\n\\n        require(\\n            prpVirtualBalance * zkpBalance >=\\n                uint256(_prpReserve) * _zkpReserve,\\n            ERR_LOW_CONSTANT_PRODUCT\\n        );\\n\\n        _update(prpVirtualBalance, zkpBalance);\\n    }\\n\\n    function _update(uint256 prpVirtualBalance, uint256 zkpBalance) private {\\n        prpReserve = UtilsLib.safe64(prpVirtualBalance);\\n        zkpReserve = UtilsLib.safe96(zkpBalance);\\n        blockTimestampLast = UtilsLib.safe32(block.timestamp);\\n\\n        emit Sync(prpReserve, zkpReserve);\\n    }\\n\\n    function update(\\n        uint256 prpVirtualBalance,\\n        uint256 zkpBalance\\n    ) external onlyOwner {\\n        _update(prpVirtualBalance, zkpBalance);\\n    }\\n\\n    function _createZzkpUtxoAndSpendPrpUtxo(\\n        uint256[] calldata inputs,\\n        SnarkProof memory proof,\\n        bytes memory privateMessages,\\n        uint256 amountOutRounded,\\n        uint256 cachedForestRootIndex\\n    ) private returns (uint256 firstUtxoBusQueuePos) {\\n        // Trusted contract - no reentrancy guard needed\\n        // pool contract triggers vault to transfer `amountOut` from prpConverter\\n        try\\n            IPantherPoolV1(PANTHER_POOL).createZzkpUtxoAndSpendPrpUtxo(\\n                inputs,\\n                proof,\\n                privateMessages,\\n                amountOutRounded,\\n                cachedForestRootIndex\\n            )\\n        returns (uint256 result) {\\n            firstUtxoBusQueuePos = result;\\n        } catch Error(string memory reason) {\\n            revert(reason);\\n        }\\n    }\\n\\n    /// @dev May be only called by the {OWNER}\\n    function rescueErc20(address token, address to, uint256 amount) external {\\n        require(OWNER == msg.sender, ERR_UNAUTHORIZED);\\n\\n        _claimErc20(token, to, amount);\\n    }\\n}\\n\",\"keccak256\":\"0xd5cfb2ac8badb03afffc9d20217b219af698afc4526bc68ed17f9033c56203fb\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/crypto/SnarkConstants.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\n// @dev Order of alt_bn128 and the field prime of Baby Jubjub and Poseidon hash\\nuint256 constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;\\n\\n// @dev Field prime of alt_bn128\\nuint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;\\n\",\"keccak256\":\"0xb734602ed691e205eed51a0239e8281bf5822487140843a848df20f6a4c95b39\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/errMsgs/PrpConverterErrMsgs.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nstring constant ERR_ZERO_ADDRESS = \\\"PC:E1\\\";\\nstring constant ERR_ALREADY_INITIALIZED = \\\"PC:E2\\\";\\nstring constant ERR_NOT_INITIALIZED = \\\"PC:E3\\\";\\nstring constant ERR_UNINITIALIZED = \\\"PC:E4\\\";\\nstring constant ERR_LOW_INIT_ZKP_BALANCE = \\\"PC:E5\\\";\\nstring constant ERR_INSUFFICIENT_AMOUNT_IN_OR_RESERVES = \\\"PC:E6\\\";\\nstring constant ERR_INSUFFICIENT_AMOUNT_OUT = \\\"PC:E7\\\";\\nstring constant ERR_INSUFFICIENT_LIQUIDITY = \\\"PC:E8\\\";\\nstring constant ERR_LOW_AMOUNT_OUT = \\\"PC:E9\\\";\\nstring constant ERR_LOW_LIQUIDITY = \\\"PC:E10\\\";\\nstring constant ERR_LOW_CONSTANT_PRODUCT = \\\"PC:E11\\\";\\nstring constant ERR_UNAUTHORIZED = \\\"PC:E12\\\";\\nstring constant ERR_INVALID_EXTRA_INPUT_HASH = \\\"PC:E13\\\";\\nstring constant ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP = \\\"PC:E14\\\";\\n\",\"keccak256\":\"0xc9ac87839569e6c65bcfc7fb5f573db704eeb04240f0462ccddf38d5100debe1\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/interfaces/IPantherPoolV1.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\nimport { SnarkProof } from \\\"../../common/Types.sol\\\";\\nimport { LockData } from \\\"../../common/Types.sol\\\";\\n\\ninterface IPantherPoolV1 {\\n    function accountPrp(\\n        uint256[] calldata inputs,\\n        SnarkProof calldata proof,\\n        bytes memory privateMessages,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256 utxoBusQueuePos);\\n\\n    function createZzkpUtxoAndSpendPrpUtxo(\\n        uint256[] calldata inputs,\\n        SnarkProof calldata proof,\\n        bytes memory privateMessages,\\n        uint256 zkpAmountRounded,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256);\\n\\n    function createZAccountUtxo(\\n        uint256[] calldata inputs,\\n        SnarkProof calldata proof,\\n        address zkpPayer,\\n        bytes memory secretMessage,\\n        uint256 cachedForestRootIndex\\n    ) external returns (uint256);\\n\\n    function unlockAssetFromVault(LockData calldata data) external;\\n}\\n\",\"keccak256\":\"0xa5ff0c742dd1b94ff70c4842e88f3d7aae39893f3f54e08a7a113f42171bdf0c\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6101006040523480156200001257600080fd5b5060405162001bdd38038062001bdd83398101604081905262000035916200014a565b836001600160a01b038116620000925760405162461bcd60e51b815260206004820152601a60248201527f496d6d4f776e3a207a65726f206f776e6572206164647265737300000000000060448201526064015b60405180910390fd5b6001600160a01b03908116608052831615801590620000b957506001600160a01b03821615155b8015620000ce57506001600160a01b03811615155b6040518060400160405280600581526020016450433a453160d81b815250906200010d5760405162461bcd60e51b8152600401620000899190620001a7565b506001600160a01b0392831660a05290821660c0521660e05250620001f7565b80516001600160a01b03811681146200014557600080fd5b919050565b600080600080608085870312156200016157600080fd5b6200016c856200012d565b93506200017c602086016200012d565b92506200018c604086016200012d565b91506200019c606086016200012d565b905092959194509250565b600060208083528351808285015260005b81811015620001d657858101830151858201604001528201620001b8565b506000604082860101526040601f19601f8301168501019250505092915050565b60805160a05160c05160e05161195f6200027e600039600081816101d70152818161099e0152610ba60152600081816102400152610d48015260008181610219015281816107e2015281816108f60152818161097d01528181610ad20152610b8501526000818161014c01528181610356015281816103b001526109f4015261195f6000f3fe608060405234801561001057600080fd5b50600436106100d45760003560e01c8063411557d111610081578063830caefa1161005b578063830caefa146102145780638f3e52de1461023b5780639e1b00451461026257600080fd5b8063411557d1146101d2578063737d7b12146101f957806377ec1ac01461020c57600080fd5b8063158ef93e116100b2578063158ef93e14610186578063243feb99146101aa5780632fb565e8146101bf57600080fd5b8063054d50d4146100d95780630902f1ac146100ff578063117803e314610147575b600080fd5b6100ec6100e73660046112c0565b610275565b6040519081526020015b60405180910390f35b6032546040805167ffffffffffffffff83168152600160401b83046bffffffffffffffffffffffff166020820152600160a01b90920463ffffffff16908201526060016100f6565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016100f6565b60325461019a90600160c01b900460ff1681565b60405190151581526020016100f6565b6101bd6101b8366004611308565b610320565b005b6101bd6101cd366004611344565b6103ae565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6100ec610207366004611565565b610434565b6101bd61088f565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6101bd610270366004611344565b6109f2565b600080841180156102865750600083115b80156102925750600082115b6040518060400160405280600581526020017f50433a4536000000000000000000000000000000000000000000000000000000815250906102ef5760405162461bcd60e51b81526004016102e6919061167b565b60405180910390fd5b5060006102fc83866116ab565b9050600061030a86866116ca565b905061031681836116f9565b9695505050505050565b60408051808201909152600681527f50433a453132000000000000000000000000000000000000000000000000000060208201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461039d5760405162461bcd60e51b81526004016102e6919061167b565b506103a9838383610c13565b505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146104265760405162461bcd60e51b815260206004820152601460248201527f496d6d4f776e3a20756e617574686f72697a656400000000000000000000000060448201526064016102e6565b6104308282610c1e565b5050565b6000808888600081811061044a5761044a61170d565b90506020020135905060008787858760405160200161046c9493929190611723565b60408051601f19818403018152919052805160208201209091506104b1907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f00000019061173d565b82146040518060400160405280600681526020017f50433a4531330000000000000000000000000000000000000000000000000000815250906105075760405162461bcd60e51b81526004016102e6919061167b565b50505060008888600381811061051f5761051f61170d565b905060200201359050806000146040518060400160405280600681526020017f50433a4531340000000000000000000000000000000000000000000000000000815250906105805760405162461bcd60e51b81526004016102e6919061167b565b50506000806105be60325467ffffffffffffffff8116916bffffffffffffffffffffffff600160401b8304169163ffffffff600160a01b9091041690565b5091509150600081116040518060400160405280600581526020017f50433a45380000000000000000000000000000000000000000000000000000008152509061061b5760405162461bcd60e51b81526004016102e6919061167b565b506000808b8b60048181106106325761063261170d565b9050602002013590506000610648828686610275565b905060008d8d600881811061065f5761065f61170d565b905060200201359050808210156040518060400160405280600581526020017f50433a4537000000000000000000000000000000000000000000000000000000815250906106c05760405162461bcd60e51b81526004016102e6919061167b565b5060408051808201909152600581527f50433a45390000000000000000000000000000000000000000000000000000006020820152898310156107165760405162461bcd60e51b81526004016102e6919061167b565b5080818381610727576107276116e3565b040293508484106040518060400160405280600681526020017f50433a4531300000000000000000000000000000000000000000000000000000815250906107825760405162461bcd60e51b81526004016102e6919061167b565b5050506107cb8c8c8a8d8d8080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152508992508d9150610d2e9050565b945060006107d982866116ca565b905060006108077f000000000000000000000000000000000000000000000000000000000000000030610e1e565b905061081385876116ab565b61081d82846116ab565b10156040518060400160405280600681526020017f50433a4531310000000000000000000000000000000000000000000000000000815250906108735760405162461bcd60e51b81526004016102e6919061167b565b5061087e8282610c1e565b505050505050979650505050505050565b60325460408051808201909152600581527f50433a4533000000000000000000000000000000000000000000000000000000602082015290600160c01b900460ff166108ee5760405162461bcd60e51b81526004016102e6919061167b565b50600061091b7f000000000000000000000000000000000000000000000000000000000000000030610e1e565b905060008061095960325467ffffffffffffffff8116916bffffffffffffffffffffffff600160401b8304169163ffffffff600160a01b9091041690565b509150915080831161096a57505050565b60006109768285611751565b90506109c37f00000000000000000000000000000000000000000000000000000000000000007f000000000000000000000000000000000000000000000000000000000000000083610f83565b60006109d0828486610275565b905060006109de8286611751565b90506109ea8187610c1e565b505050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610a6a5760405162461bcd60e51b815260206004820152601460248201527f496d6d4f776e3a20756e617574686f72697a656400000000000000000000000060448201526064016102e6565b60325460408051808201909152600581527f50433a4532000000000000000000000000000000000000000000000000000000602082015290600160c01b900460ff1615610aca5760405162461bcd60e51b81526004016102e6919061167b565b506000610af77f000000000000000000000000000000000000000000000000000000000000000030610e1e565b9050818110156040518060400160405280600581526020017f50433a453500000000000000000000000000000000000000000000000000000081525090610b515760405162461bcd60e51b81526004016102e6919061167b565b50603280547fffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffff16600160c01b179055610bcb7f00000000000000000000000000000000000000000000000000000000000000007f000000000000000000000000000000000000000000000000000000000000000084610f83565b610bd58383610c1e565b60408051848152602081018490527f997896709b4e932ee42750e2e14ed1f7ab6c60bd911ff567aa2485cf0b20051b910160405180910390a1505050565b6103a983838361109d565b610c278261111c565b6032805467ffffffffffffffff191667ffffffffffffffff92909216919091179055610c5281611175565b603260086101000a8154816bffffffffffffffffffffffff02191690836bffffffffffffffffffffffff160217905550610c8b426111d3565b6032805463ffffffff92909216600160a01b027fffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffff83168117918290556040805167ffffffffffffffff928316929094169190911783526bffffffffffffffffffffffff600160401b9092049190911660208301527f1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1910160405180910390a15050565b6040516301bf87f160e71b81526000906001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063dfc3f88090610d87908a908a908a908a908a908a9060040161178d565b6020604051808303816000875af1925050508015610dc2575060408051601f3d908101601f19168201909252610dbf91810190611855565b60015b610e1357610dce61186e565b806308c379a003610e075750610de261188a565b80610ded5750610e09565b8060405162461bcd60e51b81526004016102e6919061167b565b505b3d6000803e3d6000fd5b979650505050505050565b6000806000846001600160a01b03166370a0823185604051602401610e5291906001600160a01b0391909116815260200190565b6040516020818303038152906040529060e01b6020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff8381831617835250505050604051610ea09190611914565b6000604051808303816000865af19150503d8060008114610edd576040519150601f19603f3d011682016040523d82523d6000602084013e610ee2565b606091505b5091509150818015610ef45750805115155b610f665760405162461bcd60e51b815260206004820152602560248201527f5472616e7366657248656c7065723a2062616c616e63654f662063616c6c206660448201527f61696c656400000000000000000000000000000000000000000000000000000060648201526084016102e6565b80806020019051810190610f7a9190611855565b95945050505050565b82803b610fd25760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064016102e6565b6040516001600160a01b0384811660248301526044820184905260009182918716906339509351906064015b6040516020818303038152906040529060e01b6020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505060405161104c9190611914565b6000604051808303816000865af19150503d8060008114611089576040519150601f19603f3d011682016040523d82523d6000602084013e61108e565b606091505b50915091506109ea8282611229565b82803b6110ec5760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064016102e6565b6040516001600160a01b03848116602483015260448201849052600091829187169063a9059cbb90606401610ffe565b6000600160401b82106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645363400000000000000000000000000000000000000000000000060448201526064016102e6565b5090565b60006c0100000000000000000000000082106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645393600000000000000000000000000000000000000000000000060448201526064016102e6565b600064010000000082106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645333200000000000000000000000000000000000000000000000060448201526064016102e6565b81801561124e57508051158061124e57508080602001905181019061124e9190611930565b6104305760405162461bcd60e51b815260206004820152602a60248201527f5472616e7366657248656c7065723a20746f6b656e20636f6e7472616374206360448201527f616c6c206661696c65640000000000000000000000000000000000000000000060648201526084016102e6565b6000806000606084860312156112d557600080fd5b505081359360208301359350604090920135919050565b80356001600160a01b038116811461130357600080fd5b919050565b60008060006060848603121561131d57600080fd5b611326846112ec565b9250611334602085016112ec565b9150604084013590509250925092565b6000806040838503121561135757600080fd5b50508035926020909101359150565b60008083601f84011261137857600080fd5b50813567ffffffffffffffff81111561139057600080fd5b6020830191508360208285010111156113a857600080fd5b9250929050565b634e487b7160e01b600052604160045260246000fd5b6040810181811067ffffffffffffffff821117156113e5576113e56113af565b60405250565b601f8201601f1916810167ffffffffffffffff81118282101715611411576114116113af565b6040525050565b60006040828403121561142a57600080fd5b6040516040810181811067ffffffffffffffff8211171561144d5761144d6113af565b604052823581526020928301359281019290925250919050565b600082601f83011261147857600080fd5b604051611484816113c5565b80604084018581111561149657600080fd5b845b818110156114b0578035835260209283019201611498565b509195945050505050565b60008183036101008112156114cf57600080fd5b6040516060810181811067ffffffffffffffff821117156114f2576114f26113af565b6040529150816115028585611418565b81526080603f198301121561151657600080fd5b6040519150611524826113c5565b6115318560408601611467565b82526115408560808601611467565b60208301528160208201526115588560c08601611418565b6040820152505092915050565b6000806000806000806000610180888a03121561158157600080fd5b873567ffffffffffffffff8082111561159957600080fd5b818a0191508a601f8301126115ad57600080fd5b8135818111156115bc57600080fd5b8b60208260051b85010111156115d157600080fd5b6020928301995097509089013590808211156115ec57600080fd5b506115f98a828b01611366565b909650945061160d90508960408a016114bb565b92506101408801359150610160880135905092959891949750929550565b60005b8381101561164657818101518382015260200161162e565b50506000910152565b6000815180845261166781602086016020860161162b565b601f01601f19169290920160200192915050565b60208152600061168e602083018461164f565b9392505050565b634e487b7160e01b600052601160045260246000fd5b60008160001904831182151516156116c5576116c5611695565b500290565b808201808211156116dd576116dd611695565b92915050565b634e487b7160e01b600052601260045260246000fd5b600082611708576117086116e3565b500490565b634e487b7160e01b600052603260045260246000fd5b838582379092019081526020810191909152604001919050565b60008261174c5761174c6116e3565b500690565b818103818111156116dd576116dd611695565b8060005b6002811015611787578151845260209384019390910190600101611768565b50505050565b610180808252810186905260006101a07f07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8811156117ca57600080fd5b8760051b808a838601378751805160208087019190915201516040850152830160208801516117fd606086018251611764565b6020015161180e60a0860182611764565b506040880151805160e086015260200151610100850152838103820161012085015261183c8183018861164f565b6101408501969096525050506101600152949350505050565b60006020828403121561186757600080fd5b5051919050565b600060033d11156118875760046000803e5060005160e01c5b90565b600060443d10156118985790565b6040516003193d81016004833e81513d67ffffffffffffffff81602484011181841117156118c857505050505090565b82850191508151818111156118e05750505050505090565b843d87010160208285010111156118fa5750505050505090565b611909602082860101876113eb565b509095945050505050565b6000825161192681846020870161162b565b9190910192915050565b60006020828403121561194257600080fd5b8151801515811461168e57600080fdfea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100d45760003560e01c8063411557d111610081578063830caefa1161005b578063830caefa146102145780638f3e52de1461023b5780639e1b00451461026257600080fd5b8063411557d1146101d2578063737d7b12146101f957806377ec1ac01461020c57600080fd5b8063158ef93e116100b2578063158ef93e14610186578063243feb99146101aa5780632fb565e8146101bf57600080fd5b8063054d50d4146100d95780630902f1ac146100ff578063117803e314610147575b600080fd5b6100ec6100e73660046112c0565b610275565b6040519081526020015b60405180910390f35b6032546040805167ffffffffffffffff83168152600160401b83046bffffffffffffffffffffffff166020820152600160a01b90920463ffffffff16908201526060016100f6565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016100f6565b60325461019a90600160c01b900460ff1681565b60405190151581526020016100f6565b6101bd6101b8366004611308565b610320565b005b6101bd6101cd366004611344565b6103ae565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6100ec610207366004611565565b610434565b6101bd61088f565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b61016e7f000000000000000000000000000000000000000000000000000000000000000081565b6101bd610270366004611344565b6109f2565b600080841180156102865750600083115b80156102925750600082115b6040518060400160405280600581526020017f50433a4536000000000000000000000000000000000000000000000000000000815250906102ef5760405162461bcd60e51b81526004016102e6919061167b565b60405180910390fd5b5060006102fc83866116ab565b9050600061030a86866116ca565b905061031681836116f9565b9695505050505050565b60408051808201909152600681527f50433a453132000000000000000000000000000000000000000000000000000060208201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461039d5760405162461bcd60e51b81526004016102e6919061167b565b506103a9838383610c13565b505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633146104265760405162461bcd60e51b815260206004820152601460248201527f496d6d4f776e3a20756e617574686f72697a656400000000000000000000000060448201526064016102e6565b6104308282610c1e565b5050565b6000808888600081811061044a5761044a61170d565b90506020020135905060008787858760405160200161046c9493929190611723565b60408051601f19818403018152919052805160208201209091506104b1907f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f00000019061173d565b82146040518060400160405280600681526020017f50433a4531330000000000000000000000000000000000000000000000000000815250906105075760405162461bcd60e51b81526004016102e6919061167b565b50505060008888600381811061051f5761051f61170d565b905060200201359050806000146040518060400160405280600681526020017f50433a4531340000000000000000000000000000000000000000000000000000815250906105805760405162461bcd60e51b81526004016102e6919061167b565b50506000806105be60325467ffffffffffffffff8116916bffffffffffffffffffffffff600160401b8304169163ffffffff600160a01b9091041690565b5091509150600081116040518060400160405280600581526020017f50433a45380000000000000000000000000000000000000000000000000000008152509061061b5760405162461bcd60e51b81526004016102e6919061167b565b506000808b8b60048181106106325761063261170d565b9050602002013590506000610648828686610275565b905060008d8d600881811061065f5761065f61170d565b905060200201359050808210156040518060400160405280600581526020017f50433a4537000000000000000000000000000000000000000000000000000000815250906106c05760405162461bcd60e51b81526004016102e6919061167b565b5060408051808201909152600581527f50433a45390000000000000000000000000000000000000000000000000000006020820152898310156107165760405162461bcd60e51b81526004016102e6919061167b565b5080818381610727576107276116e3565b040293508484106040518060400160405280600681526020017f50433a4531300000000000000000000000000000000000000000000000000000815250906107825760405162461bcd60e51b81526004016102e6919061167b565b5050506107cb8c8c8a8d8d8080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152508992508d9150610d2e9050565b945060006107d982866116ca565b905060006108077f000000000000000000000000000000000000000000000000000000000000000030610e1e565b905061081385876116ab565b61081d82846116ab565b10156040518060400160405280600681526020017f50433a4531310000000000000000000000000000000000000000000000000000815250906108735760405162461bcd60e51b81526004016102e6919061167b565b5061087e8282610c1e565b505050505050979650505050505050565b60325460408051808201909152600581527f50433a4533000000000000000000000000000000000000000000000000000000602082015290600160c01b900460ff166108ee5760405162461bcd60e51b81526004016102e6919061167b565b50600061091b7f000000000000000000000000000000000000000000000000000000000000000030610e1e565b905060008061095960325467ffffffffffffffff8116916bffffffffffffffffffffffff600160401b8304169163ffffffff600160a01b9091041690565b509150915080831161096a57505050565b60006109768285611751565b90506109c37f00000000000000000000000000000000000000000000000000000000000000007f000000000000000000000000000000000000000000000000000000000000000083610f83565b60006109d0828486610275565b905060006109de8286611751565b90506109ea8187610c1e565b505050505050565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610a6a5760405162461bcd60e51b815260206004820152601460248201527f496d6d4f776e3a20756e617574686f72697a656400000000000000000000000060448201526064016102e6565b60325460408051808201909152600581527f50433a4532000000000000000000000000000000000000000000000000000000602082015290600160c01b900460ff1615610aca5760405162461bcd60e51b81526004016102e6919061167b565b506000610af77f000000000000000000000000000000000000000000000000000000000000000030610e1e565b9050818110156040518060400160405280600581526020017f50433a453500000000000000000000000000000000000000000000000000000081525090610b515760405162461bcd60e51b81526004016102e6919061167b565b50603280547fffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffff16600160c01b179055610bcb7f00000000000000000000000000000000000000000000000000000000000000007f000000000000000000000000000000000000000000000000000000000000000084610f83565b610bd58383610c1e565b60408051848152602081018490527f997896709b4e932ee42750e2e14ed1f7ab6c60bd911ff567aa2485cf0b20051b910160405180910390a1505050565b6103a983838361109d565b610c278261111c565b6032805467ffffffffffffffff191667ffffffffffffffff92909216919091179055610c5281611175565b603260086101000a8154816bffffffffffffffffffffffff02191690836bffffffffffffffffffffffff160217905550610c8b426111d3565b6032805463ffffffff92909216600160a01b027fffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffff83168117918290556040805167ffffffffffffffff928316929094169190911783526bffffffffffffffffffffffff600160401b9092049190911660208301527f1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1910160405180910390a15050565b6040516301bf87f160e71b81526000906001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063dfc3f88090610d87908a908a908a908a908a908a9060040161178d565b6020604051808303816000875af1925050508015610dc2575060408051601f3d908101601f19168201909252610dbf91810190611855565b60015b610e1357610dce61186e565b806308c379a003610e075750610de261188a565b80610ded5750610e09565b8060405162461bcd60e51b81526004016102e6919061167b565b505b3d6000803e3d6000fd5b979650505050505050565b6000806000846001600160a01b03166370a0823185604051602401610e5291906001600160a01b0391909116815260200190565b6040516020818303038152906040529060e01b6020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff8381831617835250505050604051610ea09190611914565b6000604051808303816000865af19150503d8060008114610edd576040519150601f19603f3d011682016040523d82523d6000602084013e610ee2565b606091505b5091509150818015610ef45750805115155b610f665760405162461bcd60e51b815260206004820152602560248201527f5472616e7366657248656c7065723a2062616c616e63654f662063616c6c206660448201527f61696c656400000000000000000000000000000000000000000000000000000060648201526084016102e6565b80806020019051810190610f7a9190611855565b95945050505050565b82803b610fd25760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064016102e6565b6040516001600160a01b0384811660248301526044820184905260009182918716906339509351906064015b6040516020818303038152906040529060e01b6020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff838183161783525050505060405161104c9190611914565b6000604051808303816000865af19150503d8060008114611089576040519150601f19603f3d011682016040523d82523d6000602084013e61108e565b606091505b50915091506109ea8282611229565b82803b6110ec5760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064016102e6565b6040516001600160a01b03848116602483015260448201849052600091829187169063a9059cbb90606401610ffe565b6000600160401b82106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645363400000000000000000000000000000000000000000000000060448201526064016102e6565b5090565b60006c0100000000000000000000000082106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645393600000000000000000000000000000000000000000000000060448201526064016102e6565b600064010000000082106111715760405162461bcd60e51b815260206004820152600860248201527f554e53414645333200000000000000000000000000000000000000000000000060448201526064016102e6565b81801561124e57508051158061124e57508080602001905181019061124e9190611930565b6104305760405162461bcd60e51b815260206004820152602a60248201527f5472616e7366657248656c7065723a20746f6b656e20636f6e7472616374206360448201527f616c6c206661696c65640000000000000000000000000000000000000000000060648201526084016102e6565b6000806000606084860312156112d557600080fd5b505081359360208301359350604090920135919050565b80356001600160a01b038116811461130357600080fd5b919050565b60008060006060848603121561131d57600080fd5b611326846112ec565b9250611334602085016112ec565b9150604084013590509250925092565b6000806040838503121561135757600080fd5b50508035926020909101359150565b60008083601f84011261137857600080fd5b50813567ffffffffffffffff81111561139057600080fd5b6020830191508360208285010111156113a857600080fd5b9250929050565b634e487b7160e01b600052604160045260246000fd5b6040810181811067ffffffffffffffff821117156113e5576113e56113af565b60405250565b601f8201601f1916810167ffffffffffffffff81118282101715611411576114116113af565b6040525050565b60006040828403121561142a57600080fd5b6040516040810181811067ffffffffffffffff8211171561144d5761144d6113af565b604052823581526020928301359281019290925250919050565b600082601f83011261147857600080fd5b604051611484816113c5565b80604084018581111561149657600080fd5b845b818110156114b0578035835260209283019201611498565b509195945050505050565b60008183036101008112156114cf57600080fd5b6040516060810181811067ffffffffffffffff821117156114f2576114f26113af565b6040529150816115028585611418565b81526080603f198301121561151657600080fd5b6040519150611524826113c5565b6115318560408601611467565b82526115408560808601611467565b60208301528160208201526115588560c08601611418565b6040820152505092915050565b6000806000806000806000610180888a03121561158157600080fd5b873567ffffffffffffffff8082111561159957600080fd5b818a0191508a601f8301126115ad57600080fd5b8135818111156115bc57600080fd5b8b60208260051b85010111156115d157600080fd5b6020928301995097509089013590808211156115ec57600080fd5b506115f98a828b01611366565b909650945061160d90508960408a016114bb565b92506101408801359150610160880135905092959891949750929550565b60005b8381101561164657818101518382015260200161162e565b50506000910152565b6000815180845261166781602086016020860161162b565b601f01601f19169290920160200192915050565b60208152600061168e602083018461164f565b9392505050565b634e487b7160e01b600052601160045260246000fd5b60008160001904831182151516156116c5576116c5611695565b500290565b808201808211156116dd576116dd611695565b92915050565b634e487b7160e01b600052601260045260246000fd5b600082611708576117086116e3565b500490565b634e487b7160e01b600052603260045260246000fd5b838582379092019081526020810191909152604001919050565b60008261174c5761174c6116e3565b500690565b818103818111156116dd576116dd611695565b8060005b6002811015611787578151845260209384019390910190600101611768565b50505050565b610180808252810186905260006101a07f07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8811156117ca57600080fd5b8760051b808a838601378751805160208087019190915201516040850152830160208801516117fd606086018251611764565b6020015161180e60a0860182611764565b506040880151805160e086015260200151610100850152838103820161012085015261183c8183018861164f565b6101408501969096525050506101600152949350505050565b60006020828403121561186757600080fd5b5051919050565b600060033d11156118875760046000803e5060005160e01c5b90565b600060443d10156118985790565b6040516003193d81016004833e81513d67ffffffffffffffff81602484011181841117156118c857505050505090565b82850191508151818111156118e05750505050505090565b843d87010160208285010111156118fa5750505050505090565b611909602082860101876113eb565b509095945050505050565b6000825161192681846020870161162b565b9190910192915050565b60006020828403121561194257600080fd5b8151801515811461168e57600080fdfea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "convert(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256)": {
+        "details": "It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter. This function also spend the old zAccount utxo and creates new one with decreased prp balance.",
+        "params": {
+          "cachedForestRootIndex": "forest merkle root index. 0 means the most updated root.",
+          "inputs": "[14] - magicalConstraint;",
+          "privateMessages": "the private message that contains zAccount utxo data. zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText This data is used to spend the newly created utxo.",
+          "proof": "A proof associated with the zAccount and a secret.",
+          "zkpAmountOutMin": "Minimum zZkp to receive."
+        }
+      },
+      "rescueErc20(address,address,uint256)": {
+        "details": "May be only called by the {OWNER}"
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "OWNER()": {
+        "notice": "The owner who has privileged rights"
+      },
+      "PANTHER_POOL()": {
+        "notice": "Address of the PantherPool contract"
+      },
+      "VAULT()": {
+        "notice": "Address of the Vault contract"
+      },
+      "ZKP_TOKEN()": {
+        "notice": "Address of the $ZKP token contract"
+      },
+      "convert(uint256[],bytes,((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256)": {
+        "notice": "Accounts prp conversion"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 9872,
+        "contract": "contracts/protocol/PrpConverter.sol:PrpConverter",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_array(t_uint256)50_storage"
+      },
+      {
+        "astId": 9883,
+        "contract": "contracts/protocol/PrpConverter.sol:PrpConverter",
+        "label": "prpReserve",
+        "offset": 0,
+        "slot": "50",
+        "type": "t_uint64"
+      },
+      {
+        "astId": 9885,
+        "contract": "contracts/protocol/PrpConverter.sol:PrpConverter",
+        "label": "zkpReserve",
+        "offset": 8,
+        "slot": "50",
+        "type": "t_uint96"
+      },
+      {
+        "astId": 9887,
+        "contract": "contracts/protocol/PrpConverter.sol:PrpConverter",
+        "label": "blockTimestampLast",
+        "offset": 20,
+        "slot": "50",
+        "type": "t_uint32"
+      },
+      {
+        "astId": 9889,
+        "contract": "contracts/protocol/PrpConverter.sol:PrpConverter",
+        "label": "initialized",
+        "offset": 24,
+        "slot": "50",
+        "type": "t_bool"
+      }
+    ],
+    "types": {
+      "t_array(t_uint256)50_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[50]",
+        "numberOfBytes": "1600"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint32": {
+        "encoding": "inplace",
+        "label": "uint32",
+        "numberOfBytes": "4"
+      },
+      "t_uint64": {
+        "encoding": "inplace",
+        "label": "uint64",
+        "numberOfBytes": "8"
+      },
+      "t_uint96": {
+        "encoding": "inplace",
+        "label": "uint96",
+        "numberOfBytes": "12"
+      }
+    }
+  }
+}

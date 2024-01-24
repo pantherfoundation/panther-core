@@ -1,0 +1,74 @@
+{
+  "address": "0x02293E811938d00241A509780d3Cf0275d73893a",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xd901a8dbcdd43f5c57146d6c967d8d483da8175c356e4731a3cb0d6bd12829e0",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0x02293E811938d00241A509780d3Cf0275d73893a",
+    "transactionIndex": 3,
+    "gasUsed": "76997",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008004000000020000000000000000000000000000000000000000000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000002000000000000000000000000100040000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x2ffd1034ad72d5baf50cda9edd35bd7872a2cf48ab5dde4e9bed2ac638c2c85a",
+    "transactionHash": "0xd901a8dbcdd43f5c57146d6c967d8d483da8175c356e4731a3cb0d6bd12829e0",
+    "logs": [
+      {
+        "transactionIndex": 3,
+        "blockNumber": 44614130,
+        "transactionHash": "0xd901a8dbcdd43f5c57146d6c967d8d483da8175c356e4731a3cb0d6bd12829e0",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fb474a7fecdafbd412ebf0d60a0c32794f82d3dd",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000098c548395c4f0000000000000000000000000000000000000000000000000907b9a20a0287040000000000000000000000000000000000000000000035db455da15fe8004743000000000000000000000000000000000000000000000000090720dcc1c92ab50000000000000000000000000000000000000000000035db455e3a253039a392",
+        "logIndex": 14,
+        "blockHash": "0x2ffd1034ad72d5baf50cda9edd35bd7872a2cf48ab5dde4e9bed2ac638c2c85a"
+      }
+    ],
+    "blockNumber": 44614130,
+    "cumulativeGasUsed": "304416",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8929a618e86647edd07b95deef0dbe59",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getRoot()\":{\"notice\":\"Consists of two leafs: for Goerli and Munbai root: 0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4 Leaf for Goerli leaf index: 0 commitment: 0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205, = poseidon([ // param: active 1, // param: chainId 5, // param: networkId 1, // param: networkIDsBitMap // One-bit flags enabling creating/spending on this network UTXOs spendable/created on // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...) // (networks with IDs 1 and 2 are enabled) 3, // param: forTxReward 10, // param: forUtxoReward 1828, // param: forDepositReward 57646075, // param: daoDataEscrowPubKey[0] 6744227429794550577826885407270460271570870592820358232166093139017217680114n, // param: daoDataEscrowPubKey[1] 12531080428555376703723008094946927789381711849570844145043392510154357220479n ]) siblings: [ '0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248', '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4', '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8', '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c', '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800', '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f' ] Leaf for Mumbai leaf index: 1 commitment: 0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248, = poseidon([ // param: active 1, // param: chainId 80001, // param: networkId 2, // param: networkIDsBitMap // One-bit flags enabling creating/spending on this network UTXOs spendable/created on // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...) // (networks with IDs 1 and 2 are enabled) 3, // param: forTxReward 10, // param: forUtxoReward 1828, // param: forDepositReward 57646075, // param: daoDataEscrowPubKey[0] 6744227429794550577826885407270460271570870592820358232166093139017217680114n, // param: daoDataEscrowPubKey[1] 12531080428555376703723008094946927789381711849570844145043392510154357220479n ]) siblings: [ '0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205', '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4', '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8', '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c', '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800', '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f' ]\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/ZNetworksRegistry.sol\":\"ZNetworksRegistry\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/ZNetworksRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar\\npragma solidity 0.8.16;\\n\\nimport \\\"./pantherForest/interfaces/ITreeRootGetter.sol\\\";\\n\\ncontract ZNetworksRegistry is ITreeRootGetter {\\n    /**\\n    Consists of two leafs: for Goerli and Munbai\\n    root: 0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4\\n\\n    Leaf for Goerli\\n    leaf index: 0\\n    commitment: 0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205,\\n    = poseidon([\\n        // param: active\\n        1,\\n        // param: chainId\\n        5,\\n        // param: networkId\\n        1,\\n        // param: networkIDsBitMap\\n        // One-bit flags enabling creating/spending on this network UTXOs spendable/created on\\n        // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...)\\n        // (networks with IDs 1 and 2 are enabled)\\n        3,\\n        // param: forTxReward\\n        10,\\n        // param: forUtxoReward\\n        1828,\\n        // param: forDepositReward\\n        57646075,\\n        // param: daoDataEscrowPubKey[0]\\n        6744227429794550577826885407270460271570870592820358232166093139017217680114n,\\n        // param: daoDataEscrowPubKey[1]\\n        12531080428555376703723008094946927789381711849570844145043392510154357220479n\\n    ])\\n\\n    siblings: [\\n    '0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248',\\n    '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4',\\n    '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8',\\n    '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c',\\n    '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800',\\n    '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f'\\n    ]\\n\\n    Leaf for Mumbai\\n    leaf index: 1\\n    commitment: 0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248,\\n    = poseidon([\\n        // param: active\\n        1,\\n        // param: chainId\\n        80001,\\n        // param: networkId\\n        2,\\n        // param: networkIDsBitMap\\n        // One-bit flags enabling creating/spending on this network UTXOs spendable/created on\\n        // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...)\\n        // (networks with IDs 1 and 2 are enabled)\\n        3,\\n        // param: forTxReward\\n        10,\\n        // param: forUtxoReward\\n        1828,\\n        // param: forDepositReward\\n        57646075,\\n        // param: daoDataEscrowPubKey[0]\\n        6744227429794550577826885407270460271570870592820358232166093139017217680114n,\\n        // param: daoDataEscrowPubKey[1]\\n        12531080428555376703723008094946927789381711849570844145043392510154357220479n\\n    ])\\n\\n    siblings: [\\n    '0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205',\\n    '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4',\\n    '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8',\\n    '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c',\\n    '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800',\\n    '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f'\\n    ]\\n*/\\n\\n    function getRoot() external pure returns (bytes32) {\\n        return\\n            0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4;\\n    }\\n}\\n\",\"keccak256\":\"0x9e5e22c5b04781f1cd01e7c691bce107a74e5a6427264ccc7c3de5b3cb6c1709\",\"license\":\"BUSL-1.1\"},\"contracts/protocol/pantherForest/interfaces/ITreeRootGetter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2023 Panther Ventures Limited Gibraltar\\npragma solidity ^0.8.16;\\n\\ninterface ITreeRootGetter {\\n    function getRoot() external view returns (bytes32);\\n}\\n\",\"keccak256\":\"0xc6bb37fe4059cfe13c15f4c1d324b2de68a48348e136bf6cc72421f4721dc21d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50606d80601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba460405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80635ca1e16514602d575b600080fd5b7f0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba460405190815260200160405180910390f3fea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getRoot()": {
+        "notice": "Consists of two leafs: for Goerli and Munbai root: 0x0af52519043cafcc6b83b72bc01e33e1c2d24a9cfea7f2e1d984f3895d3bfba4 Leaf for Goerli leaf index: 0 commitment: 0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205, = poseidon([ // param: active 1, // param: chainId 5, // param: networkId 1, // param: networkIDsBitMap // One-bit flags enabling creating/spending on this network UTXOs spendable/created on // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...) // (networks with IDs 1 and 2 are enabled) 3, // param: forTxReward 10, // param: forUtxoReward 1828, // param: forDepositReward 57646075, // param: daoDataEscrowPubKey[0] 6744227429794550577826885407270460271570870592820358232166093139017217680114n, // param: daoDataEscrowPubKey[1] 12531080428555376703723008094946927789381711849570844145043392510154357220479n ]) siblings: [ '0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248', '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4', '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8', '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c', '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800', '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f' ] Leaf for Mumbai leaf index: 1 commitment: 0x0b2d29a71a1acffec0bae071a7e738e6a7c8efec628974e6691b5843b8a98248, = poseidon([ // param: active 1, // param: chainId 80001, // param: networkId 2, // param: networkIDsBitMap // One-bit flags enabling creating/spending on this network UTXOs spendable/created on // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...) // (networks with IDs 1 and 2 are enabled) 3, // param: forTxReward 10, // param: forUtxoReward 1828, // param: forDepositReward 57646075, // param: daoDataEscrowPubKey[0] 6744227429794550577826885407270460271570870592820358232166093139017217680114n, // param: daoDataEscrowPubKey[1] 12531080428555376703723008094946927789381711849570844145043392510154357220479n ]) siblings: [ '0x27ccd63f1c836714a032ec22dbcadfcc425e985211e513c573b1cfad5b926205', '0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4', '0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8', '0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c', '0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800', '0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f' ]"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

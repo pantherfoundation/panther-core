@@ -1,0 +1,154 @@
+{
+  "address": "0xCd85e3E918F1A36F939281d3ca707EE262a364c6",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_fxRoot",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "childChainManager",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_rootToken",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "rootToken",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "depositor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "userAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FxDepositERC20",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "ROOT_TOKEN",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "rootToken",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "depositData",
+          "type": "bytes"
+        }
+      ],
+      "name": "depositFor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x291307efca345fc2f5e03c45a78049fb0dce1ca62774e96d61ffc1613095dae8",
+  "receipt": {
+    "to": null,
+    "from": "0xfB474a7FeCDaFBD412ebF0d60A0C32794F82d3dD",
+    "contractAddress": "0xCd85e3E918F1A36F939281d3ca707EE262a364c6",
+    "transactionIndex": 46,
+    "gasUsed": "344312",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x01a24b1da0061cfb8646d7623765f0bcd808cb504a41090b6d42c4ef18122ee3",
+    "transactionHash": "0x291307efca345fc2f5e03c45a78049fb0dce1ca62774e96d61ffc1613095dae8",
+    "logs": [],
+    "blockNumber": 9962508,
+    "cumulativeGasUsed": "6399805",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA",
+    "0x00d640dAcA94b28d14C99169AEd671B0EFd0b54D",
+    "0x542c2c3e6BBfD5979E5FEC6708764B93Ba210c51"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "57b21eaaf9910c76f4d0118432267c50",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_fxRoot\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"childChainManager\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_rootToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"rootToken\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"depositor\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"userAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FxDepositERC20\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ROOT_TOKEN\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"rootToken\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"depositData\",\"type\":\"bytes\"}],\"name\":\"depositFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/common/mocks/MockRootChainManager.sol\":\"MockRootChainManager\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/TransferHelper.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-or-later\\n// solhint-disable avoid-low-level-calls\\n// solhint-disable no-inline-assembly\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title TransferHelper library\\n/// @dev Helper methods for interacting with ERC20, ERC721, ERC1155 tokens and sending ETH\\n/// Based on the Uniswap/solidity-lib/contracts/libraries/TransferHelper.sol\\nlibrary TransferHelper {\\n    /// @dev Throws if the deployed code of the `token` is empty.\\n    // Low-level CALL to a non-existing contract returns `success` of 1 and empty `data`.\\n    // It may be misinterpreted as a successful call to a deployed token contract.\\n    // So, the code calling a token contract must insure the contract code exists.\\n    modifier onlyDeployedToken(address token) {\\n        uint256 codeSize;\\n        // slither-disable-next-line assembly\\n        assembly {\\n            codeSize := extcodesize(token)\\n        }\\n        require(codeSize > 0, \\\"TransferHelper: zero codesize\\\");\\n        _;\\n    }\\n\\n    /// @dev Approve the `operator` to spend all of ERC720 tokens on behalf of `owner`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeSetApprovalForAll(\\n        address token,\\n        address operator,\\n        bool approved\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('setApprovalForAll(address,bool)'));\\n            abi.encodeWithSelector(0xa22cb465, operator, approved)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Get the ERC20 balance of `account`\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeBalanceOf(\\n        address token,\\n        address account\\n    ) internal returns (uint256 balance) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(bytes('balanceOf(address)')));\\n            abi.encodeWithSelector(0x70a08231, account)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: balanceOf call failed\\\"\\n        );\\n\\n        balance = abi.decode(data, (uint256));\\n    }\\n\\n    /// @dev Get the ERC20 allowance of `spender`\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeAllowance(\\n        address token,\\n        address owner,\\n        address spender\\n    ) internal onlyDeployedToken(token) returns (uint256 allowance) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(\\\"allowance(address,address)\\\"));\\n            abi.encodeWithSelector(0xdd62ed3e, owner, spender)\\n        );\\n        require(\\n            // since `data` can't be empty, `onlyDeployedToken` unneeded\\n            success && (data.length != 0),\\n            \\\"TransferHelper: allowance call failed\\\"\\n        );\\n\\n        allowance = abi.decode(data, (uint256));\\n    }\\n\\n    /// @dev Approve the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeApprove(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('approve(address,uint256)'));\\n            abi.encodeWithSelector(0x095ea7b3, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Increase approval of the `spender` to spend the `amount` of ERC20 token on behalf of `owner`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeIncreaseAllowance(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256(\\\"increaseAllowance(address,uint256)\\\"));\\n            abi.encodeWithSelector(0x39509351, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` ERC20 tokens from caller to `to`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeTransfer(\\n        address token,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('transfer(address,uint256)'));\\n            abi.encodeWithSelector(0xa9059cbb, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` ERC20 tokens on behalf of `from` to `to`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeTransferFrom(\\n        address token,\\n        address from,\\n        address to,\\n        uint256 value\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('transferFrom(address,address,uint256)'));\\n            abi.encodeWithSelector(0x23b872dd, from, to, value)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer an ERC721 token with id of `tokenId` on behalf of `from` to `to`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function erc721SafeTransferFrom(\\n        address token,\\n        uint256 tokenId,\\n        address from,\\n        address to\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('safeTransferFrom(address,address,uint256)'));\\n            abi.encodeWithSelector(0x42842e0e, from, to, tokenId)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `amount` ERC1155 token with id of `tokenId` on behalf of `from` to `to`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function erc1155SafeTransferFrom(\\n        address token,\\n        address from,\\n        address to,\\n        uint256 tokenId,\\n        uint256 amount,\\n        bytes memory _data\\n    ) internal onlyDeployedToken(token) {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, bytes memory data) = token.call(\\n            // bytes4(keccak256('safeTransferFrom(address,address,uint256,uint256,bytes)'));\\n            abi.encodeWithSelector(0xf242432a, from, to, tokenId, amount, _data)\\n        );\\n        _requireSuccess(success, data);\\n    }\\n\\n    /// @dev Transfer `value` Ether from caller to `to`.\\n    // disabled since false positive\\n    // slither-disable-next-line dead-code\\n    function safeTransferETH(address to, uint256 value) internal {\\n        // slither-disable-next-line low-level-calls\\n        (bool success, ) = to.call{ value: value }(new bytes(0));\\n        require(success, \\\"TransferHelper: ETH transfer failed\\\");\\n    }\\n\\n    function _requireSuccess(bool success, bytes memory res) private pure {\\n        require(\\n            success && (res.length == 0 || abi.decode(res, (bool))),\\n            \\\"TransferHelper: token contract call failed\\\"\\n        );\\n    }\\n}\\n\",\"keccak256\":\"0x287fdd8c63a2b66ac25947309942af61b4647c88ae2e9cfc38495b0b3d9f0836\",\"license\":\"GPL-3.0-or-later\"},\"contracts/common/mocks/MockRootChainManager.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\nimport \\\"../../staking/interfaces/IFxStateSender.sol\\\";\\n\\nimport \\\"../TransferHelper.sol\\\";\\n\\ncontract MockRootChainManager {\\n    address private immutable FX_ROOT;\\n\\n    address private immutable CHILD_CHAIN_MANAGER;\\n\\n    address public immutable ROOT_TOKEN;\\n\\n    event FxDepositERC20(\\n        address indexed rootToken,\\n        address indexed depositor,\\n        address indexed userAddress,\\n        uint256 amount\\n    );\\n\\n    constructor(\\n        address _fxRoot,\\n        address childChainManager,\\n        address _rootToken\\n    ) {\\n        require(\\n            _fxRoot != address(0) && _rootToken != address(0),\\n            \\\"init:zero address\\\"\\n        );\\n\\n        FX_ROOT = _fxRoot;\\n        CHILD_CHAIN_MANAGER = childChainManager;\\n        ROOT_TOKEN = _rootToken;\\n    }\\n\\n    function depositFor(\\n        address user,\\n        address rootToken,\\n        bytes calldata depositData\\n    ) external {\\n        uint256 amount = abi.decode(depositData, (uint256));\\n\\n        TransferHelper.safeTransferFrom(\\n            ROOT_TOKEN,\\n            msg.sender, // depositor\\n            address(this), // manager contract\\n            amount\\n        );\\n\\n        bytes memory message = abi.encode(user, amount);\\n\\n        IFxStateSender(FX_ROOT).sendMessageToChild(\\n            CHILD_CHAIN_MANAGER,\\n            message\\n        );\\n\\n        emit FxDepositERC20(rootToken, msg.sender, user, amount);\\n    }\\n\\n    uint256[50] private __gap;\\n}\\n\",\"keccak256\":\"0xd5f4c88708bcd043057adce0a16404d3f742a450f6e15196866d6a015f24674b\",\"license\":\"MIT\"},\"contracts/staking/interfaces/IFxStateSender.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.16;\\n\\n/***\\n * @dev An interface of the `FxRoot` contract\\n * `FxRoot` is the contract of the \\\"Fx-Portal\\\" (a PoS bridge run by the Polygon team) on the\\n * mainnet/Goerli network. It passes data to s user-defined contract on the Polygon/Mumbai.\\n * See https://docs.polygon.technology/docs/develop/l1-l2-communication/fx-portal\\n */\\ninterface IFxStateSender {\\n    function sendMessageToChild(\\n        address _receiver,\\n        bytes calldata _data\\n    ) external;\\n}\\n\",\"keccak256\":\"0x81f9bbd2a34f52dbfb1d5358fb6ef2341eebdd374720c5d445008465f3cc3040\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e060405234801561001057600080fd5b5060405161067238038061067283398101604081905261002f916100cc565b6001600160a01b0383161580159061004f57506001600160a01b03811615155b6100935760405162461bcd60e51b8152602060048201526011602482015270696e69743a7a65726f206164647265737360781b604482015260640160405180910390fd5b6001600160a01b0392831660805290821660a0521660c05261010f565b80516001600160a01b03811681146100c757600080fd5b919050565b6000806000606084860312156100e157600080fd5b6100ea846100b0565b92506100f8602085016100b0565b9150610106604085016100b0565b90509250925092565b60805160a05160c05161052f610143600039600081816040015260a80152600061013401526000610107015261052f6000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063de84e3121461003b578063e3dec8fb1461007e575b600080fd5b6100627f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b03909116815260200160405180910390f35b61009161008c3660046103cf565b610093565b005b60006100a18284018461045d565b90506100cf7f00000000000000000000000000000000000000000000000000000000000000003330846101ef565b604080516001600160a01b038781166020830152818301849052825180830384018152606083019384905263b472047760e01b9093527f0000000000000000000000000000000000000000000000000000000000000000169063b47204779061015e907f000000000000000000000000000000000000000000000000000000000000000090859060640161049a565b600060405180830381600087803b15801561017857600080fd5b505af115801561018c573d6000803e3d6000fd5b50505050856001600160a01b0316336001600160a01b0316866001600160a01b03167f8a58355ceb4626422a66b0f36743672dde8507c6be664f0e5b9de8350a132159856040516101df91815260200190565b60405180910390a4505050505050565b83803b806102445760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064015b60405180910390fd5b604080516001600160a01b0387811660248301528681166044830152606480830187905283518084039091018152608490920183526020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff166323b872dd60e01b17905291516000928392908a16916102bd91906104dd565b6000604051808303816000865af19150503d80600081146102fa576040519150601f19603f3d011682016040523d82523d6000602084013e6102ff565b606091505b509150915061030e8282610318565b5050505050505050565b81801561033d57508051158061033d57508080602001905181019061033d91906104f9565b6103af5760405162461bcd60e51b815260206004820152602a60248201527f5472616e7366657248656c7065723a20746f6b656e20636f6e7472616374206360448201527f616c6c206661696c656400000000000000000000000000000000000000000000606482015260840161023b565b5050565b80356001600160a01b03811681146103ca57600080fd5b919050565b600080600080606085870312156103e557600080fd5b6103ee856103b3565b93506103fc602086016103b3565b9250604085013567ffffffffffffffff8082111561041957600080fd5b818701915087601f83011261042d57600080fd5b81358181111561043c57600080fd5b88602082850101111561044e57600080fd5b95989497505060200194505050565b60006020828403121561046f57600080fd5b5035919050565b60005b83811015610491578181015183820152602001610479565b50506000910152565b6001600160a01b038316815260406020820152600082518060408401526104c8816060850160208701610476565b601f01601f1916919091016060019392505050565b600082516104ef818460208701610476565b9190910192915050565b60006020828403121561050b57600080fd5b8151801515811461051b57600080fd5b939250505056fea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063de84e3121461003b578063e3dec8fb1461007e575b600080fd5b6100627f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b03909116815260200160405180910390f35b61009161008c3660046103cf565b610093565b005b60006100a18284018461045d565b90506100cf7f00000000000000000000000000000000000000000000000000000000000000003330846101ef565b604080516001600160a01b038781166020830152818301849052825180830384018152606083019384905263b472047760e01b9093527f0000000000000000000000000000000000000000000000000000000000000000169063b47204779061015e907f000000000000000000000000000000000000000000000000000000000000000090859060640161049a565b600060405180830381600087803b15801561017857600080fd5b505af115801561018c573d6000803e3d6000fd5b50505050856001600160a01b0316336001600160a01b0316866001600160a01b03167f8a58355ceb4626422a66b0f36743672dde8507c6be664f0e5b9de8350a132159856040516101df91815260200190565b60405180910390a4505050505050565b83803b806102445760405162461bcd60e51b815260206004820152601d60248201527f5472616e7366657248656c7065723a207a65726f20636f646573697a6500000060448201526064015b60405180910390fd5b604080516001600160a01b0387811660248301528681166044830152606480830187905283518084039091018152608490920183526020820180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff166323b872dd60e01b17905291516000928392908a16916102bd91906104dd565b6000604051808303816000865af19150503d80600081146102fa576040519150601f19603f3d011682016040523d82523d6000602084013e6102ff565b606091505b509150915061030e8282610318565b5050505050505050565b81801561033d57508051158061033d57508080602001905181019061033d91906104f9565b6103af5760405162461bcd60e51b815260206004820152602a60248201527f5472616e7366657248656c7065723a20746f6b656e20636f6e7472616374206360448201527f616c6c206661696c656400000000000000000000000000000000000000000000606482015260840161023b565b5050565b80356001600160a01b03811681146103ca57600080fd5b919050565b600080600080606085870312156103e557600080fd5b6103ee856103b3565b93506103fc602086016103b3565b9250604085013567ffffffffffffffff8082111561041957600080fd5b818701915087601f83011261042d57600080fd5b81358181111561043c57600080fd5b88602082850101111561044e57600080fd5b95989497505060200194505050565b60006020828403121561046f57600080fd5b5035919050565b60005b83811015610491578181015183820152602001610479565b50506000910152565b6001600160a01b038316815260406020820152600082518060408401526104c8816060850160208701610476565b601f01601f1916919091016060019392505050565b600082516104ef818460208701610476565b9190910192915050565b60006020828403121561050b57600080fd5b8151801515811461051b57600080fd5b939250505056fea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 6105,
+        "contract": "contracts/common/mocks/MockRootChainManager.sol:MockRootChainManager",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_array(t_uint256)50_storage"
+      }
+    ],
+    "types": {
+      "t_array(t_uint256)50_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[50]",
+        "numberOfBytes": "1600"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
