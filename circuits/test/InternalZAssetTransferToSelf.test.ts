@@ -32,9 +32,10 @@ const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
 // poseidon([private key,commitment hash])
 const utxoInNullifier = poseidon([
     2081961849142627796057765042284889488177156119328724687723132407819597118232n,
-    11523634662946890046365104047518433747127860155876344066113052090976848222113n,
+    19415350603868075586262717582877071671289610526157183329824084311591608122417n,
 ]);
 // 12261212521307624202624389959174077033486171218534589058441533953762363415436n
+// 6744079633340602015721084589890019091130681888569198412667110032260423776957n
 // console.log('utxoInNullifier=>', utxoInNullifier);
 
 // ======== utxoOutSpendPubKeyRandom =========
@@ -83,9 +84,10 @@ const hiden_hash = poseidon([
 // console.log('hiden_hash=>', hiden_hash);
 
 // BigInt(110), // utxoOutAmount
-const hasher = poseidon([BigInt(110n), hiden_hash]);
+const hasher = poseidon([BigInt(10n), hiden_hash]);
 // Updated - 13035862322141291345387073557144274959630128988803024911881387464812071371979n
 // // Updated after the utxoOutCreateTime change - 19505935574081082908649402119420254136779942097610400748362335534634359708763n
+// Updated after amount change - 12247091374300680370472019500049685820031923683055564750350189371309468239163n
 // console.log('hasher=>', hasher);
 
 const deriveChildPrivKeyForZaccount = deriveChildPrivKeyFromRootPrivKey(
@@ -98,8 +100,9 @@ const deriveChildPrivKeyForZaccount = deriveChildPrivKeyFromRootPrivKey(
 // nullifier computation
 const zAccountUtxoInNullifierHasher = poseidon([
     2081961849142627796057765042284889488177156119328724687723132407819597118232n,
-    17513440433113848777254602008081679391497346341511052719820313814139380482034n,
+    897729382127869693507601465743397089386413328909369561194988340925714928247n,
 ]);
+// 8502030898120102519937259799105356839486136750324356576869246553427944022684n
 // console.log('zAccountUtxoInNullifierHasher=>', zAccountUtxoInNullifierHasher);
 
 // zAccountUtxoOut computation which will be added to the bustree and this will be the input for the next step.
@@ -156,7 +159,7 @@ const zAccountUtxoOutCommitment = poseidon([
     hash1,
     BigInt(407487970930055136132864974074225519407787604125n),
     BigInt(33n),
-    BigInt(99998100),
+    BigInt(99998200),
     BigInt(0n),
     BigInt(1n),
     BigInt(1702652400n),
@@ -167,6 +170,8 @@ const zAccountUtxoOutCommitment = poseidon([
 ]);
 // zAccountUtxoOutCommitment=> 6269652722340527965663900227411139445370721754419731520796720916433107060820n
 // Updated after the utxoOutCreateTime change - 9413090251388556489564135886226244505545283629990462132597406034409260938251n
+// Updated after 99998200
+// 7772418543813295742630374375434619738043832814326507445998878366517018150529n
 // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
 
 describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async function (this: any) {
@@ -231,8 +236,8 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
 
         // will be non zero for internal tx
         // single valid UTXO - no merge, no split
-        utxoInAmount: [BigInt(110n), BigInt(0n)],
-        utxoOutAmount: [BigInt(110n), BigInt(0n)],
+        utxoInAmount: [BigInt(10n), BigInt(0n)],
+        utxoOutAmount: [BigInt(10n), BigInt(0n)],
 
         // zAsset
         zAssetNetwork: BigInt(2n),
@@ -501,7 +506,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
                     6686357876049196452243509397062844074891055917128210002486801012953357578415n,
                 ),
                 BigInt(
-                    10497118874365671004307842885022732704193691251374618477167378509016784664037n,
+                    4688373538176315178844518458974988000381735504277175917164777164886343575587n,
                 ),
                 BigInt(
                     13332607562825133358947880930907706925768730553195841232963500270946125500492n,
@@ -616,14 +621,14 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
         ],
         utxoInNullifier: [
             BigInt(
-                12261212521307624202624389959174077033486171218534589058441533953762363415436n,
+                6744079633340602015721084589890019091130681888569198412667110032260423776957n,
             ),
             BigInt(0n),
         ],
 
         // input 'zAccount UTXO'
         zAccountUtxoInId: BigInt(33n),
-        zAccountUtxoInZkpAmount: BigInt(99999000n),
+        zAccountUtxoInZkpAmount: BigInt(99999100n),
         zAccountUtxoInPrpAmount: BigInt(0n),
         zAccountUtxoInZoneId: BigInt(1n),
         zAccountUtxoInNetworkId: BigInt(2n),
@@ -712,7 +717,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
                 15915358021544645824948763611506574620607002248967455613245207713011512736724n,
             ),
             BigInt(
-                9449964213184002900440377252087005195114246559965738937409595197082647154929n,
+                10422297446900335672329267035961821896194360558354085024486833291238130381890n,
             ),
             BigInt(
                 13332607562825133358947880930907706925768730553195841232963500270946125500492n,
@@ -792,7 +797,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
         ],
         zAccountUtxoInNullifier:
             BigInt(
-                21286381334548933526523828022233087509225412533853018603545776804638389565332n,
+                8502030898120102519937259799105356839486136750324356576869246553427944022684n,
             ),
 
         zAccountBlackListLeaf: BigInt(0n),
@@ -1192,13 +1197,13 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
                 8545989893275276231799888565301908912318543399332021915998096176909753199105n,
             ),
             BigInt(
-                13712697828766315168315008673159740777226884807578482481721063613885274042245n,
+                1597271708782709315676429742169505725069011520555823751865890562701433116263n,
             ),
             BigInt(
                 13116190464256158497839887597524501812846680459236688248532348621490241197945n,
             ),
             BigInt(
-                13712697828766315168315008673159740777226884807578482481721063613885274042245n,
+                1597271708782709315676429742169505725069011520555823751865890562701433116263n,
             ),
             BigInt(
                 13116190464256158497839887597524501812846680459236688248532348621490241197945n,
@@ -1222,13 +1227,13 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
                 20637416069479879785001161881462675658184199290896901419191315646291334864295n,
             ),
             BigInt(
-                921847061137674076449255978734288957915775930145159608447586708321995062081n,
+                18118920896364503434001190220651076576182638626843697482408793004900950564665n,
             ),
             BigInt(
                 20000738990158911673922080741335508851223507369672887792062131046520480743662n,
             ),
             BigInt(
-                921847061137674076449255978734288957915775930145159608447586708321995062081n,
+                18118920896364503434001190220651076576182638626843697482408793004900950564665n,
             ),
             BigInt(
                 20000738990158911673922080741335508851223507369672887792062131046520480743662n,
@@ -1314,19 +1319,18 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
         ],
         utxoOutCommitment: [
             BigInt(
-                19505935574081082908649402119420254136779942097610400748362335534634359708763n,
+                12247091374300680370472019500049685820031923683055564750350189371309468239163n,
             ),
             BigInt(0n),
         ],
-
-        zAccountUtxoOutZkpAmount: BigInt(99998100),
+        zAccountUtxoOutZkpAmount: BigInt(99998200),
         zAccountUtxoOutSpendKeyRandom:
             BigInt(
                 928974505793416890028255163642163633941110568617692085076073897724890512527n,
             ),
         zAccountUtxoOutCommitment:
             BigInt(
-                9413090251388556489564135886226244505545283629990462132597406034409260938251n,
+                7772418543813295742630374375434619738043832814326507445998878366517018150529n,
             ),
         // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
         chargedAmountZkp: BigInt(10 ** 15),
@@ -1377,7 +1381,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
             ),
         busMerkleRoot:
             BigInt(
-                20638879087901042985289591121422920189471395968304145753000940782656094218936n,
+                20822458005806272597938988137521180539263142873265284055598877829761450894627n,
             ),
         ferryMerkleRoot:
             BigInt(
