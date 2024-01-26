@@ -171,9 +171,10 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
     // Updated - 3829987868804428980741670606899753266007234461920491165622363256125120002539n
     // console.log('hiden_hash=>', hiden_hash);
 
-    // BigInt(110), // utxoOutAmount
-    const hasher = poseidon([BigInt(110n), hiden_hash]);
+    // BigInt(10), // utxoOutAmount
+    const hasher = poseidon([BigInt(10n), hiden_hash]);
     // Updated - 11523634662946890046365104047518433747127860155876344066113052090976848222113n
+    // Updated after utxoOutAmount correction - 19415350603868075586262717582877071671289610526157183329824084311591608122417n
     // console.log('hasher=>', hasher);
     // ==========================
     // Derive child spending private key from root spending private key
@@ -259,7 +260,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         hash1,
         BigInt(407487970930055136132864974074225519407787604125n),
         BigInt(33n),
-        BigInt(99999000n),
+        BigInt(99999100n),
         BigInt(0n),
         BigInt(1n),
         BigInt(1702652400n),
@@ -269,6 +270,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         BigInt(2n),
     ]);
     // 17513440433113848777254602008081679391497346341511052719820313814139380482034n
+    // Updated - 897729382127869693507601465743397089386413328909369561194988340925714928247n
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
     /* ========== zAccountUtxoOut commitment  ========== */
 
@@ -541,7 +543,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
 
         // 1 utxo will get created as part of deposit only tx
         // Check - If deposit and split operation which will create 2 UTXO is supported by the protocol
-        utxoOutAmount: [BigInt(110n), BigInt(0n)],
+        utxoOutAmount: [BigInt(10n), BigInt(0n)],
 
         // zAsset
         zAssetId: BigInt(0n),
@@ -1448,7 +1450,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
                 13116190464256158497839887597524501812846680459236688248532348621490241197945n,
             ),
             BigInt(
-                13712697828766315168315008673159740777226884807578482481721063613885274042245n,
+                1597271708782709315676429742169505725069011520555823751865890562701433116263n,
             ),
             BigInt(
                 13116190464256158497839887597524501812846680459236688248532348621490241197945n,
@@ -1462,9 +1464,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
             BigInt(
                 3329503191844053250390812596161820406211215630138787975944325664460904442994n,
             ),
-            BigInt(
-                0,
-            ),
+            BigInt(0),
         ],
         dataEscrowEncryptedMessageAy: [
             BigInt(
@@ -1480,7 +1480,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
                 20000738990158911673922080741335508851223507369672887792062131046520480743662n,
             ),
             BigInt(
-                921847061137674076449255978734288957915775930145159608447586708321995062081n,
+                18118920896364503434001190220651076576182638626843697482408793004900950564665n,
             ),
             BigInt(
                 20000738990158911673922080741335508851223507369672887792062131046520480743662n,
@@ -1494,9 +1494,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
             BigInt(
                 19605233506631298351965696132895712538735071948591379670272736484187200485477n,
             ),
-            BigInt(
-                0,
-            ),
+            BigInt(0),
         ],
         daoDataEscrowPubKey: [
             BigInt(
@@ -1567,19 +1565,19 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         ],
         utxoOutCommitment: [
             BigInt(
-                11523634662946890046365104047518433747127860155876344066113052090976848222113n,
+                19415350603868075586262717582877071671289610526157183329824084311591608122417n,
             ),
             BigInt(0n),
         ],
 
-        zAccountUtxoOutZkpAmount: BigInt(99999000n),
+        zAccountUtxoOutZkpAmount: BigInt(99999100n),
         zAccountUtxoOutSpendKeyRandom:
             BigInt(
                 1215795509656177802870041674430711702496004716229829094660171184836034819583n,
             ),
         zAccountUtxoOutCommitment:
             BigInt(
-                17513440433113848777254602008081679391497346341511052719820313814139380482034n,
+                897729382127869693507601465743397089386413328909369561194988340925714928247n,
             ),
         // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
         chargedAmountZkp: BigInt(10 ** 15),
@@ -1592,7 +1590,7 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
             BigInt(
                 14012219796450685573713237305847642356367283250649627741328974142691321346497n,
             ),
-            zNetworkTreePathIndices: [
+        zNetworkTreePathIndices: [
             BigInt(1n),
             BigInt(0n),
             BigInt(0n),
