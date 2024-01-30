@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "../../circuits/templates/noteHasher.circom";
+include "../../circuits/legacy/templates/noteHasher.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template TestDesirialized () {

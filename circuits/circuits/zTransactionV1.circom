@@ -28,7 +28,6 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
-include "./templates/utxoNoteHasher.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -623,7 +622,7 @@ template ZTransactionV1( nUtxoIn,
     isDeltaTimeLessEqThen.in[0] <== deltaTime;
     isDeltaTimeLessEqThen.in[1] <== zZoneTimePeriodPerMaximumAmount;
 
-    signal zAccountUtxoOutTotalAmountPerTimePeriod <== totalBalanceChecker.totalWeighted + (isDeltaTimeLessEqThen.out * zAccountUtxoInTotalAmountPerTimePeriod);
+    signal zAccountUtxoOutTotalAmountPerTimePeriod <== isDeltaTimeLessEqThen.out * (totalBalanceChecker.totalWeighted + zAccountUtxoInTotalAmountPerTimePeriod);
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
 

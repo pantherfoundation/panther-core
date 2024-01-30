@@ -1,11 +1,11 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./merkleTreeInclusionProof.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
-include "../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../node_modules/circomlib/circuits/switcher.circom";
+include "../../templates/merkleTreeInclusionProof.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/switcher.circom";
 
 template NoteInclusionProver(n_levels) {
     signal input root;

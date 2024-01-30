@@ -25,5 +25,4 @@ template ZAccountNoteInclusionProver(n_levels) {
     isEqual.in[0] <== root;
     isEqual.in[1] <== proof.root;
     isEqual.enabled <== root;
-    //root === proof.root;
 }

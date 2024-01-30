@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
 
 // with respect to offset - `offset` address the LSB bit number
 // for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
@@ -98,7 +98,7 @@ template ZAssetCheckerTest() {
 
     // var isTxInternalOnly = isZeroAmounts.out;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../////
     // case-A - internal only TX - require:
     // 1) token == 0
     // 2) tokenId == 0
@@ -112,7 +112,7 @@ template ZAssetCheckerTest() {
     // In any case of 3) or 4) still we need to check zAsset == UTXO::zAssetId
     // This check will be made with respect to zAsset::offset
     //      zAsset::ID == UTXO::zAssetId (with respect to zAsset::offset)
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../////
     var enableIfAmountsAre_Zero = isZeroAmounts.out;
 
     // 1) Enabled only if [Deposit-Amount && Withdraw-Amount] === ZERO
@@ -129,7 +129,7 @@ template ZAssetCheckerTest() {
 
     // TODO: 3) & 4) --- zAsset == UTXO::zAssetId (with respect to zAsset::offset)
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../////
     // case-B - external & internal TX - require:
     // 1) token == zAsset::token
     // 2) If tokenId == 0 ---> ERC20 case // TODO: is it posible to have zero-token-ID ?
@@ -151,7 +151,7 @@ template ZAssetCheckerTest() {
     //        4.2) If 0 < tokenId < 2^32 <------------- THIS ONE NOT NEEDED since 3) + 3.1) check
     //                require:
     //                    tokneId == UTXO::zAssetId (with respect of LSBs & offset)
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../////
 
     // 1) Enabled only if [Deposit-Amount || Withdraw-Amount] != ZERO
     var enableIfAmountsAre_NotZero = 1 - isZeroAmounts.out;

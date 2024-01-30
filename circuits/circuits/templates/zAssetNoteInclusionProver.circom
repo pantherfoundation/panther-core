@@ -6,7 +6,6 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
 template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
-    // Poseidon ( 1 - Poseidon(1,2,3), 2 - Poseidon(4,5,6,7) )
     signal input zAsset;      // 64 bit ( was 160 )
     signal input token;       // 160 bit - ERC20 address
     signal input tokenId;     // 256 bit - NFT-ID/Token-ID, can be zero in-case some LSB bits from zAssetID is used for NFT-count

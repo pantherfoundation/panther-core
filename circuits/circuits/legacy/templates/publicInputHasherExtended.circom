@@ -4,9 +4,9 @@ pragma circom 2.1.6;
 include "./multiPoseidon.circom";
 include "./multiOR.circom";
 
-include "../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/gates.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/gates.circom";
 
 template PublicInputHasherExtended( nUtxoIn,
                                     nUtxoOut,

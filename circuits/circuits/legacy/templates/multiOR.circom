@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/gates.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/gates.circom";
 
 template MultiOR(n) {
     signal input in[n];

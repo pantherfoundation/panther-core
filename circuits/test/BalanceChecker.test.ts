@@ -77,13 +77,15 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetWeight = 1;
 
+            let totalScaled = (100000110n - 99999000n);
+            let totalWeighted = totalScaled;
             await checkWitness({
                 depositScaledAmount: 10,
                 depositWeightedScaledAmount: 10,
                 withdrawWeightedScaledAmount: 0,
                 withdrawScaledAmount: 0,
-                totalScaled: 100000110,
-                totalWeighted: 100000110,
+                totalScaled: totalScaled,
+                totalWeighted: totalWeighted,
             });
         });
 

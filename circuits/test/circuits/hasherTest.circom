@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.0.0;
-include "./templates/hasherTester.circom";
+include "../../circuits/legacy/templates/hasherTester.circom";
 
 // Two private inputs being hashed, public resulted hash
 // non-linear constraints: 240, linear constraints: 0
