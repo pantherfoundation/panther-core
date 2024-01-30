@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import {expect} from 'chai';
 import {bufferToBigInt} from '@panther-core/crypto/lib/utils/bigint-conversions';
 import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
+import { PublicKey } from '@panther-core/crypto/lib/types/keypair';
 import {
     derivePubKeyFromPrivKey,
     deriveChildPubKeyFromRootPubKey,
@@ -14,7 +15,7 @@ import {getOptions} from './helpers/circomTester';
 
 describe('PubKeyDeriver circuit', async function (this: any) {
     let pubKeyDeriver: any;
-    let randomRootPubKey: bigint[];
+    let randomRootPubKey: PublicKey;
     let randomRootPrivKey: bigint;
     let random: bigint;
     let expectedPubKey: bigint[];

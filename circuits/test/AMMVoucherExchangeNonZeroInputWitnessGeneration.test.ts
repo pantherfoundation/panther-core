@@ -12,6 +12,7 @@ import {
 } from '@panther-core/crypto/lib/base/field-operations';
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import assert from 'assert';
+import { PublicKey } from '@panther-core/crypto/lib/types/keypair';
 
 import {
     deriveChildPubKeyFromRootPubKey,
@@ -43,7 +44,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         ammWitness = path.join(opts.basedir, './compiled/generateWitness.js');
     });
 
-    const zAccountUtxoInRootSpendPubKey = [
+    const zAccountUtxoInRootSpendPubKey :PublicKey = [
         9665449196631685092819410614052131494364846416353502155560380686439149087040n,
         13931233598534410991314026888239110837992015348186918500560502831191846288865n,
     ];
