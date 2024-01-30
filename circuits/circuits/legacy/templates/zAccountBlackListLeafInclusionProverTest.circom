@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./zAccountNoteInclusionProver.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
-include "../../node_modules/circomlib/circuits/gates.circom";
+include "../../templates/zAccountNoteInclusionProver.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../node_modules/circomlib/circuits/gates.circom";
 
 template ZAccountBlackListLeafInclusionProverTest(ZAccountBlackListMerkleTreeDepth){
     signal input zAccountId;

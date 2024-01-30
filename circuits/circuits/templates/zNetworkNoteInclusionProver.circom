@@ -45,5 +45,4 @@ template ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth){
     isEqual.in[0] <== merkleVerifier.root;
     isEqual.in[1] <== merkleRoot;
     isEqual.enabled <== merkleRoot;
-    // merkleRoot === merkleVerifier.root
 }

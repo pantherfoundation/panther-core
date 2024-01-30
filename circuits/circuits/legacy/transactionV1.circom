@@ -11,9 +11,9 @@ include "./templates/rNoteHasher.circom";
 include "./templates/utxoLeafDecoder.circom";
 include "./templates/rewardLeafDecoder.circom";
 include "./templates/weightChecker.circom";
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/babyjub.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../node_modules/circomlib/circuits/babyjub.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
 
 // spendPubKey := BabyPubKey(spendPrivKey)
 // Note := Poseidon(spendPubKey, amount, token, createTime)

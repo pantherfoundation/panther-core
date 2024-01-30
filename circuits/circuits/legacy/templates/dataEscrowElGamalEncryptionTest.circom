@@ -3,9 +3,9 @@ pragma circom 2.1.6;
 
 include "./multiOR.circom";
 
-include "../../node_modules/circomlib/circuits/babyjub.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/escalarmulany.circom";
+include "../../../node_modules/circomlib/circuits/babyjub.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/escalarmulany.circom";
 
 // ------------- scalars-size --------------------------------
 // 1) 1 x 64 (zAsset)
@@ -117,9 +117,9 @@ template DaoDataEscrowSerializerTest(nUtxoIn,nUtxoOut) {
         }
         out[1+j] <== utxoInOriginZoneIdUtxoOutTargetZoneIdOR[j];
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    // OLD SCHEME ////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..///
+    // OLD SCHEM../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../
+  ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..///
     // 2) nUtxoIn x ( zones-ids - 32 bit ) ------
     /*
     signal utxoInOriginZoneIdShifted[nUtxoIn];

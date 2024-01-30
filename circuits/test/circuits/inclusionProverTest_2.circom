@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "../../circuits/templates/noteHasher.circom";
-include "../../circuits/templates/noteInclusionProver.circom";
+include "../../circuits/legacy/templates/noteHasher.circom";
+include "../../circuits/legacy/templates/noteInclusionProver.circom";
 include "../../node_modules/circomlib/circuits/babyjub.circom";
 // 3,3,16
 template TestInclusionProver(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {

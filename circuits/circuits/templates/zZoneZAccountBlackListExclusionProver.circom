@@ -27,7 +27,7 @@ template ZZoneZAccountBlackListExclusionProver(){
         isEqual[i].in[0] <== zAccountId;
         isEqual[i].in[1] <== b2n[i].out;
 
-        // require excusion
+        // require exclusion
         isEqual[i].out === 0;
     }
 }

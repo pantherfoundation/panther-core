@@ -20,3 +20,19 @@ template RangeCheck(N, RC) {
         greaterThen[i].out === 1;
     }
 }
+
+template RangeCheckSingleSignal(LessThanValue, LessThanBits, GreaterThanValue, GreaterThanBits) {
+    signal input in;
+
+    component less;
+    less = LessThan(LessThanBits);
+    less.in[0] <== in[i];
+    less.in[1] <== LessThanValue;
+    less.out === 1;
+
+    component greater;
+    greater = GreaterThan(GreaterThanBits);
+    greater.in[0] <== GreaterThanValue;
+    greater.in[1] <== in[i];
+    greater.out === 1;
+}

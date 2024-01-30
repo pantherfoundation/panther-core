@@ -128,11 +128,26 @@ template BalanceChecker() {
     component zAccountUtxoOutZkpAmountChecker = ForceEqualIfEnabled();
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
-    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp;
-    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoInZkpAmount + donatedScaledAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoInZkpAmount + donatedScaledAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp;
 
-    totalScaled <== totalBalanceIn;
-    totalWeighted <== totalBalanceIn * zAssetWeight;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [5] - Compute scaled & weighted /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [5.0] - check if IN =< OUT
+    component lessThen = LessEqThan(252);
+    lessThen.in[0] <== zAccountUtxoInZkpAmount;
+    lessThen.in[1] <== zAccountUtxoOutZkpAmount;
+
+    // [5.1] - choose IN if IN < OUT, choose OUT if OUT < IN
+    signal mux_input[2];
+    mux_input[0] <== lessThen.out * zAccountUtxoInZkpAmount;        // NOT zero if IN =< OUT
+    mux_input[1] <== (1 - lessThen.out) * zAccountUtxoOutZkpAmount; // NOT zero if OUT < IN
+
+    signal zAccountUtxoResidualZkpAmount <== mux_input[0] + mux_input[1];
+    // [5.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
+    totalScaled <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
+    totalWeighted <== totalScaled * zAssetWeight;
 }
 
 
