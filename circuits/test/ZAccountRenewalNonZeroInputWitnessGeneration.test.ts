@@ -12,6 +12,7 @@ import {
 } from '@panther-core/crypto/lib/base/field-operations';
 
 import {deriveChildPubKeyFromRootPubKey} from '@panther-core/crypto/lib/base/keypairs';
+import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
 
 describe('ZAccount Renewal - Non Zero Input - Witness computation', async function (this: any) {
     let circuit: any;
@@ -142,7 +143,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         // During ZAccount renewal ZAccount(sender) will generate a new random for the derivation of new child public keys
         // From the renewal process onwards child keys derived from ZAccount root keys will be different.
 
-        const zAccountUtxoInRootSpendPubKey = [
+        const zAccountUtxoInRootSpendPubKey: PublicKey = [
             BigInt(
                 12145192005176226861521344364385235319411642944472049576533844974362874884912n,
             ),
