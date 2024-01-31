@@ -431,9 +431,8 @@ contract PantherPoolV1 is
         uint256 zAssetUtxoCommitmentPrivatePart = inputs[5];
 
         zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
-            zAssetUtxoCommitmentPrivatePart,
             zkpAmountScaled,
-            createTime
+            zAssetUtxoCommitmentPrivatePart
         );
 
         {
@@ -878,16 +877,11 @@ contract PantherPoolV1 is
     }
 
     function _generateZAssetUtxoCommitment(
-        uint256 zAssetUtxoPrivateDataHash,
         uint256 zAssetAmount,
-        uint256 creationTime
+        uint256 zAssetUtxoPrivateDataHash
     ) private pure returns (bytes32 zAssetUtxoCommitment) {
-        zAssetUtxoCommitment = PoseidonHashers.poseidonT4(
-            [
-                bytes32(zAssetUtxoPrivateDataHash),
-                bytes32(zAssetAmount),
-                bytes32(creationTime)
-            ]
+        zAssetUtxoCommitment = PoseidonHashers.poseidonT3(
+            [bytes32(zAssetAmount), bytes32(zAssetUtxoPrivateDataHash)]
         );
     }
 

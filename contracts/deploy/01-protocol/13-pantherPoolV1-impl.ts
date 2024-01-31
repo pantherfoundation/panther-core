@@ -57,9 +57,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PANTHER_VERIFIER',
     );
 
-    const poseidonT4 =
-        getContractEnvAddress(hre, 'POSEIDON_T4') ||
-        (await get('PoseidonT4')).address;
+    const poseidonT3 =
+        getContractEnvAddress(hre, 'POSEIDON_T3') ||
+        (await get('PoseidonT3')).address;
     const poseidonT5 =
         getContractEnvAddress(hre, 'POSEIDON_T5') ||
         (await get('PoseidonT5')).address;
@@ -80,7 +80,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             pantherVerifier,
         ],
         libraries: {
-            PoseidonT4: poseidonT4,
+            PoseidonT3: poseidonT3,
             PoseidonT5: poseidonT5,
         },
         log: true,
