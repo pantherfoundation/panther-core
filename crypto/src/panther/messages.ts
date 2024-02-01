@@ -73,7 +73,7 @@ type MessageConfig = {
     };
 };
 
-const UTXO_MESSAGE_CONFIGS: MessageConfig = {
+export const UTXO_MESSAGE_CONFIGS: MessageConfig = {
     ZAccount: {
         fields: [
             'secretRandom',
