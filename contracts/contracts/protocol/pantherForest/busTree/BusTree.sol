@@ -172,6 +172,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         }
 
         // Verify the proof
+        // Trusted contract - no reentrancy guard needed
         require(
             VERIFIER.verify(CIRCUIT_ID, inputs, proof),
             ERR_FAILED_ZK_PROOF
@@ -204,6 +205,7 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         _numUtxosInBusTree += nUtxos;
 
         // Synchronize the sate of `PantherForest` contract
+        // Trusted contract - no reentrancy guard needed
         ITreeRootUpdater(PANTHER_POOL).updateRoot(
             busTreeNewRoot,
             BUS_TREE_FOREST_LEAF_INDEX
