@@ -8,7 +8,6 @@ import "../pantherForest/merkleTrees/BinaryUpdatableTree.sol";
 import "../errMsgs/ZAccountsRegistryErrMsgs.sol";
 
 import "../crypto/PoseidonHashers.sol";
-import { FIELD_SIZE } from "../crypto/SnarkConstants.sol";
 
 abstract contract BlacklistedZAccountIdsTree is
     BinaryUpdatableTree,
