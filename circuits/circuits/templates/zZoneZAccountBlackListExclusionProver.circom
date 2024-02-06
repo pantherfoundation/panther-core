@@ -5,6 +5,13 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
+/*
+This template checks if the given ZAccount in a ZZone is not blacklisted.
+
+@input signals -
+1. zAccountId - unique zAccountId for a ZAccount
+2. zAccountIDsBlackList - List of all ZAccounts that are blacklisted.
+*/
 template ZZoneZAccountBlackListExclusionProver(){
     signal input zAccountId;              // 24 bit
     signal input zAccountIDsBlackList;    // 10 x 24 bit at most

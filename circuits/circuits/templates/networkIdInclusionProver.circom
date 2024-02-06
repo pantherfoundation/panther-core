@@ -5,6 +5,14 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
+/*
+This template checks if the Network is with a specific ID is enabled by the protocol or not.
+
+@input signals:
+1. enabled - boolean value for enabling and disabling the check
+2. networkId - unique ID given to each network
+3. networkIdsBitMap - map of all the network supported by the protocol
+*/
 template NetworkIdInclusionProver(){
     signal input enabled;
     signal input networkId;         // 6 bit - power of 2

@@ -6,6 +6,15 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/gates.circom";
 
+/*
+This template checks if the ZAccount is blacklisted or not.
+
+@input signals:
+1. zAccountId - unique zAccountId for a ZAccount
+2. leaf - commitment
+3. merkleRoot - merkle root of the ZAccount Blacklist merkle tree
+4. pathElements - path elements that leads to the merkle root
+*/
 template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     signal input zAccountId;
     signal input leaf;

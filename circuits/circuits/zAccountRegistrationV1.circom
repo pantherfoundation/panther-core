@@ -219,7 +219,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountNoteHasher.masterEOA <== zAccountMasterEOA;
     zAccountNoteHasher.id <== zAccountId;
     zAccountNoteHasher.amountZkp <== zAccountZkpAmount;
-    zAccountNoteHasher.amountPrp <== zAccountPrpAmount;
+    zAccountNoteHasher.amountPrp <== zAccountPrpAmount; // public
     zAccountNoteHasher.zoneId <== zAccountZoneId;
     zAccountNoteHasher.expiryTime <== zAccountExpiryTime;
     zAccountNoteHasher.nonce <== zAccountNonce;
@@ -238,8 +238,9 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountExpiryTime === zAccountCreateTime + zZoneKycExpiryTime;
 
     // [3] - verify ZKP & PRP balance
+    // zkp amount, range-checked since zkpAmount is public signal, and zAssetScale controlled by smart-contracts
     assert(0 <= zAccountZkpAmount < 2**252);
-    // prp amount decided by the protocol on smart contract level
+    // prp amount decided by the protocol on smart contract level - range is checked since it is public signal
     assert(0 <= zAccountPrpAmount < 2**64);
 
     signal zkpScaledAmount;
@@ -248,7 +249,14 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
 
     // verify scaled zkp amount
     zkpScaledAmount === zAccountZkpAmount;
+
+    // verify deposit limit
     assert(zkpScaledAmount * zAssetWeight <= zZoneDepositMaxAmount);
+    component zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount;
+    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount = LessEqThan(252);
+    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.in[0] <== (zkpScaledAmount * zAssetWeight);
+    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.in[1] <== zZoneDepositMaxAmount;
+    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.out === 1;
 
     // verify zkp change
     zkpChange === 0;

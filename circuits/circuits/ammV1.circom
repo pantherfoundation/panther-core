@@ -82,7 +82,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     signal input zAccountUtxoInRootSpendPubKey[2];
     signal input zAccountUtxoInReadPubKey[2];
     signal input zAccountUtxoInNullifierPubKey[2];
-    signal input zAccountUtxoInSpendPrivKey;
+    signal input zAccountUtxoInSpendPrivKey;       // TODO: refactor to be unified - should be RootSpend
     signal input zAccountUtxoInNullifierPrivKey;
     signal input zAccountUtxoInMasterEOA;
     signal input zAccountUtxoInSpendKeyRandom;
@@ -264,6 +264,12 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
 
     // verify prp amount to be used in AMM - balance check
     assert(zAccountUtxoInPrpAmount + depositAmountPrp >= withdrawAmountPrp);
+    component withdrawPrpIsLessThanZAccountPrpPlusDepositPrp;
+    withdrawPrpIsLessThanZAccountPrpPlusDepositPrp = LessEqThan(32);
+    withdrawPrpIsLessThanZAccountPrpPlusDepositPrp.in[0] <== withdrawAmountPrp;
+    withdrawPrpIsLessThanZAccountPrpPlusDepositPrp.in[1] <== (zAccountUtxoInPrpAmount + depositAmountPrp);
+    withdrawPrpIsLessThanZAccountPrpPlusDepositPrp.out === 1;
+
     zAccountUtxoOutPrpAmount === zAccountUtxoInPrpAmount + depositAmountPrp - withdrawAmountPrp;
 
     // [5] - Verify zAccountUtxoInUtxo commitment
@@ -351,6 +357,11 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
 
     // verify expiryTime
     assert(zAccountUtxoInExpiryTime >= createTime);
+    component createTimeIsLessThanZaccountUtxoInExpiryTime;
+    createTimeIsLessThanZaccountUtxoInExpiryTime = LessEqThan(32);
+    createTimeIsLessThanZaccountUtxoInExpiryTime.in[0] <== createTime;
+    createTimeIsLessThanZaccountUtxoInExpiryTime.in[1] <== zAccountUtxoInExpiryTime;
+    createTimeIsLessThanZaccountUtxoInExpiryTime.out === 1;
 
     // [10] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();

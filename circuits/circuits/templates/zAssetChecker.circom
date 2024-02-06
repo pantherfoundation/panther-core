@@ -4,6 +4,22 @@ pragma circom 2.1.6;
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
+/*
+This template checks for the pre-requisite equalities for all types of transactions.
+
+@input signals -
+1. token - external token address
+2. tokenId - tokenId associated with the token 
+3. zAssetId - ID generated for adding a ZAsset to ZAsset Registry
+4. zAssetToken - tokenId associated with the ZAsset
+5. zAssetOffset - specific number of bits
+6. depositAmount - external amount for deposit
+7. withdrawAmount - external amount for withdrawal
+8. utxoZAssetId - zAssetId associated with the UTXO
+
+@output signal -
+1. isZkpToken - 1 if ZAsset is ZKP, 0 otherwise
+*/
 template ZAssetChecker() {
     signal input token;               // 160 bit - public value
     signal input tokenId;             // 256 bit - public value
@@ -73,11 +89,20 @@ template ZAssetChecker() {
     isZkpToken <== isZkpTokenEqual.out;
 }
 
-// with respect to offset - `offset` address the LSB bit number
-// for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
-// and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
-// offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
-// tokenId is LSBs
+/*
+Checks 'zAssetId' is equal to the 'utxoZAssetId' with respect to the 'offset'
+
+This will be checked for the following transactions - 
+    1. Deposit Transaction
+    2. Withdraw Transaction
+    3. Internal transfer of ZAssets
+
+with respect to offset - `offset` address the LSB bit number
+for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
+and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
+offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
+tokenId is LSBs
+*/
 template IsZAssetIdEqualToUtxoZAssetId() {
     signal input zAssetId;
     signal input utxoZAssetId;
@@ -109,6 +134,13 @@ template IsZAssetIdEqualToUtxoZAssetId() {
     }
 }
 
+/*
+Checks 'tokenId' is equal to the 'zAssetTokenId' with respect to the 'offset'
+
+This will be checked for the following transactions - 
+    1. Deposit Transaction
+    2. Withdraw Transaction
+*/
 template IsZAssetTokenIdEqualToTokenId() {
     signal input zAssetTokenId;
     signal input tokenId;
@@ -140,8 +172,16 @@ template IsZAssetTokenIdEqualToTokenId() {
     }
 }
 
+/*
+Checks 'tokenId' is equal to the 'utxoZAssetId' with respect to the 'offset'
+
+This will be checked for the following transactions - 
+    1. Deposit Transaction
+    2. Withdraw Transaction
+
 // lsb_mask = 2^offset - 1
 // utxoZAssetId & lsb_mask === tokenId & lsb_mask
+*/
 template IsUtxoTokenIdEqualToTokenId() {
     signal input utxoZAssetId;
     signal input tokenId;
