@@ -55,6 +55,14 @@ contract PantherPoolV1 is
     // max difference between the given utxo create/spend time and now
     uint32 public maxTimeDelta;
 
+    event ZAccountRegistrationCircuitIdUpdated(uint160 newId);
+    event PrpAccountingCircuitIdUpdated(uint160 newId);
+    event PrpAccountConversionCircuitIdUpdated(uint160 newId);
+    event MainCircuitIdUpdated(uint160 newId);
+    event KycRewardUpdated(uint256 newReward);
+    event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
+    event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
+
     constructor(
         address _owner,
         address zkpToken,
@@ -89,36 +97,50 @@ contract PantherPoolV1 is
         bool _status
     ) external onlyOwner {
         vaultAssetUnlockers[_unlocker] = _status;
+
+        emit VaultAssetUnlockerUpdated(_unlocker, _status);
     }
 
     function updateZAccountRegistrationCircuitId(
         uint160 _circuitId
     ) external onlyOwner {
         zAccountRegistrationCircuitId = _circuitId;
+
+        emit ZAccountRegistrationCircuitIdUpdated(_circuitId);
     }
 
     function updatePrpAccountingCircuitId(
         uint160 _circuitId
     ) external onlyOwner {
         prpAccountingCircuitId = _circuitId;
+
+        emit PrpAccountingCircuitIdUpdated(_circuitId);
     }
 
     function updatePrpAccountConversionCircuitId(
         uint160 _circuitId
     ) external onlyOwner {
         prpAccountConversionCircuitId = _circuitId;
+
+        emit PrpAccountConversionCircuitIdUpdated(_circuitId);
     }
 
     function updateMainCircuitId(uint160 _circuitId) external onlyOwner {
         mainCircuitId = _circuitId;
+
+        emit MainCircuitIdUpdated(_circuitId);
     }
 
     function updateKycReward(uint96 _kycReward) external onlyOwner {
         kycReward = _kycReward;
+
+        emit KycRewardUpdated(_kycReward);
     }
 
     function updateMaxTimeDelta(uint32 _maxTimeDelta) external onlyOwner {
         maxTimeDelta = _maxTimeDelta;
+
+        emit MaxTimeDeltaUpdated(_maxTimeDelta);
     }
 
     function unlockAssetFromVault(LockData calldata data) external {
@@ -861,6 +883,7 @@ contract PantherPoolV1 is
     }
 
     function _lockAssetWithSalt(SaltedLockData memory slData) private {
+        // Trusted contract - no reentrancy guard needed
         // solhint-disable-next-line no-empty-blocks
         try VAULT.lockAssetWithSalt{ value: msg.value }(slData) {} catch Error(
             string memory reason
@@ -870,6 +893,7 @@ contract PantherPoolV1 is
     }
 
     function _unlockAsset(LockData memory lData) private {
+        // Trusted contract - no reentrancy guard needed
         // solhint-disable-next-line no-empty-blocks
         try VAULT.unlockAsset(lData) {} catch Error(string memory reason) {
             revert(reason);
