@@ -87,6 +87,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
             extAmount: uint96(reward)
         });
 
+        // Trusted contract - no reentrancy guard needed
         IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
 
         emit MinerRewarded(miner, reward);
@@ -106,6 +107,7 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
         if (_timestamp <= lastUtxoSimulationTimestamp) return 0;
 
         uint256 secs = _timestamp - lastUtxoSimulationTimestamp;
+        // divide before multiply, since fake utxos are allowed to be created per minute (not second)
         return (secs / 60 seconds) * perMinuteUtxosLimit;
     }
 
