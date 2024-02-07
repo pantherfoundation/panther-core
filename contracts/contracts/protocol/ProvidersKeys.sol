@@ -216,6 +216,7 @@ contract ProvidersKeys is
         keyIndex = _totalNumRegisteredKeys;
         keyringIds[keyIndex] = keyringId;
 
+        // Trusted contract - no reentrancy guard needed
         _updateProvidersKeysAndStaticTreeRoots(
             ZERO_VALUE,
             commitment,
