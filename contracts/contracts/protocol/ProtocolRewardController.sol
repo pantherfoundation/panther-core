@@ -138,11 +138,12 @@ contract ProtocolRewardController is ImmutableOwnable {
                     .releasableAmount(_poolId);
 
                 if (releasable != 0) {
-                    IVestingPools(VESTING_POOLS).releaseTo(
+                    uint256 released = IVestingPools(VESTING_POOLS).releaseTo(
                         _poolId,
                         msg.sender,
                         releasable
                     );
+                    assert(releasable == released);
 
                     totalReleasable += releasable;
                 }
