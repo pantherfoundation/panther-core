@@ -88,12 +88,14 @@ contract PolygonPrpRewardMsgRelayer is
         require(_nonce > nonce, "PMR:INVALID_NONCE");
         nonce = _nonce;
 
+        // Trusted contract - no reentrancy guard needed
         IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
             secret,
             0, // amount defined for prpGrantType will be used
             prpGrantType
         );
 
+        // Trusted contract - no reentrancy guard needed
         IPrpConverter(PRP_CONVERTER).updateZkpReserve();
 
         emit PrpRewardMsgRelayed(_nonce, content);
