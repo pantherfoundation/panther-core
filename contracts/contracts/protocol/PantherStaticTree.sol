@@ -59,7 +59,8 @@ contract PantherStaticTree is
         address _providersKeysTreeController
     ) ImmutableOwnable(_owner) {
         require(
-            _zAssetsTreeController != address(0) &&
+            _pantherForest != address(0) &&
+                _zAssetsTreeController != address(0) &&
                 _zAccountsBlacklistedTreeController != address(0) &&
                 _zNetworksTreeController != address(0) &&
                 _zZnonesTreeController != address(0) &&
@@ -102,6 +103,7 @@ contract PantherStaticTree is
 
         _staticTreeRoot = hash(leafs);
 
+        // Trusted contract - no reentrancy guard needed
         ITreeRootUpdater(PANTHER_FOREST).updateRoot(
             _staticTreeRoot,
             STATIC_TREE_FOREST_LEAF_INDEX
