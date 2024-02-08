@@ -5,8 +5,8 @@
 pragma solidity ^0.8.4;
 
 import "./TransferHelper.sol";
-import "../protocol/vault/StealthExec.sol";
-import "../protocol/vault/StealthEthPull.sol";
+import "../protocol/common/vault/StealthExec.sol";
+import "../protocol/common/vault/StealthEthPull.sol";
 
 string constant ERR_BALANCE_MISMATCH = "PWS:E01";
 string constant ERR_UNEXPECTED_NONZERO_NFT_BALANCE = "PWS:E02";

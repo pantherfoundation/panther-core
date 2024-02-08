@@ -4,7 +4,7 @@ pragma solidity ^0.8.16;
 import { CIPHERTEXT1_WORDS, OUT_MAX_UTXOs, PATH_ELEMENTS_NUM } from "../../common/Constants.sol";
 import { G1Point } from "../../common/Types.sol";
 import "../interfaces/IPantherPoolV0.sol";
-import { FIELD_SIZE } from "../../protocol/crypto/SnarkConstants.sol";
+import { FIELD_SIZE } from "../../common/crypto/SnarkConstants.sol";
 
 /// @dev It simulates (but not precisely!!!) `IPantherPoolV0`. See an example bellow.
 contract FakePantherPoolV0 is IPantherPoolV0 {

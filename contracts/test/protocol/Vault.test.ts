@@ -10,20 +10,15 @@ import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {toBigNum} from '../../lib/utilities';
-import {
-    Vault,
-    IMockErc20,
-    IMockErc721,
-    IMockErc1155,
-} from '../../types/contracts';
+import {Vault, IERC20, IERC721, IERC1155} from '../../types/contracts';
 
 chai.use(smock.matchers);
 
 describe('Vault contract', function () {
     let vault: Vault;
-    let erc20Token: FakeContract<IMockErc20>;
-    let erc721Token: FakeContract<IMockErc721>;
-    let erc1155Token: FakeContract<IMockErc1155>;
+    let erc20Token: FakeContract<IERC20>;
+    let erc721Token: FakeContract<IERC721>;
+    let erc1155Token: FakeContract<IERC1155>;
     let owner: SignerWithAddress;
     let extAccount: SignerWithAddress;
     let lockData: LockData;
@@ -44,9 +39,9 @@ describe('Vault contract', function () {
         const Vault = await ethers.getContractFactory('Vault');
         vault = (await Vault.deploy(owner.address)) as Vault;
 
-        erc20Token = await smock.fake('IMockErc20');
-        erc721Token = await smock.fake('IMockErc721');
-        erc1155Token = await smock.fake('IMockErc1155');
+        erc20Token = await smock.fake('IERC20');
+        erc721Token = await smock.fake('IERC721');
+        erc1155Token = await smock.fake('IERC1155');
     });
 
     describe('function lockAsset', () => {

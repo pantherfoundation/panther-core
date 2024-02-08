@@ -7,7 +7,7 @@ import chai, {expect} from 'chai';
 import {ethers} from 'hardhat';
 
 import {revertSnapshot, takeSnapshot} from '../../lib/hardhat';
-import {MockStealthExecutor, IMockErc20} from '../../types/contracts';
+import {MockStealthExecutor, IERC20} from '../../types/contracts';
 
 chai.use(smock.matchers);
 
@@ -18,7 +18,7 @@ describe('StealthExec library', function () {
         '0xc0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fe';
 
     let stealthExecutor: MockStealthExecutor;
-    let token: FakeContract<IMockErc20>;
+    let token: FakeContract<IERC20>;
     let user: SignerWithAddress;
     let vault: SignerWithAddress;
 
@@ -37,7 +37,7 @@ describe('StealthExec library', function () {
         stealthExecutor =
             (await MockStealthExecutor.deploy()) as MockStealthExecutor;
 
-        token = await smock.fake('IMockErc20');
+        token = await smock.fake('IERC20');
 
         calldata = ethers.utils.solidityPack(
             ['bytes4', 'bytes'],
