@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
@@ -40,7 +41,9 @@ describe('Binary Incremental Updatable Merkle Tree', () => {
     });
 
     describe('insert', () => {
-        const leaf = ethers.utils.formatBytes32String('random-leaf');
+        const leaf = ethers.BigNumber.from(
+            ethers.utils.formatBytes32String('random-leaf'),
+        ).mod(SNARK_FIELD_SIZE);
 
         it('should insert leaf', async () => {
             await tree.internalInsert(leaf);

@@ -2,17 +2,14 @@
 pragma solidity 0.8.16;
 
 import "./BinaryMerkleZeros.sol";
-import "../../protocol/triadTree/Hasher.sol";
+import "../crypto/PoseidonHashers.sol";
 
 /**
  * @title BinaryIncrementalUpdatableMerkleTree
  * @notice
  * @dev
  */
-abstract contract BinaryIncrementalUpdatableMerkleTree is
-    BinaryMerkleZeros,
-    Hasher
-{
+abstract contract BinaryIncrementalUpdatableMerkleTree is BinaryMerkleZeros {
     // `index` of the next leaf to insert
     // !!! NEVER access it directly from child contracts: `internal` to ease testing only
     uint256 internal _nextLeafIndex;
@@ -165,5 +162,12 @@ abstract contract BinaryIncrementalUpdatableMerkleTree is
      */
     function getNextLeafIndex() external view returns (uint256) {
         return uint256(_nextLeafIndex);
+    }
+
+    function hash(bytes32 left, bytes32 right) internal pure returns (bytes32) {
+        bytes32[2] memory input;
+        input[0] = left;
+        input[1] = right;
+        return PoseidonHashers.poseidonT3(input);
     }
 }
