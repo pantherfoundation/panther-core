@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// solhint-disable one-contract-per-file
+// solhint-disable var-name-mixedcase
 pragma solidity ^0.8.16;
 
 import "../PantherPoolV0.sol";
-import "../../common/Vault.sol";
+import "../VaultV0.sol";
 import "../../../common/Types.sol";
 import "./MockPantherPoolV0.sol";
 import "../ZAssetsRegistryV0.sol";
@@ -53,7 +55,7 @@ contract PantherPoolV0AndZAssetRegistryAndVaultTester is MockPantherPoolV0 {
             address(this),
             // This mock is the owner of ZAssetsRegistry and Vault
             registry = address(new ZAssetsRegistryV0(address(this))),
-            address(new Vault(address(this)))
+            address(new VaultV0(address(this)))
         )
     {
         for (uint256 i = 0; i < OUT_UTXOs; ++i) {

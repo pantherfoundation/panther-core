@@ -5,7 +5,7 @@ pragma solidity ^0.8.16;
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
 import { IEthEscrow } from "./IEthEscrow.sol";
 
-interface IVault is IEthEscrow {
+interface IVaultV1 is IEthEscrow {
     /***
       @notice Transfers token from account defined by `salt` to this contract.
       Only the owner may call.

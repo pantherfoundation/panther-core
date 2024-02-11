@@ -8,10 +8,10 @@ import "../../common/ImmutableOwnable.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/PullWithSaltHelper.sol";
 import "../../common/UtilsLib.sol";
+import "../../common/OnERC1155Received.sol";
+import "../../common/OnERC721Received.sol";
 import "./errMsgs/VaultErrMsgs.sol";
-import "./interfaces/IVault.sol";
-import "./vault/OnERC1155Received.sol";
-import "./vault/OnERC721Received.sol";
+import "./interfaces/IVaultV1.sol";
 import "./vault/EthEscrow.sol";
 
 /**
@@ -22,12 +22,12 @@ import "./vault/EthEscrow.sol";
  * `PantherPool` is assumed to be the only `owner` who is authorized to trigger
  * locking/unlocking assets.
  */
-contract Vault is
+contract VaultV1 is
     ImmutableOwnable,
     OnERC721Received,
     OnERC1155Received,
     EthEscrow,
-    IVault
+    IVaultV1
 {
     using TransferHelper for address;
     using TransferHelper for address payable;
@@ -43,7 +43,7 @@ contract Vault is
     // If an adversarial "token" this contract calls re-enters directly,
     // `onlyOwner` will revert as `msg.sender` won't be `owner`.
 
-    /// @inheritdoc IVault
+    /// @inheritdoc IVaultV1
     function lockAssetWithSalt(
         SaltedLockData calldata slData
     ) external payable override onlyOwner {
@@ -86,7 +86,7 @@ contract Vault is
         emit SaltUsed(salt);
     }
 
-    /// @inheritdoc IVault
+    /// @inheritdoc IVaultV1
     function lockAsset(LockData calldata lData) external override onlyOwner {
         _checkLockData(lData);
 
@@ -121,7 +121,7 @@ contract Vault is
         emit Locked(lData);
     }
 
-    /// @inheritdoc IVault
+    /// @inheritdoc IVaultV1
     function unlockAsset(LockData calldata lData) external override onlyOwner {
         _checkLockData(lData);
 

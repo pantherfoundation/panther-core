@@ -3,9 +3,9 @@
 pragma solidity ^0.8.16;
 
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
-import "../interfaces/IVault.sol";
+import "../interfaces/IVaultV1.sol";
 
-contract FakeVault is IVault {
+contract FakeVault is IVaultV1 {
     event DebugData(bytes32 data);
     event DebugData(LockData data);
     event DebugSaltedData(SaltedLockData data);

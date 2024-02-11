@@ -7,7 +7,7 @@ pragma solidity ^0.8.16;
 import "./interfaces/IPantherVerifier.sol";
 import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
-import "../common/interfaces/IVault.sol";
+import "./interfaces/IVaultV1.sol";
 
 import "../../common/ImmutableOwnable.sol";
 import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
@@ -28,7 +28,7 @@ contract PantherPoolV1 is
     // slither-disable-next-line shadowing-state unused-state
     uint256[453] private __gap;
 
-    IVault public immutable VAULT;
+    IVaultV1 public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
     IBusTree public immutable BUS_TREE;
     IPantherVerifier public immutable VERIFIER;
@@ -85,7 +85,7 @@ contract PantherPoolV1 is
         );
 
         PROTOCOL_TOKEN = zkpToken;
-        VAULT = IVault(vault);
+        VAULT = IVaultV1(vault);
         BUS_TREE = IBusTree(busTree);
         VERIFIER = IPantherVerifier(verifier);
         ZACCOUNT_REGISTRY = zAccountRegistry;

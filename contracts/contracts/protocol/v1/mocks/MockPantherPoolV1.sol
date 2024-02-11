@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2023s Panther Ventures Limited Gibraltar
+// solhint-disable one-contract-per-file
 pragma solidity ^0.8.16;
 
-import "../../common/interfaces/IVault.sol";
+import "../interfaces/IVaultV1.sol";
 import "../../../common/ImmutableOwnable.sol";
 import { LockData } from "../../../common/Types.sol";
 
@@ -35,6 +36,6 @@ contract MockPantherPoolV1 is IMockPantherPoolV1, ImmutableOwnable {
     function unlockAssetFromVault(LockData calldata data) external {
         require(vaultAssetUnlockers[msg.sender], "mockPoolV1: unauthorized");
 
-        IVault(VAULT).unlockAsset(data);
+        IVaultV1(VAULT).unlockAsset(data);
     }
 }
