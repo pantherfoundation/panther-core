@@ -5,7 +5,7 @@ pragma solidity ^0.8.16;
 import "../PantherPoolV0.sol";
 import "./MockPantherPoolV0.sol";
 import "../ZAssetsRegistryV0.sol";
-import "../../common/mocks/FakeVault.sol";
+import "../mocks/FakeVault.sol";
 
 contract PantherPoolV0AndZAssetRegistryTester is MockPantherPoolV0 {
     address private registry;

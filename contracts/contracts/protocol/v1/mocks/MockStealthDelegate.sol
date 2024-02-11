@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// solhint-disable one-contract-per-file
+// solhint-disable max-line-length
 pragma solidity ^0.8.16;
 
 import { DelegatecallAware } from "../../../common/DelegatecallAware.sol";
@@ -22,7 +24,7 @@ contract MockStealthDelegate is DelegatecallAware, Multicall, StealthDelegate {
         return _multicall(data);
     }
 }
-
+// solhint-disable max-line-length
 /*
 // TODO: write u-tests for MockStealthDelegate
 // based on / using this example
@@ -56,3 +58,4 @@ let tx2 = await signer.sendTransaction({to: test.address, data: calldata1})
 (await target.counter()).toNumber() // 6
 (await tx2.wait()).gasUsed.toNumber() // 80066
 */
+// solhint-enable max-line-length

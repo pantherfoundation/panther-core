@@ -11,7 +11,7 @@ import "../../common/Claimable.sol";
 import "./errMsgs/PantherPoolErrMsgs.sol";
 import "./interfaces/IPrpGrantor.sol";
 import "./interfaces/IZAssetsRegistry.sol";
-import "../common/interfaces/IVault.sol";
+import "./interfaces/IVaultV0.sol";
 import "./pantherPool/AmountConvertor.sol";
 import "./pantherPool/CommitmentGenerator.sol";
 import "./pantherPool/CommitmentsTrees.sol";
@@ -321,7 +321,7 @@ contract PantherPoolV0 is
         }
 
         uint96 amount = _unscaleAmount(scaledAmount, asset.scale);
-        IVault(VAULT).unlockAsset(
+        IVaultV0(VAULT).unlockAsset(
             LockData(asset.tokenType, token, _tokenId, msg.sender, amount)
         );
     }
@@ -371,7 +371,7 @@ contract PantherPoolV0 is
         if (change > 0) emit Change(token, change);
 
         // slither-disable-next-line calls-loop
-        IVault(VAULT).lockAsset(
+        IVaultV0(VAULT).lockAsset(
             LockData(
                 asset.tokenType,
                 asset.token,
