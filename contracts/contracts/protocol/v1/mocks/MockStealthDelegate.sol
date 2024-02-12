@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 // solhint-disable one-contract-per-file
 // solhint-disable max-line-length
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.19;
 
 import { DelegatecallAware } from "../../../common/DelegatecallAware.sol";
 import { Multicall } from "../../../common/Multicall.sol";
