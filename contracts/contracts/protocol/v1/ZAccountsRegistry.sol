@@ -22,6 +22,17 @@ import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constants.
  * @title ZAccountsRegistry
  * @author Pantherprotocol Contributors
  * @notice Registry and whitelist of zAccounts allowed to interact with MASP.
+ * @dev The contract enables zAccount creation, activation, and blacklisting
+ * within the protocol. Upon creation, user details are stored, and a unique
+ * zAccount ID is generated.
+ * Activation requires users to undergo a zero-knowledge proof process, with
+ * verification by the Panther Pool resulting in the addition of the zAccount
+ * UTXO commitment to the Merkle tree.
+ * The DAO has authority to blacklist or unblacklist zAccounts, controlling
+ * their protocol access. Blacklisted accounts are barred from engaging with
+ * the protocol.
+ * Additionally, the contract allocates ZKPs from a dedicated pool for
+ * integration as zZKPs within zAccount UTXOs.
  */
 
 // solhint-disable contract-name-camelcase
