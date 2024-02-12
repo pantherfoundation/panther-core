@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 // SPDX-FileCopyrightText: Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/SSTORE2.sol)
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.19;
 
 /**
  * @notice Read bytecode at given address from given position.

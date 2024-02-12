@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
-pragma solidity 0.8.16;
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+pragma solidity ^0.8.19;
 
 import { ERC20_TOKEN_TYPE, ERC721_TOKEN_TYPE, ERC1155_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../common/Constants.sol";
 import { LockData, SaltedLockData } from "../../common/Types.sol";

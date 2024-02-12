@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.16;
 
 /// @dev Implementation of ERC1155:onERC1155Received interface

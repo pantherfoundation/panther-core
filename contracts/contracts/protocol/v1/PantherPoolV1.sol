@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2023s Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.19;
 
 import "./interfaces/IPantherVerifier.sol";
 import "./interfaces/IBusTree.sol";

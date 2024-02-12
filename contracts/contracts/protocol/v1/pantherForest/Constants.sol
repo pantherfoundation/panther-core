@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
-pragma solidity ^0.8.16;
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+pragma solidity ^0.8.19;
 
 // `PantherForest` tree leafs indices (leafs store specific merkle trees roots)
 uint256 constant TAXI_TREE_FOREST_LEAF_INDEX = 0;
