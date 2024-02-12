@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
+// solhint-disable var-name-mixedcase
+// solhint-disable avoid-tx-origin
 pragma solidity ^0.8.16;
 
 import { SnarkProof, VerifyingKey } from "../../../common/Types.sol";
