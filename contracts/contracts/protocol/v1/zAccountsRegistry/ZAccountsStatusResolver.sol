@@ -6,11 +6,11 @@ import "../interfaces/IPureFiIssuerRequestResolver.sol";
 import "../interfaces/IZAccountsRegistry.sol";
 
 contract ZAccountsStatusResolver is IPureFiIssuerRequestResolver {
-    IZAccountsRegistry public immutable zAccountsRegistry;
+    IZAccountsRegistry public immutable ZACCOUNTS_REGISTRY;
 
     constructor(address _zAccountsRegistry) {
         require(_zAccountsRegistry != address(0), "init:zero address");
-        zAccountsRegistry = IZAccountsRegistry(_zAccountsRegistry);
+        ZACCOUNTS_REGISTRY = IZAccountsRegistry(_zAccountsRegistry);
     }
 
     function resolveRequest(
@@ -20,6 +20,6 @@ contract ZAccountsStatusResolver is IPureFiIssuerRequestResolver {
         address /*_from*/,
         address /*_to*/
     ) external view override returns (bool) {
-        return zAccountsRegistry.isZAccountWhitelisted(_signer);
+        return ZACCOUNTS_REGISTRY.isZAccountWhitelisted(_signer);
     }
 }

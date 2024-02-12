@@ -10,16 +10,16 @@ struct BinaryTree {
 
 abstract contract BinaryIncrementalTree {
     function insertLeafs(
-        BinaryTree storage tree,
-        bytes32[] memory leafs
+        BinaryTree storage /* tree */,
+        bytes32[] memory /* leafs */
     ) internal returns (uint256 firstLeafIndex, bytes32 newRoot) {
         // TODO: implement BinaryIncrementalTree::insertLeafs
         return (0, 0);
     }
 
     function insertLeaf(
-        BinaryTree storage tree,
-        bytes32 leaf
+        BinaryTree storage /* tree */,
+        bytes32 /* leaf */
     ) internal returns (uint256 leafIndex, bytes32 newRoot) {
         // TODO: implement BinaryIncrementalTree::insertLeaf
         return (0, 0);
