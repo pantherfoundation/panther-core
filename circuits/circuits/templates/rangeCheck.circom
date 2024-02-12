@@ -3,36 +3,35 @@ pragma circom 2.1.6;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
-template RangeCheck(N, RC) {
+template RangeCheckGroupOfSignals(N, maxBits, LessThanValue, GreaterThanValue) {
     signal input in[N];
 
     component lessThen[N];
     component greaterThen[N];
     for ( var i = 0; i < N; i++ ) {
-        lessThen[i] = LessThan(RC);
+        lessThen[i] = LessThan(maxBits);
         lessThen[i].in[0] <== in[i];
-        lessThen[i].in[1] <== 2**RC;
+        lessThen[i].in[1] <== LessThanValue;
         lessThen[i].out === 1;
 
-        greaterThen[i] = GreaterThan(RC);
-        greaterThen[i].in[0] <== 0;
+        greaterThen[i] = GreaterThan(maxBits);
+        greaterThen[i].in[0] <== GreaterThanValue;
         greaterThen[i].in[1] <== in[i];
-        greaterThen[i].out === 1;
+        greaterThen[i].out === 0;
     }
 }
 
-template RangeCheckSingleSignal(LessThanValue, LessThanBits, GreaterThanValue, GreaterThanBits) {
+template RangeCheckSingleSignal(maxBits, LessThanValue, GreaterThanValue) {
     signal input in;
-
     component less;
-    less = LessThan(LessThanBits);
-    less.in[0] <== in[i];
+    less = LessThan(maxBits);
+    less.in[0] <== in;
     less.in[1] <== LessThanValue;
     less.out === 1;
 
     component greater;
-    greater = GreaterThan(GreaterThanBits);
+    greater = GreaterThan(maxBits);
     greater.in[0] <== GreaterThanValue;
-    greater.in[1] <== in[i];
-    greater.out === 1;
+    greater.in[1] <== in;
+    greater.out === 0;
 }

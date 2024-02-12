@@ -6,7 +6,7 @@ const wasm_tester = cicom_wasm_tester.wasm;
 
 import {getOptions} from './helpers/circomTester';
 
-describe.only('ZAssetChecker circuit', async function (this: any) {
+describe('ZAssetChecker circuit', async function (this: any) {
     let zAssetChecker: any;
 
     this.timeout(10_000_000);

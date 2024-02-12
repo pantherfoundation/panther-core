@@ -11,7 +11,7 @@ template ZAccountNoteHasher(){
     signal input nullifierPubKey[2];        // 2 x 256 bit
     signal input masterEOA;                 // 160 bit
     signal input id;                        // 24 bit
-    signal input amountZkp;                 // 64 bit
+    signal input amountZkp;                 // 252 bit
     signal input amountPrp;                 // 64 bit
     signal input zoneId;                    // 16 bit
     signal input expiryTime;                // 32 bit

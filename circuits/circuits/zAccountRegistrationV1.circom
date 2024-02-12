@@ -22,6 +22,8 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
+include "./zAccountRegistrationV1RangeCheck.circom";
+
 template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
                                  ZAssetMerkleTreeDepth,
                                  ZAccountBlackListMerkleTreeDepth,
@@ -437,4 +439,112 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     // [16] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [17] - Range Check ////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    component zAccountRegistrationRC = ZAccountRegistrationRangeCheck(ZNetworkMerkleTreeDepth,
+                                                                      ZAssetMerkleTreeDepth,
+                                                                      ZAccountBlackListMerkleTreeDepth,
+                                                                      ZZoneMerkleTreeDepth,
+                                                                      TrustProvidersMerkleTreeDepth);
+
+    zAccountRegistrationRC.extraInputsHash <== extraInputsHash;
+    zAccountRegistrationRC.zkpAmount <== zkpAmount;
+    zAccountRegistrationRC.zkpChange <== zkpChange;
+
+    zAccountRegistrationRC.zAssetId <== zAssetId;
+    zAccountRegistrationRC.zAssetToken <== zAssetToken;
+    zAccountRegistrationRC.zAssetTokenId <== zAssetTokenId;
+    zAccountRegistrationRC.zAssetNetwork <== zAssetNetwork;
+    zAccountRegistrationRC.zAssetOffset <== zAssetOffset;
+    zAccountRegistrationRC.zAssetWeight <== zAssetWeight;
+    zAccountRegistrationRC.zAssetScale <== zAssetScale;
+    zAccountRegistrationRC.zAssetMerkleRoot <== zAssetMerkleRoot;
+    zAccountRegistrationRC.zAssetPathIndices <== zAssetPathIndices;
+    zAccountRegistrationRC.zAssetPathElements <== zAssetPathElements;
+
+    zAccountRegistrationRC.zAccountId <== zAccountId;
+    zAccountRegistrationRC.zAccountZkpAmount <== zAccountZkpAmount;
+    zAccountRegistrationRC.zAccountPrpAmount <== zAccountPrpAmount;
+    zAccountRegistrationRC.zAccountZoneId <== zAccountZoneId;
+    zAccountRegistrationRC.zAccountNetworkId <== zAccountNetworkId;
+    zAccountRegistrationRC.zAccountExpiryTime <== zAccountExpiryTime;
+    zAccountRegistrationRC.zAccountNonce <== zAccountNonce;
+    zAccountRegistrationRC.zAccountTotalAmountPerTimePeriod <== zAccountTotalAmountPerTimePeriod;
+    zAccountRegistrationRC.zAccountCreateTime <== zAccountCreateTime;
+
+    zAccountRegistrationRC.zAccountRootSpendPubKey <== zAccountRootSpendPubKey;
+    zAccountRegistrationRC.zAccountReadPubKey <== zAccountReadPubKey;
+    zAccountRegistrationRC.zAccountNullifierPubKey <== zAccountNullifierPubKey;
+    zAccountRegistrationRC.zAccountMasterEOA <== zAccountMasterEOA;
+
+    zAccountRegistrationRC.zAccountRootSpendPrivKey <== zAccountRootSpendPrivKey;
+    zAccountRegistrationRC.zAccountReadPrivKey <== zAccountReadPrivKey;
+    zAccountRegistrationRC.zAccountNullifierPrivKey <== zAccountNullifierPrivKey;
+    zAccountRegistrationRC.zAccountSpendKeyRandom <== zAccountSpendKeyRandom;
+    zAccountRegistrationRC.zAccountNullifier <== zAccountNullifier;
+    zAccountRegistrationRC.zAccountCommitment <== zAccountCommitment;
+
+    zAccountRegistrationRC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    zAccountRegistrationRC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    zAccountRegistrationRC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+
+    zAccountRegistrationRC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    zAccountRegistrationRC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    zAccountRegistrationRC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zAccountRegistrationRC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    zAccountRegistrationRC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    zAccountRegistrationRC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    zAccountRegistrationRC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    zAccountRegistrationRC.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
+    zAccountRegistrationRC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    zAccountRegistrationRC.zZoneMerkleRoot <== zZoneMerkleRoot;
+    zAccountRegistrationRC.zZonePathElements <== zZonePathElements;
+    zAccountRegistrationRC.zZonePathIndices <== zZonePathIndices;
+    zAccountRegistrationRC.zZoneEdDsaPubKey<== zZoneEdDsaPubKey;
+    zAccountRegistrationRC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zAccountRegistrationRC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zAccountRegistrationRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+
+    zAccountRegistrationRC.kycEdDsaPubKey <== kycEdDsaPubKey;
+    zAccountRegistrationRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;
+    zAccountRegistrationRC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    zAccountRegistrationRC.kycPathElements <== kycPathElements;
+    zAccountRegistrationRC.kycPathIndices <== kycPathIndices;
+    zAccountRegistrationRC.kycMerkleTreeLeafIDsAndRulesOffset <== kycMerkleTreeLeafIDsAndRulesOffset;
+
+    zAccountRegistrationRC.kycSignedMessagePackageType <== kycSignedMessagePackageType;
+    zAccountRegistrationRC.kycSignedMessageTimestamp <== kycSignedMessageTimestamp;
+    zAccountRegistrationRC.kycSignedMessageSender <== kycSignedMessageSender;
+    zAccountRegistrationRC.kycSignedMessageReceiver <== kycSignedMessageReceiver;
+    zAccountRegistrationRC.kycSignedMessageSessionId <== kycSignedMessageSessionId;
+    zAccountRegistrationRC.kycSignedMessageRuleId <== kycSignedMessageRuleId;
+    zAccountRegistrationRC.kycSignedMessageSigner <== kycSignedMessageSigner;
+    zAccountRegistrationRC.kycSignedMessageHash <== kycSignedMessageHash;
+    zAccountRegistrationRC.kycSignature <== kycSignature;
+
+    zAccountRegistrationRC.zNetworkId <== zNetworkId;
+    zAccountRegistrationRC.zNetworkChainId <== zNetworkChainId;
+    zAccountRegistrationRC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    zAccountRegistrationRC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    zAccountRegistrationRC.zNetworkTreePathElements <== zNetworkTreePathElements;
+    zAccountRegistrationRC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    zAccountRegistrationRC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    zAccountRegistrationRC.forTxReward <== forTxReward;
+    zAccountRegistrationRC.forUtxoReward <== forUtxoReward;
+    zAccountRegistrationRC.forDepositReward <== forDepositReward;
+
+    zAccountRegistrationRC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+
+    zAccountRegistrationRC.forestMerkleRoot <== forestMerkleRoot;
+    zAccountRegistrationRC.taxiMerkleRoot <== taxiMerkleRoot;
+    zAccountRegistrationRC.busMerkleRoot <== busMerkleRoot;
+    zAccountRegistrationRC.ferryMerkleRoot <== ferryMerkleRoot;
+
+    zAccountRegistrationRC.salt <== salt;
+    zAccountRegistrationRC.saltHash <== saltHash;
+
+    zAccountRegistrationRC.magicalConstraint <== magicalConstraint;
 }
