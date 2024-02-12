@@ -19,6 +19,26 @@ import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 
+/**
+ * @title PantherPool
+ * @author Pantherprotocol Contributors
+ * @notice Multi-Asset Shielded Pool main contract v1
+ * @dev Version 1 of the Panther Protocol Multi-Asset Shielded Pool (MASP), empowers users
+ * to create z-Account and z-Asset UTXOs for heightened privacy and security.
+ * The z-Account serves as a user's identity, containing essential information like
+ * identification and cryptographic keys. Users can also create z-assets UTXOs, as well as
+ * transfer assets between z-Asset and z-Account UTXOs. Notably, each user is limited to one
+ * z-Account UTXO at a time.
+ * Furthermore, this version introduces new functionalities of Panther Rewards Points (PRP).
+ * users can claim (i.e. adding PRP to z-Account UTXO) and convert (i.e. burning PRP from
+ * z-Account UTXO and creating a new z-Asset UTXO) into zKp tokens.
+ * The contract manages asset locking/unlocking and transfers, covering ERC-20, ERC-721, and
+ * ERC-1155 tokens, via the Vault smart contract for secure deposit and withdrawal.
+ * All z-Account and z-Asset UTXO creations utilize zero-knowledge proof methods, with the
+ * verification keys stored on-chain. Users must provide proofs and public inputs to the
+ * contract, which verifies and dispatches UTXOs to the BusTree for eventual minting into
+ * the Merkle Tree by miners.
+ */
 contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
