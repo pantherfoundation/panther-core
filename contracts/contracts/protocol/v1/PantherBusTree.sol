@@ -12,6 +12,19 @@ import "../../common/ImmutableOwnable.sol";
 import "../../common/crypto/PoseidonHashers.sol";
 import "./errMsgs/PantherBusTreeErrMsgs.sol";
 
+/**
+ * @title PantherBusTree
+ * @author Pantherprotocol Contributors
+ * @dev It facilitates the storage of batches of UTXO commitments, effectively queuing the
+ * UTXOs, with a maximum capacity of 64 entries, subsequently integrating them into the
+ * UTXO Merkle tree during the mining process.
+ * Employing zero-knowledge methodologies, this contract optimizes the updating procedure of
+ * the Bus tree root. Notably, this root serves as a leaf within the PantherForest merkle tree.
+ * Miners possess the capability to compute the new bus tree root and transmit it to the contract,
+ * effectively onboarding the queue.
+ * Through its inherent knowledge of the Verification key's whereabouts, this contract undertakes
+ * the verification process, subsequently updating the corresponding Panther forest leaf.
+ */
 contract PantherBusTree is BusTree, ImmutableOwnable {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
