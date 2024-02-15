@@ -22,5 +22,6 @@ crypto/types/
 
 /.idea
 .vscode
+.zed
 .DS_Store
 .yarn/*
