@@ -7,5 +7,6 @@ compiled/*
 !compiled/zAccountRegistration
 !compiled/prpConverter
 !compiled/zTransaction
+!compiled/zAccountRenewal
 !compiled/generate_witness.js
 *.ptau
