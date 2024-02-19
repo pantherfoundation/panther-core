@@ -186,8 +186,7 @@ contract ProvidersKeys is
     }
 
     /// @notice Register a public key. Only the keyring operator may call.
-    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.
-    function registerKey(
+    function registerKeyWithSignature(
         uint16 keyringId,
         G1Point memory pubKey,
         uint32 expiry,
@@ -227,6 +226,47 @@ contract ProvidersKeys is
         keyringIds[keyIndex] = keyringId;
 
         // Trusted contract - no reentrancy guard needed
+        _updateProvidersKeysAndStaticTreeRoots(
+            ZERO_VALUE,
+            commitment,
+            keyIndex,
+            proofSiblings
+        );
+
+        _totalNumRegisteredKeys = ++keyIndex;
+
+        keyring.numKeys++;
+        keyrings[keyringId] = keyring;
+
+        emit KeyRegistered(keyringId, keyIndex, keyPacked, expiry);
+    }
+
+    /// @notice Register a public key.
+    function registerKey(
+        uint16 keyringId,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] memory proofSiblings
+    ) external whenTreeUnlocked returns (uint16 keyIndex) {
+        require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);
+
+        bytes32 keyPacked = BabyJubJub.pointPack(pubKey);
+
+        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+            keyringId,
+            msg.sender
+        );
+
+        require(
+            keyring.numAllocKeys >= keyring.numKeys,
+            ERR_INSUFFICIENT_ALLOCATION
+        );
+
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+
+        keyIndex = _totalNumRegisteredKeys;
+        keyringIds[keyIndex] = keyringId;
+
         _updateProvidersKeysAndStaticTreeRoots(
             ZERO_VALUE,
             commitment,

@@ -96,7 +96,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const signature = await signer._signTypedData(domain, types, value);
     const {v, r, s} = fromRpcSig(signature); // does nothing other that splitting the signature string
 
-    const tx = await providersKeys.registerKey(
+    const tx = await providersKeys.registerKeyWithSignature(
         keyringId,
         {
             x: publicKey[0].toString(),
