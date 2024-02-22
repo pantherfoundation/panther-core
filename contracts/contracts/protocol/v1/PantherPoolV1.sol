@@ -9,6 +9,7 @@ import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IVaultV1.sol";
 
+import "../../common/NonReentrant.sol";
 import "../../common/ImmutableOwnable.sol";
 import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
 import { LockData } from "../../common/Types.sol";
@@ -42,11 +43,12 @@ import "./pantherPool/TransactionNoteEmitter.sol";
 contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
+    NonReentrant,
     IPantherPoolV1
 {
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
-    uint256[453] private __gap;
+    uint256[452] private __gap;
 
     IVaultV1 public immutable VAULT;
     address public immutable PROTOCOL_TOKEN;
@@ -203,7 +205,7 @@ contract PantherPoolV1 is
         address zkpPayer,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 utxoBusQueuePos) {
+    ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -307,7 +309,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         bytes memory privateMessages,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 utxoBusQueuePos) {
+    ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -412,7 +414,7 @@ contract PantherPoolV1 is
         bytes memory privateMessages,
         uint256 zkpAmountOutRounded,
         uint256 cachedForestRootIndex
-    ) external returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
@@ -577,7 +579,7 @@ contract PantherPoolV1 is
         bytes memory privateMessages,
         uint8 tokenType,
         uint256 /*zkpChargedAmount*/
-    ) external payable returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
