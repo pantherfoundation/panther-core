@@ -954,16 +954,6 @@ contract PantherPoolV1 is
             );
 
             require(
-                kytWithdrawSignedMessageSender != address(0),
-                ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
-            );
-
-            require(
-                kytWithdrawSignedMessageReceiver != address(0),
-                ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER
-            );
-
-            require(
                 kytDepositSignedMessageHash != 0,
                 ERR_ZERO_KYT_DEPOSIT_SIGNED_MESSAGE_HASH
             );
@@ -994,14 +984,6 @@ contract PantherPoolV1 is
             require(
                 kytWithdrawSignedMessageSender == address(VAULT),
                 ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
-            );
-            require(
-                kytDepositSignedMessageSender != address(0),
-                ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER
-            );
-            require(
-                kytDepositSignedMessageReceiver != address(0),
-                ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
             );
 
             require(
