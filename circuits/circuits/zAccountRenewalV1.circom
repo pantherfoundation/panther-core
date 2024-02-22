@@ -26,6 +26,8 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
+include "./zAccountRenewalV1RangeCheck.circom";
+
 template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              UtxoMiddleMerkleTreeDepth,
                              ZNetworkMerkleTreeDepth,
@@ -506,4 +508,119 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // [20] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [21] - Range Check ////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    component zAccountRenewalRC = ZAccountRenewalRangeCheck(UtxoLeftMerkleTreeDepth,
+                                                                 UtxoMiddleMerkleTreeDepth,
+                                                                 ZNetworkMerkleTreeDepth,
+                                                                 ZAssetMerkleTreeDepth,
+                                                                 ZAccountBlackListMerkleTreeDepth,
+                                                                 ZZoneMerkleTreeDepth,
+                                                                 TrustProvidersMerkleTreeDepth);
+
+    zAccountRenewalRC.extraInputsHash <== extraInputsHash;
+
+    zAccountRenewalRC.chargedAmountZkp <== chargedAmountZkp;
+
+    zAccountRenewalRC.zAssetId <== zAssetId;
+    zAccountRenewalRC.zAssetToken <== zAssetToken;
+    zAccountRenewalRC.zAssetTokenId <== zAssetTokenId;
+    zAccountRenewalRC.zAssetNetwork <== zAssetNetwork;
+    zAccountRenewalRC.zAssetOffset <== zAssetOffset;
+    zAccountRenewalRC.zAssetWeight <== zAssetWeight;
+    zAccountRenewalRC.zAssetScale <== zAssetScale;
+    zAccountRenewalRC.zAssetMerkleRoot <== zAssetMerkleRoot;
+    zAccountRenewalRC.zAssetPathIndices <== zAssetPathIndices;
+    zAccountRenewalRC.zAssetPathElements <== zAssetPathElements;
+
+    zAccountRenewalRC.zAccountUtxoInId <== zAccountUtxoInId;
+    zAccountRenewalRC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    zAccountRenewalRC.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
+    zAccountRenewalRC.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
+    zAccountRenewalRC.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
+    zAccountRenewalRC.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
+    zAccountRenewalRC.zAccountUtxoInNonce <== zAccountUtxoInNonce;
+    zAccountRenewalRC.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zAccountRenewalRC.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
+    zAccountRenewalRC.zAccountUtxoInRootSpendPrivKey <== zAccountUtxoInRootSpendPrivKey;
+    zAccountRenewalRC.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
+    zAccountRenewalRC.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
+    zAccountRenewalRC.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
+    zAccountRenewalRC.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
+    zAccountRenewalRC.zAccountUtxoInSpendKeyRandom <== zAccountUtxoInSpendKeyRandom;
+    zAccountRenewalRC.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
+    zAccountRenewalRC.zAccountUtxoInCommitment <== zAccountUtxoInCommitment;
+    zAccountRenewalRC.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
+    zAccountRenewalRC.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
+    zAccountRenewalRC.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
+    zAccountRenewalRC.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
+
+    zAccountRenewalRC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    zAccountRenewalRC.zAccountUtxoOutExpiryTime <== zAccountUtxoOutExpiryTime;
+    zAccountRenewalRC.zAccountUtxoOutCreateTime <== zAccountUtxoOutCreateTime;
+    zAccountRenewalRC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
+    zAccountRenewalRC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
+
+    zAccountRenewalRC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    zAccountRenewalRC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    zAccountRenewalRC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+
+    zAccountRenewalRC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    zAccountRenewalRC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    zAccountRenewalRC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zAccountRenewalRC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    zAccountRenewalRC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    zAccountRenewalRC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    zAccountRenewalRC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    zAccountRenewalRC.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
+    zAccountRenewalRC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    zAccountRenewalRC.zZoneMerkleRoot <== zZoneMerkleRoot;
+    zAccountRenewalRC.zZonePathElements <== zZonePathElements;
+    zAccountRenewalRC.zZonePathIndices <== zZonePathIndices;
+    zAccountRenewalRC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
+    zAccountRenewalRC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zAccountRenewalRC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zAccountRenewalRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+
+    zAccountRenewalRC.kycEdDsaPubKey <== kycEdDsaPubKey;
+    zAccountRenewalRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;
+    zAccountRenewalRC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    zAccountRenewalRC.kycPathElements <== kycPathElements;
+    zAccountRenewalRC.kycPathIndices <== kycPathIndices;
+    zAccountRenewalRC.kycMerkleTreeLeafIDsAndRulesOffset <== kycMerkleTreeLeafIDsAndRulesOffset;
+    zAccountRenewalRC.kycSignedMessagePackageType <== kycSignedMessagePackageType;
+    zAccountRenewalRC.kycSignedMessageTimestamp <== kycSignedMessageTimestamp;
+    zAccountRenewalRC.kycSignedMessageSender <== kycSignedMessageSender;
+    zAccountRenewalRC.kycSignedMessageReceiver <== kycSignedMessageReceiver;
+    zAccountRenewalRC.kycSignedMessageSessionId <== kycSignedMessageSessionId;
+    zAccountRenewalRC.kycSignedMessageRuleId <== kycSignedMessageRuleId;
+    zAccountRenewalRC.kycSignedMessageSigner <== kycSignedMessageSigner;
+    zAccountRenewalRC.kycSignedMessageHash <== kycSignedMessageHash;
+    zAccountRenewalRC.kycSignature <== kycSignature;
+
+    zAccountRenewalRC.zNetworkId <== zNetworkId;
+    zAccountRenewalRC.zNetworkChainId <== zNetworkChainId;
+    zAccountRenewalRC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    zAccountRenewalRC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    zAccountRenewalRC.zNetworkTreePathElements <== zNetworkTreePathElements;
+    zAccountRenewalRC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    zAccountRenewalRC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    zAccountRenewalRC.forTxReward <== forTxReward;
+    zAccountRenewalRC.forUtxoReward <== forUtxoReward;
+    zAccountRenewalRC.forDepositReward <== forDepositReward;
+
+    zAccountRenewalRC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+
+    zAccountRenewalRC.forestMerkleRoot <== forestMerkleRoot;
+    zAccountRenewalRC.taxiMerkleRoot <== taxiMerkleRoot;
+    zAccountRenewalRC.busMerkleRoot <== busMerkleRoot;
+    zAccountRenewalRC.ferryMerkleRoot <== ferryMerkleRoot;
+
+    zAccountRenewalRC.salt <== salt;
+    zAccountRenewalRC.saltHash <== saltHash;
+
+    zAccountRenewalRC.magicalConstraint <== magicalConstraint;
 }
