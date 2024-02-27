@@ -24,7 +24,7 @@ import {
     PrivateMessage,
     MessageType,
 } from '../types/message';
-import {assert, assertInSnarkField, assertMaxBits} from '../utils/assertions';
+import {assert, assertMaxBits} from '../utils/assertions';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
@@ -331,9 +331,12 @@ function unpackDecryptAndValidateMessage<T extends PrivateMessage>(
             spentUtxoCommitment2:
                 spentUTXOMessage.spentUtxoCommitment2 ^ zAccountSecretRandom,
         } as T;
+    } else {
+        // Please note, there's no need to validate the messages of the
+        // SpentUTXOMessage type. These messages aren't circulated within the
+        // circuits, hence, they don't need to be in BN254 fields.
+        validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
     }
-
-    validateFields(utxoMsg, UTXO_MESSAGE_CONFIGS[messageType].fields);
 
     return utxoMsg as T;
 }
@@ -352,10 +355,7 @@ function validateEncryptAndPackMessage<T extends Message>(
     messageType: MessageType,
     zAccountSecretRandom?: PrivateKey,
 ): string {
-    validateFields(secrets, UTXO_MESSAGE_CONFIGS[messageType].fields);
-
     let values: bigint[] = [];
-
     // If the message type is SpentUTXO and zAccountSecretRandom is provided
     // Set values to the XOR of the commitments and zAccountSecretRandom
     // Else map the secrets to the corresponding fields of the message type
@@ -366,6 +366,11 @@ function validateEncryptAndPackMessage<T extends Message>(
             spentUTXOMessage.spentUtxoCommitment2 ^ zAccountSecretRandom,
         ];
     } else {
+        // Please note, there's no need to validate the messages of the
+        // SpentUTXOMessage type. These messages aren't circulated within the
+        // circuits, hence, they don't need to be in BN254 fields.
+        validateFields(secrets, UTXO_MESSAGE_CONFIGS[messageType].fields);
+
         const fields = UTXO_MESSAGE_CONFIGS[messageType].fields;
         values = fields.map(field => secrets[field]) as bigint[];
     }
@@ -384,7 +389,6 @@ function encodeUTXOMessage(type: MessageType, values: bigint[]): string {
     const config = UTXO_MESSAGE_CONFIGS[type];
 
     config.fields.forEach((field, index) => {
-        assertInSnarkField(values[index], field);
         assertMaxBits(values[index], FIELD_BIT_LENGTHS[field], field);
         const maxAllowedValue = ALLOWED_MAX_VALUES[field];
         if (maxAllowedValue) {
