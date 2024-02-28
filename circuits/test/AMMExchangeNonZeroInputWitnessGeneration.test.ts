@@ -13,7 +13,17 @@ import {
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import assert from 'assert';
 
-import {deriveChildPubKeyFromRootPubKey} from '@panther-core/crypto/lib/base/keypairs';
+import {
+    deriveChildPubKeyFromRootPubKey,
+    deriveChildPrivKeyFromRootPrivKey,
+} from '@panther-core/crypto/lib/base/keypairs';
+
+const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
+    1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+    185557730709061450306117592388043477299652441972445952549541952981196070710n,
+);
+// 1470116738244735046529511473741394149324421488059934893074037073008502304176n
+// console.log('deriveChildPrivKey=>', deriveChildPrivKey);
 
 describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computation', async function (this: any) {
     const poseidon2or3 = (inputs: bigint[]): bigint => {
@@ -329,7 +339,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
 
         zAccountUtxoInSpendPrivKey:
             BigInt(
-                1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+                1470116738244735046529511473741394149324421488059934893074037073008502304176n,
             ),
 
         zAccountUtxoInNullifier:

@@ -465,7 +465,7 @@ const nonZeroInputVoucherExchange = {
 
     zAccountUtxoInSpendPrivKey:
         BigInt(
-            1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+            2000647208403813089996879169930475450547584088540869434526192256795751137198n,
         ),
 
     zAccountUtxoInNullifier:
@@ -660,10 +660,7 @@ const nonZeroInputVoucherExchange = {
     // GMT: Tuesday, 29 August 2023 10:49:12
     createTime: BigInt(1693306152n),
 
-    utxoCommitment:
-        BigInt(
-            19593108235650878637893509278693460179257795305603387070719951077607152456245n,
-        ),
+    utxoCommitment: BigInt(0),
     // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
     utxoSpendPubKey: [BigInt(0), BigInt(1)],
     utxoSpendKeyRandom: BigInt(0),
@@ -995,7 +992,7 @@ const nonZeroInputAMMExchange = {
 
     zAccountUtxoInSpendPrivKey:
         BigInt(
-            1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+            1470116738244735046529511473741394149324421488059934893074037073008502304176n,
         ),
 
     zAccountUtxoInNullifier:
