@@ -12,10 +12,11 @@ import {
 } from '@panther-core/crypto/lib/base/field-operations';
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import assert from 'assert';
-import { PublicKey } from '@panther-core/crypto/lib/types/keypair';
+import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
 
 import {
     deriveChildPubKeyFromRootPubKey,
+    deriveChildPrivKeyFromRootPrivKey,
     deriveKeypairFromSeed,
 } from '@panther-core/crypto/lib/base/keypairs';
 
@@ -44,7 +45,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         ammWitness = path.join(opts.basedir, './compiled/generateWitness.js');
     });
 
-    const zAccountUtxoInRootSpendPubKey :PublicKey = [
+    const zAccountUtxoInRootSpendPubKey: PublicKey = [
         9665449196631685092819410614052131494364846416353502155560380686439149087040n,
         13931233598534410991314026888239110837992015348186918500560502831191846288865n,
     ];
@@ -65,6 +66,13 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
     //     'zAccountUtxoInDerivedPublicKeys=>',
     //     zAccountUtxoInDerivedPublicKeys,
     // );
+
+    const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
+        1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+        2346914846639907011573200271264141030138356202571314043957571486189990605213n,
+    );
+    // 2000647208403813089996879169930475450547584088540869434526192256795751137198n
+    // console.log('deriveChildPrivKey=>', deriveChildPrivKey);
 
     // START ============= zAccountReadPubKey ======
     // const seedForReadPubKey = moduloBabyJubSubFieldPrime(
@@ -426,7 +434,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
         zAccountUtxoInSpendPrivKey:
             BigInt(
-                1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+                2000647208403813089996879169930475450547584088540869434526192256795751137198n,
             ),
 
         zAccountUtxoInNullifier:

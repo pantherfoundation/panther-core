@@ -27,6 +27,8 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
+include "./ammv1RangeCheck.circom";
+
 template AmmV1 ( UtxoLeftMerkleTreeDepth,
                  UtxoMiddleMerkleTreeDepth,
                  ZNetworkMerkleTreeDepth,
@@ -487,4 +489,108 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     // [19] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // // [20] - Range check ////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    component ammV1RC = AmmV1RangeCheck ( UtxoLeftMerkleTreeDepth,
+                                          UtxoMiddleMerkleTreeDepth,
+                                          ZNetworkMerkleTreeDepth,
+                                          ZAssetMerkleTreeDepth,
+                                          ZAccountBlackListMerkleTreeDepth,
+                                          ZZoneMerkleTreeDepth);
+
+    ammV1RC.extraInputsHash <== extraInputsHash;
+
+    ammV1RC.chargedAmountZkp <== chargedAmountZkp;
+    ammV1RC.createTime <== createTime;
+    ammV1RC.depositAmountPrp <== depositAmountPrp;
+    ammV1RC.withdrawAmountPrp <== withdrawAmountPrp;
+
+    ammV1RC.utxoCommitment <== utxoCommitment;
+    ammV1RC.utxoSpendPubKey <== utxoSpendPubKey;
+    ammV1RC.utxoSpendKeyRandom <== utxoSpendKeyRandom;
+
+    ammV1RC.zAssetId <== zAssetId;
+    ammV1RC.zAssetToken <== zAssetToken;
+    ammV1RC.zAssetTokenId <== zAssetTokenId;
+    ammV1RC.zAssetNetwork <== zAssetNetwork;
+    ammV1RC.zAssetOffset <== zAssetOffset;
+    ammV1RC.zAssetWeight <== zAssetWeight;
+    ammV1RC.zAssetScale <== zAssetScale;
+    ammV1RC.zAssetMerkleRoot <== zAssetMerkleRoot;
+    ammV1RC.zAssetPathIndices <== zAssetPathIndices;
+    ammV1RC.zAssetPathElements <== zAssetPathElements;
+
+    ammV1RC.zAccountUtxoInId <== zAccountUtxoInId;
+    ammV1RC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    ammV1RC.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
+    ammV1RC.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
+    ammV1RC.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
+    ammV1RC.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
+    ammV1RC.zAccountUtxoInNonce <== zAccountUtxoInNonce;
+    ammV1RC.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    ammV1RC.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
+    ammV1RC.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
+    ammV1RC.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
+    ammV1RC.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
+    ammV1RC.zAccountUtxoInSpendPrivKey <== zAccountUtxoInSpendPrivKey;
+    ammV1RC.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
+    ammV1RC.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
+    ammV1RC.zAccountUtxoInSpendKeyRandom <== zAccountUtxoInSpendKeyRandom;
+    ammV1RC.zAccountUtxoInCommitment <== zAccountUtxoInCommitment;
+    ammV1RC.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
+    ammV1RC.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
+    ammV1RC.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
+    ammV1RC.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
+
+    ammV1RC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    ammV1RC.zAccountUtxoOutPrpAmount <== zAccountUtxoOutPrpAmount;
+    ammV1RC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
+    ammV1RC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
+
+    ammV1RC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    ammV1RC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    ammV1RC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+
+    ammV1RC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    ammV1RC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    ammV1RC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    ammV1RC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    ammV1RC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    ammV1RC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    ammV1RC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    ammV1RC.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
+    ammV1RC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    ammV1RC.zZoneMerkleRoot <== zZoneMerkleRoot;
+    ammV1RC.zZonePathElements <== zZonePathElements;
+    ammV1RC.zZonePathIndices <== zZonePathIndices;
+    ammV1RC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
+    ammV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    ammV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    ammV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+
+    ammV1RC.zNetworkId <== zNetworkId;
+    ammV1RC.zNetworkChainId <== zNetworkChainId;
+    ammV1RC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    ammV1RC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    ammV1RC.zNetworkTreePathElements <== zNetworkTreePathElements;
+    ammV1RC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    ammV1RC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    ammV1RC.forTxReward <== forTxReward;
+    ammV1RC.forUtxoReward <== forUtxoReward;
+    ammV1RC.forDepositReward <== forDepositReward;
+
+    ammV1RC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    ammV1RC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+    ammV1RC.forestMerkleRoot <== forestMerkleRoot;
+    ammV1RC.taxiMerkleRoot <== taxiMerkleRoot;
+    ammV1RC.busMerkleRoot <== busMerkleRoot;
+    ammV1RC.ferryMerkleRoot <== ferryMerkleRoot;
+
+    ammV1RC.salt <== salt;
+    ammV1RC.saltHash <== saltHash;
+    ammV1RC.magicalConstraint <== magicalConstraint;
 }
