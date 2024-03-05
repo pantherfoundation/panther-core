@@ -12,7 +12,7 @@ template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
     signal input network;     // 6 bit - network-id where UTXO is spent (UTXO-in)
     signal input offset;      // 6 bit - 0..32 bit number, default value is 0 - means all 64 bit of zAssetID is in use
     signal input weight;      // 32 bit
-    signal input scale;       // 7 bit - 10^scale MUST be < 2^252 --> scale must be < 90
+    signal input scale;       // 252 bit
     signal input merkleRoot;
     signal input pathIndices[ZAssetMerkleTreeDepth];
     signal input pathElements[ZAssetMerkleTreeDepth];
