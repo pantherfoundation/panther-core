@@ -197,10 +197,10 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     component customRangeCheckZAssetWeight = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckZAssetWeight.in <== zAssetWeight;
 
-    // zAssetScale - 7 bits
-    // Supported range - [0 - (2**7 - 1)]
+    // zAssetScale - 252 bits
+    // Supported range - [0 - (2**252 - 1)]
     // Public signal - Checked as part of SC
-    component customRangeCheckZAssetScale = RangeCheckSingleSignal(7,(2**7 - 1),0);
+    component customRangeCheckZAssetScale = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAssetScale.in <== zAssetScale;
 
     // zAssetMerkleRoot - 256 bits
