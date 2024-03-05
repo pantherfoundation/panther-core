@@ -5,6 +5,7 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IPantherVerifier.sol";
+import "./interfaces/IPantherTaxiTree.sol";
 import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IVaultV1.sol";
@@ -202,11 +203,12 @@ contract PantherPoolV1 is
     /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
+    /// @param cachedForestRootIndexAndUtxosCarrier forest merkle root index and UtxosCarrier.
+    /// 0 means the most updated root.
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex,
+        uint256 cachedForestRootIndexAndUtxosCarrier,
         address zkpPayer,
         uint96 /*paymasterCompensation*/,
         bytes memory privateMessages
@@ -248,7 +250,10 @@ contract PantherPoolV1 is
         _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
 
         require(
-            isCachedRoot(bytes32(inputs[16]), cachedForestRootIndex),
+            isCachedRoot(
+                bytes32(inputs[16]),
+                _getCachedForestRootIndex(cachedForestRootIndexAndUtxosCarrier)
+            ),
             ERR_INVALID_FOREST_ROOT
         );
 
@@ -267,6 +272,14 @@ contract PantherPoolV1 is
         (uint32 queueId, uint8 indexInQueue) = BUS_TREE.addUtxoToBusQueue(
             bytes32(zAccountCommitment)
         );
+
+        if (_useTaxi(cachedForestRootIndexAndUtxosCarrier)) {
+            bytes32[] memory utxos = new bytes32[](1);
+            utxos[0] = bytes32(zAccountCommitment);
+
+            _addUtxosToTaxiTree(utxos);
+        }
+
         utxoBusQueuePos = (uint256(queueId) << 8) | uint256(indexInQueue);
 
         bytes memory transactionNoteContent = abi.encodePacked(
@@ -582,12 +595,15 @@ contract PantherPoolV1 is
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex,
+        uint256 cachedForestRootIndexAndUtxosCarrier,
         uint8 tokenType,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+
+        // cachedForestRootIndex
+        // The tree which gonna
 
         {
             uint256 saltHash = inputs[40];
@@ -607,7 +623,7 @@ contract PantherPoolV1 is
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndex,
+                cachedForestRootIndexAndUtxosCarrier,
                 tokenType,
                 paymasterCompensation,
                 privateMessages
@@ -755,7 +771,7 @@ contract PantherPoolV1 is
 
             _validateCachedForestRootIndex(
                 forestMerkleRoot,
-                cachedForestRootIndex
+                _getCachedForestRootIndex(cachedForestRootIndexAndUtxosCarrier)
             );
         }
 
@@ -784,6 +800,10 @@ contract PantherPoolV1 is
                 zAccountUtxoIndexInQueue,
                 zAccountUtxoBusQueuePos
             ) = _addUtxosToBusQueue(utxos, miningRewards);
+
+            if (_useTaxi(cachedForestRootIndexAndUtxosCarrier)) {
+                _addUtxosToTaxiTree(utxos);
+            }
         }
 
         {
@@ -896,6 +916,17 @@ contract PantherPoolV1 is
             uint256(zAccountUtxoIndexInQueue);
     }
 
+    function _addUtxosToTaxiTree(bytes32[] memory utxos) private {
+        try
+            IPantherTaxiTree(TAXI_TREE_CONTROLLER).addUtxos(utxos)
+        // solhint-disable-next-line no-empty-blocks
+        {
+
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
+    }
+
     function _lockAssetWithSalt(SaltedLockData memory slData) private {
         // Trusted contract - no reentrancy guard needed
         // solhint-disable-next-line no-empty-blocks
@@ -930,6 +961,23 @@ contract PantherPoolV1 is
         require(chargedAmount > _accountedRewards, ERR_TOO_LOW_CHARGED_ZKP);
         //TODO Subtract other rewards (protocol, etc) from `chargedAmount`
         _miningReward = UtilsLib.safe96(chargedAmount - _accountedRewards);
+    }
+
+    function _getCachedForestRootIndex(
+        uint256 cachedForestRootIndexAndUtxosCarrier
+    ) internal pure returns (uint256) {
+        // the parameter is the result of XOR between the cachedForestRootIndex (8 bits)
+        // and the UtxosCarrier flag (1 bit)
+        return cachedForestRootIndexAndUtxosCarrier & 0xFF;
+    }
+
+    function _useTaxi(
+        uint256 cachedForestRootIndexAndUtxosCarrier
+    ) internal pure returns (bool) {
+        // the parameter is the result of XOR between the cachedForestRootIndex (8 bits)
+        // and the UtxosCarrier flag (1 bit)
+
+        return (cachedForestRootIndexAndUtxosCarrier >> 8) == 1;
     }
 
     function _processDepositAndWithdraw(
