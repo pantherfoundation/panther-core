@@ -222,11 +222,11 @@ contract ZAccountsRegistry is
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
+    /// @param cachedForestRootIndexAndUtxosCarrier forest merkle root index. 0 means the most updated root.
     function activateZAccount(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex,
+        uint256 cachedForestRootIndexAndUtxosCarrier,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
@@ -235,7 +235,7 @@ contract ZAccountsRegistry is
 
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndex,
+                cachedForestRootIndexAndUtxosCarrier,
                 paymasterCompensation,
                 privateMessages
             );
@@ -332,7 +332,7 @@ contract ZAccountsRegistry is
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
-            cachedForestRootIndex,
+            cachedForestRootIndexAndUtxosCarrier,
             paymasterCompensation,
             privateMessages
         );
@@ -449,7 +449,7 @@ contract ZAccountsRegistry is
     function _createZAccountUTXO(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex,
+        uint256 cachedForestRootIndexAndUtxosCarrier,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
@@ -460,7 +460,7 @@ contract ZAccountsRegistry is
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
-                cachedForestRootIndex,
+                cachedForestRootIndexAndUtxosCarrier,
                 address(ONBOARDING_CONTROLLER),
                 paymasterCompensation,
                 privateMessages
