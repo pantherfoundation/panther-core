@@ -37,6 +37,8 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
+include "./zTransactionV1RangeCheck.circom";
+
 template ZTransactionV1( nUtxoIn,
                          nUtxoOut,
                          UtxoLeftMerkleTreeDepth,
@@ -1138,4 +1140,193 @@ template ZTransactionV1( nUtxoIn,
     // [29] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // // [30] - Range check ////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    component zTransactionV1RC = ZTransactionV1RangeCheck ( nUtxoIn,
+                                                            nUtxoOut,
+                                                            UtxoLeftMerkleTreeDepth,
+                                                            UtxoMiddleMerkleTreeDepth,
+                                                            ZNetworkMerkleTreeDepth,
+                                                            ZAssetMerkleTreeDepth,
+                                                            ZAccountBlackListMerkleTreeDepth,
+                                                            ZZoneMerkleTreeDepth,
+                                                            TrustProvidersMerkleTreeDepth);
+
+    zTransactionV1RC.extraInputsHash <== extraInputsHash;
+    zTransactionV1RC.depositAmount <== depositAmount;
+    zTransactionV1RC.depositChange <== depositChange;
+    zTransactionV1RC.withdrawAmount <== withdrawAmount;
+    zTransactionV1RC.withdrawChange <== withdrawChange;
+    zTransactionV1RC.donatedAmountZkp <== donatedAmountZkp;
+    zTransactionV1RC.token <== token;
+    zTransactionV1RC.tokenId <== tokenId;
+    zTransactionV1RC.utxoZAsset <== utxoZAsset;
+    
+    zTransactionV1RC.zAssetId <== zAssetId;
+    zTransactionV1RC.zAssetToken <== zAssetToken;
+    zTransactionV1RC.zAssetTokenId <== zAssetTokenId;
+    zTransactionV1RC.zAssetNetwork <== zAssetNetwork;
+    zTransactionV1RC.zAssetOffset <== zAssetOffset;
+    zTransactionV1RC.zAssetWeight <== zAssetWeight;
+    zTransactionV1RC.zAssetScale <== zAssetScale;
+    zTransactionV1RC.zAssetMerkleRoot <== zAssetMerkleRoot;
+    zTransactionV1RC.zAssetPathIndices <== zAssetPathIndices;
+    zTransactionV1RC.zAssetPathElements <== zAssetPathElements;
+
+    zTransactionV1RC.zAssetIdZkp <== zAssetIdZkp;
+    zTransactionV1RC.zAssetTokenZkp <== zAssetTokenZkp;
+    zTransactionV1RC.zAssetTokenIdZkp <== zAssetTokenIdZkp;
+    zTransactionV1RC.zAssetNetworkZkp <== zAssetNetworkZkp;
+    zTransactionV1RC.zAssetOffsetZkp <== zAssetOffsetZkp;
+    zTransactionV1RC.zAssetWeightZkp <== zAssetWeightZkp;
+    zTransactionV1RC.zAssetScaleZkp <== zAssetScaleZkp;
+    zTransactionV1RC.zAssetPathIndicesZkp <== zAssetPathIndicesZkp;
+    zTransactionV1RC.zAssetPathElementsZkp <== zAssetPathElementsZkp;
+
+    zTransactionV1RC.forTxReward <== forTxReward;
+    zTransactionV1RC.forUtxoReward <== forUtxoReward;
+    zTransactionV1RC.forDepositReward <== forDepositReward;
+    zTransactionV1RC.spendTime <== spendTime;
+
+    zTransactionV1RC.utxoInSpendPrivKey <== utxoInSpendPrivKey;
+    zTransactionV1RC.utxoInSpendKeyRandom <== utxoInSpendKeyRandom;
+    zTransactionV1RC.utxoInAmount <== utxoInAmount;
+    zTransactionV1RC.utxoInOriginZoneId <== utxoInOriginZoneId;
+    zTransactionV1RC.utxoInOriginZoneIdOffset <== utxoInOriginZoneIdOffset;
+    zTransactionV1RC.utxoInOriginNetworkId <== utxoInOriginNetworkId;
+    zTransactionV1RC.utxoInTargetNetworkId <== utxoInTargetNetworkId;
+    zTransactionV1RC.utxoInCreateTime <== utxoInCreateTime;
+    zTransactionV1RC.utxoInZAccountId <== utxoInZAccountId;
+    zTransactionV1RC.utxoInMerkleTreeSelector <== utxoInMerkleTreeSelector;
+    zTransactionV1RC.utxoInPathIndices <== utxoInPathIndices;
+    zTransactionV1RC.utxoInPathElements <== utxoInPathElements;
+    zTransactionV1RC.utxoInNullifier <== utxoInNullifier;
+
+    zTransactionV1RC.zAccountUtxoInId <== zAccountUtxoInId;
+    zTransactionV1RC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    zTransactionV1RC.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
+    zTransactionV1RC.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
+    zTransactionV1RC.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
+    zTransactionV1RC.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
+    zTransactionV1RC.zAccountUtxoInNonce <== zAccountUtxoInNonce;
+    zTransactionV1RC.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zTransactionV1RC.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
+    zTransactionV1RC.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
+    zTransactionV1RC.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
+    zTransactionV1RC.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
+    zTransactionV1RC.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
+    zTransactionV1RC.zAccountUtxoInSpendPrivKey <== zAccountUtxoInSpendPrivKey;
+    zTransactionV1RC.zAccountUtxoInReadPrivKey <== zAccountUtxoInReadPrivKey;
+    zTransactionV1RC.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
+    zTransactionV1RC.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
+    zTransactionV1RC.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
+    zTransactionV1RC.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
+    zTransactionV1RC.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
+
+    zTransactionV1RC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    zTransactionV1RC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    zTransactionV1RC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+    zTransactionV1RC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    zTransactionV1RC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    zTransactionV1RC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zTransactionV1RC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    zTransactionV1RC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    zTransactionV1RC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    zTransactionV1RC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    zTransactionV1RC.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
+    zTransactionV1RC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    zTransactionV1RC.zZoneMerkleRoot <== zZoneMerkleRoot;
+    zTransactionV1RC.zZonePathElements <== zZonePathElements;
+    zTransactionV1RC.zZonePathIndices <== zZonePathIndices;
+    zTransactionV1RC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
+    zTransactionV1RC.zZoneDataEscrowEphimeralRandom <== zZoneDataEscrowEphimeralRandom;
+    zTransactionV1RC.zZoneDataEscrowEphimeralPubKeyAx <== zZoneDataEscrowEphimeralPubKeyAx;
+    zTransactionV1RC.zZoneDataEscrowEphimeralPubKeyAy <== zZoneDataEscrowEphimeralPubKeyAy;
+    zTransactionV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zTransactionV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zTransactionV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+
+    zTransactionV1RC.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
+    zTransactionV1RC.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+
+    zTransactionV1RC.kytEdDsaPubKey <== kytEdDsaPubKey;
+    zTransactionV1RC.kytEdDsaPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
+    zTransactionV1RC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    zTransactionV1RC.kytPathElements <== kytPathElements;
+    zTransactionV1RC.kytPathIndices <== kytPathIndices;
+    zTransactionV1RC.kytMerkleTreeLeafIDsAndRulesOffset <== kytMerkleTreeLeafIDsAndRulesOffset;
+    zTransactionV1RC.kytDepositSignedMessagePackageType <== kytDepositSignedMessagePackageType;
+    zTransactionV1RC.kytDepositSignedMessageTimestamp <== kytDepositSignedMessageTimestamp;
+    zTransactionV1RC.kytDepositSignedMessageSender <== kytDepositSignedMessageSender;
+    zTransactionV1RC.kytDepositSignedMessageReceiver <== kytDepositSignedMessageReceiver;
+    zTransactionV1RC.kytDepositSignedMessageToken <== kytDepositSignedMessageToken;
+    zTransactionV1RC.kytDepositSignedMessageSessionId <== kytDepositSignedMessageSessionId;
+    zTransactionV1RC.kytDepositSignedMessageRuleId <== kytDepositSignedMessageRuleId;
+    zTransactionV1RC.kytDepositSignedMessageAmount <== kytDepositSignedMessageAmount;
+    zTransactionV1RC.kytDepositSignedMessageSigner <== kytDepositSignedMessageSigner;
+    zTransactionV1RC.kytDepositSignedMessageHash <== kytDepositSignedMessageHash;
+    zTransactionV1RC.kytDepositSignature <== kytDepositSignature;
+    zTransactionV1RC.kytWithdrawSignedMessagePackageType <== kytWithdrawSignedMessagePackageType;
+    zTransactionV1RC.kytWithdrawSignedMessageTimestamp <== kytWithdrawSignedMessageTimestamp;
+    zTransactionV1RC.kytWithdrawSignedMessageSender <== kytWithdrawSignedMessageSender;
+    zTransactionV1RC.kytWithdrawSignedMessageReceiver <== kytWithdrawSignedMessageReceiver;
+    zTransactionV1RC.kytWithdrawSignedMessageToken <== kytWithdrawSignedMessageToken;
+    zTransactionV1RC.kytWithdrawSignedMessageSessionId <== kytWithdrawSignedMessageSessionId;
+    zTransactionV1RC.kytWithdrawSignedMessageRuleId <== kytWithdrawSignedMessageRuleId;
+    zTransactionV1RC.kytWithdrawSignedMessageAmount <== kytWithdrawSignedMessageAmount;
+    zTransactionV1RC.kytWithdrawSignedMessageSigner <== kytWithdrawSignedMessageSigner;
+    zTransactionV1RC.kytWithdrawSignedMessageHash <== kytWithdrawSignedMessageHash;
+    zTransactionV1RC.kytWithdrawSignature <== kytWithdrawSignature;
+
+    zTransactionV1RC.dataEscrowPubKey <== dataEscrowPubKey;
+    zTransactionV1RC.dataEscrowPubKeyExpiryTime <== dataEscrowPubKeyExpiryTime;
+    zTransactionV1RC.dataEscrowEphimeralRandom <== dataEscrowEphimeralRandom;
+    zTransactionV1RC.dataEscrowEphimeralPubKeyAx <== dataEscrowEphimeralPubKeyAx;
+    zTransactionV1RC.dataEscrowEphimeralPubKeyAy <== dataEscrowEphimeralPubKeyAy;
+    zTransactionV1RC.dataEscrowPathElements <== dataEscrowPathElements;
+    zTransactionV1RC.dataEscrowPathIndices <== dataEscrowPathIndices;
+
+    zTransactionV1RC.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
+    zTransactionV1RC.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+
+    zTransactionV1RC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    zTransactionV1RC.daoDataEscrowEphimeralRandom <== daoDataEscrowEphimeralRandom;
+    zTransactionV1RC.daoDataEscrowEphimeralPubKeyAx <== daoDataEscrowEphimeralPubKeyAx;
+    zTransactionV1RC.daoDataEscrowEphimeralPubKeyAy <== daoDataEscrowEphimeralPubKeyAy;
+
+    zTransactionV1RC.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
+    zTransactionV1RC.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+
+    zTransactionV1RC.utxoOutCreateTime <== utxoOutCreateTime;
+    zTransactionV1RC.utxoOutAmount <== utxoOutAmount;
+    zTransactionV1RC.utxoOutOriginNetworkId <== utxoOutOriginNetworkId;
+    zTransactionV1RC.utxoOutTargetNetworkId <== utxoOutTargetNetworkId;
+    zTransactionV1RC.utxoOutTargetZoneId <== utxoOutTargetZoneId;
+    zTransactionV1RC.utxoOutTargetZoneIdOffset <== utxoOutTargetZoneIdOffset;
+    zTransactionV1RC.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
+    zTransactionV1RC.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
+    zTransactionV1RC.utxoOutCommitment <== utxoOutCommitment;
+    zTransactionV1RC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    zTransactionV1RC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
+    zTransactionV1RC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
+    zTransactionV1RC.chargedAmountZkp <== chargedAmountZkp;
+
+    zTransactionV1RC.zNetworkId <== zNetworkId;
+    zTransactionV1RC.zNetworkChainId <== zNetworkChainId;
+    zTransactionV1RC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    zTransactionV1RC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    zTransactionV1RC.zNetworkTreePathElements <== zNetworkTreePathElements;
+    zTransactionV1RC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    zTransactionV1RC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+
+    zTransactionV1RC.forestMerkleRoot <== forestMerkleRoot;
+    zTransactionV1RC.taxiMerkleRoot <== taxiMerkleRoot;
+    zTransactionV1RC.busMerkleRoot <== busMerkleRoot;
+    zTransactionV1RC.ferryMerkleRoot <== ferryMerkleRoot;
+    zTransactionV1RC.salt <== salt;
+    zTransactionV1RC.saltHash <== saltHash;
+    zTransactionV1RC.magicalConstraint <== magicalConstraint;
 }
