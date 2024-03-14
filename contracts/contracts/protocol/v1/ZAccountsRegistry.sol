@@ -66,6 +66,9 @@ contract ZAccountsRegistry is
 
     mapping(bytes32 => uint256) public zoneZAccountNullifiers;
     mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
+    // TODO:to be deleted
+    // left for storage compatibility of the "testnet" version, must be deleted in the prod version
+    uint256 private _zAccountStatusGap;
     mapping(address => bool) public isMasterEoaBlacklisted;
     mapping(bytes32 => bool) public isPubRootSpendingKeyBlacklisted;
     mapping(uint24 => bool) public isZAccountIdBlacklisted;
@@ -134,6 +137,12 @@ contract ZAccountsRegistry is
         bytes32 r,
         bytes32 s
     ) external {
+        require(
+            BabyJubJub.isG1PointNonZero(_pubRootSpendingKey) &&
+                BabyJubJub.isG1PointNonZero(_pubReadingKey),
+            ERR_UNEXPECTED_KEY
+        );
+
         bytes32 pubRootSpendingKeyPacked = BabyJubJub.pointPack(
             _pubRootSpendingKey
         );
@@ -153,6 +162,10 @@ contract ZAccountsRegistry is
         );
 
         require(!isMasterEoaBlacklisted[masterEoa], ERR_BLACKLIST_MASTER_EOA);
+        require(
+            zAccounts[masterEoa].status == ZACCOUNT_STATUS.UNDEFINED,
+            ERR_DUPLICATED_MASTER_EOA
+        );
 
         uint24 zAccountId = uint24(_getNextZAccountId());
 
@@ -233,39 +246,31 @@ contract ZAccountsRegistry is
             ERR_UNKNOWN_ZACCOUNT
         );
 
-        // TODO: both `zAccountRootSpendPubKey` and `zAccountReadPubKeyX` should be checked
-        // against the value that has been stored on registration
+        ZAccount memory _zAccount = zAccounts[zAccountMasterEOA];
+
         {
-            bytes32 zAccountRootSpendPubKey = BabyJubJub.pointPack(
+            bytes32 pubRootSpendingKey = BabyJubJub.pointPack(
                 G1Point({ x: inputs[6], y: inputs[7] })
             );
             require(
-                zAccounts[zAccountMasterEOA].pubRootSpendingKey ==
-                    zAccountRootSpendPubKey,
+                _zAccount.pubRootSpendingKey == pubRootSpendingKey,
                 ERR_MISMATCH_PUB_SPEND_KEY
             );
             (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
                 zAccountId,
                 zAccountMasterEOA,
-                zAccountRootSpendPubKey
+                pubRootSpendingKey
             );
             require(!isBlacklisted, errMsg);
         }
 
         {
-            uint256 zAccountReadPubKeyX = inputs[8];
-            uint256 zAccountReadPubKeyY = inputs[9];
-            bytes32 zAccountReadPubKey = BabyJubJub.pointPack(
-                G1Point({ x: zAccountReadPubKeyX, y: zAccountReadPubKeyY })
+            bytes32 pubReadingKey = BabyJubJub.pointPack(
+                G1Point({ x: inputs[8], y: inputs[9] })
             );
 
             require(
-                zAccountReadPubKeyX != 0 && zAccountReadPubKeyY != 0,
-                ERR_UNEXPECTED_ZACCOUNT_READ_PUB_KEY
-            );
-            require(
-                zAccounts[zAccountMasterEOA].pubReadingKey ==
-                    zAccountReadPubKey,
+                _zAccount.pubReadingKey == pubReadingKey,
                 ERR_MISMATCH_PUB_READ_KEY
             );
         }
@@ -293,7 +298,7 @@ contract ZAccountsRegistry is
             zoneZAccountNullifiers[zoneNullifier] = block.number;
         }
 
-        ZACCOUNT_STATUS userPrevStatus = zAccounts[zAccountMasterEOA].status;
+        ZACCOUNT_STATUS userPrevStatus = _zAccount.status;
 
         // if the status is registered, then change it to activate.
         // If status is already activated, it means  Zaccount is activated at least in 1 zone.

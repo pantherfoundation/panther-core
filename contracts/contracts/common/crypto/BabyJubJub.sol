@@ -163,4 +163,10 @@ library BabyJubJub {
     ) internal pure returns (bool) {
         return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;
     }
+
+    function isG1PointNonZero(
+        G1Point memory point
+    ) internal pure returns (bool) {
+        return point.x != 0 && point.y != 0;
+    }
 }
