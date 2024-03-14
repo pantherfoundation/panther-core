@@ -493,6 +493,7 @@ contract ZAccountsRegistry is
         return (isBlaklisted = bytes(err).length > 0 ? true : false, err);
     }
 
+    /// @dev Concatenate the strings together and returns the result
     function _formatBlackListError(
         string memory currentErrMsg,
         string memory errToBeAdded
@@ -506,40 +507,5 @@ contract ZAccountsRegistry is
                     errToBeAdded
                 )
             );
-    }
-
-    /// @dev Concatenate the strings together and returns the result
-    function formatBlackListError(
-        string memory content,
-        string memory contentToBeAdded,
-        string memory separator
-    ) internal pure returns (string memory newErrMsg) {
-        return
-            string(
-                abi.encodePacked(
-                    bytes(content).length > 0
-                        ? string(abi.encodePacked(content, separator))
-                        : "",
-                    contentToBeAdded
-                )
-            );
-    }
-
-    function tempFixNullifiers(
-        uint256[] calldata blockNums,
-        uint256[] calldata zAccountNullifiers,
-        uint256[] calldata zAccountIds
-    ) external onlyOwner {
-        require(
-            blockNums.length == zAccountNullifiers.length,
-            "invalid length"
-        );
-        for (uint256 i = 0; i < blockNums.length; i++) {
-            zoneZAccountNullifiers[bytes32(zAccountNullifiers[i])] = blockNums[
-                i
-            ];
-
-            emit ZAccountActivated(UtilsLib.safe24(zAccountIds[i]));
-        }
     }
 }
