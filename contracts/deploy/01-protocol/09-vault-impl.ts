@@ -26,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     await deploy('Vault_Implementation', {
-        contract: 'Vault',
+        contract: 'VaultV1',
         from: deployer,
         args: [pantherPool],
         log: true,
