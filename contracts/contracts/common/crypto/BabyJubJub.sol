@@ -215,12 +215,4 @@ library BabyJubJub {
         }
         // solhint-enable no-inline-assembly
     }
-
-    // TODO: remove this function as soon as the ProvidersKeys is refactored
-    // (it should use `function requirePointInCurveExclIdentity` instead)
-    function isG1PointLowerThanFieldSize(
-        uint256[2] memory point
-    ) internal pure returns (bool) {
-        return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;
-    }
 }
