@@ -37,7 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const providersKeys = await getContractAddress(hre, 'ProvidersKeys', '');
     const zAccountsRegistry = await getContractAddress(
         hre,
-        'ZAccountsRegistry_Proxy',
+        'zAccountsRegistry_Proxy',
         '',
     );
     const zNetworksRegistry = await getContractAddress(
