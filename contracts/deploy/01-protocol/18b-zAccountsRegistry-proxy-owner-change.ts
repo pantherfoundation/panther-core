@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {ethers} = hre;
 
     const zAccountRegistry = await ethers.getContract(
-        'ZAccountsRegistry_Proxy',
+        'zAccountsRegistry_Proxy',
     );
 
     const oldOwner = await zAccountRegistry.owner();
