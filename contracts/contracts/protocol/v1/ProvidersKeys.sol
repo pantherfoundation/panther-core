@@ -159,13 +159,19 @@ contract ProvidersKeys is
         return _treeRoot == bytes32(0) ? zeroRoot() : _treeRoot;
     }
 
-    // @dev It does NOT check if the pubKey is a point on the BabyJubJub curve
+    /// @notice Returns true if the pubKey is acceptable.
+    /// Off-chain call (gas cost is high) advised to precede pubKey registration.
+    /// @dev The pub key must be a point in the subgroup (excluding the identity)
+    /// of Baby Jubjub curve points in the twisted Edwards form.
+    function isAcceptablePubKey(
+        G1Point memory pubKey
+    ) external view returns (bool) {
+        return
+            !BabyJubJub.isIdentity(pubKey) && BabyJubJub.isInSubgroup(pubKey);
+    }
+
+    /// @notice It returns the pubKey in the packed form for the given pubKey.
     function packPubKey(G1Point memory pubKey) public pure returns (bytes32) {
-        // Coordinates must be in the SNARK field
-        require(
-            BabyJubJub.isG1PointLowerThanFieldSize([pubKey.x, pubKey.y]),
-            ERR_NOT_IN_FIELD
-        );
         return BabyJubJub.pointPack(pubKey);
     }
 
@@ -180,6 +186,7 @@ contract ProvidersKeys is
     }
 
     /// @notice Register a public key. Only the keyring operator may call.
+    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.
     function registerKey(
         uint16 keyringId,
         G1Point memory pubKey,
@@ -190,6 +197,9 @@ contract ProvidersKeys is
         bytes32 s
     ) external whenTreeUnlocked returns (uint16 keyIndex) {
         require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);
+        // Ensure the pubKey is a Baby Jubjub curve point (subgroup isn't ensured -
+        // consider calling `isAcceptablePubKey` off-chain before registration)
+        BabyJubJub.requirePointInCurveExclIdentity(pubKey);
 
         bytes32 keyPacked = BabyJubJub.pointPack(pubKey);
         address operator = recoverOperator(

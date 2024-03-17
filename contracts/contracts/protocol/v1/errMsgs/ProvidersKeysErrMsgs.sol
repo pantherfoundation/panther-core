@@ -4,10 +4,9 @@ pragma solidity ^0.8.19;
 
 string constant ERR_INIT_CONTRACT = "PK:init";
 
-string constant ERR_NOT_IN_FIELD = "PK:E01";
 string constant ERR_INCORRECT_SIBLINGS_SIZE = "PK:E02";
 
-string constant ERR_TREE_LOCK_ALREADY_UPDATED = "ZAR:E05";
+string constant ERR_TREE_LOCK_ALREADY_UPDATED = "PK:E05";
 string constant ERR_TREE_IS_LOCKED = "PK:E06";
 
 string constant ERR_INSUFFICIENT_ALLOCATION = "PK:E10";
