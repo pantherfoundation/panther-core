@@ -35,7 +35,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         '',
     );
 
-    const babyJubJub = await getContractAddress(hre, 'BabyJubJub', '');
     const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
@@ -44,10 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         contract: 'ZAccountsRegistry',
         from: deployer,
         args: [multisig, 1, pantherPool, staticTree, onboardingController],
-        libraries: {
-            PoseidonT3: poseidonT3,
-            BabyJubJub: babyJubJub,
-        },
+        libraries: {PoseidonT3: poseidonT3},
         log: true,
         autoMine: true,
     });
