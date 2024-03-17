@@ -6,33 +6,42 @@ pragma solidity ^0.8.16;
 import "../Types.sol";
 import { FIELD_SIZE } from "./SnarkConstants.sol";
 
+string constant ERR_NOT_IN_FIELD = "BJJ:E01";
+string constant ERR_NOT_IN_CURVE = "BJJ:E02";
+string constant ERR_IDENTITY_UNEXPECTED = "BJJ:E03";
+
 library BabyJubJub {
-    // Curve parameters
-    // E: 168700x^2 + y^2 = 1 + 168696x^2y^2
-    // A = 168700
-    uint256 public constant A = 0x292FC;
-    // D = 168696
-    uint256 public constant D = 0x292F8;
-    // Prime Q = 21888242871839275222246405745257275088548364400416034343698204186575808495617
-    // slither-disable-next-line too-many-digits
-    uint256 public constant Q =
-        0x30644E72E131A029B85045B68181585D2833E84879B9709143E1F593F0000001;
+    // slither-disable too-many-digits
+
+    // Curve parameters (twisted Edwards form)
+    // E: A * x^2 + y^2 = 1 + D * x^2 * y^2
+    uint256 private constant A = 168700;
+    uint256 private constant D = 168696;
+    // Field prime
+    uint256 internal constant Q = FIELD_SIZE;
 
     // @dev Base point generates the subgroup of points P of Baby Jubjub satisfying l * P = O.
     // That is, it generates the set of points of order l and origin O.
-    // slither-disable-next-line too-many-digits
-    uint256 public constant BASE8_X =
+    uint256 internal constant BASE8_X =
         5299619240641551281634865583518297030282874472190772894086521144482721001553;
-    // slither-disable-next-line too-many-digits
-    uint256 public constant BASE8_Y =
+    uint256 internal constant BASE8_Y =
         16950150798460657717958625567821834550301663161624707787222815936182638968203;
 
-    // pm1d2 = (SNARK_FIELD - 1) >> 1 // same as `negative_one / 2
-    // slither-disable-next-line too-many-digits
-    uint256 public constant PM1D2 =
+    // @dev Suborder (order of the subgroup)
+    uint256 internal constant L =
+        2736030358979909402780800718157159386076813972158567259200215660948447373041;
+
+    // pm1d2 = (SNARK_FIELD - 1) >> 1 // same as `negative_one / 2`
+    uint256 private constant PM1D2 =
         10944121435919637611123202872628637544274182200208017171849102093287904247808;
 
-    // TODO: remove dependency on BabyJubJub as a standalone contract
+    // slither-enable too-many-digits
+
+    /**
+     * @dev Returns the given point in the "packed" form
+     * For compatibility with circomlibjs (v.0.8) it packs (the sign of) X rather than Y
+     * (either of the two coordinates may be "packed" for a twisted Edwards curve).
+     */
     function pointPack(
         G1Point memory point
     ) internal pure returns (bytes32 _packed) {
@@ -47,7 +56,79 @@ library BabyJubJub {
     }
 
     /**
-     * @dev Add 2 points on baby jubjub curve
+     * @dev Returns true if the given point is in the Baby Jubjub curve
+     */
+    function isInCurve(G1Point memory point) internal pure returns (bool) {
+        require(point.x < Q && point.y < Q, ERR_NOT_IN_FIELD);
+
+        // A * x^2 + y^2 = 1 + D * x^2 * y^2
+        uint256 x2 = mulmod(point.x, point.x, Q);
+        uint256 ax2 = mulmod(A, x2, Q);
+        uint256 y2 = mulmod(point.y, point.y, Q);
+        uint256 left = addmod(ax2, y2, Q);
+
+        uint256 x2y2 = mulmod(x2, y2, Q);
+        uint256 dx2y2 = mulmod(D, x2y2, Q);
+        uint256 right = addmod(1, dx2y2, Q);
+
+        return left == right;
+    }
+
+    /**
+     * @dev Returns true if the point is the identity of the group of Baby Jubjub points
+     */
+    function isIdentity(G1Point memory point) internal pure returns (bool) {
+        return (point.x == 0) && (point.y == 1);
+    }
+
+    /**
+     * @dev Reverts if the point is either the identity or not in the Baby Jubjub subgroup
+     */
+    function requirePointInCurveExclIdentity(
+        G1Point memory point
+    ) internal pure {
+        require(!isIdentity(point), ERR_IDENTITY_UNEXPECTED);
+        require(isInCurve(point), ERR_NOT_IN_CURVE);
+    }
+
+    /**
+     * @dev Returns true if the given point is in the Baby Jubjub subgroup
+     * (beware of high gas costs)
+     */
+    function isInSubgroup(G1Point memory point) internal view returns (bool) {
+        if (isInCurve(point)) {
+            G1Point memory res = mulPointEscalar(point, L);
+            return isIdentity(res);
+        }
+
+        return false;
+    }
+
+    function mulPointEscalar(
+        G1Point memory point,
+        uint256 scalar
+    ) internal view returns (G1Point memory r) {
+        r.x = 0;
+        r.y = 1;
+
+        uint256 rem = scalar;
+        G1Point memory exp = point;
+
+        while (rem != uint256(0)) {
+            if ((rem & 1) == 1) {
+                r = pointAdd(r, exp);
+            }
+            exp = pointAdd(exp, exp);
+            rem = rem >> 1;
+        }
+        r.x = r.x % Q;
+        r.y = r.y % Q;
+
+        return r;
+    }
+
+    /**
+     * @dev Add 2 points on the Baby Jubjub curve
      * Formulae for adding 2 points on a twisted Edwards curve:
      * x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)
      * y3 = (y1y2 - ax1x2) / (1 - dx1x2y1y2)
@@ -84,7 +165,7 @@ library BabyJubJub {
         uint256 _a,
         uint256 _b,
         uint256 _mod
-    ) internal pure returns (uint256) {
+    ) private pure returns (uint256) {
         uint256 aNN = _a;
 
         if (_a <= _b) {
@@ -97,7 +178,7 @@ library BabyJubJub {
     /**
      * @dev Compute modular inverse of a number
      */
-    function inverse(uint256 _a) internal view returns (uint256) {
+    function inverse(uint256 _a) private view returns (uint256) {
         // We can use Euler's theorem instead of the extended Euclidean algorithm
         // Since m = Q and Q is prime we have: a^-1 = a^(m - 2) (mod m)
         return expmod(_a, Q - 2, Q);
@@ -110,7 +191,7 @@ library BabyJubJub {
         uint256 _b,
         uint256 _e,
         uint256 _m
-    ) internal view returns (uint256 o) {
+    ) private view returns (uint256 o) {
         // solhint-disable no-inline-assembly
         // slither-disable-next-line assembly
         assembly {
@@ -135,38 +216,11 @@ library BabyJubJub {
         // solhint-enable no-inline-assembly
     }
 
-    function mulPointEscalar(
-        G1Point memory point,
-        uint256 scalar
-    ) internal view returns (G1Point memory r) {
-        r.x = 0;
-        r.y = 1;
-
-        uint256 rem = scalar;
-        G1Point memory exp = point;
-
-        while (rem != uint256(0)) {
-            if ((rem & 1) == 1) {
-                r = pointAdd(r, exp);
-            }
-            exp = pointAdd(exp, exp);
-            rem = rem >> 1;
-        }
-        r.x = r.x % Q;
-        r.y = r.y % Q;
-
-        return r;
-    }
-
+    // TODO: remove this function as soon as the ProvidersKeys is refactored
+    // (it should use `function requirePointInCurveExclIdentity` instead)
     function isG1PointLowerThanFieldSize(
         uint256[2] memory point
     ) internal pure returns (bool) {
         return point[0] <= FIELD_SIZE && point[1] <= FIELD_SIZE;
-    }
-
-    function isG1PointNonZero(
-        G1Point memory point
-    ) internal pure returns (bool) {
-        return point.x != 0 && point.y != 0;
     }
 }
