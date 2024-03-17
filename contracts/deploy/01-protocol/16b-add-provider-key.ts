@@ -14,6 +14,10 @@ import {isProd} from '../../lib/checkNetwork';
 import {getContractAddress} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    // TODO: Fix registration of the trust provider signature
+    // as soon as the `ProvidersKeys` gets refactored in this part
+    return;
+
     if (isProd(hre)) return;
     const {artifacts, ethers} = hre;
 
