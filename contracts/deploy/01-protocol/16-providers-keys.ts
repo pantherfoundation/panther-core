@@ -31,15 +31,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PantherStaticTree_Proxy',
         '',
     );
-    const babyJubJub = await getContractAddress(hre, 'BabyJubJub', '');
-
     await deploy('ProvidersKeys', {
         from: deployer,
         args: [multisig, 1, staticTree],
         libraries: {
             PoseidonT3: poseidonT3,
             PoseidonT4: poseidonT4,
-            BabyJubJub: babyJubJub,
         },
         log: true,
         autoMine: true,

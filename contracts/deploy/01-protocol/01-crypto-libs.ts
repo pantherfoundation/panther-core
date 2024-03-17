@@ -78,12 +78,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             autoMine: true,
         });
     }
-
-    await deploy('BabyJubJub', {
-        from: deployer,
-        log: true,
-        autoMine: true,
-    });
 };
 export default func;
 
