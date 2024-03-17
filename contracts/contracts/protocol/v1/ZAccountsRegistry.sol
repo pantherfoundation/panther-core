@@ -128,8 +128,20 @@ contract ZAccountsRegistry is
         return isZAccountExists && !isBlacklisted;
     }
 
+    /// @notice Returns true if the pubKey is acceptable.
+    /// Off-chain call (gas cost is high) advised to precede pubKey registration.
+    /// @dev The pub key must be a point in the subgroup (excluding the identity)
+    /// of Baby Jubjub curve points in the twisted Edwards form.
+    function isAcceptablePubKey(
+        G1Point memory pubKey
+    ) external view returns (bool) {
+        return
+            !BabyJubJub.isIdentity(pubKey) && BabyJubJub.isInSubgroup(pubKey);
+    }
+
     /* ========== EXTERNAL FUNCTIONS ========== */
 
+    /// @dev Note comments to `function isAcceptablePubKey`
     function registerZAccount(
         G1Point memory _pubRootSpendingKey,
         G1Point memory _pubReadingKey,
@@ -137,11 +149,9 @@ contract ZAccountsRegistry is
         bytes32 r,
         bytes32 s
     ) external {
-        require(
-            BabyJubJub.isG1PointNonZero(_pubRootSpendingKey) &&
-                BabyJubJub.isG1PointNonZero(_pubReadingKey),
-            ERR_UNEXPECTED_KEY
-        );
+        // If pub keys belong to the subgroup is not checked to save gas costs
+        BabyJubJub.requirePointInCurveExclIdentity(_pubRootSpendingKey);
+        BabyJubJub.requirePointInCurveExclIdentity(_pubReadingKey);
 
         bytes32 pubRootSpendingKeyPacked = BabyJubJub.pointPack(
             _pubRootSpendingKey
