@@ -12,6 +12,10 @@ export function isProd(hre: HardhatRuntimeEnvironment): boolean {
     return hre.network.name === 'mainnet' || hre.network.name === 'polygon';
 }
 
+export function isDev(hre: HardhatRuntimeEnvironment): boolean {
+    return !isLocal(hre) && !isProd(hre);
+}
+
 export function isMainnetOrGoerli(hre: HardhatRuntimeEnvironment): boolean {
     return hre.network.name === 'mainnet' || hre.network.name === 'goerli';
 }
