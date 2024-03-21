@@ -37,7 +37,7 @@ component main {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 29 + 1 + 7 + 2 + 1 = 40
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
-                  6,     // UtxoLeftMerkleTreeDepth
+                  2,     // UtxoLeftMerkleTreeDepth
                   26,    // UtxoMiddleMerkleTreeDepth
                   6,     // ZNetworkMerkleTreeDepth
                   16,    // ZAssetMerkleTreeDepth
