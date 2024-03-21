@@ -221,7 +221,7 @@ async function getContractAddress(
     try {
         return (
             contractAddress ||
-            (await hre.ethers.getContract(deploymentName)).address
+            (await hre.deployments.get(deploymentName)).address
         );
     } catch (error) {
         console.log(
