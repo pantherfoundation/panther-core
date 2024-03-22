@@ -77,6 +77,9 @@ contract PantherPoolV1 is
     // max difference between the given utxo create/spend time and now
     uint32 public maxTimeDelta;
 
+    // kytMessageHash => blockNumber
+    mapping(bytes32 => uint256) public seenKytMessageHashes;
+
     event ZAccountRegistrationCircuitIdUpdated(uint160 newId);
     event PrpAccountingCircuitIdUpdated(uint160 newId);
     event PrpAccountConversionCircuitIdUpdated(uint160 newId);
@@ -84,6 +87,7 @@ contract PantherPoolV1 is
     event KycRewardUpdated(uint256 newReward);
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
     event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
+    event SeenKytMessageHash(bytes32 indexed kytMessageHash);
 
     constructor(
         address _owner,
@@ -625,22 +629,6 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 kytDepositSignedMessageHash = inputs[14];
-            require(
-                kytDepositSignedMessageHash != 0,
-                ERR_ZERO_KYT_DEPOSIT_SIGNED_MESSAGE_HASH
-            );
-        }
-
-        {
-            uint256 kytWithdrawSignedMessageHash = inputs[17];
-            require(
-                kytWithdrawSignedMessageHash != 0,
-                ERR_ZERO_KYT_WITHDRAW_SIGNED_MESSAGE_HASH
-            );
-        }
-
-        {
             uint256 dataEscrowEphimeralPubKeyAx = inputs[18];
             require(
                 dataEscrowEphimeralPubKeyAx != 0,
@@ -958,20 +946,23 @@ contract PantherPoolV1 is
         address kytWithdrawSignedMessageReceiver = address(uint160(inputs[16]));
 
         if (depositAmount > 0) {
+            bytes32 kytDepositSignedMessageHash = bytes32(inputs[14]);
+
             require(
                 kytDepositSignedMessageReceiver == address(VAULT),
                 ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
             );
 
             require(
-                kytWithdrawSignedMessageSender != address(0),
-                ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
+                kytDepositSignedMessageHash != 0,
+                ERR_ZERO_KYT_DEPOSIT_SIGNED_MESSAGE_HASH
+            );
+            require(
+                seenKytMessageHashes[kytDepositSignedMessageHash] == 0,
+                ERR_DUPLICATED_KYT_MESSAGE_HASH
             );
 
-            require(
-                kytWithdrawSignedMessageReceiver != address(0),
-                ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER
-            );
+            seenKytMessageHashes[kytDepositSignedMessageHash] = block.number;
 
             _lockAssetWithSalt(
                 SaltedLockData(
@@ -983,21 +974,28 @@ contract PantherPoolV1 is
                     depositAmount
                 )
             );
+
+            emit SeenKytMessageHash(kytDepositSignedMessageHash);
         }
 
         if (withdrawAmount > 0) {
+            bytes32 kytWithdrawSignedMessageHash = bytes32(inputs[17]);
+
             require(
                 kytWithdrawSignedMessageSender == address(VAULT),
                 ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
             );
+
             require(
-                kytDepositSignedMessageSender != address(0),
-                ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER
+                kytWithdrawSignedMessageHash != 0,
+                ERR_ZERO_KYT_WITHDRAW_SIGNED_MESSAGE_HASH
             );
             require(
-                kytDepositSignedMessageReceiver != address(0),
-                ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
+                seenKytMessageHashes[kytWithdrawSignedMessageHash] == 0,
+                ERR_DUPLICATED_KYT_MESSAGE_HASH
             );
+
+            seenKytMessageHashes[kytWithdrawSignedMessageHash] = block.number;
 
             _unlockAsset(
                 LockData(
@@ -1008,6 +1006,8 @@ contract PantherPoolV1 is
                     withdrawAmount
                 )
             );
+
+            emit SeenKytMessageHash(kytWithdrawSignedMessageHash);
         }
     }
 
