@@ -46,9 +46,31 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
                 : _currentRoot;
     }
 
-    function addUtxos(bytes32[] memory utxos) external onlyPantherPool {
-        bytes32 taxiTreeNewRoot = _insert(utxos);
+    function addUtxo(bytes32 utxo) external onlyPantherPool {
+        uint8 numLeaves = 1;
 
+        bytes32 taxiTreeNewRoot = _insert(utxo);
+
+        _updateTaxiAndStaticTreeRoots(taxiTreeNewRoot, numLeaves);
+
+        emit RootUpdated(numLeaves, taxiTreeNewRoot);
+    }
+
+    function addUtxos(
+        bytes32 utxo0,
+        bytes32 utxo1,
+        bytes32 utxo2
+    ) external onlyPantherPool {
+        uint8 numLeaves = 3;
+        bytes32 taxiTreeNewRoot = _insert(utxo0, utxo1, utxo2);
+
+        _updateTaxiAndStaticTreeRoots(taxiTreeNewRoot, numLeaves);
+    }
+
+    function _updateTaxiAndStaticTreeRoots(
+        bytes32 taxiTreeNewRoot,
+        uint8 numLeaves
+    ) private {
         // Synchronize the sate of `PantherForest` contract
         // Trusted contract - no reentrancy guard needed
         ITreeRootUpdater(PANTHER_POOL).updateRoot(
@@ -58,6 +80,6 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
 
         _currentRoot = taxiTreeNewRoot;
 
-        emit RootUpdated(utxos.length, taxiTreeNewRoot);
+        emit RootUpdated(numLeaves, taxiTreeNewRoot);
     }
 }

@@ -3,5 +3,7 @@
 pragma solidity ^0.8.19;
 
 interface IPantherTaxiTree {
-    function addUtxos(bytes32[] calldata utxos) external;
+    function addUtxo(bytes32 utxo) external;
+
+    function addUtxos(bytes32 utxo0, bytes32 utxo1, bytes32 utxo2) external;
 }
