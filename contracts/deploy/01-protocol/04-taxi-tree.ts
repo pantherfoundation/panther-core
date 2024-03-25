@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
 
-    await deploy('MockTaxiTree', {
+    await deploy('PantherTaxiTree', {
         from: deployer,
         libraries: {
             PoseidonT3: poseidonT3,

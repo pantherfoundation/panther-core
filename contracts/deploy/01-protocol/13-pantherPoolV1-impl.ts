@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'VAULT_PROXY',
     );
 
-    const taxiTree = await getContractAddress(hre, 'MockTaxiTree', '');
+    const taxiTree = await getContractAddress(hre, 'PantherTaxiTree', '');
     const busTreeProxy = await getContractAddress(
         hre,
         'PantherBusTree_Proxy',

@@ -13,6 +13,14 @@ bytes32 constant ZERO_VALUE = bytes32(
 // hash function applied.
 // (computed by `../../../../lib/binaryMerkleZerosContractGenerator.ts`)
 
+uint256 constant TWO_LEVELS = 2;
+/// @dev Root of the binary merkle TWO_LEVELS tree with ZERO_VALUE leafs
+// Level 0: ZERO_VALUE
+// Level 1: 0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4
+bytes32 constant TWO_LEVEL_EMPTY_TREE_ROOT = bytes32(
+    uint256(0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8)
+);
+
 uint256 constant SIX_LEVELS = 6;
 /// @dev Root of the binary merkle SIX_LEVELS tree with ZERO_VALUE leafs
 // Level 0: ZERO_VALUE
