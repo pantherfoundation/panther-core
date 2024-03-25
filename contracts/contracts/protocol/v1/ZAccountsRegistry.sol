@@ -224,7 +224,7 @@ contract ZAccountsRegistry is
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function activateZAccount(
         uint256[] calldata inputs,
         SnarkProof calldata proof,

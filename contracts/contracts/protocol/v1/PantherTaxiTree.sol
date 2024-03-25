@@ -48,15 +48,12 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
 
     function addUtxo(bytes32 utxo) external onlyPantherPool {
         uint8 numLeaves = 1;
-
         bytes32 taxiTreeNewRoot = _insert(utxo);
 
         _updateTaxiAndStaticTreeRoots(taxiTreeNewRoot, numLeaves);
-
-        emit RootUpdated(numLeaves, taxiTreeNewRoot);
     }
 
-    function addUtxos(
+    function addThreeUtxos(
         bytes32 utxo0,
         bytes32 utxo1,
         bytes32 utxo2
