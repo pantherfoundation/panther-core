@@ -16,7 +16,6 @@ import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol"
 import { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "./pantherForest/zeroTrees/Constants.sol";
 
 import "../../common/ImmutableOwnable.sol";
-import { G1Point } from "../../common/Types.sol";
 
 /**
  * @title ProvidersKeys
@@ -139,6 +138,13 @@ contract ProvidersKeys is
         _;
     }
 
+    modifier sanitizePubKey(G1Point memory pubKey) {
+        // Ensure the pubKey is a Baby Jubjub curve point (subgroup isn't ensured -
+        // consider calling `isAcceptablePubKey` off-chain before registration)
+        BabyJubJub.requirePointInCurveExclIdentity(pubKey);
+        _;
+    }
+
     function getStatistics()
         external
         view
@@ -185,9 +191,7 @@ contract ProvidersKeys is
         );
     }
 
-    /// @notice Register a public key. Only the keyring operator may call.
-    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.
-    function registerKey(
+    function registerKeyWithSignature(
         uint16 keyringId,
         G1Point memory pubKey,
         uint32 expiry,
@@ -195,102 +199,149 @@ contract ProvidersKeys is
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external whenTreeUnlocked returns (uint16 keyIndex) {
-        require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);
-        // Ensure the pubKey is a Baby Jubjub curve point (subgroup isn't ensured -
-        // consider calling `isAcceptablePubKey` off-chain before registration)
-        BabyJubJub.requirePointInCurveExclIdentity(pubKey);
-
-        bytes32 keyPacked = BabyJubJub.pointPack(pubKey);
+    ) external returns (uint16 keyIndex) {
         address operator = recoverOperator(
             keyringId,
-            keyPacked,
+            pubKey,
             expiry,
+            proofSiblings,
             v,
             r,
             s
         );
 
-        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+        keyIndex = _registerKey(
+            operator,
             keyringId,
-            operator
-        );
-
-        require(
-            keyring.numAllocKeys >= keyring.numKeys,
-            ERR_INSUFFICIENT_ALLOCATION
-        );
-
-        bytes32 commitment = getKeyCommitment(pubKey, expiry);
-
-        keyIndex = _totalNumRegisteredKeys;
-        keyringIds[keyIndex] = keyringId;
-
-        // Trusted contract - no reentrancy guard needed
-        _updateProvidersKeysAndStaticTreeRoots(
-            ZERO_VALUE,
-            commitment,
-            keyIndex,
+            pubKey,
+            expiry,
             proofSiblings
         );
-
-        _totalNumRegisteredKeys = ++keyIndex;
-
-        keyring.numKeys++;
-        keyrings[keyringId] = keyring;
-
-        emit KeyRegistered(keyringId, keyIndex, keyPacked, expiry);
     }
 
-    /// @notice Extend the key expiry time. Only the keyring operator may call.
+    function registerKey(
+        uint16 keyringId,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] memory proofSiblings
+    ) external returns (uint16 keyIndex) {
+        keyIndex = _registerKey(
+            msg.sender,
+            keyringId,
+            pubKey,
+            expiry,
+            proofSiblings
+        );
+    }
+
+    function extendKeyExpiryWithSignature(
+        uint16 keyIndex,
+        G1Point memory pubKey,
+        uint32 expiry,
+        uint32 newExpiry,
+        bytes32[] memory proofSiblings,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        uint16 keyringId = keyringIds[keyIndex];
+
+        address operator = recoverOperator(
+            keyIndex,
+            pubKey,
+            expiry,
+            newExpiry,
+            proofSiblings,
+            v,
+            r,
+            s
+        );
+
+        _getOperatorActiveKeyringOrRevert(keyringId, operator);
+
+        _extendKeyExpiry(
+            pubKey,
+            expiry,
+            newExpiry,
+            keyIndex,
+            keyringId,
+            proofSiblings
+        );
+    }
+
     function extendKeyExpiry(
         G1Point memory pubKey,
         uint32 expiry,
         uint32 newExpiry,
         uint16 keyIndex,
         bytes32[] memory proofSiblings
-    ) external whenTreeUnlocked {
-        require(
-            newExpiry > _timeNow() && newExpiry > expiry,
-            ERR_INVALID_KEY_EXPIRY
-        );
+    ) external {
         uint16 keyringId = keyringIds[keyIndex];
         _getOperatorActiveKeyringOrRevert(keyringId, msg.sender);
 
-        bytes32 commitment = getKeyCommitment(pubKey, expiry);
-        bytes32 newCommitment = getKeyCommitment(pubKey, newExpiry);
-
-        _updateProvidersKeysAndStaticTreeRoots(
-            commitment,
-            newCommitment,
+        _extendKeyExpiry(
+            pubKey,
+            expiry,
+            newExpiry,
             keyIndex,
+            keyringId,
             proofSiblings
         );
-
-        emit KeyExtended(keyringId, keyIndex, newExpiry);
     }
 
-    /// @notice Update keyring operator. Only the (current) operator may call.
+    function updateKeyringOperatorWithSignature(
+        uint16 keyringId,
+        address newOperator,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        address currentoperator = recoverOperator(
+            keyringId,
+            newOperator,
+            v,
+            r,
+            s
+        );
+
+        _updateKeyringOperator(keyringId, currentoperator, newOperator);
+    }
+
     function updateKeyringOperator(
         uint16 keyringId,
         address newOperator
     ) external {
-        require(newOperator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
+        _updateKeyringOperator(keyringId, msg.sender, newOperator);
+    }
 
-        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+    function revokeKeyWithSignature(
+        uint16 keyringId,
+        uint16 keyIndex,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] calldata proofSiblings,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        address operator = recoverOperator(
             keyringId,
-            msg.sender
+            keyIndex,
+            pubKey,
+            expiry,
+            proofSiblings,
+            v,
+            r,
+            s
         );
-        require(newOperator != msg.sender, ERR_SAME_OPERATOR);
 
-        keyring.operator = newOperator;
-        keyrings[keyringId] = keyring;
-
-        emit KeyringUpdated(
+        _revokeKey(
+            operator,
             keyringId,
-            keyring.operator,
-            keyring.status,
-            keyring.numAllocKeys
+            keyIndex,
+            pubKey,
+            expiry,
+            proofSiblings
         );
     }
 
@@ -302,27 +353,15 @@ contract ProvidersKeys is
         G1Point memory pubKey,
         uint32 expiry,
         bytes32[] calldata proofSiblings
-    ) external keyInKeyring(keyIndex, keyringId) {
-        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
-
-        if (keyring.operator == msg.sender) {
-            _requireTreeIsUnlocked();
-        } else {
-            require(OWNER == msg.sender, ERR_UNAUTHORIZED_OPERATOR);
-        }
-
-        bytes32 commitment = getKeyCommitment(pubKey, expiry);
-
-        bytes32 newCommitment = getKeyCommitment(pubKey, REVOKED_KEY_EXPIRY);
-
-        _updateProvidersKeysAndStaticTreeRoots(
-            commitment,
-            newCommitment,
+    ) external {
+        _revokeKey(
+            msg.sender,
+            keyringId,
             keyIndex,
+            pubKey,
+            expiry,
             proofSiblings
         );
-
-        emit KeyRevoked(keyringId, keyIndex);
     }
 
     /* ========== ONLY FOR OWNER FUNCTIONS ========== */
@@ -447,6 +486,141 @@ contract ProvidersKeys is
         return SIXTEEN_LEVEL_EMPTY_TREE_ROOT;
     }
 
+    /// @notice Register a public key. Only the keyring operator may call.
+    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.
+    function _registerKey(
+        address operator,
+        uint16 keyringId,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] memory proofSiblings
+    )
+        private
+        sanitizePubKey(pubKey)
+        whenTreeUnlocked
+        returns (uint16 keyIndex)
+    {
+        require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);
+
+        bytes32 keyPacked = _packPubKey(pubKey);
+
+        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+            keyringId,
+            operator
+        );
+
+        require(
+            keyring.numAllocKeys >= keyring.numKeys,
+            ERR_INSUFFICIENT_ALLOCATION
+        );
+
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+
+        keyIndex = _totalNumRegisteredKeys;
+        keyringIds[keyIndex] = keyringId;
+
+        // Trusted contract - no reentrancy guard needed
+        _updateProvidersKeysAndStaticTreeRoots(
+            ZERO_VALUE,
+            commitment,
+            keyIndex,
+            proofSiblings
+        );
+
+        _totalNumRegisteredKeys = ++keyIndex;
+
+        keyring.numKeys++;
+        keyrings[keyringId] = keyring;
+
+        emit KeyRegistered(keyringId, keyIndex, keyPacked, expiry);
+    }
+
+    /// @notice Extend the key expiry time. Only the keyring operator may call.
+    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.
+    function _extendKeyExpiry(
+        G1Point memory pubKey,
+        uint32 expiry,
+        uint32 newExpiry,
+        uint16 keyIndex,
+        uint16 keyringId,
+        bytes32[] memory proofSiblings
+    ) private sanitizePubKey(pubKey) whenTreeUnlocked {
+        require(
+            newExpiry > _timeNow() && newExpiry > expiry,
+            ERR_INVALID_KEY_EXPIRY
+        );
+
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+        bytes32 newCommitment = getKeyCommitment(pubKey, newExpiry);
+
+        _updateProvidersKeysAndStaticTreeRoots(
+            commitment,
+            newCommitment,
+            keyIndex,
+            proofSiblings
+        );
+
+        emit KeyExtended(keyringId, keyIndex, newExpiry);
+    }
+
+    /// @notice Update keyring operator. Only the (current) operator may call.
+    function _updateKeyringOperator(
+        uint16 keyringId,
+        address currentoperator,
+        address newOperator
+    ) private {
+        require(newOperator != address(0), ERR_ZERO_OPERATOR_ADDRESS);
+
+        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(
+            keyringId,
+            currentoperator
+        );
+        require(newOperator != currentoperator, ERR_SAME_OPERATOR);
+
+        keyring.operator = newOperator;
+        keyrings[keyringId] = keyring;
+
+        emit KeyringUpdated(
+            keyringId,
+            keyring.operator,
+            keyring.status,
+            keyring.numAllocKeys
+        );
+    }
+
+    /// @notice Revoke registered key. Either the operator or the owner may call.
+    /// @dev It sets the `expiry` to 0, which is an indicator of a revoked key.
+    /// Consider `isAcceptablePubKey` off-chain call before registration.
+    function _revokeKey(
+        address operator,
+        uint16 keyringId,
+        uint16 keyIndex,
+        G1Point memory pubKey,
+        uint32 expiry,
+        bytes32[] calldata proofSiblings
+    ) private sanitizePubKey(pubKey) keyInKeyring(keyIndex, keyringId) {
+        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);
+
+        if (keyring.operator == operator) {
+            _requireTreeIsUnlocked();
+        } else {
+            require(OWNER == msg.sender, ERR_UNAUTHORIZED_OPERATOR);
+        }
+
+        bytes32 commitment = getKeyCommitment(pubKey, expiry);
+
+        bytes32 newCommitment = getKeyCommitment(pubKey, REVOKED_KEY_EXPIRY);
+
+        _updateProvidersKeysAndStaticTreeRoots(
+            commitment,
+            newCommitment,
+            keyIndex,
+            proofSiblings
+        );
+
+        emit KeyRevoked(keyringId, keyIndex);
+    }
+
     function _getNextKeyringId() private view returns (uint16) {
         return _numKeyrings + 1;
     }
@@ -508,6 +682,10 @@ contract ProvidersKeys is
             updatedRoot,
             PROVIDERS_KEYS_STATIC_LEAF_INDEX
         );
+    }
+
+    function _packPubKey(G1Point memory pubKey) private pure returns (bytes32) {
+        return BabyJubJub.pointPack(pubKey);
     }
 
     function _requireTreeIsUnlocked() private view {
