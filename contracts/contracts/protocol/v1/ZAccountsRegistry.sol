@@ -225,17 +225,19 @@ contract ZAccountsRegistry is
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function activateZAccount(
         uint256[] calldata inputs,
-        bytes memory privateMessages,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex
+        uint256 cachedForestRootIndex,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
         {
             require(inputs[2] == 0, ERR_NON_ZERO_ZKP_CHANGE);
 
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                privateMessages,
-                cachedForestRootIndex
+                cachedForestRootIndex,
+                paymasterCompensation,
+                privateMessages
             );
             require(
                 extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
@@ -330,8 +332,9 @@ contract ZAccountsRegistry is
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
-            privateMessages,
-            cachedForestRootIndex
+            cachedForestRootIndex,
+            paymasterCompensation,
+            privateMessages
         );
 
         emit ZAccountActivated(zAccountId);
@@ -446,8 +449,9 @@ contract ZAccountsRegistry is
     function _createZAccountUTXO(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory privateMessages,
-        uint256 cachedForestRootIndex
+        uint256 cachedForestRootIndex,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
         utxoBusQueuePos = 0;
         // Pool is supposed to revert in case of any error
@@ -456,9 +460,10 @@ contract ZAccountsRegistry is
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
+                cachedForestRootIndex,
                 address(ONBOARDING_CONTROLLER),
-                privateMessages,
-                cachedForestRootIndex
+                paymasterCompensation,
+                privateMessages
             )
         returns (uint256 result) {
             utxoBusQueuePos = result;

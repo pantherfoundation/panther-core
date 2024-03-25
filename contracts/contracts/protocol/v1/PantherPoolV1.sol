@@ -206,9 +206,10 @@ contract PantherPoolV1 is
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
+        uint256 cachedForestRootIndex,
         address zkpPayer,
-        bytes memory privateMessages,
-        uint256 cachedForestRootIndex
+        uint96 /*paymasterCompensation*/,
+        bytes memory privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
@@ -311,8 +312,9 @@ contract PantherPoolV1 is
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory privateMessages,
-        uint256 cachedForestRootIndex
+        uint256 cachedForestRootIndex,
+        uint96 /*paymasterCompensation*/,
+        bytes memory privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
@@ -413,11 +415,12 @@ contract PantherPoolV1 is
     /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function createZzkpUtxoAndSpendPrpUtxo(
-        uint256[] calldata inputs,
+        uint256[] memory inputs,
         SnarkProof calldata proof,
-        bytes memory privateMessages,
+        uint256 cachedForestRootIndex,
         uint256 zkpAmountOutRounded,
-        uint256 cachedForestRootIndex
+        uint96 /*paymasterCompensation*/,
+        bytes calldata privateMessages
     ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
@@ -577,12 +580,12 @@ contract PantherPoolV1 is
     /// @param inputs[40] - saltHash;
     /// @param inputs[41] - magicalConstraint;
     function main(
-        uint256[] memory inputs,
+        uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint256 cachedForestRootIndex,
-        bytes memory privateMessages,
         uint8 tokenType,
-        uint256 /*zkpChargedAmount*/
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
@@ -605,8 +608,9 @@ contract PantherPoolV1 is
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
                 cachedForestRootIndex,
-                privateMessages,
-                tokenType
+                tokenType,
+                paymasterCompensation,
+                privateMessages
             );
 
             _validateExtraInputHash(extraInputsHash, extraInp);
