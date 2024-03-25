@@ -155,9 +155,10 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function claimRewards(
         uint256[] calldata inputs,
-        bytes memory privateMessages,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndex
+        uint256 cachedForestRootIndex,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
         bytes32 secretHash = bytes32(inputs[13]);
 
@@ -191,8 +192,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                privateMessages,
-                cachedForestRootIndex
+                cachedForestRootIndex,
+                paymasterCompensation,
+                privateMessages
             );
             require(
                 extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
@@ -207,8 +209,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         utxoBusQueuePos = _accountPrp(
             inputs,
             proof,
-            privateMessages,
-            cachedForestRootIndex
+            cachedForestRootIndex,
+            paymasterCompensation,
+            privateMessages
         );
 
         emit RewardClaimed(secretHash);
@@ -217,8 +220,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     function _accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        bytes memory privateMessages,
-        uint256 cachedForestRootIndex
+        uint256 cachedForestRootIndex,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
         utxoBusQueuePos = 0;
         // Pool is supposed to revert in case of any error
@@ -227,8 +231,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
             PANTHER_POOL_V1.accountPrp(
                 inputs,
                 proof,
-                privateMessages,
-                cachedForestRootIndex
+                cachedForestRootIndex,
+                paymasterCompensation,
+                privateMessages
             )
         returns (uint256 result) {
             utxoBusQueuePos = result;

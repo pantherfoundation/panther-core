@@ -160,10 +160,11 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// @param cachedForestRootIndex forest merkle root index. 0 means the most updated root.
     function convert(
         uint256[] calldata inputs,
-        bytes calldata privateMessages,
         SnarkProof memory proof,
+        uint256 cachedForestRootIndex,
         uint256 zkpAmountOutMin,
-        uint256 cachedForestRootIndex
+        uint96 paymasterCompensation,
+        bytes calldata privateMessages
     ) external returns (uint256 firstUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
@@ -174,9 +175,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                privateMessages,
                 cachedForestRootIndex,
-                zkpAmountOutMin
+                zkpAmountOutMin,
+                paymasterCompensation,
+                privateMessages
             );
             require(
                 extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
@@ -220,9 +222,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         firstUtxoBusQueuePos = _createZzkpUtxoAndSpendPrpUtxo(
             inputs,
             proof,
-            privateMessages,
+            cachedForestRootIndex,
             zkpAmountOutRounded,
-            cachedForestRootIndex
+            paymasterCompensation,
+            privateMessages
         );
 
         uint256 prpVirtualBalance = _prpReserve + withdrawAmountPrp;
@@ -251,9 +254,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     function _createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof memory proof,
-        bytes memory privateMessages,
+        uint256 cachedForestRootIndex,
         uint256 amountOutRounded,
-        uint256 cachedForestRootIndex
+        uint96 paymasterCompensation,
+        bytes memory privateMessages
     ) private returns (uint256 firstUtxoBusQueuePos) {
         // Trusted contract - no reentrancy guard needed
         // pool contract triggers vault to transfer `amountOut` from prpConverter
@@ -261,9 +265,10 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             IPantherPoolV1(PANTHER_POOL).createZzkpUtxoAndSpendPrpUtxo(
                 inputs,
                 proof,
-                privateMessages,
+                cachedForestRootIndex,
                 amountOutRounded,
-                cachedForestRootIndex
+                paymasterCompensation,
+                privateMessages
             )
         returns (uint256 result) {
             firstUtxoBusQueuePos = result;
