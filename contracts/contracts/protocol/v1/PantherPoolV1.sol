@@ -205,7 +205,7 @@ contract PantherPoolV1 is
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -321,7 +321,7 @@ contract PantherPoolV1 is
     /// This data is used to spend the newly created utxo.
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -433,7 +433,7 @@ contract PantherPoolV1 is
     /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] memory inputs,
         SnarkProof calldata proof,
@@ -448,6 +448,7 @@ contract PantherPoolV1 is
         require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
+            // Note: extraInputsHash is computed in PrpConverter
             uint256 extraInputsHash = inputs[0];
             require(extraInputsHash != 0, ERR_ZERO_EXTRA_INPUT_HASH);
         }
@@ -609,7 +610,7 @@ contract PantherPoolV1 is
     /// ERC1155, and Native token respectively.
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -817,7 +818,7 @@ contract PantherPoolV1 is
             ) = _addUtxosToBusQueue(utxos, miningRewards);
 
             if (_isTaxiApplicable(cachedForestRootIndexAndTaxiEnabler)) {
-                _addUtxosToTaxiTree(
+                _addThreeUtxosToTaxiTree(
                     zAccountUtxoOutCommitment,
                     zAssetUtxoOutCommitment1,
                     zAssetUtxoOutCommitment2
@@ -946,13 +947,17 @@ contract PantherPoolV1 is
         }
     }
 
-    function _addUtxosToTaxiTree(
+    function _addThreeUtxosToTaxiTree(
         bytes32 utxo0,
         bytes32 utxo1,
         bytes32 utxo2
     ) private {
         try
-            IPantherTaxiTree(TAXI_TREE_CONTROLLER).addUtxos(utxo0, utxo1, utxo2)
+            IPantherTaxiTree(TAXI_TREE_CONTROLLER).addThreeUtxos(
+                utxo0,
+                utxo1,
+                utxo2
+            )
         // solhint-disable-next-line no-empty-blocks
         {
 
@@ -1001,8 +1006,9 @@ contract PantherPoolV1 is
         uint256 cachedForestRootIndexAndTaxiEnabler
     ) internal pure returns (uint256) {
         // The 8 LSB contains the cachedForestRootIndex
+        // returning the total 16 bits to reduce attack surface.
 
-        return cachedForestRootIndexAndTaxiEnabler & 0xFF;
+        return cachedForestRootIndexAndTaxiEnabler & 0xFFFF;
     }
 
     function _isTaxiApplicable(

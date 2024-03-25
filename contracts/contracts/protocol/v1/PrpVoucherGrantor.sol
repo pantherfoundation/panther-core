@@ -154,7 +154,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
+    /// the taxi tree. Other bits are reserved.
     function claimRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
