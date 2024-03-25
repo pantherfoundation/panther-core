@@ -222,11 +222,13 @@ contract ZAccountsRegistry is
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param cachedForestRootIndexAndUtxosCarrier forest merkle root index. 0 means the most updated root.
+    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
+    /// the taxi tree. 8 bits from position 8 to position 16 are reserved.
     function activateZAccount(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndUtxosCarrier,
+        uint256 cachedForestRootIndexAndTaxiEnabler,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
@@ -235,7 +237,7 @@ contract ZAccountsRegistry is
 
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndexAndUtxosCarrier,
+                cachedForestRootIndexAndTaxiEnabler,
                 paymasterCompensation,
                 privateMessages
             );
@@ -332,7 +334,7 @@ contract ZAccountsRegistry is
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
-            cachedForestRootIndexAndUtxosCarrier,
+            cachedForestRootIndexAndTaxiEnabler,
             paymasterCompensation,
             privateMessages
         );
