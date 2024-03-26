@@ -65,7 +65,6 @@ contract ZAccountsRegistry is
     uint256 public zAccountIdTracker;
 
     mapping(bytes32 => uint256) public zoneZAccountNullifiers;
-    mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
     // TODO:to be deleted
     // left for storage compatibility of the "testnet" version, must be deleted in the prod version
     uint256 private _zAccountStatusGap;
@@ -78,6 +77,8 @@ contract ZAccountsRegistry is
 
     // Mapping from zAccount Id to Master Eoa
     mapping(uint24 => address) public masterEOAs;
+
+    mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
 
     event ZAccountRegistered(address masterEoa, ZAccount zAccount);
     event ZAccountActivated(uint24 id);
