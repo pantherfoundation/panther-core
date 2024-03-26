@@ -158,7 +158,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     function claimRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
@@ -222,7 +222,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     function _accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
