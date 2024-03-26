@@ -9,7 +9,7 @@ import {
     BUS_TREE_BATCH_DEPTH,
     BUS_TREE_BRANCH_DEPTH,
     BUS_TREE_DEPTH,
-    BUS_TREE_ZERO_LEAF,
+    TREE_ZERO_LEAF,
 } from '../../../src/other/sparse-merkle-tree';
 
 import busTreeData from './data/bus-tree.json';
@@ -203,7 +203,7 @@ describe('BusTree', () => {
             BUS_TREE_BATCH_DEPTH,
             BUS_TREE_BRANCH_DEPTH,
             BUS_TREE_DEPTH,
-            BigInt(BUS_TREE_ZERO_LEAF),
+            BigInt(TREE_ZERO_LEAF),
         );
         expect(tree.getRoot()).to.be.eq(BigInt(busTreeData.busTreeRoot));
     });
