@@ -163,8 +163,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     function convert(
         uint256[] calldata inputs,
         SnarkProof memory proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
-        uint256 zkpAmountOutMin,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint96 zkpAmountOutMin,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external returns (uint256 firstUtxoBusQueuePos) {
@@ -198,7 +198,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);
 
-        uint256 zkpAmountOutRounded;
+        uint96 zkpAmountOutRounded;
         // amount to be withdrawn from zAccount UTXO and added to the converter's prpVirtualBalance
         uint256 withdrawAmountPrp = inputs[4];
 
@@ -215,7 +215,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
             unchecked {
                 // rounding the amount (leaving the changes in the contract)
-                zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
+                zkpAmountOutRounded = UtilsLib.safe96(
+                    (zkpAmountOut / scale) * scale
+                );
             }
 
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
@@ -256,8 +258,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     function _createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof memory proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
-        uint256 amountOutRounded,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint96 amountOutRounded,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 firstUtxoBusQueuePos) {

@@ -209,7 +209,7 @@ contract PantherPoolV1 is
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
         address zkpPayer,
         uint96 /*paymasterCompensation*/,
         bytes memory privateMessages
@@ -325,7 +325,7 @@ contract PantherPoolV1 is
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
         uint96 /*paymasterCompensation*/,
         bytes memory privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
@@ -437,8 +437,8 @@ contract PantherPoolV1 is
     function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] memory inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
-        uint256 zkpAmountOutRounded,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint96 zkpAmountOutRounded,
         uint96 /*paymasterCompensation*/,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
@@ -614,7 +614,7 @@ contract PantherPoolV1 is
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 cachedForestRootIndexAndTaxiEnabler,
         uint8 tokenType,
         uint96 paymasterCompensation,
         bytes memory privateMessages
@@ -1003,7 +1003,7 @@ contract PantherPoolV1 is
     }
 
     function _getCachedForestRootIndex(
-        uint256 cachedForestRootIndexAndTaxiEnabler
+        uint32 cachedForestRootIndexAndTaxiEnabler
     ) internal pure returns (uint256) {
         // The 8 LSB contains the cachedForestRootIndex
         // returning the total 16 bits to reduce attack surface.
@@ -1012,7 +1012,7 @@ contract PantherPoolV1 is
     }
 
     function _isTaxiApplicable(
-        uint256 cachedForestRootIndexAndTaxiEnabler
+        uint32 cachedForestRootIndexAndTaxiEnabler
     ) internal pure returns (bool) {
         // The 1 MSB contains the TaxiEnabler
 
