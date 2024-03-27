@@ -20,6 +20,7 @@ import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
+import "./pantherPool/TransactionOptions.sol";
 
 /**
  * @title PantherPool
@@ -47,6 +48,7 @@ contract PantherPoolV1 is
     NonReentrant,
     IPantherPoolV1
 {
+    using TransactionOptions for uint32;
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
     uint256[452] private __gap;
@@ -203,13 +205,13 @@ contract PantherPoolV1 is
     /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         address zkpPayer,
         uint96 /*paymasterCompensation*/,
         bytes memory privateMessages
@@ -253,7 +255,7 @@ contract PantherPoolV1 is
         require(
             isCachedRoot(
                 bytes32(inputs[16]),
-                _getCachedForestRootIndex(cachedForestRootIndexAndTaxiEnabler)
+                transactionOptions.cachedForestRootIndex()
             ),
             ERR_INVALID_FOREST_ROOT
         );
@@ -274,7 +276,7 @@ contract PantherPoolV1 is
             bytes32(zAccountCommitment)
         );
 
-        if (_isTaxiApplicable(cachedForestRootIndexAndTaxiEnabler)) {
+        if (transactionOptions.isTaxiApplicable()) {
             _addUtxoToTaxiTree(bytes32(zAccountCommitment));
         }
 
@@ -319,13 +321,13 @@ contract PantherPoolV1 is
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint96 /*paymasterCompensation*/,
         bytes memory privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
@@ -370,9 +372,7 @@ contract PantherPoolV1 is
             require(
                 isCachedRoot(
                     forestMerkleRoot,
-                    _getCachedForestRootIndex(
-                        cachedForestRootIndexAndTaxiEnabler
-                    )
+                    transactionOptions.cachedForestRootIndex()
                 ),
                 ERR_INVALID_FOREST_ROOT
             );
@@ -431,13 +431,13 @@ contract PantherPoolV1 is
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
     /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] memory inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint96 zkpAmountOutRounded,
         uint96 /*paymasterCompensation*/,
         bytes calldata privateMessages
@@ -483,7 +483,7 @@ contract PantherPoolV1 is
         require(
             isCachedRoot(
                 bytes32(inputs[12]),
-                _getCachedForestRootIndex(cachedForestRootIndexAndTaxiEnabler)
+                transactionOptions.cachedForestRootIndex()
             ),
             ERR_INVALID_FOREST_ROOT
         );
@@ -608,13 +608,13 @@ contract PantherPoolV1 is
     /// data.
     /// @param tokenType One of the numbers 0, 1, 2, 255 which determines ERC20, ERC721,
     /// ERC1155, and Native token respectively.
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint8 tokenType,
         uint96 paymasterCompensation,
         bytes memory privateMessages
@@ -639,7 +639,7 @@ contract PantherPoolV1 is
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndexAndTaxiEnabler,
+                transactionOptions,
                 tokenType,
                 paymasterCompensation,
                 privateMessages
@@ -787,7 +787,7 @@ contract PantherPoolV1 is
 
             _validateCachedForestRootIndex(
                 forestMerkleRoot,
-                _getCachedForestRootIndex(cachedForestRootIndexAndTaxiEnabler)
+                transactionOptions.cachedForestRootIndex()
             );
         }
 
@@ -817,7 +817,7 @@ contract PantherPoolV1 is
                 zAccountUtxoBusQueuePos
             ) = _addUtxosToBusQueue(utxos, miningRewards);
 
-            if (_isTaxiApplicable(cachedForestRootIndexAndTaxiEnabler)) {
+            if (transactionOptions.isTaxiApplicable()) {
                 _addThreeUtxosToTaxiTree(
                     zAccountUtxoOutCommitment,
                     zAssetUtxoOutCommitment1,
@@ -1000,23 +1000,6 @@ contract PantherPoolV1 is
         require(chargedAmount > _accountedRewards, ERR_TOO_LOW_CHARGED_ZKP);
         //TODO Subtract other rewards (protocol, etc) from `chargedAmount`
         _miningReward = UtilsLib.safe96(chargedAmount - _accountedRewards);
-    }
-
-    function _getCachedForestRootIndex(
-        uint32 cachedForestRootIndexAndTaxiEnabler
-    ) internal pure returns (uint256) {
-        // The 8 LSB contains the cachedForestRootIndex
-        // returning the total 16 bits to reduce attack surface.
-
-        return cachedForestRootIndexAndTaxiEnabler & 0xFFFF;
-    }
-
-    function _isTaxiApplicable(
-        uint32 cachedForestRootIndexAndTaxiEnabler
-    ) internal pure returns (bool) {
-        // The 1 MSB contains the TaxiEnabler
-
-        return (cachedForestRootIndexAndTaxiEnabler >> 16) == 1;
     }
 
     function _processDepositAndWithdraw(
