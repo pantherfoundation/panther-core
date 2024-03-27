@@ -9,7 +9,7 @@ interface IPantherPoolV1 {
     function accountPrp(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos);
@@ -17,7 +17,7 @@ interface IPantherPoolV1 {
     function createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint96 zkpAmountOutRounded,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
@@ -26,7 +26,7 @@ interface IPantherPoolV1 {
     function createZAccountUtxo(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         address zkpPayer,
         uint96 paymasterCompensation,
         bytes memory privateMessages
@@ -35,7 +35,7 @@ interface IPantherPoolV1 {
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint8 tokenType,
         uint96 paymasterCompensation,
         bytes memory privateMessages
