@@ -157,14 +157,14 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     /// This data is used to spend the newly created utxo.
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param zkpAmountOutMin Minimum zZkp to receive.
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function convert(
         uint256[] calldata inputs,
         SnarkProof memory proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
-        uint256 zkpAmountOutMin,
+        uint32 transactionOptions,
+        uint96 zkpAmountOutMin,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external returns (uint256 firstUtxoBusQueuePos) {
@@ -177,7 +177,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         {
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndexAndTaxiEnabler,
+                transactionOptions,
                 zkpAmountOutMin,
                 paymasterCompensation,
                 privateMessages
@@ -198,7 +198,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         require(_zkpReserve > 0, ERR_INSUFFICIENT_LIQUIDITY);
 
-        uint256 zkpAmountOutRounded;
+        uint96 zkpAmountOutRounded;
         // amount to be withdrawn from zAccount UTXO and added to the converter's prpVirtualBalance
         uint256 withdrawAmountPrp = inputs[4];
 
@@ -215,7 +215,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
             unchecked {
                 // rounding the amount (leaving the changes in the contract)
-                zkpAmountOutRounded = (zkpAmountOut / scale) * scale;
+                zkpAmountOutRounded = UtilsLib.safe96(
+                    (zkpAmountOut / scale) * scale
+                );
             }
 
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
@@ -224,7 +226,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         firstUtxoBusQueuePos = _createZzkpUtxoAndSpendPrpUtxo(
             inputs,
             proof,
-            cachedForestRootIndexAndTaxiEnabler,
+            transactionOptions,
             zkpAmountOutRounded,
             paymasterCompensation,
             privateMessages
@@ -256,8 +258,8 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     function _createZzkpUtxoAndSpendPrpUtxo(
         uint256[] calldata inputs,
         SnarkProof memory proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
-        uint256 amountOutRounded,
+        uint32 transactionOptions,
+        uint96 amountOutRounded,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 firstUtxoBusQueuePos) {
@@ -267,7 +269,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
             IPantherPoolV1(PANTHER_POOL).createZzkpUtxoAndSpendPrpUtxo(
                 inputs,
                 proof,
-                cachedForestRootIndexAndTaxiEnabler,
+                transactionOptions,
                 amountOutRounded,
                 paymasterCompensation,
                 privateMessages
