@@ -65,7 +65,6 @@ contract ZAccountsRegistry is
     uint256 public zAccountIdTracker;
 
     mapping(bytes32 => uint256) public zoneZAccountNullifiers;
-    mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
     // TODO:to be deleted
     // left for storage compatibility of the "testnet" version, must be deleted in the prod version
     uint256 private _zAccountStatusGap;
@@ -78,6 +77,8 @@ contract ZAccountsRegistry is
 
     // Mapping from zAccount Id to Master Eoa
     mapping(uint24 => address) public masterEOAs;
+
+    mapping(bytes32 => uint256) public pubKeyZAccountNullifiers;
 
     event ZAccountRegistered(address masterEoa, ZAccount zAccount);
     event ZAccountActivated(uint24 id);
@@ -222,13 +223,13 @@ contract ZAccountsRegistry is
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param cachedForestRootIndexAndTaxiEnabler A 17-bits number. The 8 LSB (bits at position 1 to
+    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
     function activateZAccount(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndTaxiEnabler,
+        uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
@@ -237,7 +238,7 @@ contract ZAccountsRegistry is
 
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
-                cachedForestRootIndexAndTaxiEnabler,
+                transactionOptions,
                 paymasterCompensation,
                 privateMessages
             );
@@ -334,7 +335,7 @@ contract ZAccountsRegistry is
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
-            cachedForestRootIndexAndTaxiEnabler,
+            transactionOptions,
             paymasterCompensation,
             privateMessages
         );
@@ -451,7 +452,7 @@ contract ZAccountsRegistry is
     function _createZAccountUTXO(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint256 cachedForestRootIndexAndUtxosCarrier,
+        uint32 cachedForestRootIndexAndUtxosCarrier,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
