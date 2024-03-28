@@ -32,6 +32,10 @@ export type PathElementsTypeSend = Tuple14<BytesLike>;
 export const zeroLeaf =
     '0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d';
 
+// panther core zero leaf: keccak256("Pantherprotocol")%FIELD_SIZE
+export const pantherCoreZeroLeaf =
+    '2896678800030780677881716886212119387589061708732637213728415628433288554509';
+
 // (also defined in ../contracts/TriadMerkleZeros.sol)
 export const zeroTriadTreeRoot =
     '0x20fc043586a9fcb416cdf2a3bc8a995f8f815d43f1046a20d1c588cf20482a55';
