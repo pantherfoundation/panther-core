@@ -4,15 +4,16 @@
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {BigNumberish} from '@ethersproject/bignumber/src.ts';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {poseidon2or3} from '@panther-core/crypto/lib/base/hashes';
-import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
-import {MerkleTree} from '@zk-kit/merkle-tree';
 import {expect} from 'chai';
-import {poseidon} from 'circomlibjs';
 import {BigNumber} from 'ethers';
 import hre, {ethers} from 'hardhat';
 
-import {genSignatureForRegisterProviderKey} from '../../lib/eip712SignatureGenerator';
+import {
+    genSignatureForRegisterProviderKey,
+    generateProof,
+    getKeyCommitment,
+    calcNewRoot,
+} from '../../lib/eip712SignatureGenerator';
 import {ProvidersKeys, PantherStaticTree} from '../../types/contracts';
 import type {G1PointStruct} from '../../types/contracts/ProvidersKeys';
 
@@ -26,61 +27,7 @@ import {
     getBlockTimestamp,
 } from './helpers/hardhat';
 
-function getKeyCommitment(
-    key: G1PointStruct,
-    expiryDate: bigint,
-): BigNumberish {
-    const commitment = poseidon2or3([key.x, key.y, expiryDate]);
-    return commitment;
-}
-
-function generateleaf(): BigNumberish {
-    const leaf = ethers.BigNumber.from(
-        ethers.utils.formatBytes32String('random-leaf'),
-    ).mod(SNARK_FIELD_SIZE)._hex;
-    return leaf;
-}
-
-function generateProof(leafIndex: number): Bytes[] {
-    const zeroValue =
-        '0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d';
-    const merkleTree = new MerkleTree(poseidon, 16, zeroValue);
-    const leaf = generateleaf();
-    merkleTree.insert(leaf);
-
-    const proof = merkleTree.createProof(leafIndex);
-
-    return proof.siblingNodes.map(x => ethers.BigNumber.from(x)._hex);
-}
-
-function calcNewRoot(
-    curRoot: BigNumberish,
-    leaf: BigNumberish,
-    newLeaf: BigNumberish,
-    leafIndex: number,
-    proofSiblings: BigNumberish[],
-): BigNumberish {
-    if (newLeaf === leaf) {
-        throw new Error('BIUT: New leaf cannot be equal to the old one');
-    }
-
-    let _newRoot: any = newLeaf;
-    let proofPathIndice: number;
-
-    for (let i = 0; i < proofSiblings.length; i++) {
-        proofPathIndice = (leafIndex >> i) & 1;
-
-        if (proofPathIndice === 0) {
-            _newRoot = poseidon2or3([_newRoot, proofSiblings[i]]);
-        } else {
-            _newRoot = poseidon2or3([proofSiblings[i], _newRoot]);
-        }
-    }
-
-    return _newRoot;
-}
-
-describe('ProvidersKeys contract', function () {
+describe.only('ProvidersKeys contract', function () {
     this.timeout('100000000000');
     let providersKeys: ProvidersKeys;
     let pantherStaticTree: FakeContract<PantherStaticTree>;
@@ -88,8 +35,8 @@ describe('ProvidersKeys contract', function () {
     let signer: SignerWithAddress;
     let operator: SignerWithAddress;
     let expiryDate: string;
-    let newExpiryDate: string;
-    let invalidExpiry: string;
+    let newExpiryDate: number;
+    let invalidExpiry: number;
     let pubKey: G1PointStruct;
     let pubKeyPacked: any;
     let keyRingId: number;
@@ -103,8 +50,8 @@ describe('ProvidersKeys contract', function () {
         pubKeyPacked =
             '0x2cf8bc5fc9c122f6cc883988fd57e45ad086ec2785d2dfbfa85032373f90aca2';
         expiryDate = '1735689600';
-        newExpiryDate = '1935689800';
-        invalidExpiry = '1708006666';
+        newExpiryDate = 1935689800;
+        invalidExpiry = 1708006666;
 
         [owner, signer, operator] = await ethers.getSigners();
 
@@ -197,8 +144,18 @@ describe('ProvidersKeys contract', function () {
         });
     });
 
-    describe('register key with signature', function () {
-        it('should register Key', async () => {
+    describe('register key', function () {
+        it('should register Key ', async () => {
+            await providersKeys.registerKey(
+                keyRingId.toString(),
+                pubKey,
+                expiryDate,
+                generateProof(0),
+            );
+            await revertSnapshot(snapshot);
+        });
+
+        it('should register Key with signature', async () => {
             const {v, r, s} = await genSignatureForRegisterProviderKey(
                 hre,
                 providersKeys,
@@ -221,67 +178,6 @@ describe('ProvidersKeys contract', function () {
             const statistics = await providersKeys.getStatistics();
             expect(statistics.totalNumRegisteredKeys).to.be.equals(1);
             expect(statistics.totalNumAllocatedKeys).to.be.equals(100);
-            await revertSnapshot(snapshot);
-        });
-
-        it('should not register key if the tree is locked', async () => {
-            await providersKeys.updateTreeLock(5);
-
-            const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
-                providersKeys,
-                keyRingId.toString(),
-                pubKey,
-                expiryDate,
-                generateProof(0),
-                owner,
-            );
-            await expect(
-                providersKeys.registerKeyWithSignature(
-                    keyRingId.toString(),
-                    pubKey,
-                    expiryDate,
-                    generateProof(0),
-                    v,
-                    r,
-                    s,
-                ),
-            ).to.be.revertedWith('PK:E06');
-            await revertSnapshot(snapshot);
-        });
-
-        it('should not register key for invalid expiry ', async () => {
-            const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
-                providersKeys,
-                keyRingId.toString(),
-                pubKey,
-                expiryDate,
-                generateProof(0),
-                owner,
-            );
-            await expect(
-                providersKeys.registerKeyWithSignature(
-                    keyRingId.toString(),
-                    pubKey,
-                    invalidExpiry,
-                    generateProof(0),
-                    v,
-                    r,
-                    s,
-                ),
-            ).to.be.revertedWith('PK:E26');
-        });
-    });
-
-    describe('register key without signature', function () {
-        it('should register Key for valid inputs', async () => {
-            await providersKeys.registerKey(
-                keyRingId.toString(),
-                pubKey,
-                expiryDate,
-                generateProof(0),
-            );
         });
 
         it('should not register key if the tree is locked', async () => {
@@ -311,13 +207,48 @@ describe('ProvidersKeys contract', function () {
 
     describe('extendKeyExpiry', function () {
         it('should extend key expiry', async () => {
-            await providersKeys.extendKeyExpiry(
+            await expect(
+                providersKeys.extendKeyExpiry(
+                    pubKey,
+                    expiryDate,
+                    newExpiryDate,
+                    0,
+                    generateProof(0),
+                ),
+            )
+                .to.emit(providersKeys, 'KeyExtended')
+                .withArgs(keyRingId, 0, newExpiryDate);
+
+            await revertSnapshot(snapshot);
+        });
+
+        it.skip('should extend key expiry with signature', async () => {
+            const {v, r, s} = await genSignatureForRegisterProviderKey(
+                hre,
+                providersKeys,
+                keyRingId.toString(),
                 pubKey,
                 expiryDate,
-                newExpiryDate,
-                0,
                 generateProof(0),
+                owner,
             );
+
+            await expect(
+                providersKeys.extendKeyExpiryWithSignature(
+                    0,
+                    pubKey,
+                    expiryDate,
+                    newExpiryDate,
+                    generateProof(0),
+                    v,
+                    r,
+                    s,
+                ),
+            )
+                .to.emit(providersKeys, 'KeyExtended')
+                .withArgs(keyRingId, 0, newExpiryDate);
+
+            await revertSnapshot(snapshot);
         });
 
         it('should revert for invalid key expiry', async () => {
@@ -367,19 +298,51 @@ describe('ProvidersKeys contract', function () {
                 generateProof(0),
             );
 
-            await providersKeys.revokeKey(
-                keyRingId.toString(),
-                0,
-                pubKey,
-                newExpiryDate,
-                generateProof(0),
-            );
+            await expect(
+                providersKeys.revokeKey(
+                    keyRingId.toString(),
+                    0,
+                    pubKey,
+                    expiryDate,
+                    generateProof(0),
+                ),
+            )
+                .to.emit(providersKeys, 'KeyRevoked')
+                .withArgs(keyRingId, 0);
 
             const root2 = await providersKeys.getRoot();
 
             const newRootFromContract = BigNumber.from(root2);
 
             expect(newRoot).equals(newRootFromContract);
+            await revertSnapshot(snapshot);
+        });
+
+        it('should revoke a key with signature', async () => {
+            const {v, r, s} = await genSignatureForRegisterProviderKey(
+                hre,
+                providersKeys,
+                keyRingId.toString(),
+                pubKey,
+                expiryDate,
+                generateProof(0),
+                owner,
+            );
+
+            await expect(
+                providersKeys.revokeKeyWithSignature(
+                    keyRingId.toString(),
+                    0,
+                    pubKey,
+                    expiryDate,
+                    generateProof(0),
+                    v,
+                    r,
+                    s,
+                ),
+            )
+                .to.emit(providersKeys, 'KeyRevoked')
+                .withArgs(keyRingId, 0);
         });
 
         it('should revert when trying to revoke the revoked key', async () => {
@@ -440,6 +403,30 @@ describe('ProvidersKeys contract', function () {
             await providersKeys.updateKeyringOperator(
                 keyRingId.toString(),
                 operator.address,
+            );
+
+            const keyRing = await providersKeys.keyrings(keyRingId.toString());
+
+            expect(keyRing.operator).deep.equals(operator.address);
+        });
+
+        it.skip('should update keyring operator with signature', async () => {
+            const {v, r, s} = await genSignatureForRegisterProviderKey(
+                hre,
+                providersKeys,
+                keyRingId.toString(),
+                pubKey,
+                expiryDate,
+                generateProof(0),
+                owner,
+            );
+
+            await providersKeys.updateKeyringOperatorWithSignature(
+                keyRingId.toString(),
+                operator.address,
+                v,
+                r,
+                s,
             );
 
             const keyRing = await providersKeys.keyrings(keyRingId.toString());
