@@ -6,7 +6,7 @@ import {poseidon} from 'circomlibjs';
 import type {BigNumberish} from 'ethers';
 import {BigNumber} from 'ethers';
 
-import {pantherCoreZeroLeaf} from '../../utilities';
+import {pantherCoreZeroLeaf} from '../utilities';
 
 type ZZone = {
     // ID of the zone currently active
