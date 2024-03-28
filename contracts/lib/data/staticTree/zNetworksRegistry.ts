@@ -13,8 +13,7 @@ type ZNetwork = {
     chainId: BigNumberish;
     networkId: BigNumberish;
     // One-bit flags enabling creating/spending on this network UTXOs spendable/created on
-    // other networks; LS bit for the network with ID 1, followed by the bit for the ID 2, ...)
-    // (networks with IDs 1 and 2 are enabled)
+    // other networks; LS bit for the network with ID 0, followed by the bit for the ID 1, ...)
     networkIDsBitMap: BigNumberish;
     forTxReward: BigNumberish;
     forUtxoReward: BigNumberish;
@@ -27,6 +26,7 @@ export const localLeafs: {[key: string]: ZNetwork} = {
         active: 1n,
         chainId: 31337n,
         networkId: 0n,
+        // (network with ID 0 is enabled)
         networkIDsBitMap: 1n,
         forTxReward: 10n,
         forUtxoReward: 1828n,
@@ -43,6 +43,7 @@ export const testnetLeafs: {[key: string]: ZNetwork} = {
         active: 1n,
         chainId: 5n,
         networkId: 1n,
+        // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
         forUtxoReward: 1828n,
@@ -56,6 +57,7 @@ export const testnetLeafs: {[key: string]: ZNetwork} = {
         active: 1n,
         chainId: 80001n,
         networkId: 2n,
+        // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
         forUtxoReward: 1828n,
