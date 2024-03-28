@@ -5,8 +5,8 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isProd} from '../../lib/checkNetwork';
-import {ZZonesRegistry, leafs} from '../../lib/data/staticTree/zZonesRegistry';
 import {getContractAddress} from '../../lib/deploymentHelpers';
+import {ZZonesRegistry, leafs} from '../../lib/staticTree/zZonesRegistry';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;

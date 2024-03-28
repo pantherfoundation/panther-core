@@ -5,11 +5,11 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isDev} from '../../lib/checkNetwork';
+import {getContractAddress} from '../../lib/deploymentHelpers';
 import {
     ZNetworksRegistry,
     localLeafs,
-} from '../../lib/data/staticTree/zNetworksRegistry';
-import {getContractAddress} from '../../lib/deploymentHelpers';
+} from '../../lib/staticTree/zNetworksRegistry';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (!isDev(hre)) return;
