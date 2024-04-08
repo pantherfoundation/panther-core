@@ -1579,9 +1579,9 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
             BigInt(
                 897729382127869693507601465743397089386413328909369561194988340925714928247n,
             ),
-        // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
+        // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
         chargedAmountZkp: BigInt(10 ** 15),
-        donatedAmountZkp: BigInt(10 ** 14),
+        addedAmountZkp: BigInt(10 ** 14),
 
         zNetworkId: BigInt(2n),
         zNetworkChainId: BigInt(80001n),

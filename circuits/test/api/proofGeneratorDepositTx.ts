@@ -61,7 +61,7 @@ const zeroInput = {
     depositChange: BigInt(0n),
     withdrawAmount: BigInt(0n),
     withdrawChange: BigInt(0n),
-    donatedAmountZkp: BigInt(0n),
+    addedAmountZkp: BigInt(0n),
     token: BigInt(0n),
     tokenId: BigInt(0n),
     utxoZAsset: BigInt(0n),
@@ -1753,9 +1753,9 @@ const nonZeroInput = {
         BigInt(
             17513440433113848777254602008081679391497346341511052719820313814139380482034n,
         ),
-    // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
+    // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
     chargedAmountZkp: BigInt(10 ** 15),
-    donatedAmountZkp: BigInt(10 ** 14),
+    addedAmountZkp: BigInt(10 ** 14),
 
     zNetworkId: BigInt(2n),
     zNetworkChainId: BigInt(80001n),

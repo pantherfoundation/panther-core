@@ -150,7 +150,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
 
         depositChange: BigInt(0n),
         withdrawChange: BigInt(0n),
-        donatedAmountZkp: BigInt(10 ** 14),
+        addedAmountZkp: BigInt(10 ** 14),
         chargedAmountZkp: BigInt(10 ** 15),
 
         zAssetIdZkp: BigInt(0n),
