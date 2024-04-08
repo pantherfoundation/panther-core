@@ -11,8 +11,8 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
 
     signal input extraInputsHash;
 
-    signal input zkpAmount;
-    signal input zkpChange;
+    signal input addedAmountZkp;
+    signal input chargedAmountZkp;
 
     signal input zAssetId;
     signal input zAssetToken;
@@ -113,17 +113,17 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     // component customRangeCheckExtraInputsHash = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckExtraInputsHash.in <== extraInputsHash;
 
-    // zkpAmount - 252 bits
-    // Supported range - [0 - (2**252 - 1)]
+    // addedAmountZkp - 252 bits
+    // Supported range - [0 to (2**252 - 1)]
     // Public signal - Checked as part of Smart Contract
-    // component customRangeCheckZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZkpAmount.in <== zkpAmount;
+    component customRangeCheckDonatedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    customRangeCheckDonatedAmountZkp.in <== addedAmountZkp;
 
-    // zkpChange - 252 bits
+    // chargedAmountZkp - 252 bits
     // Supported range - [0 - (2**252 - 1)]
     // Public signal - Checked as part of Smart Contract
-    // component customRangeCheckZkpChange = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZkpChange.in <== zkpChange;
+    component customRangeCheckChargedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    customRangeCheckChargedAmountZkp.in <== chargedAmountZkp;
 
     // zAssetId - 64 bits
     // Supported range - [0 - (2**64 - 1)]

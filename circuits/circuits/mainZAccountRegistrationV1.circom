@@ -6,18 +6,18 @@ include "./zAccountRegistrationV1.circom";
 component main {
     public [
         extraInputsHash,                       // [1]
-        zkpAmount,                             // [2]
-        zkpChange,                             // [3]
+        addedAmountZkp,                        // [2]
+        chargedAmountZkp,                      // [3]
         zAccountId,                            // [4]
-        zAccountPrpAmount,                     // [5]
-        zAccountCreateTime,                    // [6]
-        zAccountRootSpendPubKey,               // [7] - x,y = 2
-        zAccountReadPubKey,                    // [8] - x,y = 2
-        zAccountNullifierPubKey,               // [9] - x,y = 2
-        zAccountMasterEOA,                     // [10]
-        zAccountNullifier,                     // [11]
-        zAccountCommitment,                    // [12]
-        kycSignedMessageHash,                  // [13]
+        zAccountCreateTime,                    // [5]
+        zAccountRootSpendPubKey,               // [6] - x,y = 2
+        zAccountReadPubKey,                    // [7] - x,y = 2
+        zAccountNullifierPubKey,               // [8] - x,y = 2
+        zAccountMasterEOA,                     // [9]
+        zAccountNullifier,                     // [10]
+        zAccountCommitment,                    // [11]
+        kycSignedMessageHash,                  // [12]
+        staticTreeMerkleRoot,                  // [13]
         forestMerkleRoot,                      // [14]
         saltHash,                              // [15]
         magicalConstraint                      // [16]

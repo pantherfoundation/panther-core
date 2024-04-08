@@ -6,21 +6,23 @@ include "./ammV1.circom";
 component main {
     public [
         extraInputsHash,                       // [1]
-        chargedAmountZkp,                      // [2]
-        createTime,                            // [3]
-        depositAmountPrp,                      // [4]
-        withdrawAmountPrp,                     // [5]
-        utxoCommitment,                        // [6]
-        utxoSpendPubKey,                       // [7] - x,y
-        zAssetScale,                           // [8]
-        zAccountUtxoInNullifier,               // [9]
-        zAccountUtxoOutCommitment,             // [10]
-        zNetworkChainId,                       // [11]
-        forestMerkleRoot,                      // [12]
-        saltHash,                              // [13]
-        magicalConstraint                      // [14]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 13 + 2 = 15
-    ]} = AmmV1 ( 6,     // UtxoLeftMerkleTreeDepth
+        addedAmountZkp,                        // [2]
+        chargedAmountZkp,                      // [3]
+        createTime,                            // [4]
+        depositAmountPrp,                      // [5]
+        withdrawAmountPrp,                     // [6]
+        utxoCommitment,                        // [7]
+        utxoSpendPubKey,                       // [8] - x,y
+        zAssetScale,                           // [9]
+        zAccountUtxoInNullifier,               // [10]
+        zAccountUtxoOutCommitment,             // [11]
+        zNetworkChainId,                       // [12]
+        staticTreeMerkleRoot,                  // [13]
+        forestMerkleRoot,                      // [14]
+        saltHash,                              // [15]
+        magicalConstraint                      // [16]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 16 + 1 = 17
+    ]} = AmmV1 ( 8,     // UtxoLeftMerkleTreeDepth
                  26,    // UtxoMiddleMerkleTreeDepth
                  6,     // ZNetworkMerkleTreeDepth
                  16,    // ZAssetMerkleTreeDepth

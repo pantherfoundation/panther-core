@@ -65,7 +65,7 @@ template ZSwapV1( nUtxoIn,
     signal input depositChange;
     signal input withdrawAmount;   // public
     signal input withdrawChange;
-    signal input donatedAmountZkp; // public
+    signal input addedAmountZkp; // public
 
     assert(0 <= isSwap < 2);
     var arraySizeInCaseOfSwap = 1;
@@ -372,7 +372,7 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
     totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
-    totalBalanceChecker.donatedAmountZkp <== donatedAmountZkp;
+    totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;

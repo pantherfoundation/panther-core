@@ -6,16 +6,18 @@ include "./zAccountRenewalV1.circom";
 component main {
     public [
         extraInputsHash,                       // [1]
-        chargedAmountZkp,                      // [2]
-        zAccountUtxoInNullifier,               // [3]
-        zAccountUtxoOutCommitment,             // [4]
-        zAccountUtxoOutCreateTime,             // [5]
-        kycSignedMessageHash,                  // [6]
-        forestMerkleRoot,                      // [7]
-        saltHash,                              // [8]
-        magicalConstraint                      // [9]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 9
-    ]} = ZAccountRenewalV1( 2,     // UtxoLeftMerkleTreeDepth
+        addedAmountZkp,                        // [2]
+        chargedAmountZkp,                      // [3]
+        zAccountUtxoInNullifier,               // [4]
+        zAccountUtxoOutCommitment,             // [5]
+        zAccountUtxoOutCreateTime,             // [6]
+        kycSignedMessageHash,                  // [7]
+        staticTreeMerkleRoot,                  // [8]
+        forestMerkleRoot,                      // [9]
+        saltHash,                              // [10]
+        magicalConstraint                      // [11]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 11
+    ]} = ZAccountRenewalV1( 8,     // UtxoLeftMerkleTreeDepth
                             26,    // UtxoMiddleMerkleTreeDepth
                             6,     // ZNetworkMerkleTreeDepth
                             16,    // ZAssetMerkleTreeDepth

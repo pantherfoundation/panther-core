@@ -48,6 +48,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     // external data anchoring
     signal input extraInputsHash;  // public
 
+    signal input addedAmountZkp;   // public
     // output 'protocol + relayer fee in ZKP'
     signal input chargedAmountZkp;       // public
     signal input createTime;             // public
@@ -215,7 +216,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.withdrawAmount <== 0;
     totalBalanceChecker.withdrawChange <== 0;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
-    totalBalanceChecker.donatedAmountZkp <== 0;
+    totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== 0;
@@ -464,11 +465,10 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
     // [17] - Verify forest-merkle-roots
-    component forestTreeMerkleRootVerifier = Poseidon(4);
+    component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[2] <== ferryMerkleRoot;
-    forestTreeMerkleRootVerifier.inputs[3] <== staticTreeMerkleRoot;
 
     // verify computed root against provided one
     component isEqualForestTreeMerkleRoot = ForceEqualIfEnabled();
@@ -503,6 +503,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
 
     ammV1RC.extraInputsHash <== extraInputsHash;
 
+    ammV1RC.addedAmountZkp <== addedAmountZkp;
     ammV1RC.chargedAmountZkp <== chargedAmountZkp;
     ammV1RC.createTime <== createTime;
     ammV1RC.depositAmountPrp <== depositAmountPrp;
