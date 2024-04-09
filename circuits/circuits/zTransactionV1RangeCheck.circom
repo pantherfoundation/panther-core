@@ -587,10 +587,9 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     component customRangeCheckZZoneNetworkIDsBitMap = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZZoneNetworkIDsBitMap.in <== zZoneNetworkIDsBitMap;
 
-    // zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList - 256 bits
-    // Supported range - [0 to (2**252 - 1)]
-    // ToDo - Constaint till only 240.
-    component customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    // zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList - 240 bits
+    // Supported range - [0 to (2**240 - 1)]
+    component customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList = RangeCheckSingleSignal(240,(2**240 - 1),0);
     customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList.in <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
 
     // zZoneKycExpiryTime - 32 bits

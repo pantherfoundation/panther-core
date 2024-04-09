@@ -309,9 +309,10 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     component customRangeCheckZZoneNetworkIDsBitMap = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZZoneNetworkIDsBitMap.in <== zZoneNetworkIDsBitMap;
 
-    // zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList - 256 bits
-    // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    // zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList - 240 bits
+    // circom supported bits - 2**240
+    // Supported range - [0 - (2**240 - 1)]
+    component customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList = RangeCheckSingleSignal(240,(2**240 - 1),0);
     customRangeCheckZZoneTrustProvidersMerkleTreeLeafIDsAndRulesList.in <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
 
     // zZoneKycExpiryTime - 32 bits
