@@ -10,9 +10,10 @@ template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
     signal input enabled;
     signal input leafId;                // 16 bit
     signal input rule;                  // 8 bit
-    signal input leafIDsAndRulesList;   // 256 bit
+    signal input leafIDsAndRulesList;   // 240 bit
     signal input offset;                // 4 bit
 
+    assert(leafIDsAndRulesList < 2**240);
     assert(offset < 10);
     var ellement_offset = offset * 24;
     component n2b = Num2Bits(240);
