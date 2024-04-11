@@ -39,6 +39,14 @@ library UtilsLib {
         return uint160(n);
     }
 
+    function scaleDownBy1e12(uint256 n) internal pure returns (uint256) {
+        return n / 1e12;
+    }
+
+    function scaleUpBy1e12(uint256 n) internal pure returns (uint256) {
+        return n * 1e12;
+    }
+
     function safe32TimeNow() internal view returns (uint32) {
         uint256 t = block.timestamp;
         require(t < 2 ** 32, "UNSAFE32TIME");
