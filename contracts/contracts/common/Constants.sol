@@ -63,5 +63,7 @@ uint256 constant PATH_ELEMENTS_NUM = 16;
 // `require(isValidProof || tx.origin == DEAD_CODE_ADDRESS)`
 address constant DEAD_CODE_ADDRESS = address(uint160(0xDEADC0DE));
 
+address constant NATIVE_TOKEN = address(0);
+
 // 100% expressed in 1/100th of 1% ("pips")
 uint256 constant HUNDRED_PERCENT = 100 * 100;
