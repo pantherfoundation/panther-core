@@ -14,3 +14,9 @@ uint256 constant ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX = 1;
 uint256 constant ZNETWORK_STATIC_LEAF_INDEX = 2;
 uint256 constant ZZONE_STATIC_LEAF_INDEX = 3;
 uint256 constant PROVIDERS_KEYS_STATIC_LEAF_INDEX = 4;
+
+// TODO: add new types and sub types
+uint8 constant TT_ZACCOUNT_ACTIVATION = 0x01;
+uint8 constant TT_PRP_CLAIM = 0x02;
+uint8 constant TT_PRP_CONVERSION = 0x03;
+uint8 constant TT_MAIN_TRANSACTION = 0x04;
