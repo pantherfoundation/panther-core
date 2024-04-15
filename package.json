@@ -25,7 +25,6 @@
     "deploy:dapp:ci:ipfs": "yarn workspace @panther-core/dapp deploy:ci:ipfs",
     "deploy:graph": "yarn workspace @panther-core/subgraph deploy",
     "graph:auth": "yarn workspace @panther-core/subgraph auth",
-    "graph:setup": "yarn workspace @panther-core/subgraph node setupSubgraph.ts ",
     "hardhat": "yarn workspace @panther-core/contracts hardhat",
     "install:clean": "yarn workspaces run rimraf node_modules && yarn rimraf node_modules && yarn install",
     "lint": "yarn workspace @panther-core/contracts lint && yarn workspace @panther-core/crypto lint:eslint && yarn workspace @panther-core/dapp lint",

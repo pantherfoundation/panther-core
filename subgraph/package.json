@@ -6,11 +6,9 @@
     "codegen": "graph codegen",
     "auth": "graph auth --product hosted-service",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/",
-    "subgraph:publish": "yarn codegen && yarn build && yarn deploy",
-    "create-local": "graph create --node http://localhost:8020/",
-    "remove-local": "graph remove --node http://localhost:8020/",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001"
+    "deploy:hosted": "graph deploy --node https://api.thegraph.com/deploy/",
+    "deploy:studio": "graph deploy --studio",
+    "subgraph:publish": "yarn codegen && yarn build && yarn deploy:studio"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.55.0",
