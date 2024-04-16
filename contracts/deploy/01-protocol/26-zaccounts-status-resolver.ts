@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const zAccountRegistryProxy = await getContractAddress(
         hre,
-        'zAccountsRegistry_Proxy',
+        'ZAccountsRegistry_Proxy',
         '',
     );
 
