@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
     const zAccountsRegistryProxy = await getContractAddress(
         hre,
-        'zAccountsRegistry_Proxy',
+        'ZAccountsRegistry_Proxy',
         '',
     );
 
@@ -94,7 +94,7 @@ func.tags = ['pool-v1-imp', 'forest', 'protocol'];
 func.dependencies = [
     'check-params',
     'deployment-consent',
-    'protocol-token',
+    'pzkp-token',
     'taxi-tree',
     'bus-tree-proxy',
     'ferry-tree',

@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     // TODO: investigate why `deploy(ZAccountsRegistry_Proxy)` fails:
     // `deploy` fails if the contract nick starts with 'Z' rather than 'z'
-    await deploy('zAccountsRegistry_Proxy', {
+    await deploy('ZAccountsRegistry_Proxy', {
         contract: 'EIP173Proxy',
         from: deployer,
         args: [
