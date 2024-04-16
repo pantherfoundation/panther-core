@@ -34,10 +34,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         .computeCommitments()
         .getInsertionInputs().zNetworkRegistryInsertionInputs;
 
-    const root = zNetworkRegistryTree.root;
-
-    console.dir({inputs, root}, {depth: null});
-
     for (const input of inputs) {
         const {currentRoot, currentLeaf, newLeaf, leafIndex, proofSiblings} =
             input;
@@ -60,5 +56,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['add-network-id', 'forest', 'protocol'];
+func.tags = ['add-test-network-id', 'forest', 'protocol'];
 func.dependencies = ['z-networks-registry'];
