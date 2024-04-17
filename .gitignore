@@ -25,3 +25,4 @@ crypto/types/
 .zed
 .DS_Store
 .yarn/*
+junit.xml
