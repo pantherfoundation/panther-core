@@ -22,7 +22,7 @@ default:
   - echo "${CI_COMMIT_MESSAGE}" | yarn commitlint
   - time yarn lint
   - time yarn build:types
-  - time yarn test
+  - time yarn test:ci
   - cp dapp/.env.staging dapp/.env
   - time yarn run build:dapp:staging
 
@@ -45,6 +45,11 @@ job-on-MR:
   script:
     - *base_scripts
     - *ipfs_deploy_script
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - dapp/junit.xml
 
 .ipfs_unpin_script: &ipfs_unpin_script
   - time yarn deploy:dapp:ci:ipfs --unpin
@@ -57,6 +62,11 @@ job-on-merge:
   script:
     - *base_scripts
     - *ipfs_unpin_script
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - dapp/junit.xml
 
 build-cache:
   interruptible: true
