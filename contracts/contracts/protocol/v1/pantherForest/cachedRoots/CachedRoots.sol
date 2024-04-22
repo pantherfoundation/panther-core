@@ -85,13 +85,6 @@ abstract contract CachedRoots {
         cacheIndex = _addRootToCache(root);
     }
 
-    function resetThenCacheNewRoot(
-        bytes32 root
-    ) internal returns (uint256 cacheIndex) {
-        _cacheStartPos = _cachedRootsCounter;
-        cacheIndex = _addRootToCache(root);
-    }
-
     /// Private functions follow
 
     function _addRootToCache(

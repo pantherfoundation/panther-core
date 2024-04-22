@@ -15,20 +15,20 @@ import "./Constants.sol";
  * @title PantherForest
  * @notice It stores and updates leafs and the root of the Panther Forest Tree.
  * @dev "Panther Forest Tree" is a merkle tree with a single level (leafs) under
- * the root. It has 4 leafs, which are roots of 4 other merkle trees -
- * the "Taxi Tree", the "Bus Tree", the "Ferry Tree" and the "Static Tree"
- * (essentially, these 4 trees are subtree of the Panther Forest tree):
+ * the root. It has 3 leafs, which are roots of 3 other merkle trees -
+ * the "Taxi Tree", the "Bus Tree" and, the "Ferry Tree".
+ * (essentially, these 3 trees are subtree of the Panther Forest tree):
  *
- *          Forest Root
- *               |
- *     +------+--+---+------+
- *     |      |      |      |
- *     0      1      2      3
- *   Taxi   Bus    Ferry  Static
- *   Tree   Tree   Tree   Tree
- *   root   root   root   root
+ *      Forest Root
+ *            |
+ *     +------+------+
+ *     |      |      |
+ *     0      1      2
+ *   Taxi    Bus    Ferry
+ *   Tree    Tree   Tree
+ *   root    root   root
  *
- * Every of 4 trees are controlled by "tree" smart contracts. A "tree" contract
+ * Every of 3 trees are controlled by "tree" smart contracts. A "tree" contract
  * must call this contract to update the value of the leaf and the root of the
  * Forest Tree every time the "controlled" tree is updated.
  * It supports a "history" of recent roots, so that users may refer not only to
@@ -42,13 +42,11 @@ abstract contract PantherForest is
 {
     bytes32[10] private _startGap;
 
-    uint256 private constant NUM_LEAFS = 4;
-    uint256 private constant STATIC_TREE_LEAF = 3;
+    uint256 private constant NUM_LEAFS = 3;
 
     address public immutable TAXI_TREE_CONTROLLER;
     address public immutable BUS_TREE_CONTROLLER;
     address public immutable FERRY_TREE_CONTROLLER;
-    address public immutable STATIC_TREE_CONTROLLER;
 
     bytes32 private _forestRoot;
 
@@ -67,21 +65,18 @@ abstract contract PantherForest is
         address _owner,
         address _taxiTreeController,
         address _busTreeController,
-        address _ferryTreeController,
-        address _staticTreeController
+        address _ferryTreeController
     ) ImmutableOwnable(_owner) {
         require(
             _taxiTreeController != address(0) &&
                 _busTreeController != address(0) &&
-                _ferryTreeController != address(0) &&
-                _staticTreeController != address(0),
+                _ferryTreeController != address(0),
             "init: zero address"
         );
 
         TAXI_TREE_CONTROLLER = _taxiTreeController;
         BUS_TREE_CONTROLLER = _busTreeController;
         FERRY_TREE_CONTROLLER = _ferryTreeController;
-        STATIC_TREE_CONTROLLER = _staticTreeController;
     }
 
     function initialize() external onlyOwner {
@@ -106,12 +101,7 @@ abstract contract PantherForest is
 
         leafs[leafIndex] = updatedLeaf;
         bytes32 forestRoot = hash(leafs);
-        uint256 cacheIndex;
-        if (leafIndex == STATIC_TREE_LEAF) {
-            cacheIndex = resetThenCacheNewRoot(forestRoot);
-        } else {
-            cacheIndex = cacheNewRoot(forestRoot);
-        }
+        uint256 cacheIndex = cacheNewRoot(forestRoot);
 
         _forestRoot = forestRoot;
         emit RootUpdated(leafIndex, updatedLeaf, forestRoot, cacheIndex);
@@ -129,14 +119,11 @@ abstract contract PantherForest is
 
         if (leafIndex == FERRY_TREE_FOREST_LEAF_INDEX)
             leafController = FERRY_TREE_CONTROLLER;
-
-        if (leafIndex == STATIC_TREE_FOREST_LEAF_INDEX)
-            leafController = STATIC_TREE_CONTROLLER;
     }
 
     function hash(
         bytes32[NUM_LEAFS] memory _leafs
     ) internal pure returns (bytes32) {
-        return PoseidonHashers.poseidonT5(_leafs);
+        return PoseidonHashers.poseidonT4(_leafs);
     }
 }

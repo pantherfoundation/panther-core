@@ -98,12 +98,11 @@ contract PantherPoolV1 is
         address taxiTree,
         address busTree,
         address ferryTree,
-        address staticTree,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
         address verifier
-    ) PantherForest(_owner, taxiTree, busTree, ferryTree, staticTree) {
+    ) PantherForest(_owner, taxiTree, busTree, ferryTree) {
         require(
             vault != address(0) &&
                 zkpToken != address(0) &&

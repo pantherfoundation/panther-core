@@ -10,10 +10,4 @@ contract MockCachedRoots is CachedRoots {
     ) external returns (uint256 cacheIndex) {
         return cacheNewRoot(root);
     }
-
-    function internalResetThenCacheNewRoot(
-        bytes32 root
-    ) external returns (uint256 cacheIndex) {
-        return resetThenCacheNewRoot(root);
-    }
 }

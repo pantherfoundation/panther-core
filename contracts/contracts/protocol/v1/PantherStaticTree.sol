@@ -29,8 +29,6 @@ contract PantherStaticTree is
 
     uint256 private constant NUM_LEAFS = 5;
 
-    address public immutable PANTHER_FOREST;
-
     address public immutable ZASSETS_TREE_CONTROLLER;
     address public immutable ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER;
     address public immutable ZNETWORKS_TREE_CONTROLLER;
@@ -51,7 +49,6 @@ contract PantherStaticTree is
 
     constructor(
         address _owner,
-        address _pantherForest,
         address _zAssetsTreeController,
         address _zAccountsBlacklistedTreeController,
         address _zNetworksTreeController,
@@ -59,16 +56,13 @@ contract PantherStaticTree is
         address _providersKeysTreeController
     ) ImmutableOwnable(_owner) {
         require(
-            _pantherForest != address(0) &&
-                _zAssetsTreeController != address(0) &&
+            _zAssetsTreeController != address(0) &&
                 _zAccountsBlacklistedTreeController != address(0) &&
                 _zNetworksTreeController != address(0) &&
                 _zZnonesTreeController != address(0) &&
                 _providersKeysTreeController != address(0),
             "init: zero address"
         );
-
-        PANTHER_FOREST = _pantherForest;
 
         ZASSETS_TREE_CONTROLLER = _zAssetsTreeController;
         ZACCOUNTS_BLACKLISTED_TREE_CONTROLLER = _zAccountsBlacklistedTreeController;
@@ -102,12 +96,6 @@ contract PantherStaticTree is
         }
 
         _staticTreeRoot = hash(leafs);
-
-        // Trusted contract - no reentrancy guard needed
-        ITreeRootUpdater(PANTHER_FOREST).updateRoot(
-            _staticTreeRoot,
-            STATIC_TREE_FOREST_LEAF_INDEX
-        );
     }
 
     function getRoot() external view returns (bytes32) {
@@ -119,11 +107,6 @@ contract PantherStaticTree is
 
         leafs[leafIndex] = updatedLeaf;
         _staticTreeRoot = hash(leafs);
-
-        ITreeRootUpdater(PANTHER_FOREST).updateRoot(
-            _staticTreeRoot,
-            STATIC_TREE_FOREST_LEAF_INDEX
-        );
 
         emit RootUpdated(leafIndex, updatedLeaf, _staticTreeRoot);
     }
