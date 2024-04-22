@@ -37,8 +37,10 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         extraInputsHash: BigInt(0n),
 
         // zkp amounts (not scaled)
-        zkpAmount: BigInt(0n),
-        zkpChange: BigInt(0n),
+        addedAmountZkp: BigInt(0n),
+
+        // protocol + relayer fee in ZKP
+        chargedAmountZkp: BigInt(0n),
 
         // zAsset
         zAssetId: BigInt(0n),
