@@ -8,7 +8,7 @@ import "./interfaces/IPantherTaxiTree.sol";
 
 import "./pantherForest/taxiTree/TaxiTree.sol";
 import { TAXI_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constants.sol";
-import { TWO_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
 
 import "../../common/ImmutableOwnable.sol";
 
@@ -42,7 +42,7 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
     function getRoot() external view returns (bytes32) {
         return
             _currentRoot == bytes32(0)
-                ? TWO_LEVEL_EMPTY_TREE_ROOT
+                ? EIGHT_LEVEL_EMPTY_TREE_ROOT
                 : _currentRoot;
     }
 

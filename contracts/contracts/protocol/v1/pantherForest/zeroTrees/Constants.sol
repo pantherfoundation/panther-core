@@ -33,11 +33,17 @@ bytes32 constant SIX_LEVEL_EMPTY_TREE_ROOT = bytes32(
     uint256(0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69)
 );
 
+uint256 constant EIGHT_LEVELS = 8;
+/// @dev Root of the binary merkle EIGHT_LEVELS tree with ZERO_VALUE leafs
+// Level 6: SIX_LEVEL_EMPTY_TREE_ROOT
+// Level 7: 0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f
+bytes32 constant EIGHT_LEVEL_EMPTY_TREE_ROOT = bytes32(
+    uint256(0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7)
+);
+
 uint256 constant SIXTEEN_LEVELS = 16;
 /// @dev Root of the binary merkle SIXTEEN_LEVELS tree with ZERO_VALUE leafs
-// Level 6:  SIX_LEVEL_EMPTY_TREE_ROOT
-// Level 7:  0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f
-// Level 8:  0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7
+// Level 8:  EIGHT_LEVEL_EMPTY_TREE_ROOT
 // Level 9:  0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718
 // Level 10: 0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58
 // Level 11: 0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f
