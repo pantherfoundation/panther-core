@@ -114,78 +114,83 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input saltHash;
     signal input magicalConstraint;
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Format of comments:
+        // Field name - Size of the field
+        // Public Signal?
+        // Maximum supported range | Within SNARK FIELD (254 bits) | Within Suborder
+        // Should it be checked in SC?
+
+    // SNARK FIELD SIZE - 21888242871839275222246405745257275088548364400416034343698204186575808495617
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
     // extraInputsHash - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    component customRangeCheckExtraInputsHash = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheckExtraInputsHash.in <== extraInputsHash;
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Must be checked as part of SC
 
     // addedAmountZkp - 252 bits
+    // Public signal
     // Supported range - [0 to (2**252 - 1)]
-    // Public signal - Checked as part of Smart Contract
+    // Must be checked as part of SC
     component customRangeCheckDonatedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckDonatedAmountZkp.in <== addedAmountZkp;
 
-    // chargedAmountZkp - 256 bits
-    // circom supported bits - 2**252
+    // chargedAmountZkp - 252 bits
+    // Public signal
     // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of dApp
+    // Must be checked as part of SC
     component customRangeCheckChargedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckChargedAmountZkp.in <== chargedAmountZkp;
 
     // createTime - 32 bits
+    // Public signal
     // Supported range - [0 - (2**32 - 1)]
-    // Public Signal - Checked as part of SC
+    // Must be checked as part of SC
     component customRangeCheckCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckCreateTime.in <== createTime;
 
     // depositAmountPrp - 64 bits
+    // Public signal
     // Supported range - [0 - (2**64 - 1)]
-    // Public signal - Checked as part of SC
+    // Must be checked as part of SC
     component customRangeCheckDepositAmountPrp = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckDepositAmountPrp.in <== depositAmountPrp;
 
     // withdrawAmountPrp - 64 bits
+    // Public signal
     // Supported range - [0 - (2**64 - 1)]
-    // Public signal - Checked as part of SC
+    // Must be checked as part of SC
     component customRangeCheckWithdrawAmountPrp = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckWithdrawAmountPrp.in <== withdrawAmountPrp;
 
-    // utxoCommitment - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckUtxoCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckUtxoCommitment.in <== utxoCommitment;
+    // utxoCommitment
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Must be checked as part of SC
 
     // utxoSpendPubKey - 256 bits
-    // circom supported bits - 2**252
-    // supported range - [0 - (2**252 - 1)]
-    // Key details - Checked as part of dApp and SC.
-    // component customRangeCheckUtxoSpendPubKey = RangeCheckGroupOfSignals(2,252,(2**252-1),0);
-    // customRangeCheckUtxoSpendPubKey.in <== utxoSpendPubKey;
+    // Public signal
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // utxoSpendKeyRandom - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckutxoSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheckutxoSpendKeyRandom.in <== utxoSpendKeyRandom;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // zAssetId - 64 bits
     // Supported range - [0 - (2**64 - 1)]
-    // Checked as part of circom circuit
     component customRangeCheckZAssetId = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZAssetId.in <== zAssetId;
 
-    // zAssetToken - 160 bits
+    // zAssetToken - 160 bits ERC20 token
     // Supported range - [0 - (2**160 - 1)]
     component customRangeCheckZAssetToken = RangeCheckSingleSignal(160,(2**160 - 1),0);
     customRangeCheckZAssetToken.in <== zAssetToken;
 
     // zAssetTokenId - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
+    // Must be checked from SC end
     component customRangeCheckZAssetTokenId = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAssetTokenId.in <== zAssetTokenId;
 
@@ -194,7 +199,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     component customRangeCheckZAssetNetwork = RangeCheckSingleSignal(6,(2**6 - 1),0);
     customRangeCheckZAssetNetwork.in <== zAssetNetwork;
 
-    // zAssetOffset - 6 bits
+    // zAssetOffset  - 6 bits
     // Supported range - [0 - (2**6 - 1)]
     component customRangeCheckZAssetOffset = RangeCheckSingleSignal(6,(2**6 - 1),0);
     customRangeCheckZAssetOffset.in <== zAssetOffset;
@@ -211,25 +216,17 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAssetScale.in <== zAssetScale;
 
     // zAssetMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree details - Checked as part of dApp and SC.
-    // component customRangeCheckZAssetMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAssetMerkleRoot.in <== zAssetMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAssetPathIndices - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree details - Checked as part of dApp and SC.
-    // component customRangeCheckZAssetPathIndices = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    // customRangeCheckZAssetPathIndices.in <== zAssetPathIndices;
+    // ToDo - Path Indices should be fixed to 1 bit?
+    component customRangeCheckZAssetPathIndices = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
+    customRangeCheckZAssetPathIndices.in <== zAssetPathIndices;
 
     // zAssetPathElements - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree details - Checked as part of dApp and SC.
-    // component customRangeCheckZAssetPathElements = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    // customRangeCheckZAssetPathElements.in <== zAssetPathElements;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAccountUtxoInId - 24 bits
     // Supported range - [0 - (2**24 - 1)]
@@ -277,34 +274,24 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAccountUtxoInCreateTime.in <== zAccountUtxoInCreateTime;
 
     // zAccountUtxoInRootSpendPubKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInRootSpendPubKey = RangeCheckGroupOfSignals(2, 252, (2**252 - 1), 0);
-    // customRangeCheckZAccountUtxoInRootSpendPubKey.in <== zAccountUtxoInRootSpendPubKey;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // zAccountUtxoInReadPubKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInReadPubKey = RangeCheckGroupOfSignals(2, 252, (2**252 - 1), 0);
-    // customRangeCheckZAccountUtxoInReadPubKey.in <== zAccountUtxoInReadPubKey;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // zAccountUtxoInNullifierPubKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInNullifierPubKey = RangeCheckGroupOfSignals(2, 252, (2**252 - 1), 0);
-    // customRangeCheckZAccountUtxoInNullifierPubKey.in <== zAccountUtxoInNullifierPubKey;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // zAccountUtxoInSpendPrivKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInSpendPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoInSpendPrivKey.in <== zAccountUtxoInSpendPrivKey;
+    // Must be within the Baby Jubjub Suborder
+    // Should be checked as part of the SC
 
     // zAccountUtxoInNullifierPrivKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInNullifierPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoInNullifierPrivKey.in <== zAccountUtxoInNullifierPrivKey;
+    // Must be within the Baby Jubjub Suborder
+    // Should be checked as part of the SC
 
     // zAccountUtxoInMasterEOA - 160 bits
     // Supported range - [0 - (2**160 - 1)]
@@ -312,23 +299,17 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAccountUtxoInMasterEOA.in <== zAccountUtxoInMasterEOA;
 
     // zAccountUtxoInSpendKeyRandom - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoInSpendKeyRandom.in <== zAccountUtxoInSpendKeyRandom;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
-    // zAccountUtxoInCommitment - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoInCommitment.in <== zAccountUtxoInCommitment;
+    // zAccountUtxoInCommitment
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
-    // zAccountUtxoInNullifier - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckZAccountUtxoInNullifier = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoInNullifier.in <== zAccountUtxoInNullifier;
+    // zAccountUtxoInNullifier
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAccountUtxoInMerkleTreeSelector - 2 bits
     // Supported range - [0 - (2**2 - 1)]
@@ -336,16 +317,14 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAccountUtxoInMerkleTreeSelector.in <== zAccountUtxoInMerkleTreeSelector;
 
     // zAccountUtxoInPathIndices - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInPathIndices = RangeCheckGroupOfSignals(32, 252, (2**252 - 1), 0);
-    // customRangeCheckZAccountUtxoInPathIndices.in <== zAccountUtxoInPathIndices;
+    // Supported range - [0 to (2**252 - 1)]
+    // ToDo - Needs to check 1 bit?
+    component customRangeCheckZAccountUtxoInPathIndices = RangeCheckGroupOfSignals(32, 252, (2**252 - 1), 0);
+    customRangeCheckZAccountUtxoInPathIndices.in <== zAccountUtxoInPathIndices;
 
     // zAccountUtxoInPathElements - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInPathElements = RangeCheckGroupOfSignals(32, 252, (2**252 - 1), 0);
-    // customRangeCheckZAccountUtxoInPathElements.in <== zAccountUtxoInPathElements;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAccountUtxoOutZkpAmount - 252 bits
     // Supported range - [0 - (2**252 - 1)]
@@ -358,17 +337,15 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAccountUtxoOutPrpAmount.in <== zAccountUtxoOutPrpAmount;
 
     // zAccountUtxoOutSpendKeyRandom - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
     component customRangeCheckZAccountUtxoOutSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoOutSpendKeyRandom.in <== zAccountUtxoOutSpendKeyRandom;
 
     // zAccountUtxoOutCommitment - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckZAccountUtxoOutCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountUtxoOutCommitment.in <== zAccountUtxoOutCommitment;
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAccountBlackListLeaf - 256 bits
     // circom supported bits - 2**252
@@ -377,27 +354,19 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZAccountBlackListLeaf.in <== zAccountBlackListLeaf;
 
     // zAccountBlackListMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree details - Checked as part of dApp and SC.
-    // component customRangeCheckZAccountBlackListMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZAccountBlackListMerkleRoot.in <== zAccountBlackListMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zAccountBlackListPathElements - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree details - Checked as part of dApp and SC.
-    // component customRangeCheckZAccountBlackListPathElements = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    // customRangeCheckZAccountBlackListPathElements.in <== zAccountBlackListPathElements;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zZoneOriginZoneIDs - 256 bits
-    // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     component customRangeCheckZZoneOriginZoneIDs = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZZoneOriginZoneIDs.in <== zZoneOriginZoneIDs;
 
     // zZoneTargetZoneIDs - 256 bits
-    // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     component customRangeCheckZZoneTargetZoneIDs = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZZoneTargetZoneIDs.in <== zZoneTargetZoneIDs;
@@ -439,41 +408,32 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZZoneInternalMaxAmount.in <== zZoneInternalMaxAmount;
 
     // zZoneMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree related details are range checked from dApp and SC.
-    // component customRangeCheckZZoneMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZZoneMerkleRoot.in <== zZoneMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zZonePathElements - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree related details are range checked from dApp and SC.
-    // component customRangeCheckZZonePathElements = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    // customRangeCheckZZonePathElements.in <== zZonePathElements;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zZonePathIndices - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+    // Supported range - [0 to (2**252 - 1)]
+    // ToDo - Needs to check 1 bit?
     // Merkle Tree related details are range checked from dApp and SC.
     component customRangeCheckZZonePathIndices = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
     customRangeCheckZZonePathIndices.in <== zZonePathIndices;
 
     // zZoneEdDsaPubKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Merkle Tree related details are range checked from dApp and SC.
-    component customRangeCheckzZoneEdDsaPubKey = RangeCheckGroupOfSignals(2,252,(2**252 - 1),0);
-    customRangeCheckzZoneEdDsaPubKey.in <== zZoneEdDsaPubKey;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // zZoneZAccountIDsBlackList - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
+    // ToDo - Should we restrict to 252?
     component customRangeCheckZZoneZAccountIDsBlackList = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZZoneZAccountIDsBlackList.in <== zZoneZAccountIDsBlackList;
 
     // zZoneMaximumAmountPerTimePeriod - 256 bits
-    // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     component customRangeCheckZZoneMaximumAmountPerTimePeriod = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZZoneMaximumAmountPerTimePeriod.in <== zZoneMaximumAmountPerTimePeriod;
@@ -489,8 +449,8 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZNetworkId.in <== zNetworkId;
 
     // zNetworkChainId - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
     component customRangeCheckZNetworkChainId = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZNetworkChainId.in <== zNetworkChainId;
 
@@ -500,28 +460,21 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     customRangeCheckZNetworkIDsBitMap.in <== zNetworkIDsBitMap;
 
     // zNetworkTreeMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZNetworkTreeMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckZNetworkTreeMerkleRoot.in <== zNetworkTreeMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // zNetworkTreePathElements - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZNetworkTreePathElements = RangeCheckGroupOfSignals(6, 252,(2**252 - 1),0);
-    // customRangeCheckZNetworkTreePathElements.in <== zNetworkTreePathElements;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
-    // zNetworkTreePathIndices - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
+    // zNetworkTreePathIndices 256 bits
+    // ToDo - Must be restricted to binary?
     // component customRangeCheckZNetworkTreePathIndices = RangeCheckGroupOfSignals(6, 252,(2**252 - 1),0);
     // customRangeCheckZNetworkTreePathIndices.in <== zNetworkTreePathIndices;
 
     // daoDataEscrowPubKey - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckDaoDataEscrowPubKey = RangeCheckGroupOfSignals(2,252,(2**252 - 1),0);
-    // customRangeCheckDaoDataEscrowPubKey.in <== daoDataEscrowPubKey;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
+    // Should be checked as part of the SC
 
     // forTxReward - 40 bits
     // Supported range - [0 - (2**40 - 1)]
@@ -538,59 +491,42 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     component customRangeCheckForDepositReward = RangeCheckSingleSignal(40,(2**40 - 1),0);
     customRangeCheckForDepositReward.in <== forDepositReward;
 
-    // trustProvidersMerkleRoot - 256 bits
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckTrustProvidersMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckTrustProvidersMerkleRoot.in <== trustProvidersMerkleRoot;
+    // trustProvidersMerkleRoot
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
-    // staticTreeMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckForStaticTreeMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForStaticTreeMerkleRoot.in <== staticTreeMerkleRoot;
+    // staticTreeMerkleRoot 
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // forestMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckForForestMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForForestMerkleRoot.in <== forestMerkleRoot;
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // taxiMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckForTaxiMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForTaxiMerkleRoot.in <== taxiMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // busMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckForBusMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForBusMerkleRoot.in <== busMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // ferryMerkleRoot - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckForFerryMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForFerryMerkleRoot.in <== ferryMerkleRoot;
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // salt - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckForSalt = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForSalt.in <== salt;
+    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
+    // Should be checked as part of the SC
 
     // saltHash - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckForSaltHash = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForSaltHash.in <== saltHash;
+    // Public signal
+    // Must be within the SNARK_FIELD
+    // Should be checked as part of the SC
 
     // magicalConstraint - 256 bits
-    // circom supported bits - 2**252
-    // Supported range - [0 - (2**252 - 1)]
-    // Public signal - Checked as part of SC
-    // component customRangeCheckForMagicalConstraint = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    // customRangeCheckForMagicalConstraint.in <== magicalConstraint;
+    // Public signal
+    // Should be checked as part of the SC
 }
