@@ -2,12 +2,14 @@
 pragma circom 2.1.6;
 
 // project deps
+include "./templates/balanceChecker.circom";
 include "./templates/isNotZero.circom";
 include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
 include "./templates/zAccountNoteHasher.circom";
+include "./templates/zAssetChecker.circom";
 include "./templates/zAssetNoteInclusionProver.circom";
 include "./templates/zNetworkNoteInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
@@ -33,8 +35,9 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input extraInputsHash;  // public
 
     // zkp amounts (not scaled)
-    signal input zkpAmount; // public
-    signal input zkpChange; // public
+    signal input addedAmountZkp;   // public
+    // output 'protocol + relayer fee in ZKP'
+    signal input chargedAmountZkp; // public
 
     // zAsset
     signal input zAssetId;
@@ -139,10 +142,9 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
 
     // forest root
     // Poseidon of:
-    // 1) UTXO-Taxi-Tree   - 6 levels MT
+    // 1) UTXO-Taxi-Tree   - 8 levels MT
     // 2) UTXO-Bus-Tree    - 26 levels MT
     // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
-    // 4) Static-Tree
     signal input forestMerkleRoot;   // public
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
@@ -221,7 +223,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountNoteHasher.masterEOA <== zAccountMasterEOA;
     zAccountNoteHasher.id <== zAccountId;
     zAccountNoteHasher.amountZkp <== zAccountZkpAmount;
-    zAccountNoteHasher.amountPrp <== zAccountPrpAmount; // public
+    zAccountNoteHasher.amountPrp <== zAccountPrpAmount;
     zAccountNoteHasher.zoneId <== zAccountZoneId;
     zAccountNoteHasher.expiryTime <== zAccountExpiryTime;
     zAccountNoteHasher.nonce <== zAccountNonce;
@@ -232,6 +234,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     // verify required values
     zAccountTotalAmountPerTimePeriod === 0;
     zAccountNonce === 0;
+    zAccountPrpAmount === 0;
 
     // verify zNetworkId is equal to zAccountNetworkId (anchoring)
     zAccountNetworkId === zNetworkId;
@@ -245,23 +248,45 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     // prp amount decided by the protocol on smart contract level - range is checked since it is public signal
     assert(0 <= zAccountPrpAmount < 2**64);
 
-    signal zkpScaledAmount;
-    zkpScaledAmount <-- zkpAmount \ zAssetScale;
-    zkpAmount === zkpScaledAmount * zAssetScale + zkpChange;
+    // verify zAsset
+    component zAssetChecker = ZAssetChecker();
+    zAssetChecker.token <== 0;
+    zAssetChecker.tokenId <== 0;
+    zAssetChecker.zAssetId <== zAssetId;
+    zAssetChecker.zAssetToken <== zAssetToken;
+    zAssetChecker.zAssetTokenId <== zAssetTokenId;
+    zAssetChecker.zAssetOffset <== zAssetOffset;
+    zAssetChecker.depositAmount <== 0;
+    zAssetChecker.withdrawAmount <== 0;
+    zAssetChecker.utxoZAssetId <== zAssetId;
 
-    // verify scaled zkp amount
-    zkpScaledAmount === zAccountZkpAmount;
+    // verify zkp-token
+    zAssetChecker.isZkpToken === 1;
+
+    // verify Zkp balance
+    component totalBalanceChecker = BalanceChecker();
+    totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
+    totalBalanceChecker.depositAmount <== 0;
+    totalBalanceChecker.depositChange <== 0;
+    totalBalanceChecker.withdrawAmount <== 0;
+    totalBalanceChecker.withdrawChange <== 0;
+    totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
+    totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
+    totalBalanceChecker.zAccountUtxoInZkpAmount <== 0;
+    totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountZkpAmount;
+    totalBalanceChecker.totalUtxoInAmount <== 0;
+    totalBalanceChecker.totalUtxoOutAmount <== 0;
+    totalBalanceChecker.zAssetWeight <== zAssetWeight;
+    totalBalanceChecker.zAssetScale <== zAssetScale;
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
 
     // verify deposit limit
-    assert(zkpScaledAmount * zAssetWeight <= zZoneDepositMaxAmount);
+    assert(zAccountZkpAmount * zAssetWeight <= zZoneDepositMaxAmount);
     component zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount;
     zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount = LessEqThan(252);
-    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.in[0] <== (zkpScaledAmount * zAssetWeight);
+    zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.in[0] <== (zAccountZkpAmount * zAssetWeight);
     zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.in[1] <== zZoneDepositMaxAmount;
     zkpScaledWeithedAmountIsLessThanZZoneDepositMaxAmount.out === 1;
-
-    // verify zkp change
-    zkpChange === 0;
 
     // [4] - Verify zAccountUtxo commitment
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
@@ -414,11 +439,10 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
     // [14] - Verify forest-merkle-roots
-    component forestTreeMerkleRootVerifier = Poseidon(4);
+    component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[2] <== ferryMerkleRoot;
-    forestTreeMerkleRootVerifier.inputs[3] <== staticTreeMerkleRoot;
 
     // verify computed root against provided one
     component isEqualForestTreeMerkleRoot = ForceEqualIfEnabled();
@@ -450,8 +474,8 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
                                                                       TrustProvidersMerkleTreeDepth);
 
     zAccountRegistrationRC.extraInputsHash <== extraInputsHash;
-    zAccountRegistrationRC.zkpAmount <== zkpAmount;
-    zAccountRegistrationRC.zkpChange <== zkpChange;
+    zAccountRegistrationRC.addedAmountZkp <== addedAmountZkp;
+    zAccountRegistrationRC.chargedAmountZkp <== chargedAmountZkp;
 
     zAccountRegistrationRC.zAssetId <== zAssetId;
     zAccountRegistrationRC.zAssetToken <== zAssetToken;

@@ -48,6 +48,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // external data anchoring
     signal input extraInputsHash;  // public
 
+    signal input addedAmountZkp;   // public
     // output 'protocol + relayer fee in ZKP'
     signal input chargedAmountZkp; // public
 
@@ -163,10 +164,9 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     // forest root
     // Poseidon of:
-    // 1) UTXO-Taxi-Tree   - 6 levels MT
+    // 1) UTXO-Taxi-Tree   - 8 levels MT
     // 2) UTXO-Bus-Tree    - 26 levels MT
     // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
-    // 4) Static-Tree
     signal input forestMerkleRoot;   // public
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
@@ -227,7 +227,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.withdrawAmount <== 0;
     totalBalanceChecker.withdrawChange <== 0;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
-    totalBalanceChecker.donatedAmountZkp <== 0;
+    totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== 0;
@@ -483,11 +483,10 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
     // [18] - Verify forest-merkle-roots
-    component forestTreeMerkleRootVerifier = Poseidon(4);
+    component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[2] <== ferryMerkleRoot;
-    forestTreeMerkleRootVerifier.inputs[3] <== staticTreeMerkleRoot;
 
     // verify computed root against provided one
     component isEqualForestTreeMerkleRoot = ForceEqualIfEnabled();
@@ -522,6 +521,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     zAccountRenewalRC.extraInputsHash <== extraInputsHash;
 
+    zAccountRenewalRC.addedAmountZkp <== addedAmountZkp;
     zAccountRenewalRC.chargedAmountZkp <== chargedAmountZkp;
 
     zAccountRenewalRC.zAssetId <== zAssetId;
