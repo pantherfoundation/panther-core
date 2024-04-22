@@ -16,6 +16,7 @@ template ZAccountRenewalRangeCheck (UtxoLeftMerkleTreeDepth,
 
     signal input extraInputsHash;
 
+    signal input addedAmountZkp;
     signal input chargedAmountZkp;
 
     signal input zAssetId;
@@ -124,6 +125,12 @@ template ZAccountRenewalRangeCheck (UtxoLeftMerkleTreeDepth,
     component customRangeCheckExtraInputsHash = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckExtraInputsHash.in <== extraInputsHash;
 
+    // addedAmountZkp - 252 bits
+    // Supported range - [0 to (2**252 - 1)]
+    // Public signal - Checked as part of Smart Contract
+    component customRangeCheckDonatedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    customRangeCheckDonatedAmountZkp.in <== addedAmountZkp;
+
     // chargedAmountZkp - 252 bits
     // Supported range - [0 - (2**252 - 1)]
     // Public signal - Checked as part of Smart Contract
@@ -187,7 +194,7 @@ template ZAccountRenewalRangeCheck (UtxoLeftMerkleTreeDepth,
     // component customRangeCheckZAssetPathElements = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
     // customRangeCheckZAssetPathElements.in <== zAssetPathElements;
 
-    // zAccountUtxoInId AKA zAccountId - 24 bits 
+    // zAccountUtxoInId AKA zAccountId - 24 bits
     // circom supported bits - 2**24
     // Supported range - [0 - (2**24 - 1)]
     component customRangeCheckZAccountUtxoInId = RangeCheckSingleSignal(24, (2**24 - 1),0);

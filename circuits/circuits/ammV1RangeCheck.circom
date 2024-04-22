@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./templates/rangeCheck.circom"; 
+include "./templates/rangeCheck.circom";
 
 template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
                             UtxoMiddleMerkleTreeDepth,
@@ -20,15 +20,16 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // Ferry MT extra levels
     var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
     //////////////////////////////////////////////////////////////////////////////////////////////
-    signal input extraInputsHash;  
+    signal input extraInputsHash;
 
-    signal input chargedAmountZkp;       
-    signal input createTime;             
-    signal input depositAmountPrp;       
-    signal input withdrawAmountPrp;      
+    signal input addedAmountZkp;
+    signal input chargedAmountZkp;
+    signal input createTime;
+    signal input depositAmountPrp;
+    signal input withdrawAmountPrp;
 
-    signal input utxoCommitment;         
-    signal input utxoSpendPubKey[2];     
+    signal input utxoCommitment;
+    signal input utxoSpendPubKey[2];
     signal input utxoSpendKeyRandom;
 
     signal input zAssetId;
@@ -37,7 +38,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zAssetNetwork;
     signal input zAssetOffset;
     signal input zAssetWeight;
-    signal input zAssetScale; 
+    signal input zAssetScale;
     signal input zAssetMerkleRoot;
     signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
@@ -59,15 +60,15 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zAccountUtxoInMasterEOA;
     signal input zAccountUtxoInSpendKeyRandom;
     signal input zAccountUtxoInCommitment;
-    signal input zAccountUtxoInNullifier;  
-    signal input zAccountUtxoInMerkleTreeSelector[2]; 
+    signal input zAccountUtxoInNullifier;
+    signal input zAccountUtxoInMerkleTreeSelector[2];
     signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
     signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
 
     signal input zAccountUtxoOutZkpAmount;
     signal input zAccountUtxoOutPrpAmount;
     signal input zAccountUtxoOutSpendKeyRandom;
-    signal input zAccountUtxoOutCommitment; 
+    signal input zAccountUtxoOutCommitment;
 
     signal input zAccountBlackListLeaf;
     signal input zAccountBlackListMerkleRoot;
@@ -91,7 +92,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zZoneTimePeriodPerMaximumAmount;
 
     signal input zNetworkId;
-    signal input zNetworkChainId; 
+    signal input zNetworkChainId;
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
@@ -102,16 +103,16 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input forUtxoReward;
     signal input forDepositReward;
 
-    signal input trustProvidersMerkleRoot; 
+    signal input trustProvidersMerkleRoot;
     signal input staticTreeMerkleRoot;
-    signal input forestMerkleRoot;   
+    signal input forestMerkleRoot;
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
     signal input ferryMerkleRoot;
 
     signal input salt;
-    signal input saltHash; 
-    signal input magicalConstraint; 
+    signal input saltHash;
+    signal input magicalConstraint;
 
     // extraInputsHash - 256 bits
     // circom supported bits - 2**252
@@ -119,6 +120,12 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // Public signal - Checked as part of SC
     component customRangeCheckExtraInputsHash = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckExtraInputsHash.in <== extraInputsHash;
+
+    // addedAmountZkp - 252 bits
+    // Supported range - [0 to (2**252 - 1)]
+    // Public signal - Checked as part of Smart Contract
+    component customRangeCheckDonatedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
+    customRangeCheckDonatedAmountZkp.in <== addedAmountZkp;
 
     // chargedAmountZkp - 256 bits
     // circom supported bits - 2**252
@@ -162,7 +169,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // utxoSpendKeyRandom - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckutxoSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckutxoSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckutxoSpendKeyRandom.in <== utxoSpendKeyRandom;
 
     // zAssetId - 64 bits
@@ -171,7 +178,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     component customRangeCheckZAssetId = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZAssetId.in <== zAssetId;
 
-    // zAssetToken - 160 bits 
+    // zAssetToken - 160 bits
     // Supported range - [0 - (2**160 - 1)]
     component customRangeCheckZAssetToken = RangeCheckSingleSignal(160,(2**160 - 1),0);
     customRangeCheckZAssetToken.in <== zAssetToken;
@@ -218,7 +225,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // customRangeCheckZAssetPathIndices.in <== zAssetPathIndices;
 
     // zAssetPathElements - 256 bits
-    // circom supported bits - 2**252 
+    // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     // Merkle Tree details - Checked as part of dApp and SC.
     // component customRangeCheckZAssetPathElements = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
@@ -226,17 +233,17 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
 
     // zAccountUtxoInId - 24 bits
     // Supported range - [0 - (2**24 - 1)]
-    component customRangeCheckZAccountUtxoInId = RangeCheckSingleSignal(24,(2**24 - 1),0); 
+    component customRangeCheckZAccountUtxoInId = RangeCheckSingleSignal(24,(2**24 - 1),0);
     customRangeCheckZAccountUtxoInId.in <== zAccountUtxoInId;
-    
+
     // zAccountUtxoInZkpAmount - 252 bits
     // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckZAccountUtxoInZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoInZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoInZkpAmount.in <== zAccountUtxoInZkpAmount;
 
     // zAccountUtxoInPrpAmount - 64 bits
     // Supported range - [0 - (2**64 - 1)]
-    component customRangeCheckZAccountUtxoInPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0); 
+    component customRangeCheckZAccountUtxoInPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZAccountUtxoInPrpAmount.in <== zAccountUtxoInPrpAmount;
 
     // zAccountUtxoInZoneId - 16 bits
@@ -246,27 +253,27 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
 
     // zAccountUtxoInNetworkId - 6 bits
     // Supported range - [0 - (2**6 - 1)]
-    component customRangeCheckZAccountUtxoInNetworkId = RangeCheckSingleSignal(6,(2**6 - 1),0); 
+    component customRangeCheckZAccountUtxoInNetworkId = RangeCheckSingleSignal(6,(2**6 - 1),0);
     customRangeCheckZAccountUtxoInNetworkId.in <== zAccountUtxoInNetworkId;
 
     // zAccountUtxoInExpiryTime - 32 bits
-    // Supported range - [0 - (2**32 - 1)] 
-    component customRangeCheckZAccountUtxoInExpiryTime = RangeCheckSingleSignal(32,(2**32 - 1),0); 
+    // Supported range - [0 - (2**32 - 1)]
+    component customRangeCheckZAccountUtxoInExpiryTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckZAccountUtxoInExpiryTime.in <== zAccountUtxoInExpiryTime;
 
     // zAccountUtxoInNonce - 16 bits
     // Supported range - [0 - (2**16 - 1)]
-    component customRangeCheckZAccountUtxoInNonce = RangeCheckSingleSignal(16,(2**16 - 1),0); 
+    component customRangeCheckZAccountUtxoInNonce = RangeCheckSingleSignal(16,(2**16 - 1),0);
     customRangeCheckZAccountUtxoInNonce.in <== zAccountUtxoInNonce;
 
     // zAccountUtxoInTotalAmountPerTimePeriod - 252 bits
     // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod.in <== zAccountUtxoInTotalAmountPerTimePeriod;
 
     // zAccountUtxoInCreateTime - 32 bits
     // Supported range - [0 - (2**32 - 1)]
-    component customRangeCheckZAccountUtxoInCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0); 
+    component customRangeCheckZAccountUtxoInCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckZAccountUtxoInCreateTime.in <== zAccountUtxoInCreateTime;
 
     // zAccountUtxoInRootSpendPubKey - 256 bits
@@ -290,37 +297,37 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // zAccountUtxoInSpendPrivKey - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInSpendPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoInSpendPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoInSpendPrivKey.in <== zAccountUtxoInSpendPrivKey;
 
     // zAccountUtxoInNullifierPrivKey - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInNullifierPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoInNullifierPrivKey = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoInNullifierPrivKey.in <== zAccountUtxoInNullifierPrivKey;
 
     // zAccountUtxoInMasterEOA - 160 bits
     // Supported range - [0 - (2**160 - 1)]
-    component customRangeCheckZAccountUtxoInMasterEOA = RangeCheckSingleSignal(160,(2**160 - 1),0); 
+    component customRangeCheckZAccountUtxoInMasterEOA = RangeCheckSingleSignal(160,(2**160 - 1),0);
     customRangeCheckZAccountUtxoInMasterEOA.in <== zAccountUtxoInMasterEOA;
 
     // zAccountUtxoInSpendKeyRandom - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoInSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoInSpendKeyRandom.in <== zAccountUtxoInSpendKeyRandom;
 
     // zAccountUtxoInCommitment - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    // component customRangeCheckZAccountUtxoInCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoInCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoInCommitment.in <== zAccountUtxoInCommitment;
 
     // zAccountUtxoInNullifier - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     // Public signal - Checked as part of SC
-    // component customRangeCheckZAccountUtxoInNullifier = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoInNullifier = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoInNullifier.in <== zAccountUtxoInNullifier;
 
     // zAccountUtxoInMerkleTreeSelector - 2 bits
@@ -342,25 +349,25 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
 
     // zAccountUtxoOutZkpAmount - 252 bits
     // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckZAccountUtxoOutZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoOutZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoOutZkpAmount.in <== zAccountUtxoOutZkpAmount;
 
     // zAccountUtxoOutPrpAmount - 64 bits
     // Supported range - [0 - (2**64 - 1)]
-    component customRangeCheckZAccountUtxoOutPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0); 
+    component customRangeCheckZAccountUtxoOutPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZAccountUtxoOutPrpAmount.in <== zAccountUtxoOutPrpAmount;
 
     // zAccountUtxoOutSpendKeyRandom - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
-    component customRangeCheckZAccountUtxoOutSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoOutSpendKeyRandom = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoOutSpendKeyRandom.in <== zAccountUtxoOutSpendKeyRandom;
 
     // zAccountUtxoOutCommitment - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]
     // Public signal - Checked as part of SC
-    // component customRangeCheckZAccountUtxoOutCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    // component customRangeCheckZAccountUtxoOutCommitment = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckZAccountUtxoOutCommitment.in <== zAccountUtxoOutCommitment;
 
     // zAccountBlackListLeaf - 256 bits
@@ -535,7 +542,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // Supported range - [0 - (2**252 - 1)]
     // component customRangeCheckTrustProvidersMerkleRoot = RangeCheckSingleSignal(252,(2**252 - 1),0);
     // customRangeCheckTrustProvidersMerkleRoot.in <== trustProvidersMerkleRoot;
-    
+
     // staticTreeMerkleRoot - 256 bits
     // circom supported bits - 2**252
     // Supported range - [0 - (2**252 - 1)]

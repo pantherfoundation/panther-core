@@ -39,7 +39,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         depositChange: BigInt(0n),
         withdrawAmount: BigInt(0n),
         withdrawChange: BigInt(0n),
-        donatedAmountZkp: BigInt(0n),
+        addedAmountZkp: BigInt(0n),
         token: BigInt(0n),
         tokenId: BigInt(0n),
         utxoZAsset: BigInt(0n),

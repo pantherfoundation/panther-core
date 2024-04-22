@@ -1170,9 +1170,9 @@ const nonZeroInputSelfTransfer = {
         BigInt(
             7772418543813295742630374375434619738043832814326507445998878366517018150529n,
         ),
-    // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
+    // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
     chargedAmountZkp: BigInt(10 ** 15),
-    donatedAmountZkp: BigInt(10 ** 14),
+    addedAmountZkp: BigInt(10 ** 14),
 
     zNetworkId: BigInt(2n),
     zNetworkChainId: BigInt(80001n),
@@ -2368,9 +2368,9 @@ const nonZeroInputSplitTransfer = {
         BigInt(
             7772418543813295742630374375434619738043832814326507445998878366517018150529n,
         ),
-    // For better testing choosing chargedAmountZkp and donatedAmountZkp >= 10 ** 12
+    // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
     chargedAmountZkp: BigInt(10 ** 15),
-    donatedAmountZkp: BigInt(10 ** 14),
+    addedAmountZkp: BigInt(10 ** 14),
 
     zNetworkId: BigInt(2n),
     zNetworkChainId: BigInt(80001n),

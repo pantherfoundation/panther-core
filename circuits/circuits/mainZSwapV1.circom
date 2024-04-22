@@ -8,7 +8,7 @@ component main {
         extraInputsHash,                       // [1]
         depositAmount,                         // [2]
         withdrawAmount,                        // [3]
-        donatedAmountZkp,                      // [4]
+        addedAmountZkp,                        // [4]
         token,                                 // [5] - can be 1 or 2
         tokenId,                               // [6] - can be 1 or 2
         spendTime,                             // [7]

@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./templates/rangeCheck.circom"; 
+include "./templates/rangeCheck.circom";
 
 template ZTransactionV1RangeCheck( nUtxoIn,
                                    nUtxoOut,
@@ -29,7 +29,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     signal input withdrawAmount;
     signal input withdrawChange;
-    signal input donatedAmountZkp;
+    signal input addedAmountZkp;
     signal input token;
     signal input tokenId;
     signal input utxoZAsset;
@@ -227,7 +227,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // SNARK FIELD SIZE - 21888242871839275222246405745257275088548364400416034343698204186575808495617
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    // extraInputsHash - 256 bits 
+    // extraInputsHash - 256 bits
     // Public signal
     // Must be within the SNARK_FIELD
     // Must be checked as part of SC
@@ -244,7 +244,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // ToDo - Can be restrcited to be 250 bits?
     component customRangeCheckDepositChange = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckDepositChange.in <== depositChange;
-    
+
     // withdrawAmount  - 252 bits
     // Public signal
     // Supported range - [0 to (2**252 - 1)]
@@ -258,12 +258,12 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     component customRangeCheckWithdrawChange = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckWithdrawChange.in <== withdrawChange;
 
-    // donatedAmountZkp - 252 bits
-    // Public signal
+    // addedAmountZkp - 252 bits
+    // Public signal - Checked as part of Smart Contract
     // Supported range - [0 to (2**252 - 1)]
     // ToDo - Can be restrcited to be 250 bits?
     component customRangeCheckDonatedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheckDonatedAmountZkp.in <== donatedAmountZkp;
+    customRangeCheckDonatedAmountZkp.in <== addedAmountZkp;
 
     // token - 160 bits
     // Public signal
@@ -368,7 +368,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // component customRangeCheckZAssetPathIndicesZkp = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
     // customRangeCheckZAssetPathIndicesZkp.in <== zAssetPathIndicesZkp;
 
-    // zAssetPathElementsZkp 
+    // zAssetPathElementsZkp
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
@@ -404,37 +404,37 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // utxoInAmount - 252 bits
     // Supported range - [0 to (2**252 - 1)]
     // ToDo - Can be restrcited to be 250 bits?
-    component customRangeCheckUtxoInAmount = RangeCheckGroupOfSignals(2, 252,(2**252 - 1),0); 
+    component customRangeCheckUtxoInAmount = RangeCheckGroupOfSignals(2, 252,(2**252 - 1),0);
     customRangeCheckUtxoInAmount.in <== utxoInAmount;
 
     // utxoInOriginZoneId - 16 bits
     // Supported range - [0 to (2**16 - 1)]
-    component customRangeCheckUtxoInOriginZoneId = RangeCheckGroupOfSignals(2, 16,(2**16 - 1),0); 
+    component customRangeCheckUtxoInOriginZoneId = RangeCheckGroupOfSignals(2, 16,(2**16 - 1),0);
     customRangeCheckUtxoInOriginZoneId.in <== utxoInOriginZoneId;
 
     // utxoInOriginZoneIdOffset - 4 bits
     // Supported range - [0 to (2**4 - 1)]
-    component customRangeCheckUtxoInOriginZoneIdOffset = RangeCheckGroupOfSignals(2, 4,(2**4 - 1),0); 
+    component customRangeCheckUtxoInOriginZoneIdOffset = RangeCheckGroupOfSignals(2, 4,(2**4 - 1),0);
     customRangeCheckUtxoInOriginZoneIdOffset.in <== utxoInOriginZoneIdOffset;
 
     // utxoInOriginNetworkId - 6 bits
     // Supported range - [0 to (2**6 - 1)]
-    component customRangeCheckUtxoInOriginNetworkId = RangeCheckGroupOfSignals(2, 6,(2**6 - 1),0); 
+    component customRangeCheckUtxoInOriginNetworkId = RangeCheckGroupOfSignals(2, 6,(2**6 - 1),0);
     customRangeCheckUtxoInOriginNetworkId.in <== utxoInOriginNetworkId;
 
     // utxoInTargetNetworkId - 6 bits
     // Supported range - [0 to (2**6 - 1)]
-    component customRangeCheckUtxoInTargetNetworkId = RangeCheckGroupOfSignals(2, 6,(2**6 - 1),0); 
+    component customRangeCheckUtxoInTargetNetworkId = RangeCheckGroupOfSignals(2, 6,(2**6 - 1),0);
     customRangeCheckUtxoInTargetNetworkId.in <== utxoInTargetNetworkId;
 
     // utxoInCreateTime - 32 bits
     // Supported range - [0 to (2**32 - 1)]
-    component customRangeCheckUtxoInCreateTime = RangeCheckGroupOfSignals(2, 32,(2**32 - 1),0); 
+    component customRangeCheckUtxoInCreateTime = RangeCheckGroupOfSignals(2, 32,(2**32 - 1),0);
     customRangeCheckUtxoInCreateTime.in <== utxoInCreateTime;
 
     // utxoInZAccountId - 24 bits
     // Supported range - [0 to (2**24 - 1)]
-    component customRangeCheckUtxoInZAccountId = RangeCheckGroupOfSignals(2, 24,(2**24 - 1),0); 
+    component customRangeCheckUtxoInZAccountId = RangeCheckGroupOfSignals(2, 24,(2**24 - 1),0);
     customRangeCheckUtxoInZAccountId.in <== utxoInZAccountId;
 
     // utxoInMerkleTreeSelector - 2 bits
@@ -461,18 +461,18 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // zAccountUtxoInId - 24 bits
     // Supported range - [0 to (2**24 - 1)]
-    component customRangeCheckZAccountUtxoInId = RangeCheckSingleSignal(24,(2**24 - 1),0); 
+    component customRangeCheckZAccountUtxoInId = RangeCheckSingleSignal(24,(2**24 - 1),0);
     customRangeCheckZAccountUtxoInId.in <== zAccountUtxoInId;
 
     // zAccountUtxoInZkpAmount - 252 bits
     // Supported range - [0 to (2**252 - 1)]
     // ToDo - cross verify if it is 64 bits?
-    component customRangeCheckZAccountUtxoInZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoInZkpAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoInZkpAmount.in <== zAccountUtxoInZkpAmount;
 
     // zAccountUtxoInPrpAmount - 64 bits
     // Supported range - [0 to (2**64 - 1)]
-    component customRangeCheckZAccountUtxoInPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0); 
+    component customRangeCheckZAccountUtxoInPrpAmount = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZAccountUtxoInPrpAmount.in <== zAccountUtxoInPrpAmount;
 
     // zAccountUtxoInZoneId - 16 bits
@@ -482,34 +482,34 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // zAccountUtxoInNetworkId - 6 bits
     // Supported range - [0 to (2**6 - 1)]
-    component customRangeCheckZAccountUtxoInNetworkId = RangeCheckSingleSignal(6,(2**6 - 1),0); 
+    component customRangeCheckZAccountUtxoInNetworkId = RangeCheckSingleSignal(6,(2**6 - 1),0);
     customRangeCheckZAccountUtxoInNetworkId.in <== zAccountUtxoInNetworkId;
 
     // zAccountUtxoInExpiryTime - 32 bits
-    // Supported range - [0 to (2**32 - 1)] 
-    component customRangeCheckZAccountUtxoInExpiryTime = RangeCheckSingleSignal(32,(2**32 - 1),0); 
+    // Supported range - [0 to (2**32 - 1)]
+    component customRangeCheckZAccountUtxoInExpiryTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckZAccountUtxoInExpiryTime.in <== zAccountUtxoInExpiryTime;
 
     // zAccountUtxoInNonce - 16 bits
     // Supported range - [0 to (2**16 - 1)]
     // ToDo - check if this should be constrained or not?
-    component customRangeCheckZAccountUtxoInNonce = RangeCheckSingleSignal(16,(2**16 - 1),0); 
+    component customRangeCheckZAccountUtxoInNonce = RangeCheckSingleSignal(16,(2**16 - 1),0);
     customRangeCheckZAccountUtxoInNonce.in <== zAccountUtxoInNonce;
 
     // zAccountUtxoInTotalAmountPerTimePeriod - 256 bits
     // ToDo - should we constraint it to 252?
-    component customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod = RangeCheckSingleSignal(252,(2**252 - 1),0); 
+    component customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckZAccountUtxoInTotalAmountPerTimePeriod.in <== zAccountUtxoInTotalAmountPerTimePeriod;
 
     // zAccountUtxoInCreateTime - 32 bits
     // Supported range - [0 to (2**32 - 1)]
-    component customRangeCheckZAccountUtxoInCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0); 
+    component customRangeCheckZAccountUtxoInCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckZAccountUtxoInCreateTime.in <== zAccountUtxoInCreateTime;
 
     // zAccountUtxoInRootSpendPubKey - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
-    
+
     // zAccountUtxoInReadPubKey - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
@@ -520,10 +520,10 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // zAccountUtxoInMasterEOA - 160 bits
     // Supported range - [0 to (2**160 - 1)]
-    component customRangeCheckZAccountUtxoInMasterEOA = RangeCheckSingleSignal(160,(2**160 - 1),0); 
+    component customRangeCheckZAccountUtxoInMasterEOA = RangeCheckSingleSignal(160,(2**160 - 1),0);
     customRangeCheckZAccountUtxoInMasterEOA.in <== zAccountUtxoInMasterEOA;
 
-    // zAccountUtxoInSpendPrivKey 
+    // zAccountUtxoInSpendPrivKey
     // Must be within the Baby Jubjub Suborder
     // Should be checked as part of the SC
 
@@ -624,7 +624,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
-    // zZonePathIndices 
+    // zZonePathIndices
     // ToDo - should be changed to 1 bit
 
     // zZoneEdDsaPubKey - 256 bits
@@ -666,13 +666,13 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
-    // component customRangeCheckZZoneDataEscrowEncryptedMessageAx = RangeCheckGroupOfSignals(1,252,(2**252 - 1),0); 
+    // component customRangeCheckZZoneDataEscrowEncryptedMessageAx = RangeCheckGroupOfSignals(1,252,(2**252 - 1),0);
     // customRangeCheckZZoneDataEscrowEncryptedMessageAx.in <== zZoneDataEscrowEncryptedMessageAx;
 
     // zZoneDataEscrowEncryptedMessageAy - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
-    // component customRangeCheckZZoneDataEscrowEncryptedMessageAy = RangeCheckGroupOfSignals(1,252,(2**252 - 1),0); 
+    // component customRangeCheckZZoneDataEscrowEncryptedMessageAy = RangeCheckGroupOfSignals(1,252,(2**252 - 1),0);
     // customRangeCheckZZoneDataEscrowEncryptedMessageAy.in <== zZoneDataEscrowEncryptedMessageAy;
 
     // kytEdDsaPubKey - 256 bits
@@ -689,11 +689,11 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // trustProvidersMerkleRoot
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
-    
+
     // kytPathElements
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
-    
+
     // kytPathIndices - 256 bits
     // Supported range - [0 to (2**252 - 1)]
     // ToDo - Needs to check 1 bit?
@@ -839,7 +839,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // dataEscrowEphimeralRandom - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
-    
+
     // dataEscrowEphimeralPubKeyAx - 256 bits
     // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
@@ -858,7 +858,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // customRangeCheckDataEscrowPathIndices.in <== dataEscrowPathIndices;
 
     // dataEscrowEncryptedMessageAx - 256 bits
-    // Public signal 
+    // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
@@ -883,16 +883,16 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Should be checked as part of the SC
 
     // daoDataEscrowEncryptedMessageAx - 256 bits
-    // Public signal 
+    // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
     // daoDataEscrowEncryptedMessageAy - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
-    
+
     // utxoOutCreateTime - 32 bits
-    // Public signal  
+    // Public signal
     // Supported range - [0 to (2**32 - 1)]
     // Public signal - Checked as part of Smart Contract
     component customRangeCheckUtxoOutCreateTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
@@ -937,7 +937,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Should be checked as part of the SC
 
     // utxoOutCommitment
-    // Public signal    
+    // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
@@ -952,12 +952,12 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Should be checked as part of the SC
 
     // zAccountUtxoOutCommitment
-    // Public signal  
+    // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
     // chargedAmountZkp - 256 bits
-    // Public signal  
+    // Public signal
     // Should be checked as part of the SC
     component customRangeCheckChargedAmountZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheckChargedAmountZkp.in <== chargedAmountZkp;
@@ -968,7 +968,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     customRangeCheckZNetworkId.in <== zNetworkId;
 
     // zNetworkChainId - 256 bits
-    // Public signal  
+    // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 

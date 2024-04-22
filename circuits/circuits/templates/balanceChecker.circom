@@ -27,7 +27,7 @@ template BalanceChecker() {
     signal input withdrawAmount;
     signal input withdrawChange;
     signal input chargedAmountZkp;
-    signal input donatedAmountZkp;
+    signal input addedAmountZkp;
     signal input zAccountUtxoInZkpAmount;
     signal input zAccountUtxoOutZkpAmount;
     signal input totalUtxoInAmount;
@@ -69,9 +69,9 @@ template BalanceChecker() {
 
     // [1.3] - scaled zZKP donation
     assert(zAssetScaleZkp > 0);
-    signal donatedScaledAmountZkp;
-    donatedScaledAmountZkp <-- donatedAmountZkp \ zAssetScaleZkp;
-    donatedAmountZkp === donatedScaledAmountZkp * zAssetScaleZkp;
+    signal addedScaledAmountZkp;
+    addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
+    addedAmountZkp === addedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Deposit //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ template BalanceChecker() {
     // [3] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     signal totalBalanceIn;
-    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + donatedScaledAmountZkp );
+    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
 
     signal totalBalanceOut;
     totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp );
@@ -128,7 +128,7 @@ template BalanceChecker() {
     component zAccountUtxoOutZkpAmountChecker = ForceEqualIfEnabled();
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
-    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoInZkpAmount + donatedScaledAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoInZkpAmount + addedScaledAmountZkp;
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

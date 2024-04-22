@@ -66,7 +66,7 @@ template ZTransactionV1( nUtxoIn,
     signal input depositChange;
     signal input withdrawAmount;   // public
     signal input withdrawChange;
-    signal input donatedAmountZkp; // public
+    signal input addedAmountZkp;   // public
     signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
     signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
     signal input utxoZAsset;       // used both for in & out utxo
@@ -300,14 +300,13 @@ template ZTransactionV1( nUtxoIn,
     // 3) zNetworkTreeMerkleRoot
     // 4) zZoneMerkleRoot
     // 5) trustProvidersMerkleRoot
-    signal input staticTreeMerkleRoot;
+    signal input staticTreeMerkleRoot; // public
 
     // forest root
     // Poseidon of:
-    // 1) UTXO-Taxi-Tree   - 6 levels MT
+    // 1) UTXO-Taxi-Tree   - 8 levels MT
     // 2) UTXO-Bus-Tree    - 26 levels MT
     // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
-    // 4) Static-Tree
     signal input forestMerkleRoot;   // public
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
@@ -366,7 +365,7 @@ template ZTransactionV1( nUtxoIn,
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
     totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
-    totalBalanceChecker.donatedAmountZkp <== donatedAmountZkp;
+    totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;
@@ -518,7 +517,7 @@ template ZTransactionV1( nUtxoIn,
         utxoInNullifierProver[i] = ForceEqualIfEnabled();
         utxoInNullifierProver[i].in[0] <== utxoInNullifier[i];
         utxoInNullifierProver[i].in[1] <== utxoInNullifierHasher[i].out;
-        utxoInNullifierProver[i].enabled <== utxoInIsEnabled[i].out;
+        utxoInNullifierProver[i].enabled <== utxoInNullifier[i];
 
         // verify Merkle proofs for input notes
         utxoInInclusionProver[i] = UtxoNoteInclusionProverBinarySelectable(UtxoLeftMerkleTreeDepth,UtxoMiddleExtraLevels,UtxoRightExtraLevels);
@@ -1115,11 +1114,10 @@ template ZTransactionV1( nUtxoIn,
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
     // [27] - Verify forest-merkle-roots
-    component forestTreeMerkleRootVerifier = Poseidon(4);
+    component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[2] <== ferryMerkleRoot;
-    forestTreeMerkleRootVerifier.inputs[3] <== staticTreeMerkleRoot;
 
     // verify computed root against provided one
     component isEqualForestTreeMerkleRoot = ForceEqualIfEnabled();
@@ -1159,11 +1157,11 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.depositChange <== depositChange;
     zTransactionV1RC.withdrawAmount <== withdrawAmount;
     zTransactionV1RC.withdrawChange <== withdrawChange;
-    zTransactionV1RC.donatedAmountZkp <== donatedAmountZkp;
+    zTransactionV1RC.addedAmountZkp <== addedAmountZkp;
     zTransactionV1RC.token <== token;
     zTransactionV1RC.tokenId <== tokenId;
     zTransactionV1RC.utxoZAsset <== utxoZAsset;
-    
+
     zTransactionV1RC.zAssetId <== zAssetId;
     zTransactionV1RC.zAssetToken <== zAssetToken;
     zTransactionV1RC.zAssetTokenId <== zAssetTokenId;

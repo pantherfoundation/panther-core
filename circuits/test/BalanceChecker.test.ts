@@ -29,7 +29,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             withdrawAmount: BigInt(0n),
             withdrawChange: BigInt(0n),
             chargedAmountZkp: BigInt(0n),
-            donatedAmountZkp: BigInt(0n),
+            addedAmountZkp: BigInt(0n),
             zAccountUtxoInZkpAmount: BigInt(0n),
             zAccountUtxoOutZkpAmount: BigInt(0n),
             totalUtxoInAmount: BigInt(0n),
@@ -68,7 +68,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.isZkpToken = 1;
             balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
-            balanceCheckerSignals.donatedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
             balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
             balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999000n);
             balanceCheckerSignals.totalUtxoInAmount = 0;
@@ -93,7 +93,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.isZkpToken = 0;
             balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
-            balanceCheckerSignals.donatedAmountZkp = 0;
+            balanceCheckerSignals.addedAmountZkp = 0;
             balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
             balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999000n);
             balanceCheckerSignals.totalUtxoInAmount = 0;
