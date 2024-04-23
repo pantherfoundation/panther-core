@@ -39,9 +39,9 @@ export const localLeafs: {[key: string]: ZNetwork} = {
 };
 
 export const testnetLeafs: {[key: string]: ZNetwork} = {
-    goerli: {
+    reserved: {
         active: 1n,
-        chainId: 5n,
+        chainId: 1n,
         networkId: 1n,
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
@@ -53,9 +53,9 @@ export const testnetLeafs: {[key: string]: ZNetwork} = {
         daoDataEscrowPubKeyY:
             12531080428555376703723008094946927789381711849570844145043392510154357220479n,
     },
-    mumbai: {
+    sepoila: {
         active: 1n,
-        chainId: 80001n,
+        chainId: 11155111n,
         networkId: 2n,
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
