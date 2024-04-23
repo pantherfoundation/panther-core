@@ -42,3 +42,4 @@ string constant ERR_INVALID_SPEND_TIME = "PP:E34";
 string constant ERR_INVALID_EXTRA_INPUT_HASH = "PP:E35";
 string constant ERR_TOO_LOW_CHARGED_ZKP = "PP:E36";
 string constant ERR_DUPLICATED_KYT_MESSAGE_HASH = "PP:E37";
+string constant ERR_INVALID_STATIC_ROOT = "PP:E38";
