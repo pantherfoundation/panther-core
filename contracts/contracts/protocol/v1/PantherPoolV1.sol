@@ -182,21 +182,21 @@ contract PantherPoolV1 is
     /// @dev It can be executed only by zAccountsRegistry contract.
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash
-    /// @param inputs[1]  - zkpAmount
-    /// @param inputs[2]  - zkpChange
+    /// @param inputs[1]  - addedAmountZkp
+    /// @param inputs[2]  - chargedAmountZkp
     /// @param inputs[3]  - zAccountId
-    /// @param inputs[4]  - zAccountPrpAmount
-    /// @param inputs[5]  - zAccountCreateTime
-    /// @param inputs[6]  - zAccountRootSpendPubKeyX
-    /// @param inputs[7]  - zAccountRootSpendPubKeyY
-    /// @param inputs[8]  - zAccountReadPubKeyX
-    /// @param inputs[9]  - zAccountReadPubKeyY
-    /// @param inputs[10] - zAccountNullifierPubKeyX
-    /// @param inputs[11] - zAccountNullifierPubKeyY
-    /// @param inputs[12] - zAccountMasterEOA
-    /// @param inputs[13] - zAccountNullifier
-    /// @param inputs[14] - zAccountCommitment
-    /// @param inputs[15] - kycSignedMessageHash
+    /// @param inputs[4]  - zAccountCreateTime
+    /// @param inputs[5]  - zAccountRootSpendPubKeyX
+    /// @param inputs[6]  - zAccountRootSpendPubKeyY
+    /// @param inputs[7]  - zAccountReadPubKeyX
+    /// @param inputs[8]  - zAccountReadPubKeyY
+    /// @param inputs[9] - zAccountNullifierPubKeyX
+    /// @param inputs[10] - zAccountNullifierPubKeyY
+    /// @param inputs[11] - zAccountMasterEOA
+    /// @param inputs[12] - zAccountNullifierZone
+    /// @param inputs[13] - zAccountCommitment
+    /// @param inputs[14] - kycSignedMessageHash
+    /// @param inputs[15] - staticTreeMerkleRoot
     /// @param inputs[16] - forestMerkleRoot
     /// @param inputs[17] - saltHash
     /// @param inputs[18] - magicalConstraint
@@ -221,16 +221,16 @@ contract PantherPoolV1 is
         require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
         require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         {
-            uint256 zAccountNullifier = inputs[13];
+            uint256 zAccountNullifier = inputs[12];
             require(zAccountNullifier != 0, ERR_ZERO_ZACCOUNT_NULLIFIER);
         }
         uint256 zAccountCommitment;
         {
-            zAccountCommitment = inputs[14];
+            zAccountCommitment = inputs[13];
             require(zAccountCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
         }
         {
-            uint256 kycSignedMessageHash = inputs[15];
+            uint256 kycSignedMessageHash = inputs[14];
             require(kycSignedMessageHash != 0, ERR_ZERO_KYC_MSG_HASH);
         }
         {
@@ -243,9 +243,9 @@ contract PantherPoolV1 is
         }
 
         // Must be less than 32 bits and NOT in the past
-        uint32 createTime = uint32(inputs[5]);
+        uint32 createTime = uint32(inputs[4]);
         require(
-            uint256(createTime) == inputs[5] && createTime >= block.timestamp,
+            uint256(createTime) == inputs[4] && createTime >= block.timestamp,
             ERR_INVALID_CREATE_TIME
         );
 
@@ -302,20 +302,22 @@ contract PantherPoolV1 is
     /// prp balance. It can be executed only be prpVoucherGrantor.
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash;
-    /// @param inputs[1]  - chargedAmountZkp;
-    /// @param inputs[2]  - createTime;
-    /// @param inputs[3]  - depositAmountPrp;
-    /// @param inputs[4]  - withdrawAmountPrp;
-    /// @param inputs[5]  - utxoCommitmentPrivatePart;
-    /// @param inputs[6]  - utxoSpendPubKeyX
-    /// @param inputs[7]  - utxoSpendPubKeyY
-    /// @param inputs[8]  - zAssetScale;
-    /// @param inputs[9]  - zAccountUtxoInNullifier;
-    /// @param inputs[10] - zAccountUtxoOutCommitment;
-    /// @param inputs[11] - zNetworkChainId;
-    /// @param inputs[12] - forestMerkleRoot;
-    /// @param inputs[13] - saltHash;
-    /// @param inputs[14] - magicalConstraint;
+    /// @param inputs[1]  - addedAmountZkp;
+    /// @param inputs[2]  - chargedAmountZkp;
+    /// @param inputs[3]  - createTime;
+    /// @param inputs[4]  - depositAmountPrp;
+    /// @param inputs[5]  - withdrawAmountPrp;
+    /// @param inputs[6]  - utxoCommitmentPrivatePart;
+    /// @param inputs[7]  - utxoSpendPubKeyX
+    /// @param inputs[8]  - utxoSpendPubKeyY
+    /// @param inputs[9]  - zAssetScale;
+    /// @param inputs[10]  - zAccountUtxoInNullifier;
+    /// @param inputs[11] - zAccountUtxoOutCommitment;
+    /// @param inputs[12] - zNetworkChainId;
+    /// @param inputs[13] - staticTreeMerkleRoot;
+    /// @param inputs[14] - forestMerkleRoot;
+    /// @param inputs[15] - saltHash;
+    /// @param inputs[16] - magicalConstraint;
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
@@ -340,20 +342,20 @@ contract PantherPoolV1 is
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         // Must be less than 32 bits and NOT in the past
-        uint32 createTime = UtilsLib.safe32(inputs[2]);
+        uint32 createTime = UtilsLib.safe32(inputs[3]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
         uint256 zAccountUtxoOutCommitment;
         {
-            zAccountUtxoOutCommitment = inputs[10];
+            zAccountUtxoOutCommitment = inputs[11];
             require(zAccountUtxoOutCommitment != 0, ERR_ZERO_ZACCOUNT_COMMIT);
         }
 
         {
             // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(inputs[9]);
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[10]);
             require(
                 !isSpent[zAccountUtxoInNullifier],
                 ERR_SPENT_ZACCOUNT_NULLIFIER
@@ -362,12 +364,12 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 zNetworkChainId = inputs[11];
+            uint256 zNetworkChainId = inputs[12];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
         }
 
         {
-            bytes32 forestMerkleRoot = bytes32(inputs[12]);
+            bytes32 forestMerkleRoot = bytes32(inputs[14]);
             require(
                 isCachedRoot(
                     forestMerkleRoot,
@@ -409,22 +411,23 @@ contract PantherPoolV1 is
     /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the
     /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.
     /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.
-    /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash;
-    /// @param inputs[1]  - chargedAmountZkp;
-    /// @param inputs[2]  - createTime;
-    /// @param inputs[3]  - depositAmountPrp;
-    /// @param inputs[4]  - withdrawAmountPrp;
-    /// @param inputs[5]  - utxoCommitmentPrivatePart;
-    /// @param inputs[6]  - utxoSpendPubKeyX
-    /// @param inputs[7]  - utxoSpendPubKeyY
-    /// @param inputs[8]  - zAssetScale;
-    /// @param inputs[9]  - zAccountUtxoInNullifier;
-    /// @param inputs[10] - zAccountUtxoOutCommitment;
-    /// @param inputs[11] - zNetworkChainId;
-    /// @param inputs[12] - forestMerkleRoot;
-    /// @param inputs[13] - saltHash;
-    /// @param inputs[14] - magicalConstraint;
+    /// @param inputs[1]  - addedAmountZkp;
+    /// @param inputs[2]  - chargedAmountZkp;
+    /// @param inputs[3]  - createTime;
+    /// @param inputs[4]  - depositAmountPrp;
+    /// @param inputs[5]  - withdrawAmountPrp;
+    /// @param inputs[6]  - utxoCommitmentPrivatePart;
+    /// @param inputs[7]  - utxoSpendPubKeyX
+    /// @param inputs[8]  - utxoSpendPubKeyY
+    /// @param inputs[9]  - zAssetScale;
+    /// @param inputs[10]  - zAccountUtxoInNullifier;
+    /// @param inputs[11] - zAccountUtxoOutCommitment;
+    /// @param inputs[12] - zNetworkChainId;
+    /// @param inputs[13] - staticTreeMerkleRoot;
+    /// @param inputs[14] - forestMerkleRoot;
+    /// @param inputs[15] - saltHash;
+    /// @param inputs[16] - magicalConstraint;
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
@@ -453,43 +456,43 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 saltHash = inputs[13];
+            uint256 saltHash = inputs[15];
             require(saltHash != 0, ERR_ZERO_SALT_HASH);
         }
 
         {
-            uint256 magicalConstraint = inputs[14];
+            uint256 magicalConstraint = inputs[16];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
 
         uint256 zAssetScale;
         {
-            zAssetScale = inputs[8];
+            zAssetScale = inputs[9];
             require(zAssetScale != 0, ERR_ZERO_ZASSET_SCALE);
         }
 
         {
-            uint256 zNetworkChainId = inputs[11];
+            uint256 zNetworkChainId = inputs[12];
             require(zNetworkChainId == block.chainid, ERR_INVALID_CHAIN_ID);
         }
 
         // Must be less than 32 bits and NOT in the past
-        uint32 createTime = UtilsLib.safe32(inputs[2]);
+        uint32 createTime = UtilsLib.safe32(inputs[3]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CONVERSION);
 
         require(
             isCachedRoot(
-                bytes32(inputs[12]),
+                bytes32(inputs[14]),
                 transactionOptions.cachedForestRootIndex()
             ),
             ERR_INVALID_FOREST_ROOT
         );
 
         {
-            uint256 depositAmountPrp = inputs[3];
-            uint256 withdrawAmountPrp = inputs[4];
+            uint256 depositAmountPrp = inputs[4];
+            uint256 withdrawAmountPrp = inputs[5];
             require(
                 depositAmountPrp <= MAX_PRP_AMOUNT &&
                     withdrawAmountPrp <= MAX_PRP_AMOUNT,
@@ -502,7 +505,7 @@ contract PantherPoolV1 is
         bytes32 zAssetUtxoCommitment;
 
         uint256 zkpAmountScaled = zkpAmountOutRounded / zAssetScale;
-        uint256 zAssetUtxoCommitmentPrivatePart = inputs[5];
+        uint256 zAssetUtxoCommitmentPrivatePart = inputs[6];
 
         zAssetUtxoCommitment = _generateZAssetUtxoCommitment(
             zkpAmountScaled,
@@ -511,7 +514,7 @@ contract PantherPoolV1 is
 
         {
             // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(inputs[9]);
+            bytes32 zAccountUtxoInNullifier = bytes32(inputs[10]);
             require(
                 !isSpent[zAccountUtxoInNullifier],
                 ERR_SPENT_ZACCOUNT_NULLIFIER
@@ -525,7 +528,7 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[10]);
+        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[11]);
         bytes32[] memory utxos = new bytes32[](2);
 
         utxos[0] = zAccountUtxoOutCommitment;
@@ -563,7 +566,7 @@ contract PantherPoolV1 is
     /// @param inputs[0]  - extraInputsHash;
     /// @param inputs[1]  - depositAmount;
     /// @param inputs[2]  - withdrawAmount;
-    /// @param inputs[3]  - donatedAmountZkp;
+    /// @param inputs[3]  - addedAmountZkp;
     /// @param inputs[4]  - token;
     /// @param inputs[5]  - tokenId
     /// @param inputs[6]  - spendTime
@@ -599,9 +602,10 @@ contract PantherPoolV1 is
     /// @param inputs[36] - zAccountUtxoOutCommitment;
     /// @param inputs[37] - chargedAmountZkp;
     /// @param inputs[38] - zNetworkChainId;
-    /// @param inputs[39] - forestMerkleRoot;
-    /// @param inputs[40] - saltHash;
-    /// @param inputs[41] - magicalConstraint;
+    /// @param inputs[39] - staticTreeMerkleRoot;
+    /// @param inputs[40] - forestMerkleRoot;
+    /// @param inputs[41] - saltHash;
+    /// @param inputs[42] - magicalConstraint;
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
@@ -621,12 +625,12 @@ contract PantherPoolV1 is
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
-            uint256 saltHash = inputs[40];
+            uint256 saltHash = inputs[41];
             _validateSaltHash(saltHash);
         }
 
         {
-            uint256 magicalConstraint = inputs[41];
+            uint256 magicalConstraint = inputs[42];
             _validateMagicalConstraint(magicalConstraint);
         }
 
@@ -782,7 +786,7 @@ contract PantherPoolV1 is
         }
 
         {
-            uint256 forestMerkleRoot = inputs[39];
+            uint256 forestMerkleRoot = inputs[40];
 
             _validateCachedForestRootIndex(
                 forestMerkleRoot,
