@@ -59,6 +59,7 @@ contract PantherPoolV1 is
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
+    address public immutable STATIC_TREE;
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -98,13 +99,15 @@ contract PantherPoolV1 is
         address taxiTree,
         address busTree,
         address ferryTree,
+        address staticTree,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
         address verifier
     ) PantherForest(_owner, taxiTree, busTree, ferryTree) {
         require(
-            vault != address(0) &&
+            staticTree != address(0) &&
+                vault != address(0) &&
                 zkpToken != address(0) &&
                 verifier != address(0) &&
                 zAccountRegistry != address(0) &&
@@ -112,6 +115,7 @@ contract PantherPoolV1 is
             ERR_INIT
         );
 
+        STATIC_TREE = staticTree;
         PROTOCOL_TOKEN = zkpToken;
         VAULT = IVaultV1(vault);
         BUS_TREE = IBusTree(busTree);
@@ -241,6 +245,13 @@ contract PantherPoolV1 is
             uint256 magicalConstraint = inputs[18];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
+        {
+            bytes32 staticTreeMerkleRoot = bytes32(inputs[15]);
+            require(
+                staticTreeMerkleRoot == ITreeRootGetter(STATIC_TREE).getRoot(),
+                ERR_INVALID_STATIC_ROOT
+            );
+        }
 
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = uint32(inputs[4]);
@@ -344,6 +355,12 @@ contract PantherPoolV1 is
         // Must be less than 32 bits and NOT in the past
         uint32 createTime = UtilsLib.safe32(inputs[3]);
         require(createTime >= block.timestamp, ERR_INVALID_CREATE_TIME);
+
+        bytes32 staticTreeMerkleRoot = bytes32(inputs[13]);
+        require(
+            staticTreeMerkleRoot == ITreeRootGetter(STATIC_TREE).getRoot(),
+            ERR_INVALID_STATIC_ROOT
+        );
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
@@ -463,6 +480,14 @@ contract PantherPoolV1 is
         {
             uint256 magicalConstraint = inputs[16];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
+        }
+
+        {
+            bytes32 staticTreeMerkleRoot = bytes32(inputs[13]);
+            require(
+                staticTreeMerkleRoot == ITreeRootGetter(STATIC_TREE).getRoot(),
+                ERR_INVALID_STATIC_ROOT
+            );
         }
 
         uint256 zAssetScale;
@@ -649,6 +674,14 @@ contract PantherPoolV1 is
             );
 
             _validateExtraInputHash(extraInputsHash, extraInp);
+        }
+
+        {
+            bytes32 staticTreeMerkleRoot = bytes32(inputs[39]);
+            require(
+                staticTreeMerkleRoot == ITreeRootGetter(STATIC_TREE).getRoot(),
+                ERR_INVALID_STATIC_ROOT
+            );
         }
 
         {
