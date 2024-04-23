@@ -134,20 +134,22 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
     /// @notice Accounts prp to zAccount
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash;
-    /// @param inputs[1]  - chargedAmountZkp;
-    /// @param inputs[2]  - createTime;
-    /// @param inputs[3]  - depositAmountPrp;
-    /// @param inputs[4]  - withdrawAmountPrp;
-    /// @param inputs[5]  - utxoCommitmentPrivatePart;
-    /// @param inputs[6]  - utxoSpendPubKeyX
-    /// @param inputs[7]  - utxoSpendPubKeyY
-    /// @param inputs[8]  - zAssetScale;
-    /// @param inputs[9]  - zAccountUtxoInNullifier;
-    /// @param inputs[10] - zAccountUtxoOutCommitment;
-    /// @param inputs[11] - zNetworkChainId;
-    /// @param inputs[12] - forestMerkleRoot;
-    /// @param inputs[13] - saltHash;
-    /// @param inputs[14] - magicalConstraint;
+    /// @param inputs[1]  - addedAmountZkp;
+    /// @param inputs[2]  - chargedAmountZkp;
+    /// @param inputs[3]  - createTime;
+    /// @param inputs[4]  - depositAmountPrp;
+    /// @param inputs[5]  - withdrawAmountPrp;
+    /// @param inputs[6]  - utxoCommitmentPrivatePart;
+    /// @param inputs[7]  - utxoSpendPubKeyX
+    /// @param inputs[8]  - utxoSpendPubKeyY
+    /// @param inputs[9]  - zAssetScale;
+    /// @param inputs[10]  - zAccountUtxoInNullifier;
+    /// @param inputs[11] - zAccountUtxoOutCommitment;
+    /// @param inputs[12] - zNetworkChainId;
+    /// @param inputs[13] - staticTreeMerkleRoot;
+    /// @param inputs[14] - forestMerkleRoot;
+    /// @param inputs[15] - saltHash;
+    /// @param inputs[16] - magicalConstraint;
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
@@ -162,7 +164,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
-        bytes32 secretHash = bytes32(inputs[13]);
+        bytes32 secretHash = bytes32(inputs[15]);
 
         uint256 rewardAmount = balance[secretHash];
 
@@ -172,7 +174,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         );
 
         {
-            uint256 withdrawAmountPrp = inputs[4];
+            uint256 withdrawAmountPrp = inputs[5];
             require(
                 withdrawAmountPrp == 0,
                 "PrpVoucherGrantor: Non zero withdraw amount prp"
@@ -180,7 +182,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         }
 
         {
-            uint256 depositAmountPrp = inputs[3];
+            uint256 depositAmountPrp = inputs[4];
             require(
                 depositAmountPrp <= MAX_PRP_AMOUNT,
                 "PrpVoucherGrantor: Too large prp amount"

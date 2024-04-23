@@ -202,21 +202,21 @@ contract ZAccountsRegistry is
     /// blacklisted.
     /// @param inputs The public input parameters to be passed to verifier.
     /// @param inputs[0]  - extraInputsHash
-    /// @param inputs[1]  - zkpAmount
-    /// @param inputs[2]  - zkpChange
+    /// @param inputs[1]  - addedAmountZkp
+    /// @param inputs[2]  - chargedAmountZkp
     /// @param inputs[3]  - zAccountId
-    /// @param inputs[4]  - zAccountPrpAmount
-    /// @param inputs[5]  - zAccountCreateTime
-    /// @param inputs[6]  - zAccountRootSpendPubKeyX
-    /// @param inputs[7]  - zAccountRootSpendPubKeyY
-    /// @param inputs[8]  - zAccountReadPubKeyX
-    /// @param inputs[9]  - zAccountReadPubKeyY
-    /// @param inputs[10] - zAccountNullifierPubKeyX
-    /// @param inputs[11] - zAccountNullifierPubKeyY
-    /// @param inputs[12] - zAccountMasterEOA
-    /// @param inputs[13] - zAccountNullifierZone
-    /// @param inputs[14] - zAccountCommitment
-    /// @param inputs[15] - kycSignedMessageHash
+    /// @param inputs[4]  - zAccountCreateTime
+    /// @param inputs[5]  - zAccountRootSpendPubKeyX
+    /// @param inputs[6]  - zAccountRootSpendPubKeyY
+    /// @param inputs[7]  - zAccountReadPubKeyX
+    /// @param inputs[8]  - zAccountReadPubKeyY
+    /// @param inputs[9] - zAccountNullifierPubKeyX
+    /// @param inputs[10] - zAccountNullifierPubKeyY
+    /// @param inputs[11] - zAccountMasterEOA
+    /// @param inputs[12] - zAccountNullifierZone
+    /// @param inputs[13] - zAccountCommitment
+    /// @param inputs[14] - kycSignedMessageHash
+    /// @param inputs[15] - staticTreeMerkleRoot
     /// @param inputs[16] - forestMerkleRoot
     /// @param inputs[17] - saltHash
     /// @param inputs[18] - magicalConstraint
@@ -247,14 +247,9 @@ contract ZAccountsRegistry is
                 ERR_INVALID_EXTRA_INPUT_HASH
             );
         }
-        {
-            uint256 zAccountPrpAmount = inputs[4];
-            // No PRP rewards provided on zAccount activation
-            require(zAccountPrpAmount == 0, ERR_UNEXPECTED_PRP_AMOUNT);
-        }
 
         uint24 zAccountId = UtilsLib.safe24(inputs[3]);
-        address zAccountMasterEOA = address(uint160(inputs[12]));
+        address zAccountMasterEOA = address(uint160(inputs[11]));
 
         require(
             masterEOAs[zAccountId] == zAccountMasterEOA,
@@ -265,7 +260,7 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubRootSpendingKey = BabyJubJub.pointPack(
-                G1Point({ x: inputs[6], y: inputs[7] })
+                G1Point({ x: inputs[5], y: inputs[6] })
             );
             require(
                 _zAccount.pubRootSpendingKey == pubRootSpendingKey,
@@ -281,7 +276,7 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubReadingKey = BabyJubJub.pointPack(
-                G1Point({ x: inputs[8], y: inputs[9] })
+                G1Point({ x: inputs[7], y: inputs[8] })
             );
 
             require(
@@ -292,7 +287,7 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubKeyNullifier = BabyJubJub.pointPack(
-                G1Point({ x: inputs[10], y: inputs[11] })
+                G1Point({ x: inputs[9], y: inputs[10] })
             );
             require(
                 pubKeyZAccountNullifiers[pubKeyNullifier] == 0,
@@ -304,7 +299,7 @@ contract ZAccountsRegistry is
 
         {
             // Prevent double-activation for the same zone and network
-            bytes32 zoneNullifier = bytes32(inputs[13]);
+            bytes32 zoneNullifier = bytes32(inputs[12]);
             require(
                 zoneZAccountNullifiers[zoneNullifier] == 0,
                 ERR_DUPLICATED_NULLIFIER
@@ -328,8 +323,8 @@ contract ZAccountsRegistry is
                 uint8(ZACCOUNT_STATUS.ACTIVATED),
                 abi.encodePacked(inputs[17])
             );
-            uint256 zkpAmount = inputs[1];
-            require(_zkpRewards == zkpAmount, ERR_UNEXPECTED_ZKP_AMOUNT);
+            uint256 addedAmountZkp = inputs[1];
+            require(_zkpRewards == addedAmountZkp, ERR_UNEXPECTED_ZKP_AMOUNT);
         }
 
         utxoBusQueuePos = _createZAccountUTXO(

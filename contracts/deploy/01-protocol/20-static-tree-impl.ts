@@ -22,12 +22,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getContractEnvAddress(hre, 'POSEIDON_T6') ||
         (await get('PoseidonT6')).address;
 
-    const pantherPool = await getContractAddress(
-        hre,
-        'PantherPoolV1_Proxy',
-        'PANTHER_POOL_V1_PROXY',
-    );
-
     const zAssetsRegistryV1 = await getContractAddress(
         hre,
         'ZAssetsRegistryV1',
@@ -51,7 +45,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [
             multisig,
-            pantherPool,
             zAssetsRegistryV1,
             zAccountsRegistry,
             zNetworksRegistry,
@@ -71,7 +64,6 @@ func.tags = ['static-tree-imp', 'forest', 'protocol'];
 func.dependencies = [
     'crypto-libs',
     'deployment-consent',
-    'pool-v1-proxy',
     'z-assets-registry',
     'z-zones-registry',
     'providers-keys',

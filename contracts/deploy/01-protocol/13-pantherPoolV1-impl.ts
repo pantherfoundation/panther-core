@@ -60,9 +60,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
-    const poseidonT5 =
-        getContractEnvAddress(hre, 'POSEIDON_T5') ||
-        (await get('PoseidonT5')).address;
+    const poseidonT4 =
+        getContractEnvAddress(hre, 'POSEIDON_T4') ||
+        (await get('PoseidonT4')).address;
 
     await deploy('PantherPoolV1_Implementation', {
         contract: 'PantherPoolV1',
@@ -81,7 +81,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ],
         libraries: {
             PoseidonT3: poseidonT3,
-            PoseidonT5: poseidonT5,
+            PoseidonT4: poseidonT4,
         },
         log: true,
         autoMine: true,
