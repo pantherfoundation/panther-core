@@ -4,8 +4,8 @@
 import {resolve} from 'path';
 
 import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-verify';
 import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-etherscan';
 import '@typechain/hardhat';
 import {config as dotenvConfig} from 'dotenv';
 import {HardhatUserConfig} from 'hardhat/config';
@@ -41,39 +41,30 @@ dotenvConfig({path: resolve(__dirname, './.env')});
 type NetworkName = string;
 
 const CHAIN_IDS: {[name: string]: number} = {
+    mainnet: 1,
+    sepolia: 11155111,
+    polygon: 137,
+    amoy: 80002,
     bsc: 56,
     bsctest: 97,
     ganache: 1337,
-    goerli: 5,
     hardhat: 31337,
-    kovan: 42,
-    mainnet: 1,
-    mumbai: 80001,
-    polygon: 137,
-    rinkeby: 4,
-    ropsten: 3,
 };
 
 const ALCHEMY_ENDPOINTS: {[name: string]: string} = {
-    mainnet: 'https://eth-mainnet.alchemyapi.io/v2/',
-    rinkeby: 'https://eth-rinkeby.alchemyapi.io/v2/',
-    goerli: 'https://eth-goerli.alchemyapi.io/v2/',
-    kovan: 'https://eth-kovan.alchemyapi.io/v2/',
-    ropsten: 'https://eth-ropsten.alchemyapi.io/v2/',
+    mainnet: 'https://eth-mainnet.g.alchemy.com/v2/',
+    sepolia: 'https://eth-sepolia.g.alchemy.com/v2/',
 
     polygon: 'https://polygon-mainnet.g.alchemy.com/v2/',
-    mumbai: 'https://polygon-mumbai.g.alchemy.com/v2/',
+    amoy: 'https://polygon-amoy.g.alchemy.com/v2/',
 };
 
 const INFURA_ENDPOINTS: {[name: string]: string} = {
     mainnet: 'https://mainnet.infura.io/v3/',
-    rinkeby: 'https://rinkeby.infura.io/v3/',
-    goerli: 'https://goerli.infura.io/v3/',
-    kovan: 'https://kovan.infura.io/v3/',
-    ropsten: 'https://ropsten.infura.io/v3/',
+    sepolia: 'https://sepolia.infura.io/v3/',
 
     polygon: 'https://polygon-mainnet.infura.io/v3/',
-    mumbai: 'https://polygon-mumbai.infura.io/v3/',
+    amoy: 'https://polygon-amoy.infura.io/v3/',
 };
 
 const forkingConfig = {
@@ -94,21 +85,20 @@ const config: HardhatUserConfig = {
         pchain: {url: 'http://127.0.0.1:8545'},
 
         mainnet: createNetworkConfig('mainnet'),
-        goerli: createNetworkConfig('goerli'),
-        kovan: createNetworkConfig('kovan'),
-        rinkeby: createNetworkConfig('rinkeby'),
-        ropsten: createNetworkConfig('ropsten'),
+        sepolia: createNetworkConfig('sepolia'),
 
         polygon: createNetworkConfig('polygon'),
-        mumbai: createNetworkConfig('mumbai'),
     },
     etherscan: {
         apiKey: {
             mainnet: process.env.ETHERSCAN_API_KEY as string,
-            goerli: process.env.ETHERSCAN_API_KEY as string,
+            sepolia: process.env.ETHERSCAN_API_KEY as string,
             polygon: process.env.POLYGONSCAN_API_KEY as string,
-            polygonMumbai: process.env.POLYGONSCAN_API_KEY as string,
         },
+    },
+    sourcify: {
+        // setting to false to hide INFO message in console when verifying.
+        enabled: false,
     },
     // @ts-ignore
     gasReporter: {
@@ -240,20 +230,20 @@ function getNamedAccounts() {
             localhost: 0, // here this will by default take the first account as deployer
             hardhat: 0, // here this will by default take the first account as deployer
             mainnet: 0,
-            goerli: 0,
+            sepolia: 0,
 
             polygon: 0,
-            mumbai: 0,
+            amoy: 0,
         },
 
         multisig: {
             localhost: 0,
             hardhat: 0,
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
-            goerli: 0,
+            sepolia: 0,
 
             polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0',
-            mumbai: 0,
+            amoy: 0,
         },
 
         zkp: {
@@ -304,7 +294,6 @@ function getRpcUrl(network: NetworkName): string {
     if (network === 'bsc') return 'https://bsc-dataseed1.defibit.io/';
     if (network === 'bsctest')
         return 'https://data-seed-prebsc-1-s1.binance.org:8545';
-    if (network === 'mumbai') return 'https://rpc-mumbai.maticvigil.com/';
     if (network === 'polygon') return 'https://polygon-rpc.com/';
     return 'undefined RPC provider URL';
 }

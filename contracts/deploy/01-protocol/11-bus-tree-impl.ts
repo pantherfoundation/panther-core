@@ -67,5 +67,5 @@ func.dependencies = [
     'pool-v1-proxy',
     'verifier',
     'add-verification-key',
-    'protocol-token',
+    'pzkp-token',
 ];

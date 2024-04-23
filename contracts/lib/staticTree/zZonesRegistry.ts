@@ -55,9 +55,9 @@ export const leafs: ZZone[] = [
         originZoneIDs: 1n, //(the only zone, with zoneId "1", is allowed yet)
         targetZoneIDs: 1n, // (only this zone, with zoneId "1", is allowed yet)
         // Two one-bit flags are set (to "1"):
-        // - bit #0 - undefined (reserved for the Ethereum Mainnet)
-        // - bit #1 - Goerli (zNetworkId = 1) enabled
-        // - bit #2 - Mumbai (zNetworkId = 2) enabled
+        // - bit #0 - undefined (reserved)
+        // - bit #1 - mainnet (zNetworkId = 1) enabled
+        // - bit #2 - sepolia (zNetworkId = 2) enabled
         zZoneNetworkIDsBitMap: 6n,
         // 2 elements defined:
         // - 1st element, in LS bits 0-23:

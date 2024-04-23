@@ -4,12 +4,12 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isLocal} from '../../lib/checkNetwork';
+import {isProd} from '../../lib/checkNetwork';
 import {getContractAddress, getPZkpToken} from '../../lib/deploymentHelpers';
 
 //? Note: This script is supposed to be deleted
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    if (!isLocal(hre)) return;
+    if (isProd(hre)) return;
 
     const vaultProxy = await getContractAddress(
         hre,
@@ -34,4 +34,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['allocate-miner-rewards', 'protocol'];
-func.dependencies = ['check-params', 'protocol-token', 'vault-proxy'];
+func.dependencies = ['check-params', 'pzkp-token', 'vault-proxy'];
