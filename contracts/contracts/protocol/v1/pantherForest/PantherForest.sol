@@ -59,7 +59,7 @@ abstract contract PantherForest is
         uint256 cacheIndex
     );
 
-    bytes32[10] private _endGap;
+    bytes32[11] private _endGap;
 
     constructor(
         address _owner,
