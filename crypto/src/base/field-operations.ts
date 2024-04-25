@@ -48,3 +48,8 @@ export const moduloSnarkFieldPrime = (v: bigint): bigint => {
 export const moduloBabyJubSubFieldPrime = (value: bigint) => {
     return value % babyjub.subOrder;
 };
+
+export const moduloMax160Bits = (value: bigint): bigint => {
+    const max160Bits = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+    return value % max160Bits;
+};
