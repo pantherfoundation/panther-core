@@ -31,13 +31,14 @@ component main {
         zAccountUtxoOutCommitment,             // [24]
         chargedAmountZkp,                      // [25]
         zNetworkChainId,                       // [26]
-        forestMerkleRoot,                      // [27]
-        saltHash,                              // [28]
-        magicalConstraint                      // [29]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 29 + 1 + 7 + 2 + 1 = 40
+        staticTreeMerkleRoot,                  // [27]
+        forestMerkleRoot,                      // [28]
+        saltHash,                              // [29]
+        magicalConstraint                      // [30]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + 1 + 7 + 2 + 1 = 41
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
-                  2,     // UtxoLeftMerkleTreeDepth
+                  8,     // UtxoLeftMerkleTreeDepth
                   26,    // UtxoMiddleMerkleTreeDepth
                   6,     // ZNetworkMerkleTreeDepth
                   16,    // ZAssetMerkleTreeDepth
