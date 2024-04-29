@@ -210,34 +210,36 @@ contract PantherPoolV1 is
         require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
         require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
-        _validateSaltHash(inputs[ZACCOUNT_ACTIVATION_SALT_HASH]);
+        _validateSaltHash(inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND]);
 
         _validateMagicalConstraint(
-            inputs[ZACCOUNT_ACTIVATION_MAGICAL_CONSTRAINT]
+            inputs[ZACCOUNT_ACTIVATION_MAGICAL_CONSTRAINT_IND]
         );
         require(
-            inputs[ZACCOUNT_ACTIVATION_NULLIFIER_ZONE] != 0,
+            inputs[ZACCOUNT_ACTIVATION_NULLIFIER_ZONE_IND] != 0,
             ERR_ZERO_ZACCOUNT_NULLIFIER
         );
 
         require(
-            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT] != 0,
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND] != 0,
             ERR_ZERO_ZACCOUNT_COMMIT
         );
 
         require(
-            inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH] != 0,
+            inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND] != 0,
             ERR_ZERO_KYC_MSG_HASH
         );
 
-        _validateStaticRoot(inputs[ZACCOUNT_ACTIVATION_STATIC_MERKLE_ROOT]);
+        _validateStaticRoot(inputs[ZACCOUNT_ACTIVATION_STATIC_MERKLE_ROOT_IND]);
 
-        _validateCreationTime(inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME]);
+        _validateCreationTime(
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND]
+        );
 
         _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
 
         _validateCachedForestRootIndex(
-            inputs[ZACCOUNT_ACTIVATION_FOREST_MERKLE_ROOT],
+            inputs[ZACCOUNT_ACTIVATION_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
 
@@ -247,8 +249,11 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        if (inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP] != 0) {
-            _lockZkp(zkpPayer, inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP]);
+        if (inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND] != 0) {
+            _lockZkp(
+                zkpPayer,
+                inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND]
+            );
         }
 
         // TODO: getting from FeeMaster
@@ -301,21 +306,21 @@ contract PantherPoolV1 is
         require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
-        _validateCreationTime(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME]);
+        _validateCreationTime(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]);
 
-        _validateStaticRoot(inputs[PRP_CLAIM_STATIC_MERKLE_ROOT]);
+        _validateStaticRoot(inputs[PRP_CLAIM_STATIC_MERKLE_ROOT_IND]);
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
         require(
-            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT] != 0,
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND] != 0,
             ERR_ZERO_ZACCOUNT_COMMIT
         );
 
         {
             // spending zAccount utxo
             bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[PRP_CLAIM_ZACCOUNT_UTXO_IN_NULLIFIER]
+                inputs[PRP_CLAIM_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
             );
             require(
                 !isSpent[zAccountUtxoInNullifier],
@@ -324,10 +329,10 @@ contract PantherPoolV1 is
             isSpent[zAccountUtxoInNullifier] = true;
         }
 
-        _validateZNetworkChainId(inputs[PRP_CLAIM_ZNETWORK_CHAIN_ID]);
+        _validateZNetworkChainId(inputs[PRP_CLAIM_ZNETWORK_CHAIN_ID_IND]);
 
         _validateCachedForestRootIndex(
-            inputs[PRP_CLAIM_FOREST_MERKLE_ROOT],
+            inputs[PRP_CLAIM_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
 
@@ -383,44 +388,47 @@ contract PantherPoolV1 is
 
         // Note: extraInputsHash is computed in PrpConverter
         require(
-            inputs[PRP_CONVERSION_EXTRA_INPUT_HASH] != 0,
+            inputs[PRP_CONVERSION_EXTRA_INPUT_HASH_IND] != 0,
             ERR_ZERO_EXTRA_INPUT_HASH
         );
 
-        _validateSaltHash(inputs[PRP_CONVERSION_SALT_HASH]);
+        _validateSaltHash(inputs[PRP_CONVERSION_SALT_HASH_IND]);
 
-        _validateMagicalConstraint(inputs[PRP_CONVERSION_MAGICAL_CONSTRAINT]);
+        _validateMagicalConstraint(
+            inputs[PRP_CONVERSION_MAGICAL_CONSTRAINT_IND]
+        );
 
-        _validateStaticRoot(inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT]);
+        _validateStaticRoot(inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT_IND]);
 
         require(
-            inputs[PRP_CONVERSION_ZASSET_SCALE] != 0,
+            inputs[PRP_CONVERSION_ZASSET_SCALE_IND] != 0,
             ERR_ZERO_ZASSET_SCALE
         );
 
         _validateZNetworkChainId(
-            inputs[inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID]]
+            inputs[inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID_IND]]
         );
 
-        _validateCreationTime(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME]);
+        _validateCreationTime(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME_IND]);
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CONVERSION);
 
         _validateCachedForestRootIndex(
-            inputs[PRP_CONVERSION_FOREST_MERKLE_ROOT],
+            inputs[PRP_CONVERSION_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
 
         require(
-            inputs[PRP_CONVERSION_DEPOSIT_PRP_AMOUNT] <= MAX_PRP_AMOUNT &&
-                inputs[PRP_CONVERSION_WITHDRAW_PRP_AMOUNT] <= MAX_PRP_AMOUNT,
+            inputs[PRP_CONVERSION_DEPOSIT_PRP_AMOUNT_IND] <= MAX_PRP_AMOUNT &&
+                inputs[PRP_CONVERSION_WITHDRAW_PRP_AMOUNT_IND] <=
+                MAX_PRP_AMOUNT,
             ERR_TOO_LARGE_PRP_AMOUNT
         );
 
         {
             // spending zAccount utxo
             bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[PRP_CONVERSION_ZACCOUNT_UTXO_IN_NULLIFIER]
+                inputs[PRP_CONVERSION_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
             );
             require(
                 !isSpent[zAccountUtxoInNullifier],
@@ -436,11 +444,11 @@ contract PantherPoolV1 is
         );
 
         uint256 zkpAmountScaled = zkpAmountOutRounded /
-            inputs[PRP_CONVERSION_ZASSET_SCALE];
+            inputs[PRP_CONVERSION_ZASSET_SCALE_IND];
 
         bytes32 zAssetUtxoOutCommitment = generateZAssetUtxoCommitment(
             zkpAmountScaled,
-            inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART]
+            inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART_IND]
         );
 
         // TODO: getting from FeeMaster
@@ -491,11 +499,11 @@ contract PantherPoolV1 is
 
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
-        _validateSaltHash(inputs[MAIN_SALT_HASH]);
+        _validateSaltHash(inputs[MAIN_SALT_HASH_IND]);
 
-        _validateMagicalConstraint(inputs[MAIN_MAGICAL_CONSTRAINT]);
+        _validateMagicalConstraint(inputs[MAIN_MAGICAL_CONSTRAINT_IND]);
 
-        _validateZNetworkChainId(inputs[MAIN_ZNETWORK_CHAIN_ID]);
+        _validateZNetworkChainId(inputs[MAIN_ZNETWORK_CHAIN_ID_IND]);
 
         bytes memory extraInp = abi.encodePacked(
             transactionOptions,
@@ -504,42 +512,42 @@ contract PantherPoolV1 is
             privateMessages
         );
 
-        _validateExtraInputHash(inputs[MAIN_EXTRA_INPUT_HASH], extraInp);
+        _validateExtraInputHash(inputs[MAIN_EXTRA_INPUT_HASH_IND], extraInp);
 
-        _validateStaticRoot(inputs[MAIN_STATIC_MERKLE_ROOT]);
+        _validateStaticRoot(inputs[MAIN_STATIC_MERKLE_ROOT_IND]);
 
         require(
-            inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX] != 0,
+            inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
             ERR_ZERO_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
 
         require(
-            inputs[MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX] != 0,
+            inputs[MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND] != 0,
             ERR_ZERO_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
         );
 
         require(
-            inputs[MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX] != 0,
+            inputs[MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
             ERR_ZERO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
 
         require(
-            inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX] != 0,
+            inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
             ERR_ZERO_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
 
         _sanitizePrivateMessage(privateMessages, TT_MAIN_TRANSACTION);
 
-        _validateCreationTime(inputs[MAIN_UTXO_OUT_CREATE_TIME]);
+        _validateCreationTime(inputs[MAIN_UTXO_OUT_CREATE_TIME_IND]);
 
-        _validateSpendTime(inputs[MAIN_SPEND_TIME]);
+        _validateSpendTime(inputs[MAIN_SPEND_TIME_IND]);
 
         {
             bytes32 zAssetUtxoInNullifier1 = bytes32(
-                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_1]
+                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_1_IND]
             );
             bytes32 zAssetUtxoInNullifier2 = bytes32(
-                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_2]
+                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_2_IND]
             );
 
             require(
@@ -559,7 +567,7 @@ contract PantherPoolV1 is
 
         {
             bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[MAIN_ZACCOUNT_UTXO_IN_NULLIFIER]
+                inputs[MAIN_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
             );
 
             require(zAccountUtxoInNullifier > 0, ERR_ZERO_ZACCOUNT_NULLIFIER);
@@ -575,11 +583,11 @@ contract PantherPoolV1 is
 
         {
             if (
-                inputs[MAIN_DEPOSIT_AMOUNT] == 0 &&
-                inputs[MAIN_WITHDRAW_AMOUNT] == 0
+                inputs[MAIN_DEPOSIT_AMOUNT_IND] == 0 &&
+                inputs[MAIN_WITHDRAW_AMOUNT_IND] == 0
             )
                 // internal tx
-                require(inputs[MAIN_TOKEN] == 0, ERR_NON_ZERO_TOKEN);
+                require(inputs[MAIN_TOKEN_IND] == 0, ERR_NON_ZERO_TOKEN);
             else {
                 // depost or withdraw tx
                 // NOTE: This contract expects the Vault will check the token (inputs[4]) to
@@ -591,7 +599,7 @@ contract PantherPoolV1 is
         // TODO: getting from FeeMaster
         uint96 miningRewards;
         {
-            uint256 chargedAmountZkp = inputs[MAIN_CHARGED_AMOUNT_ZKP];
+            uint256 chargedAmountZkp = inputs[MAIN_CHARGED_AMOUNT_ZKP_IND];
             uint96 _accountedRewards;
 
             (miningRewards, _accountedRewards) = _distributeChargedZkps(
@@ -602,7 +610,7 @@ contract PantherPoolV1 is
         }
 
         _validateCachedForestRootIndex(
-            inputs[MAIN_FOREST_MERKLE_ROOT],
+            inputs[MAIN_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
 
@@ -727,21 +735,21 @@ contract PantherPoolV1 is
         uint8 tokenType,
         uint96 protocolFee
     ) private {
-        uint96 depositAmount = UtilsLib.safe96(MAIN_DEPOSIT_AMOUNT);
-        uint96 withdrawAmount = UtilsLib.safe96(MAIN_WITHDRAW_AMOUNT);
+        uint96 depositAmount = UtilsLib.safe96(MAIN_DEPOSIT_AMOUNT_IND);
+        uint96 withdrawAmount = UtilsLib.safe96(MAIN_WITHDRAW_AMOUNT_IND);
 
-        address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN]));
-        uint256 tokenId = inputs[MAIN_TOKEN_ID];
+        address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN_IND]));
+        uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
 
         if (depositAmount > 0) {
             bytes32 kytDepositSignedMessageHash = bytes32(
-                inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH]
+                inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]
             );
 
             require(
                 address(
                     UtilsLib.safe160(
-                        inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER]
+                        inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER_IND]
                     )
                 ) == address(VAULT),
                 ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
@@ -763,10 +771,10 @@ contract PantherPoolV1 is
                     tokenType,
                     token,
                     tokenId,
-                    bytes32(inputs[MAIN_SALT_HASH]),
+                    bytes32(inputs[MAIN_SALT_HASH_IND]),
                     address(
                         UtilsLib.safe160(
-                            inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER]
+                            inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER_IND]
                         )
                     ),
                     depositAmount
@@ -782,13 +790,13 @@ contract PantherPoolV1 is
                 : withdrawAmount;
 
             bytes32 kytWithdrawSignedMessageHash = bytes32(
-                inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH]
+                inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]
             );
 
             require(
                 address(
                     UtilsLib.safe160(
-                        inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER]
+                        inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
                     )
                 ) == address(VAULT),
                 ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
@@ -812,7 +820,9 @@ contract PantherPoolV1 is
                     tokenId,
                     address(
                         UtilsLib.safe160(
-                            inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER]
+                            inputs[
+                                MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND
+                            ]
                         )
                     ),
                     withdrawAmount

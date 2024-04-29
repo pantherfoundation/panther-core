@@ -41,8 +41,10 @@ abstract contract UtxosInserter {
         )
     {
         bytes32[] memory utxos = new bytes32[](2);
-        utxos[0] = bytes32(inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT]);
-        utxos[1] = bytes32(inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH]);
+        utxos[0] = bytes32(inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND]);
+        utxos[1] = bytes32(
+            inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND]
+        );
 
         (
             zAccountUtxoQueueId,
@@ -68,7 +70,7 @@ abstract contract UtxosInserter {
         )
     {
         bytes32 zAccountUtxoOutCommitment = bytes32(
-            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT]
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
         );
 
         (
@@ -96,7 +98,9 @@ abstract contract UtxosInserter {
         )
     {
         bytes32[] memory utxos = new bytes32[](2);
-        utxos[0] = bytes32(inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT]);
+        utxos[0] = bytes32(
+            inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
+        );
         utxos[1] = zAssetUtxoOutCommitment;
 
         (
@@ -125,11 +129,11 @@ abstract contract UtxosInserter {
     {
         bytes32[] memory utxos = new bytes32[](5);
 
-        utxos[0] = bytes32(inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT]);
-        utxos[1] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_1]);
-        utxos[2] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_2]);
-        utxos[3] = bytes32(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH]);
-        utxos[4] = bytes32(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH]);
+        utxos[0] = bytes32(inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]);
+        utxos[1] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_1_IND]);
+        utxos[2] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_2_IND]);
+        utxos[3] = bytes32(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
+        utxos[4] = bytes32(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
 
         (
             zAccountUtxoQueueId,
