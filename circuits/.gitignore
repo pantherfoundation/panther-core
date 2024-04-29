@@ -8,5 +8,6 @@ compiled/*
 !compiled/prpConverter
 !compiled/zTransaction
 !compiled/zAccountRenewal
+!compiled/zSwap
 !compiled/generate_witness.js
 *.ptau
