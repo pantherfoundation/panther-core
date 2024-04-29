@@ -1,5 +1,4 @@
 import * as path from 'path';
-import {toBeHex} from 'ethers';
 
 import circom_wasm_tester from 'circom_tester';
 const wasm_tester = circom_wasm_tester.wasm;
@@ -11,47 +10,17 @@ import {
     deriveChildPrivKeyFromRootPrivKey,
     deriveKeypairFromSeed,
 } from '@panther-core/crypto/lib/base/keypairs';
-import {
-    generateRandom256Bits,
-    moduloBabyJubSubFieldPrime,
-} from '@panther-core/crypto/lib/base/field-operations';
-import {poseidon, eddsa, babyjub} from 'circomlibjs';
-import {bigIntToUint8Array, uint8ArrayToBigInt} from './helpers/utils';
+import {poseidon} from 'circomlibjs';
 import {MerkleTree} from '@zk-kit/merkle-tree';
-import assert from 'assert';
 
-// zAccountUtxoInSpendPrivKey - computation
-const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
-    1364957401031907147846036885962614753763820022581024524807608342937054566107n,
-    94610875299416841087047638331595192377823041951625049650587645487287023247n,
-);
-// 202861170848353922537340928018493368624870578196892954866307993229949140010n
-// console.log('deriveChildPrivKey=>', deriveChildPrivKey);
-
-// == utxoIn nullifier computation ===
-// poseidon([private key,commitment hash])
-const utxoInNullifier = poseidon([
-    2081961849142627796057765042284889488177156119328724687723132407819597118232n,
-    19415350603868075586262717582877071671289610526157183329824084311591608122417n,
-]);
-// 6744079633340602015721084589890019091130681888569198412667110032260423776957n
-// console.log('utxoInNullifier=>', utxoInNullifier);
-
-// ======== utxoOutSpendPubKeyRandom =========
-// const utxoOutSpendPubKeyRandom = moduloBabyJubSubFieldPrime(
-//     generateRandom256Bits(),
-// );
-// // 920916380985300645651724170838735530584359756451808812153292874012653181197n
-// console.log('utxoOutSpendPubKeyRandom=>', utxoOutSpendPubKeyRandom);
+/* START ===== ZAssetUTXO Computation ===== */
+const utxoOutSpendPubKeyRandom =
+    920916380985300645651724170838735530584359756451808812153292874012653181197n;
 
 const utxoOutDerivedPublicKeys = deriveChildPubKeyFromRootPubKey(
     [
-        BigInt(
-            9665449196631685092819410614052131494364846416353502155560380686439149087040n,
-        ),
-        BigInt(
-            13931233598534410991314026888239110837992015348186918500560502831191846288865n,
-        ),
+        9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+        13931233598534410991314026888239110837992015348186918500560502831191846288865n,
     ],
     920916380985300645651724170838735530584359756451808812153292874012653181197n,
 );
@@ -64,30 +33,21 @@ const utxoOutDerivedPublicKeys = deriveChildPubKeyFromRootPubKey(
 
 // computation of utxoOutCommitment
 const hiden_hash = poseidon([
-    BigInt(
-        15734336580112673408042984576472528848602190000152580813394098188809037670623n,
-    ),
-    BigInt(
-        5285425932397141815637917447431318745604022207375587781592037140670199615053n,
-    ), // spendPubKeys
-    BigInt(0n), // utxoZAsset
-    BigInt(33n), // zAccountUtxoInId
-    BigInt(2n), // utxoOutOriginNetworkId
-    BigInt(2n), // utxoOutTargetNetworkId,
-    BigInt(1700902800), // utxoOutCreateTime - GMT: Sunday, 21 January 2024 09:13:27 // create time changes and hence the commitment should also change.
-    BigInt(1n), // zAccountUtxoInZoneId
-    BigInt(1n), // utxoOutTargetZoneId
+    15734336580112673408042984576472528848602190000152580813394098188809037670623n,
+    5285425932397141815637917447431318745604022207375587781592037140670199615053n, // spendPubKeys
+    0, // utxoZAsset
+    33, // zAccountUtxoInId
+    2, // utxoOutOriginNetworkId
+    2, // utxoOutTargetNetworkId,
+    1700902800, // utxoOutCreateTime - GMT: Sunday, 21 January 2024 09:13:27 // create time changes and hence the commitment should also change.
+    1, // zAccountUtxoInZoneId
+    1, // utxoOutTargetZoneId
 ]);
-// Updated - 12298617853857071471581319323575837527899487183959297118558099846370824451206n
-// Updated after the utxoOutCreateTime change - 15436511714119813948917087142833322505493951068811084583360497051031374930328n
-// console.log('hiden_hash=>', hiden_hash);
 
-// BigInt(110), // utxoOutAmount - 6,4
+// 10 - utxoOutAmount - 6,4
 // 6 for self and 4 for ZAccount2
-const hasher = poseidon([BigInt(6n), hiden_hash]);
-// Updated - 19505935574081082908649402119420254136779942097610400748362335534634359708763n
-// Updated after the utxoOutAmount change in Spliting the UTXO.
-// 12029061947227044438100639695310780267344911946212995153226895665456814200845n
+const hasher = poseidon([6, hiden_hash]);
+
 // 3739750521861146137564008236109239681099326378547174333381546914676317521201n
 // console.log('hasher=>', hasher);
 
@@ -98,20 +58,220 @@ const deriveChildPrivKeyForZaccount = deriveChildPrivKeyFromRootPrivKey(
 // deriveChildPrivKeyForZaccount=> 975266908587054884917759649717404230044328108851369651686436225171239044169n
 // console.log('deriveChildPrivKeyForZaccount=>', deriveChildPrivKeyForZaccount);
 
-// nullifier computation
+// ========= For self change transfer + transfer to other ZAccount ================
+// First ZAssetUTXO is for another ZAccount
+// Second ZAssetUTXO is for self (change to self)
+
+// ===== ZAccount2 Details ==========
+// ==== root keys for ZAccount2 ====
+const fixedSeedForZAccount2 =
+    1089537555807992840535817848246097854733198838018546679062295693424945901635n;
+
+const zAccount2KeyPair = deriveKeypairFromSeed(fixedSeedForZAccount2);
+const zAccount2PublicKey = zAccount2KeyPair.publicKey;
+
+// zAccount2PublicKey=> [
+//     7267405717214690462613663950148551904542730602525132875613316628228214337830n,
+//     7178067554084888592453503935019144981758755967500811678969567533289402266751n
+//   ]
+// console.log('zAccount2PublicKey=>', zAccount2PublicKey);
+
+const zAccount2PrivateKey = zAccount2KeyPair.privateKey;
+
+// zAccount2PrivateKey=> 1089537555807992840535817848246097854733198838018546679062295693424945901635n
+// console.log('zAccount2PrivateKey=>', zAccount2PrivateKey);
+
+// === derive spend public key from root public keys ===
+const utxoSpendKeyRandomForUTXO2 =
+    2562490915094200461249386117990484388285957402192770226229131740144850347260n;
+
+// 563, 564
+const utxoOutSpendPubKeyDeriver = deriveChildPubKeyFromRootPubKey(
+    [
+        7267405717214690462613663950148551904542730602525132875613316628228214337830n,
+        7178067554084888592453503935019144981758755967500811678969567533289402266751n,
+    ],
+    utxoSpendKeyRandomForUTXO2,
+);
+
+// console.log('utxoOutSpendPubKeyDeriver=>', utxoOutSpendPubKeyDeriver);
+// utxoOutSpendPubKeyDeriver=> [
+//     1763135746942179476496116357965039320288057327600603817801138668830285200381n,
+//     14491147694421921980366231038797043374588876703394420455757299509021201508765n
+//   ]
+
+// computation of utxoOutCommitment
+const hiden_hashForUTXO2 = poseidon([
+    1763135746942179476496116357965039320288057327600603817801138668830285200381n,
+    14491147694421921980366231038797043374588876703394420455757299509021201508765n, // spendPubKeys
+    0, // utxoZAsset
+    33, // zAccountUtxoInId
+    2, // utxoOutOriginNetworkId
+    2, // utxoOutTargetNetworkId,
+    1700902800, // utxoOutCreateTime - GMT: Sunday, 21 January 2024 09:13:27 // create time changes and hence the commitment should also change.
+    1, // zAccountUtxoInZoneId
+    1, // utxoOutTargetZoneId
+]);
+
+// hiden_hashForUTXO1=> 12174653776192384986486410929191895660535101724279425034424275110489115954930n
+// console.log('hiden_hashForUTXO2=>', hiden_hashForUTXO2);
+
+// UTXOIn is 110 -> 50 to ZAccount2 + 60 to self as change
+const hasherForUTXO2 = poseidon([4, hiden_hashForUTXO2]);
+// 7997086023193918869594552427438782046977875936981814455068076231423196363947n
+// console.log('hasherForUTXO2=>', hasherForUTXO2);
+/* END ===== ZAssetUTXO Computation ===== */
+
+/* START ===== State of UTXO tree ===== */
+// ZAccountRegistration process will create 1 UTXO i.e ZAccountUTXO
+// This will be added to the BUS tree
+// Adding ZAccountUTXO created to the BUS tree
+const busMerkleTree = new MerkleTree(
+    poseidon,
+    26,
+    BigInt(
+        2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+    ),
+);
+// 12604557588521919493356492354767978894799472715473645550898984861352936983014n
+// console.log('busUTXOMerkleTree root=>', busMerkleTree.root);
+
+// zAccountUtxoInNoteHasher - 9775219500384962933792568081585395848317570806746644855790488573783186458332n
+const ZAccountRegistrationZAccOutUTXO =
+    9775219500384962933792568081585395848317570806746644855790488573783186458332n;
+const ammVoucherExchangeZAccOutUTXO =
+    9801583813274409579839703000557872896423943281169404264890046333778640256067n;
+const ammExchangeZAccOutUTXO =
+    18175105476890322584485034559689089475598097526056309132759314620620028004517n;
+const ammExchangeZAssetOutUTXO =
+    10737878881523789962798210406551165807070922751876233837797923419039556051321n;
+const depositTxZAccountOutUTXO =
+    186692839770280082029534744794227910179413518867095586852939524001158859102n;
+const depositTxZAssetOutUTXO =
+    19415350603868075586262717582877071671289610526157183329824084311591608122417n;
+
+busMerkleTree.insert(ZAccountRegistrationZAccOutUTXO); // 0
+busMerkleTree.insert(ammVoucherExchangeZAccOutUTXO); // 1
+busMerkleTree.insert(ammExchangeZAccOutUTXO); // 2
+busMerkleTree.insert(ammExchangeZAssetOutUTXO); // 3
+busMerkleTree.insert(depositTxZAccountOutUTXO); // 4
+busMerkleTree.insert(depositTxZAssetOutUTXO); // 5
+
+// {
+//     root: 2055607746961262622160531900196670925756154669401892024081128627049224860438n,
+//     leaf: 19415350603868075586262717582877071671289610526157183329824084311591608122417n,
+//     siblingNodes: [
+//       186692839770280082029534744794227910179413518867095586852939524001158859102n,
+//       15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+//       3812976779183932130984902152045886285870857404136629139647330085687899647675n,
+//       13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+//       2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+//       19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+//       21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+//       15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+//       17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+//       4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+//       12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+//       18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+//       18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+//       17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+//       18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+//       12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+//       4689866144310700684516443679096813921756239671572972966393880542662538400201n,
+//       15369835007378492529084633432655739856631861107309342928676871259240227049033n,
+//       11345121393552856548579926390199540849469635305183604045111689968777651956473n,
+//       11299066061427200562963422042645343948885353762628147353062799587547441871332n,
+//       13642291777448032365864888577168560039775015251774208221818005338405304930884n,
+//       5990068516814370380711726420154273589568095823652643357428323105329308577610n,
+//       3326440148296065541386325860294367616471601340115249960006624245213734239367n,
+//       17613623862311960463347469460117166104477522402420094872382418386742059442736n,
+//       16619835833299406266546819907603615045049052832835825671901337303713338780409n,
+//       15002435000641955406214223423745696701460524528446564760654584364314696565951n
+//     ],
+//     path: [
+//       1, 0, 1, 0, 0, 0, 0, 0,
+//       0, 0, 0, 0, 0, 0, 0, 0,
+//       0, 0, 0, 0, 0, 0, 0, 0,
+//       0, 0
+//     ]
+//   }
+// console.log(busMerkleTree.createProof(5));
+
+// {
+//     root: 2055607746961262622160531900196670925756154669401892024081128627049224860438n,
+//     leaf: 186692839770280082029534744794227910179413518867095586852939524001158859102n,
+//     siblingNodes: [
+//       19415350603868075586262717582877071671289610526157183329824084311591608122417n,
+//       15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+//       3812976779183932130984902152045886285870857404136629139647330085687899647675n,
+//       13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+//       2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+//       19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+//       21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+//       15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+//       17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+//       4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+//       12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+//       18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+//       18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+//       17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+//       18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+//       12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+//       4689866144310700684516443679096813921756239671572972966393880542662538400201n,
+//       15369835007378492529084633432655739856631861107309342928676871259240227049033n,
+//       11345121393552856548579926390199540849469635305183604045111689968777651956473n,
+//       11299066061427200562963422042645343948885353762628147353062799587547441871332n,
+//       13642291777448032365864888577168560039775015251774208221818005338405304930884n,
+//       5990068516814370380711726420154273589568095823652643357428323105329308577610n,
+//       3326440148296065541386325860294367616471601340115249960006624245213734239367n,
+//       17613623862311960463347469460117166104477522402420094872382418386742059442736n,
+//       16619835833299406266546819907603615045049052832835825671901337303713338780409n,
+//       15002435000641955406214223423745696701460524528446564760654584364314696565951n
+//     ],
+//     path: [
+//       0, 0, 1, 0, 0, 0, 0, 0,
+//       0, 0, 0, 0, 0, 0, 0, 0,
+//       0, 0, 0, 0, 0, 0, 0, 0,
+//       0, 0
+//     ]
+//   }
+// console.log(busMerkleTree.createProof(4));
+/* END ===== State of UTXO tree ===== */
+
+/* START ===== utxoInSpendPrivKey computation  ===== */
+const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
+    1364957401031907147846036885962614753763820022581024524807608342937054566107n,
+    94610875299416841087047638331595192377823041951625049650587645487287023247n,
+);
+
+// 202861170848353922537340928018493368624870578196892954866307993229949140010n
+// console.log('deriveChildPrivKey=>', deriveChildPrivKey);
+/* END ===== utxoInSpendPrivKey computation  ===== */
+
+/* START ===== utxoInNullifier computation  ===== */
+// poseidon([private key,commitment hash])
+const utxoInNullifier = poseidon([
+    2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+    19415350603868075586262717582877071671289610526157183329824084311591608122417n,
+]);
+
+// 6744079633340602015721084589890019091130681888569198412667110032260423776957n
+// console.log('utxoInNullifier=>', utxoInNullifier);
+/* END ===== utxoInNullifier computation  ===== */
+
+/* START ===== utxoInNullifier computation  ===== */
 const zAccountUtxoInNullifierHasher = poseidon([
     2081961849142627796057765042284889488177156119328724687723132407819597118232n,
-    897729382127869693507601465743397089386413328909369561194988340925714928247n,
+    186692839770280082029534744794227910179413518867095586852939524001158859102n,
 ]);
+
+// zAccountUtxoInNullifierHasher=> 16906283694396333336074777357403572581976962800841398906970740932486575302937n
 // console.log('zAccountUtxoInNullifierHasher=>', zAccountUtxoInNullifierHasher);
+/* END ===== utxoInNullifier computation  ===== */
 
-// zAccountUtxoOut computation which will be added to the bustree and this will be the input for the next step.
-
-const zAccountUtxoOutSpendKeyRandom = moduloBabyJubSubFieldPrime(
-    generateRandom256Bits(),
-);
-// zAccountUtxoOutSpendKeyRandom=> 928974505793416890028255163642163633941110568617692085076073897724890512527n
-// console.log('zAccountUtxoOutSpendKeyRandom=>', zAccountUtxoOutSpendKeyRandom);
+/* START ===== zAccountUtxoOutCommitment computation  ===== */
+const zAccountUtxoOutSpendKeyRandom =
+    928974505793416890028255163642163633941110568617692085076073897724890512527n;
 
 // Use the above random to generate a new derived child keys
 const derivedPublicKeysUtxoOut = deriveChildPubKeyFromRootPubKey(
@@ -129,148 +289,40 @@ const derivedPublicKeysUtxoOut = deriveChildPubKeyFromRootPubKey(
 
 // Verify zAccountUtxoOut commitment computation - After the internal tx
 const hash1 = poseidon([
-    BigInt(
-        15105847820195752209454898940410447097413641188338854293492831210996088086298n,
-    ),
-    BigInt(
-        20590113039147987131409464977143724796026066002330149638175405367637371668395n,
-    ),
-    BigInt(
-        9665449196631685092819410614052131494364846416353502155560380686439149087040n,
-    ),
-    BigInt(
-        13931233598534410991314026888239110837992015348186918500560502831191846288865n,
-    ),
-    BigInt(
-        1187405049038689339917658225106283881019816002721396510889166170461283567874n,
-    ),
-    BigInt(
-        311986042833546580202940940143769849297540181368261575540657864271112079432n,
-    ),
-    BigInt(
-        18636161575160505712724711689946435964943204943778681265331835661113836693938n,
-    ),
-    BigInt(
-        21369418187085352831313188453068285816400064790476280656092869887652115165947n,
-    ),
+    15105847820195752209454898940410447097413641188338854293492831210996088086298n,
+    20590113039147987131409464977143724796026066002330149638175405367637371668395n,
+    9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+    13931233598534410991314026888239110837992015348186918500560502831191846288865n,
+    1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+    311986042833546580202940940143769849297540181368261575540657864271112079432n,
+    18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+    21369418187085352831313188453068285816400064790476280656092869887652115165947n,
 ]);
 
 const zAccountUtxoOutCommitment = poseidon([
     hash1,
-    BigInt(407487970930055136132864974074225519407787604125n),
-    BigInt(33n),
-    BigInt(99998200),
-    BigInt(0n),
-    BigInt(1n),
-    BigInt(1702652400n),
-    BigInt(4n),
-    BigInt(99999210),
-    BigInt(1700902800), // same time as zAssetUTXO got created
-    BigInt(2n),
+    407487970930055136132864974074225519407787604125n,
+    33,
+    9999988200,
+    20,
+    1,
+    1702652400,
+    4,
+    0,
+    1700902800, // same time as zAssetUTXO got created
+    2,
 ]);
-// zAccountUtxoOutCommitment=> 6269652722340527965663900227411139445370721754419731520796720916433107060820n
-// Updated after the utxoOutCreateTime change - 9413090251388556489564135886226244505545283629990462132597406034409260938251n
-// 7772418543813295742630374375434619738043832814326507445998878366517018150529n
+
+// zAccountUtxoOutCommitment=> 6991129837942447437106224885480484531511792005929733215807835310816105473510n
 // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
-
-// ========= For self change transfer + transfer to other ZAccount ================
-// First ZAssetUTXO is for another ZAccount
-// Second ZAssetUTXO is for self (change to self)
-
-// ===== ZAccount2 Details ==========
-// const seed = moduloBabyJubSubFieldPrime(generateRandom256Bits());
-// console.log('seed=>', seed);
-
-// ==== root keys for ZAccount2 ====
-const fixedSeedForZAccount2 =
-    1089537555807992840535817848246097854733198838018546679062295693424945901635n;
-
-const zAccount2KeyPair = deriveKeypairFromSeed(fixedSeedForZAccount2);
-const zAccount2PublicKey = zAccount2KeyPair.publicKey;
-// zAccount2PublicKey=> [
-//     7267405717214690462613663950148551904542730602525132875613316628228214337830n,
-//     7178067554084888592453503935019144981758755967500811678969567533289402266751n
-//   ]
-// console.log('zAccount2PublicKey=>', zAccount2PublicKey);
-
-const zAccount2PrivateKey = zAccount2KeyPair.privateKey;
-// zAccount2PrivateKey=> 1089537555807992840535817848246097854733198838018546679062295693424945901635n
-// console.log('zAccount2PrivateKey=>', zAccount2PrivateKey);
-
-// === derive spend public key from root public keys ===
-// utxoOutSpendPubKeyRandom generation for first UTXO that needs to be sent to another ZAccount
-// const random = moduloBabyJubSubFieldPrime(generateRandom256Bits());
-// console.log('random=>', random);
-
-const utxoSpendKeyRandomForUTXO2 =
-    2562490915094200461249386117990484388285957402192770226229131740144850347260n;
-
-// 563, 564
-const utxoOutSpendPubKeyDeriver = deriveChildPubKeyFromRootPubKey(
-    [
-        BigInt(
-            7267405717214690462613663950148551904542730602525132875613316628228214337830n,
-        ),
-        BigInt(
-            7178067554084888592453503935019144981758755967500811678969567533289402266751n,
-        ),
-    ],
-    utxoSpendKeyRandomForUTXO2,
-);
-
-// console.log('utxoOutSpendPubKeyDeriver=>', utxoOutSpendPubKeyDeriver);
-// utxoOutSpendPubKeyDeriver=> [
-//     1763135746942179476496116357965039320288057327600603817801138668830285200381n,
-//     14491147694421921980366231038797043374588876703394420455757299509021201508765n
-//   ]
-
-// computation of utxoOutCommitment
-const hiden_hashForUTXO2 = poseidon([
-    BigInt(
-        1763135746942179476496116357965039320288057327600603817801138668830285200381n,
-    ),
-    BigInt(
-        14491147694421921980366231038797043374588876703394420455757299509021201508765n,
-    ), // spendPubKeys
-    BigInt(0n), // utxoZAsset
-    BigInt(33n), // zAccountUtxoInId
-    BigInt(2n), // utxoOutOriginNetworkId
-    BigInt(2n), // utxoOutTargetNetworkId,
-    BigInt(1700902800), // utxoOutCreateTime - GMT: Sunday, 21 January 2024 09:13:27 // create time changes and hence the commitment should also change.
-    BigInt(1n), // zAccountUtxoInZoneId
-    BigInt(1n), // utxoOutTargetZoneId
-]);
-// hiden_hashForUTXO1=> 12174653776192384986486410929191895660535101724279425034424275110489115954930n
-// console.log('hiden_hashForUTXO2=>', hiden_hashForUTXO2);
-
-// UTXOIn is 110 -> 50 to ZAccount2 + 60 to self as change
-const hasherForUTXO2 = poseidon([BigInt(4n), hiden_hashForUTXO2]);
-// hasherForUTXO2=> 3721316845550375040805457513353114801624152885847921328551377149777720191405n
-// 7997086023193918869594552427438782046977875936981814455068076231423196363947n
-// console.log('hasherForUTXO2=>', hasherForUTXO2);
+/* END ===== zAccountUtxoOutCommitment computation  ===== */
 
 describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async function (this: any) {
-    const poseidon2or3 = (inputs: bigint[]): bigint => {
-        assert(inputs.length === 3 || inputs.length === 2);
-        return poseidon(inputs);
-    };
-
     let circuit: any;
     let mainTxWasm: any;
     let mainTxWitness: any;
 
-    let zAssetMerkleTree: any;
-    let zAssetMerkleTreeLeaf: any;
-
-    let kycKytMerkleTree: any;
-    let kycKytMerkleTreeLeaf1: any;
-    let kycKytMerkleTreeLeaf2: any;
-
-    let zZoneRecordMerkleTree: any;
-    let zZoneRecordMerkleTreeLeaf1: any;
-    let zZoneRecordMerkleTreeLeaf2: any;
-
-    this.timeout(10000000);
+    this.timeout(10_000_000);
 
     before(async () => {
         const opts = getOptions();
@@ -290,1206 +342,540 @@ describe('Internal ZAsset transfer - Non ZeroInput - Witness computation', async
         );
     });
 
-    // Scenario - Current ZAccount has a valid ZAssetUTXO of amount 110 and that ZAssetUTXO is transferred to self.
     const singleValidUTXOInternalTxNonZeroInput = {
-        extraInputsHash: BigInt(0n),
+        extraInputsHash: 0,
 
-        // [1] - Check zAsset
         // For internal tx token and tokenId is 0 as there is no external input
-        token: BigInt(0),
-        tokenId: BigInt(0),
-        zAssetId: BigInt(0n),
-        zAssetToken: BigInt(365481738974395054943628650313028055219811856521n),
-        zAssetTokenId: BigInt(0),
-        zAssetOffset: BigInt(0),
+        token: 0,
+        tokenId: 0,
+        zAssetId: 0,
+        zAssetToken: 365481738974395054943628650313028055219811856521n,
+        zAssetTokenId: 0,
+        zAssetOffset: 0,
         // no external deposit
         // no external withdraw
-        depositAmount: BigInt(0),
-        withdrawAmount: BigInt(0n),
+        depositAmount: 0,
+        withdrawAmount: 0,
         // Used for both in and out UTXO
-        utxoZAsset: BigInt(0n),
+        utxoZAsset: 0,
 
-        utxoInAmount: [BigInt(10n), BigInt(0n)],
-        utxoOutAmount: [BigInt(6n), BigInt(4n)],
+        utxoInAmount: [10, 0],
+        utxoOutAmount: [6, 4],
 
         // zAsset
-        zAssetNetwork: BigInt(2n),
-        zAssetWeight: BigInt(1n),
-        zAssetScale: BigInt(10 ** 12),
-        zAssetMerkleRoot: BigInt(
-            21135153704249495390826690606677237922449975076652949796562023680187218995691n, // CHANGED - previously 3723247354377620069387735695862260139005999863996254561023715046060291769010n
-        ),
-        zAssetPathIndices: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
+        zAssetNetwork: 2,
+        zAssetWeight: 20,
+        zAssetScale: 10 ** 12,
+        zAssetMerkleRoot:
+            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+
+        zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
-            BigInt(
-                2896678800030780677881716886212119387589061708732637213728415628433288554509n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
+            2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
 
-        zAssetIdZkp: BigInt(0n),
-        zAssetTokenZkp:
-            BigInt(365481738974395054943628650313028055219811856521n),
-        zAssetTokenIdZkp: BigInt(0n),
-        zAssetNetworkZkp: BigInt(2n),
-        zAssetOffsetZkp: BigInt(0n),
-        zAssetWeightZkp: BigInt(1n),
-        zAssetScaleZkp: BigInt(10 ** 12),
-        zAssetPathIndicesZkp: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
+        zAssetIdZkp: 0,
+        zAssetTokenZkp: 365481738974395054943628650313028055219811856521n,
+        zAssetTokenIdZkp: 0,
+        zAssetNetworkZkp: 2,
+        zAssetOffsetZkp: 0,
+        zAssetWeightZkp: 20,
+        zAssetScaleZkp: 10 ** 12,
+        zAssetPathIndicesZkp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElementsZkp: [
-            BigInt(
-                2896678800030780677881716886212119387589061708732637213728415628433288554509n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
+            2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
 
-        forTxReward: BigInt(0n),
-        forUtxoReward: BigInt(1000n),
-        forDepositReward: BigInt(0n),
+        forTxReward: 10,
+        forUtxoReward: 1828,
+        forDepositReward: 57646075,
 
         // spendTime - time spent by the UTXO in MASP
         // For deposit tx it will be 0 as UTXO created has just moved to MASP.
         // Time spent by the generated UTXO in MASP would be 0
         // But for internal tx, it is not 0 as the valid UTXO already exists in the MASP.
-        spendTime: BigInt(1705398033), // now time when you are spending the UTXO
+        spendTime: 1705398033, // now time when you are spending the UTXO
 
         utxoInSpendPrivKey: [
-            BigInt(
-                202861170848353922537340928018493368624870578196892954866307993229949140010n,
-            ),
-            BigInt(0n),
+            202861170848353922537340928018493368624870578196892954866307993229949140010n,
+            0,
         ],
         utxoInSpendKeyRandom: [
-            BigInt(
-                94610875299416841087047638331595192377823041951625049650587645487287023247n,
-            ),
-            BigInt(0n),
+            94610875299416841087047638331595192377823041951625049650587645487287023247n,
+            0,
         ],
 
         // Since the input UTXO is null, other info regarding the input UTXO will be null
-        utxoInOriginZoneId: [BigInt(1n), BigInt(0n)],
-        utxoInOriginZoneIdOffset: [BigInt(0n), BigInt(0n)],
-        utxoInOriginNetworkId: [BigInt(2n), BigInt(0n)], // Since there is no UTXO, should it be 0?
-        utxoInTargetNetworkId: [BigInt(2n), BigInt(0n)],
+        utxoInOriginZoneId: [1, 0],
+        utxoInOriginZoneIdOffset: [0, 0],
+        utxoInOriginNetworkId: [2, 0],
+        utxoInTargetNetworkId: [2, 0],
 
-        utxoInCreateTime: [BigInt(1700020032n), BigInt(0n)],
-        utxoInZAccountId: [BigInt(33n), BigInt(0n)],
+        utxoInCreateTime: [1700020032, 0],
+        utxoInZAccountId: [33, 0],
         utxoInMerkleTreeSelector: [
-            [BigInt(1n), BigInt(0n)],
-            [BigInt(0n), BigInt(0n)],
+            [1, 0],
+            [0, 0],
         ],
         utxoInPathIndices: [
             [
-                BigInt(1n),
-                BigInt(1n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
+                1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
             [
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
         ],
         utxoInPathElements: [
             [
-                BigInt(
-                    20753934111959939620197373452022491283879273374456256225221477995858226219663n,
-                ),
-                BigInt(
-                    6686357876049196452243509397062844074891055917128210002486801012953357578415n,
-                ),
-                BigInt(
-                    4688373538176315178844518458974988000381735504277175917164777164886343575587n,
-                ),
-                BigInt(
-                    13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-                ),
-                BigInt(
-                    2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-                ),
-                BigInt(
-                    19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-                ),
-                BigInt(
-                    21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-                ),
-                BigInt(
-                    15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-                ),
-                BigInt(
-                    17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-                ),
-                BigInt(
-                    4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-                ),
-                BigInt(
-                    12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-                ),
-                BigInt(
-                    18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-                ),
-                BigInt(
-                    18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-                ),
-                BigInt(
-                    17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-                ),
-                BigInt(
-                    18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-                ),
-                BigInt(
-                    12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-                ),
-                BigInt(
-                    4689866144310700684516443679096813921756239671572972966393880542662538400201n,
-                ),
-                BigInt(
-                    15369835007378492529084633432655739856631861107309342928676871259240227049033n,
-                ),
-                BigInt(
-                    11345121393552856548579926390199540849469635305183604045111689968777651956473n,
-                ),
-                BigInt(
-                    11299066061427200562963422042645343948885353762628147353062799587547441871332n,
-                ),
-                BigInt(
-                    13642291777448032365864888577168560039775015251774208221818005338405304930884n,
-                ),
-                BigInt(
-                    5990068516814370380711726420154273589568095823652643357428323105329308577610n,
-                ),
-                BigInt(
-                    3326440148296065541386325860294367616471601340115249960006624245213734239367n,
-                ),
-                BigInt(
-                    17613623862311960463347469460117166104477522402420094872382418386742059442736n,
-                ),
-                BigInt(
-                    16619835833299406266546819907603615045049052832835825671901337303713338780409n,
-                ),
-                BigInt(
-                    15002435000641955406214223423745696701460524528446564760654584364314696565951n,
-                ),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
+                186692839770280082029534744794227910179413518867095586852939524001158859102n,
+                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+                3812976779183932130984902152045886285870857404136629139647330085687899647675n,
+                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+                4689866144310700684516443679096813921756239671572972966393880542662538400201n,
+                15369835007378492529084633432655739856631861107309342928676871259240227049033n,
+                11345121393552856548579926390199540849469635305183604045111689968777651956473n,
+                11299066061427200562963422042645343948885353762628147353062799587547441871332n,
+                13642291777448032365864888577168560039775015251774208221818005338405304930884n,
+                5990068516814370380711726420154273589568095823652643357428323105329308577610n,
+                3326440148296065541386325860294367616471601340115249960006624245213734239367n,
+                17613623862311960463347469460117166104477522402420094872382418386742059442736n,
+                16619835833299406266546819907603615045049052832835825671901337303713338780409n,
+                15002435000641955406214223423745696701460524528446564760654584364314696565951n,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
             ],
             [
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
-                BigInt(0n),
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
         ],
         utxoInNullifier: [
-            BigInt(
-                6744079633340602015721084589890019091130681888569198412667110032260423776957n,
-            ),
-            BigInt(0n),
+            6744079633340602015721084589890019091130681888569198412667110032260423776957n,
+            0,
         ],
 
         // input 'zAccount UTXO'
-        zAccountUtxoInId: BigInt(33n),
-        zAccountUtxoInZkpAmount: BigInt(99999100n),
-        zAccountUtxoInPrpAmount: BigInt(0n),
-        zAccountUtxoInZoneId: BigInt(1n),
-        zAccountUtxoInNetworkId: BigInt(2n),
-        zAccountUtxoInExpiryTime: BigInt(1702652400n),
-        zAccountUtxoInNonce: BigInt(3n),
-        zAccountUtxoInTotalAmountPerTimePeriod: BigInt(100000110),
-        zAccountUtxoInCreateTime: BigInt(1700020032n), // creation time of ZAccount
+        zAccountUtxoInId: 33,
+        zAccountUtxoInZkpAmount: 9999989100,
+        zAccountUtxoInPrpAmount: 10,
+        zAccountUtxoInZoneId: 1,
+        zAccountUtxoInNetworkId: 2,
+        zAccountUtxoInExpiryTime: 1702652400,
+        zAccountUtxoInNonce: 3,
+        zAccountUtxoInTotalAmountPerTimePeriod: 0,
+        zAccountUtxoInCreateTime: 1700020032, // creation time of ZAccount
         zAccountUtxoInRootSpendPubKey: [
-            BigInt(
-                9665449196631685092819410614052131494364846416353502155560380686439149087040n,
-            ),
-            BigInt(
-                13931233598534410991314026888239110837992015348186918500560502831191846288865n,
-            ),
+            9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+            13931233598534410991314026888239110837992015348186918500560502831191846288865n,
         ],
         zAccountUtxoInReadPubKey: [
-            BigInt(
-                1187405049038689339917658225106283881019816002721396510889166170461283567874n,
-            ),
-            BigInt(
-                311986042833546580202940940143769849297540181368261575540657864271112079432n,
-            ),
+            1187405049038689339917658225106283881019816002721396510889166170461283567874n,
+            311986042833546580202940940143769849297540181368261575540657864271112079432n,
         ],
         zAccountUtxoInNullifierPubKey: [
-            BigInt(
-                18636161575160505712724711689946435964943204943778681265331835661113836693938n,
-            ),
-            BigInt(
-                21369418187085352831313188453068285816400064790476280656092869887652115165947n,
-            ),
+            18636161575160505712724711689946435964943204943778681265331835661113836693938n,
+            21369418187085352831313188453068285816400064790476280656092869887652115165947n,
         ],
         zAccountUtxoInMasterEOA:
-            BigInt(407487970930055136132864974074225519407787604125n),
+            407487970930055136132864974074225519407787604125n,
         zAccountUtxoInSpendPrivKey:
-            BigInt(
-                975266908587054884917759649717404230044328108851369651686436225171239044169n,
-            ),
+            975266908587054884917759649717404230044328108851369651686436225171239044169n,
         zAccountUtxoInReadPrivKey:
-            BigInt(
-                1807143148206188134925427242927492302158087995127931582887251149414169118083n,
-            ),
+            1807143148206188134925427242927492302158087995127931582887251149414169118083n,
         zAccountUtxoInNullifierPrivKey:
-            BigInt(
-                2081961849142627796057765042284889488177156119328724687723132407819597118232n,
-            ),
-        zAccountUtxoInMerkleTreeSelector: [BigInt(1n), BigInt(0n)],
+            2081961849142627796057765042284889488177156119328724687723132407819597118232n,
+        zAccountUtxoInMerkleTreeSelector: [1, 0],
         zAccountUtxoInPathIndices: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(1n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
         zAccountUtxoInPathElements: [
-            BigInt(
-                2896678800030780677881716886212119387589061708732637213728415628433288554509n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                10422297446900335672329267035961821896194360558354085024486833291238130381890n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
-            BigInt(
-                4689866144310700684516443679096813921756239671572972966393880542662538400201n,
-            ),
-            BigInt(
-                15369835007378492529084633432655739856631861107309342928676871259240227049033n,
-            ),
-            BigInt(
-                11345121393552856548579926390199540849469635305183604045111689968777651956473n,
-            ),
-            BigInt(
-                11299066061427200562963422042645343948885353762628147353062799587547441871332n,
-            ),
-            BigInt(
-                13642291777448032365864888577168560039775015251774208221818005338405304930884n,
-            ),
-            BigInt(
-                5990068516814370380711726420154273589568095823652643357428323105329308577610n,
-            ),
-            BigInt(
-                3326440148296065541386325860294367616471601340115249960006624245213734239367n,
-            ),
-            BigInt(
-                17613623862311960463347469460117166104477522402420094872382418386742059442736n,
-            ),
-            BigInt(
-                16619835833299406266546819907603615045049052832835825671901337303713338780409n,
-            ),
-            BigInt(
-                15002435000641955406214223423745696701460524528446564760654584364314696565951n,
-            ),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
+            19415350603868075586262717582877071671289610526157183329824084311591608122417n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3812976779183932130984902152045886285870857404136629139647330085687899647675n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+            4689866144310700684516443679096813921756239671572972966393880542662538400201n,
+            15369835007378492529084633432655739856631861107309342928676871259240227049033n,
+            11345121393552856548579926390199540849469635305183604045111689968777651956473n,
+            11299066061427200562963422042645343948885353762628147353062799587547441871332n,
+            13642291777448032365864888577168560039775015251774208221818005338405304930884n,
+            5990068516814370380711726420154273589568095823652643357428323105329308577610n,
+            3326440148296065541386325860294367616471601340115249960006624245213734239367n,
+            17613623862311960463347469460117166104477522402420094872382418386742059442736n,
+            16619835833299406266546819907603615045049052832835825671901337303713338780409n,
+            15002435000641955406214223423745696701460524528446564760654584364314696565951n,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
         ],
         zAccountUtxoInNullifier:
-            BigInt(
-                8502030898120102519937259799105356839486136750324356576869246553427944022684n,
-            ),
+            16906283694396333336074777357403572581976962800841398906970740932486575302937n,
 
-        zAccountBlackListLeaf: BigInt(0n),
+        zAccountBlackListLeaf: 0,
         zAccountBlackListMerkleRoot:
-            BigInt(
-                19217088683336594659449020493828377907203207941212636669271704950158751593251n,
-            ),
+            19217088683336594659449020493828377907203207941212636669271704950158751593251n,
         zAccountBlackListPathElements: [
-            BigInt(0n),
-            BigInt(
-                14744269619966411208579211824598458697587494354926760081771325075741142829156n,
-            ),
-            BigInt(
-                7423237065226347324353380772367382631490014989348495481811164164159255474657n,
-            ),
-            BigInt(
-                11286972368698509976183087595462810875513684078608517520839298933882497716792n,
-            ),
-            BigInt(
-                3607627140608796879659380071776844901612302623152076817094415224584923813162n,
-            ),
-            BigInt(
-                19712377064642672829441595136074946683621277828620209496774504837737984048981n,
-            ),
-            BigInt(
-                20775607673010627194014556968476266066927294572720319469184847051418138353016n,
-            ),
-            BigInt(
-                3396914609616007258851405644437304192397291162432396347162513310381425243293n,
-            ),
-            BigInt(
-                21551820661461729022865262380882070649935529853313286572328683688269863701601n,
-            ),
-            BigInt(
-                6573136701248752079028194407151022595060682063033565181951145966236778420039n,
-            ),
-            BigInt(
-                12413880268183407374852357075976609371175688755676981206018884971008854919922n,
-            ),
-            BigInt(
-                14271763308400718165336499097156975241954733520325982997864342600795471836726n,
-            ),
-            BigInt(
-                20066985985293572387227381049700832219069292839614107140851619262827735677018n,
-            ),
-            BigInt(
-                9394776414966240069580838672673694685292165040808226440647796406499139370960n,
-            ),
-            BigInt(
-                11331146992410411304059858900317123658895005918277453009197229807340014528524n,
-            ),
-            BigInt(
-                15819538789928229930262697811477882737253464456578333862691129291651619515538n,
-            ),
+            0,
+
+            14744269619966411208579211824598458697587494354926760081771325075741142829156n,
+            7423237065226347324353380772367382631490014989348495481811164164159255474657n,
+            11286972368698509976183087595462810875513684078608517520839298933882497716792n,
+            3607627140608796879659380071776844901612302623152076817094415224584923813162n,
+            19712377064642672829441595136074946683621277828620209496774504837737984048981n,
+            20775607673010627194014556968476266066927294572720319469184847051418138353016n,
+            3396914609616007258851405644437304192397291162432396347162513310381425243293n,
+            21551820661461729022865262380882070649935529853313286572328683688269863701601n,
+            6573136701248752079028194407151022595060682063033565181951145966236778420039n,
+            12413880268183407374852357075976609371175688755676981206018884971008854919922n,
+            14271763308400718165336499097156975241954733520325982997864342600795471836726n,
+            20066985985293572387227381049700832219069292839614107140851619262827735677018n,
+            9394776414966240069580838672673694685292165040808226440647796406499139370960n,
+            11331146992410411304059858900317123658895005918277453009197229807340014528524n,
+            15819538789928229930262697811477882737253464456578333862691129291651619515538n,
         ],
 
         // zZone
-        zZoneOriginZoneIDs: BigInt(1n),
-        zZoneTargetZoneIDs: BigInt(1n),
-        zZoneNetworkIDsBitMap: BigInt(3n),
-        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(1660944475n),
-        zZoneKycExpiryTime: BigInt(10368000n),
-        zZoneKytExpiryTime: BigInt(86400n),
-        zZoneDepositMaxAmount: BigInt(50000000000n),
-        zZoneWithrawMaxAmount: BigInt(50000000000n),
-        zZoneInternalMaxAmount: BigInt(5000000000000n),
+        zZoneOriginZoneIDs: 1,
+        zZoneTargetZoneIDs: 1,
+        zZoneNetworkIDsBitMap: 5,
+        zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: 1577058395,
+        zZoneKycExpiryTime: 10368000,
+        zZoneKytExpiryTime: 86400,
+        zZoneDepositMaxAmount: 1 * 10 ** 12,
+        zZoneWithrawMaxAmount: 1 * 10 ** 12,
+        zZoneInternalMaxAmount: 1 * 10 ** 12,
         zZoneMerkleRoot:
-            BigInt(
-                19384564799589452100745366809702637867821047559012968378287626214005691056187n,
-            ),
-        zZonePathElements: [
-            BigInt(
-                2896678800030780677881716886212119387589061708732637213728415628433288554509n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
-        ],
-        zZonePathIndices: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
-        zZoneEdDsaPubKey: [
-            BigInt(
-                1079947189093879423832572021742411110959706509214994525945407912687412115152n,
-            ),
-            BigInt(
-                6617854811593651784376273094293148407007707755076821057553730151008062424747n,
-            ),
-        ],
+            9259525054892838702888137325078221513624475393849614502251135783828764533027n,
 
+        zZonePathElements: [
+            2896678800030780677881716886212119387589061708732637213728415628433288554509n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+        ],
+        zZonePathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        zZoneEdDsaPubKey: [
+            13969057660566717294144404716327056489877917779406382026042873403164748884885n,
+            11069452135192839850369824221357904553346382352990372044246668947825855305207n,
+        ],
         zZoneDataEscrowEphimeralRandom:
-            BigInt(
-                790122152066676684676093302872898287841903882354339429497975929636832086290n,
-            ),
+            790122152066676684676093302872898287841903882354339429497975929636832086290n,
+
         zZoneDataEscrowEphimeralPubKeyAx:
-            BigInt(
-                8203289148254703516772267706874329469330087297928457772489392227653451244213n,
-            ),
+            8203289148254703516772267706874329469330087297928457772489392227653451244213n,
+
         zZoneDataEscrowEphimeralPubKeyAy:
-            BigInt(
-                19998992060707539017877331634603765261877243592349009808298088607668947098216n,
-            ),
+            19998992060707539017877331634603765261877243592349009808298088607668947098216n,
+
         zZoneZAccountIDsBlackList:
-            BigInt(
-                1766847064778384329583297500742918515827483896875618958121606201292619775n,
-            ),
-        zZoneMaximumAmountPerTimePeriod: BigInt(500000000000000n),
-        zZoneTimePeriodPerMaximumAmount: BigInt(86400n),
+            1766847064778384329583297500742918515827483896875618958121606201292619775n,
+
+        zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
+        zZoneTimePeriodPerMaximumAmount: 86400,
 
         zZoneDataEscrowEncryptedMessageAx: [
-            BigInt(
-                10208894804307385444241847092606995425534865322813033676657358322033422360747n,
-            ),
+            14433679800089192794526753505084268005561937068124366984972480412899006274217n,
         ],
         zZoneDataEscrowEncryptedMessageAy: [
-            BigInt(
-                6977348043888224949346871727243873690394841333808944923545037472442658586640n,
-            ),
+            5568466615559831776527692612070933424060694016326396459267543199030780173053n,
         ],
 
         kytEdDsaPubKey: [
-            BigInt(
-                12245681108156315862721578421537205412164963293078065541324995831326019830563n,
-            ),
-            BigInt(
-                3850804844767147361944551138681828170238733301762589784617578364038335435190n,
-            ),
+            12245681108156315862721578421537205412164963293078065541324995831326019830563n,
+            3850804844767147361944551138681828170238733301762589784617578364038335435190n,
         ],
-        kytEdDsaPubKeyExpiryTime: BigInt(0), // this must be 0 for internal tx
+        kytEdDsaPubKeyExpiryTime: 0, // this must be 0 for internal tx
         trustProvidersMerkleRoot:
-            BigInt(
-                17776026177656288798445738250418845073931165171909516233447108979984337123087n,
-            ),
+            675413191976636849763056983375622181122390331630387511499559599588194530856n,
+
         kytPathElements: [
-            BigInt(
-                17016695977491387975747777387951291558575480655001270966217001764099828994492n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
+            9489899717616586094160199124420951802253527995585848778940667248421979517388n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
-        kytPathIndices: [
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
-        kytMerkleTreeLeafIDsAndRulesOffset: BigInt(1n),
+        kytPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        kytMerkleTreeLeafIDsAndRulesOffset: 1,
 
-        kytDepositSignedMessagePackageType: BigInt(2n),
-        kytDepositSignedMessageTimestamp: BigInt(0),
+        kytDepositSignedMessagePackageType: 2,
+        kytDepositSignedMessageTimestamp: 0,
         kytDepositSignedMessageSender:
-            BigInt(407487970930055136132864974074225519407787604125n),
+            407487970930055136132864974074225519407787604125n,
         kytDepositSignedMessageReceiver:
-            BigInt(0xfdfd920f2152565e9d7b589e4e9faee6699ad4bdn),
+            0xfdfd920f2152565e9d7b589e4e9faee6699ad4bdn,
         kytDepositSignedMessageToken:
-            BigInt(365481738974395054943628650313028055219811856521n),
-        kytDepositSignedMessageSessionId: BigInt(3906n),
-        kytDepositSignedMessageRuleId: BigInt(99n),
-        kytDepositSignedMessageAmount: BigInt(10 ** 13),
+            365481738974395054943628650313028055219811856521n,
+        kytDepositSignedMessageSessionId: 3906,
+        kytDepositSignedMessageRuleId: 94,
+        kytDepositSignedMessageAmount: 10 ** 13,
         kytDepositSignedMessageSigner:
-            BigInt(407487970930055136132864974074225519407787604125n),
+            407487970930055136132864974074225519407787604125n,
         kytDepositSignedMessageHash:
-            BigInt(
-                12430652822179204049648459930173643103691412531741204627747996341696287708858n,
-            ),
+            12430652822179204049648459930173643103691412531741204627747996341696287708858n,
+
         kytDepositSignature: [
-            BigInt(
-                125900651780005850449659142097177797163902083341236940535757621061776322400n,
-            ),
-            BigInt(
-                2265391700983385700501511925907744748011622672395003165135798438764179106394n,
-            ),
-            BigInt(
-                3203146045629976864293827964582387095516496748262949749372450935680951413714n,
-            ),
+            125900651780005850449659142097177797163902083341236940535757621061776322400n,
+            2265391700983385700501511925907744748011622672395003165135798438764179106394n,
+            3203146045629976864293827964582387095516496748262949749372450935680951413714n,
         ],
 
-        kytWithdrawSignedMessagePackageType: BigInt(2n),
-        kytWithdrawSignedMessageTimestamp: BigInt(0n),
-        kytWithdrawSignedMessageSender: BigInt(0n),
-        kytWithdrawSignedMessageReceiver: BigInt(0n),
-        kytWithdrawSignedMessageToken: BigInt(0n),
-        kytWithdrawSignedMessageSessionId: BigInt(0n),
-        kytWithdrawSignedMessageRuleId: BigInt(0n),
-        kytWithdrawSignedMessageAmount: BigInt(0n),
-        kytWithdrawSignedMessageSigner: BigInt(0n),
-        kytWithdrawSignedMessageHash: BigInt(0n),
-        kytWithdrawSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
+        kytWithdrawSignedMessagePackageType: 2,
+        kytWithdrawSignedMessageTimestamp: 0,
+        kytWithdrawSignedMessageSender: 0,
+        kytWithdrawSignedMessageReceiver: 0,
+        kytWithdrawSignedMessageToken: 0,
+        kytWithdrawSignedMessageSessionId: 0,
+        kytWithdrawSignedMessageRuleId: 0,
+        kytWithdrawSignedMessageAmount: 0,
+        kytWithdrawSignedMessageSigner: 0,
+        kytWithdrawSignedMessageHash: 0,
+        kytWithdrawSignature: [0, 0, 0],
 
         dataEscrowPubKey: [
-            BigInt(
-                17592485119740402298442532235961126081458346886620323230996242709613631809739n,
-            ),
-            BigInt(
-                715747506660163706903209996741478016638661993190721237261860373407288995714n,
-            ),
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
         ],
-        dataEscrowPubKeyExpiryTime: BigInt(1735689600n),
+        dataEscrowPubKeyExpiryTime: 1735689600,
         dataEscrowEphimeralRandom:
-            BigInt(
-                2508770261742365048726528579942226801565607871885423400214068953869627805520n,
-            ),
+            2508770261742365048726528579942226801565607871885423400214068953869627805520n,
+
         dataEscrowEphimeralPubKeyAx:
-            BigInt(
-                4301916310975298895721162797900971043392040643140207582177965168853046592976n,
-            ),
+            4301916310975298895721162797900971043392040643140207582177965168853046592976n,
+
         dataEscrowEphimeralPubKeyAy:
-            BigInt(
-                815388028464849479935447593762613752978886104243152067307597626016673798528n,
-            ),
+            815388028464849479935447593762613752978886104243152067307597626016673798528n,
+
         dataEscrowPathElements: [
-            BigInt(
-                9110636271130100699392899364881796968545308977595504989546918307235047784339n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
-            BigInt(
-                15530836891415741166399860451702547522959094984965127719828675838122418186767n,
-            ),
-            BigInt(
-                17831836427614557290431652044145414371925087626131808598362009890774438652119n,
-            ),
-            BigInt(
-                4465836784202878977538296341471470300441964855135851519008900812038788261656n,
-            ),
-            BigInt(
-                12878033372712703816810492505815415858124057351499708737135229819203122809944n,
-            ),
-            BigInt(
-                18307780612008914306024415546812737365063691384665843671053755584619447524447n,
-            ),
-            BigInt(
-                18399220794236723308907532455368503933105202479015828179801520916772962880998n,
-            ),
-            BigInt(
-                17997772780903759195601581429183819619412163062353143936165307874482723961709n,
-            ),
-            BigInt(
-                18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            ),
-            BigInt(
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
-            ),
+            691692403787570541002677048455170081661625713855976896409615085264963003363n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+            15530836891415741166399860451702547522959094984965127719828675838122418186767n,
+            17831836427614557290431652044145414371925087626131808598362009890774438652119n,
+            4465836784202878977538296341471470300441964855135851519008900812038788261656n,
+            12878033372712703816810492505815415858124057351499708737135229819203122809944n,
+            18307780612008914306024415546812737365063691384665843671053755584619447524447n,
+            18399220794236723308907532455368503933105202479015828179801520916772962880998n,
+            17997772780903759195601581429183819619412163062353143936165307874482723961709n,
+            18496693394049906980893311686550786982256672525298758106045562727433199943509n,
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
-        dataEscrowPathIndices: [
-            BigInt(1n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
+        dataEscrowPathIndices: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
         dataEscrowEncryptedMessageAx: [
-            BigInt(
-                13116190464256158497839887597524501812846680459236688248532348621490241197945n,
-            ),
-            BigInt(
-                8545989893275276231799888565301908912318543399332021915998096176909753199105n,
-            ),
-            BigInt(
-                1597271708782709315676429742169505725069011520555823751865890562701433116263n,
-            ),
-            BigInt(
-                13116190464256158497839887597524501812846680459236688248532348621490241197945n,
-            ),
-            BigInt(
-                1982576938706230321551700263742726368361145155331949594535675089829639563416n,
-            ),
-            BigInt(
-                14480281860734955988670883608971965440461721537343246051653830666465892739362n,
-            ),
-            BigInt(
-                18778050986184836396813351643744424667456215564886939681415704288292509566240n,
-            ),
-            BigInt(
-                13961837954519038829977545387763368791911867054847608369160425559810214585436n,
-            ),
-            BigInt(
-                3329503191844053250390812596161820406211215630138787975944325664460904442994n,
-            ),
-            BigInt(
-                20591995419506295738838722456771542519416106985795850582125388174041383079953n,
-            ),
+            12871439135712262058001002684440962908819002983015508623206745248194094676428n,
+            12611085460501643703188077029833801403988234956815000632774128739398821073630n,
+            10753713096839992465425594579541973318667011803673769960189202532150955695299n,
+            12871439135712262058001002684440962908819002983015508623206745248194094676428n,
+            20814560506094226056773492256059404440409642442191090291704874756083420272830n,
+            20256710600949264362418860110481688194637628970597936106994654547104375393176n,
+            6066694838651203868770933843950050229929034865539233040557616764646926851013n,
+            15973033780862990911894184396943537293044842235087158652403930007130216963563n,
+            17078950562559053244427911673754433695828777211102295906512000829758156791625n,
+            6791219299960065083362130801891981257281426774647280913434945767159885590777n,
         ],
         dataEscrowEncryptedMessageAy: [
-            BigInt(
-                20000738990158911673922080741335508851223507369672887792062131046520480743662n,
-            ),
-            BigInt(
-                20637416069479879785001161881462675658184199290896901419191315646291334864295n,
-            ),
-            BigInt(
-                18118920896364503434001190220651076576182638626843697482408793004900950564665n,
-            ),
-            BigInt(
-                20000738990158911673922080741335508851223507369672887792062131046520480743662n,
-            ),
-            BigInt(
-                8585382239701999602402547069606066124284132996272464720251606344292285240629n,
-            ),
-            BigInt(
-                19655471527468570911723889943149007691510364845911855492091673883444098606043n,
-            ),
-            BigInt(
-                19304318133919287458931511663503264528343176272446872763187502086926697418689n,
-            ),
-            BigInt(
-                333337179729258256745061485466138303316259798821832830250345169150710768565n,
-            ),
-            BigInt(
-                19605233506631298351965696132895712538735071948591379670272736484187200485477n,
-            ),
-            BigInt(
-                4821471772164748614758874695529159340063408718670928536104123836130499381822n,
-            ),
+            17114886397516225242214463605558970802516242403903915116207133292790211059315n,
+            14897666083598157282681480789564813458233045934717547580847967751767915888565n,
+            5765065508291422419277961368688514678285916196225251683528451342886755731043n,
+            17114886397516225242214463605558970802516242403903915116207133292790211059315n,
+            4855358595760830463468920591887308526784813830478355357985870757420101335444n,
+            519510281077521264637082135178521596376359091247022075459865918565381240793n,
+            9141400750870458136136883261927169484566687941900585939879924492689439470940n,
+            5693832783094960223661498611585398692719602058883271283044674224937494596214n,
+            17955039764546101694996599018249453721535412990526575327945965148929698301159n,
+            1915471776992248857863694783950077055921412854779458964896906932485306817269n,
         ],
         daoDataEscrowPubKey: [
-            BigInt(
-                12272087043529289524334796370800745508281317430063431496260996322077559426628n,
-            ),
-            BigInt(
-                9194872949126287643523554866093178264045906284036198776275995684726142899669n,
-            ),
+            6744227429794550577826885407270460271570870592820358232166093139017217680114n,
+            12531080428555376703723008094946927789381711849570844145043392510154357220479n,
         ],
         daoDataEscrowEphimeralRandom:
-            BigInt(
-                2486295975768183987242341265649589729082265459252889119245150374183802141273n,
-            ),
+            2486295975768183987242341265649589729082265459252889119245150374183802141273n,
         daoDataEscrowEphimeralPubKeyAx:
-            BigInt(
-                18172727478723733672122242648004425580927771110712257632781054272274332874233n,
-            ),
+            18172727478723733672122242648004425580927771110712257632781054272274332874233n,
         daoDataEscrowEphimeralPubKeyAy:
-            BigInt(
-                18696859439217809465524370245449396885627295546811556940609392448191776076084n,
-            ),
+            18696859439217809465524370245449396885627295546811556940609392448191776076084n,
 
         daoDataEscrowEncryptedMessageAx: [
-            BigInt(
-                12879739213981704288750108194714802671973445666473095895725252519271988297987n,
-            ),
-            BigInt(
-                21281308458173861440234194234734836905240813695056105134916636617468347537440n,
-            ),
-            BigInt(
-                21833265219210485206570519125464965540312044426938621491904711178394780344784n,
-            ),
+            19431177145564579644645402007094230972953633316034553417567175794889598812718n,
+            1799804791627257398410840211837524753802326288230158949707654558111467716995n,
+            8212805903298130704168784347709624481761722564668581984113512819139911358362n,
         ],
         daoDataEscrowEncryptedMessageAy: [
-            BigInt(
-                13772388044395714748652123630736750443686679234538591593691171912893370807102n,
-            ),
-            BigInt(
-                7927835054849640609680516871327124706690585994410662142857656644607231714920n,
-            ),
-            BigInt(
-                20320659586003977380820659517084340668626755270558533029265994160344727877766n,
-            ),
+            201397220231726386170040070479111028365016125655118429415687385707171965840n,
+            1648579977365625205878598461211585041020902497276298176122864855910728301310n,
+            19021612305549583596574758670997434548526622145509607490911705986204445671791n,
         ],
 
-        utxoOutCreateTime: BigInt(1700902800), // For both the UTXO's the createTime will be the same.
-        utxoOutOriginNetworkId: [BigInt(2n), BigInt(2n)],
-        utxoOutTargetNetworkId: [BigInt(2n), BigInt(2n)],
-        utxoOutTargetZoneId: [BigInt(1n), BigInt(1n)],
-        utxoOutTargetZoneIdOffset: [BigInt(0n), BigInt(0n)],
+        utxoOutCreateTime: 1700902800, // For both the UTXO's the createTime will be the same.
+        utxoOutOriginNetworkId: [2, 2],
+        utxoOutTargetNetworkId: [2, 2],
+        utxoOutTargetZoneId: [1, 1],
+        utxoOutTargetZoneIdOffset: [0, 0],
         // random should change
         utxoOutSpendPubKeyRandom: [
-            BigInt(
-                920916380985300645651724170838735530584359756451808812153292874012653181197n, //new random by the sender ZAccount
-            ),
-            BigInt(
-                2562490915094200461249386117990484388285957402192770226229131740144850347260n,
-            ),
+            920916380985300645651724170838735530584359756451808812153292874012653181197n, //new random by the sender ZAccount
+            2562490915094200461249386117990484388285957402192770226229131740144850347260n,
         ],
         // Same as the zAccountUtxoInRootSpendPubKey because of self transfer
         utxoOutRootSpendPubKey: [
             [
-                BigInt(
-                    9665449196631685092819410614052131494364846416353502155560380686439149087040n,
-                ),
-                BigInt(
-                    13931233598534410991314026888239110837992015348186918500560502831191846288865n,
-                ),
+                9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+                13931233598534410991314026888239110837992015348186918500560502831191846288865n,
             ],
             [
-                BigInt(
-                    7267405717214690462613663950148551904542730602525132875613316628228214337830n,
-                ),
-                BigInt(
-                    7178067554084888592453503935019144981758755967500811678969567533289402266751n,
-                ),
+                7267405717214690462613663950148551904542730602525132875613316628228214337830n,
+                7178067554084888592453503935019144981758755967500811678969567533289402266751n,
             ],
         ],
         utxoOutCommitment: [
-            BigInt(
-                3739750521861146137564008236109239681099326378547174333381546914676317521201n,
-            ),
-            BigInt(
-                7997086023193918869594552427438782046977875936981814455068076231423196363947n,
-            ),
+            3739750521861146137564008236109239681099326378547174333381546914676317521201n,
+            7997086023193918869594552427438782046977875936981814455068076231423196363947n,
         ],
 
-        zAccountUtxoOutZkpAmount: BigInt(99998200),
+        zAccountUtxoOutZkpAmount: 9999988200,
         zAccountUtxoOutSpendKeyRandom:
-            BigInt(
-                928974505793416890028255163642163633941110568617692085076073897724890512527n,
-            ),
+            928974505793416890028255163642163633941110568617692085076073897724890512527n,
+
         zAccountUtxoOutCommitment:
-            BigInt(
-                7772418543813295742630374375434619738043832814326507445998878366517018150529n,
-            ),
+            6991129837942447437106224885480484531511792005929733215807835310816105473510n,
+
         // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
-        chargedAmountZkp: BigInt(10 ** 15),
-        addedAmountZkp: BigInt(10 ** 14),
+        chargedAmountZkp: 10 ** 15,
+        addedAmountZkp: 10 ** 14,
 
-        zNetworkId: BigInt(2n),
-        zNetworkChainId: BigInt(80001n),
-        zNetworkIDsBitMap: BigInt(3n),
+        zNetworkId: 2,
+        zNetworkChainId: 80001,
+        zNetworkIDsBitMap: 5,
         zNetworkTreeMerkleRoot:
-            BigInt(
-                14012219796450685573713237305847642356367283250649627741328974142691321346497n,
-            ),
-        zNetworkTreePathIndices: [
-            BigInt(1n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-            BigInt(0n),
-        ],
-        zNetworkTreePathElements: [
-            BigInt(
-                13600883386059764494059343531292624452055533199459734774067365206557455126217n,
-            ),
-            BigInt(
-                15915358021544645824948763611506574620607002248967455613245207713011512736724n,
-            ),
-            BigInt(
-                3378776220260879286502089033253596247983977280165117209776494090180287943112n,
-            ),
-            BigInt(
-                13332607562825133358947880930907706925768730553195841232963500270946125500492n,
-            ),
-            BigInt(
-                2602133270707827583410190225239044634523625207877234879733211246465561970688n,
-            ),
-            BigInt(
-                19603150025355661252212198237607440386334054455687766589389473805115541553727n,
-            ),
-        ],
-        // This will change as multiple static tree details changes, hence calculated when needed
-        staticTreeMerkleRoot: BigInt(0n),
+            21448888980709764146265348599357914296432058767851940011937843763756766907579n,
 
-        forestMerkleRoot: BigInt(0n),
+        zNetworkTreePathIndices: [1, 0, 0, 0, 0, 0],
+        zNetworkTreePathElements: [
+            17570133518121739548964196309665064125657253468811303682702000180123719703330n,
+            15915358021544645824948763611506574620607002248967455613245207713011512736724n,
+            3378776220260879286502089033253596247983977280165117209776494090180287943112n,
+            13332607562825133358947880930907706925768730553195841232963500270946125500492n,
+            2602133270707827583410190225239044634523625207877234879733211246465561970688n,
+            19603150025355661252212198237607440386334054455687766589389473805115541553727n,
+        ],
+        staticTreeMerkleRoot:
+            16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+
+        forestMerkleRoot: 0,
         taxiMerkleRoot:
-            BigInt(
-                21078238521337523625806977154031988767929399923323679789427062985634312723305n,
-            ),
+            21078238521337523625806977154031988767929399923323679789427062985634312723305n,
+
         busMerkleRoot:
-            BigInt(
-                20822458005806272597938988137521180539263142873265284055598877829761450894627n,
-            ),
+            2055607746961262622160531900196670925756154669401892024081128627049224860438n,
+
         ferryMerkleRoot:
-            BigInt(
-                16585547643065588372010718035675163508420403417446192422307560350739915741648n,
-            ),
+            16585547643065588372010718035675163508420403417446192422307560350739915741648n,
 
         // salt
-        salt: BigInt(0n),
-        saltHash: BigInt(0n),
+        salt: 0,
+        saltHash: 0,
 
         // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
-        magicalConstraint: BigInt(0n),
+        magicalConstraint: 0,
 
         // 0 - has to be zero, it's a bug, change the value once the bug is fixed.
-        depositChange: BigInt(0n),
-        withdrawChange: BigInt(0n),
+        depositChange: 0,
+        withdrawChange: 0,
     };
 
-    it('should compute valid witness for zero input deposit only tx', async () => {
+    it('should compute valid witness for internal transfer of zAsset UTXO (split)', async () => {
         await wtns.calculate(
             singleValidUTXOInternalTxNonZeroInput,
             mainTxWasm,

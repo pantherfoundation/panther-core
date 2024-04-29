@@ -517,6 +517,7 @@ template ZTransactionV1( nUtxoIn,
         utxoInNullifierProver[i] = ForceEqualIfEnabled();
         utxoInNullifierProver[i].in[0] <== utxoInNullifier[i];
         utxoInNullifierProver[i].in[1] <== utxoInNullifierHasher[i].out;
+        // As 'utxoInNullifier' is a public signal it is used for nullifier check.
         utxoInNullifierProver[i].enabled <== utxoInNullifier[i];
 
         // verify Merkle proofs for input notes
