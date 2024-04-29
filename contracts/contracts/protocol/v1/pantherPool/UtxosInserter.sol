@@ -13,7 +13,7 @@ import "./publicSignals/MainPublicSignals.sol";
 
 import "../../../common/crypto/PoseidonHashers.sol";
 
-abstract contract UtxoCollector {
+abstract contract UtxosInserter {
     using TransactionOptions for uint32;
 
     address public immutable PANTHER_BUS_TREE;
@@ -84,7 +84,7 @@ abstract contract UtxoCollector {
 
     function _insertPrpConversionUtxos(
         uint256[] calldata inputs,
-        uint256 zkpAmountScaled,
+        bytes32 zAssetUtxoOutCommitment,
         uint32 transactionOptions,
         uint96 miningRewards
     )
@@ -97,10 +97,7 @@ abstract contract UtxoCollector {
     {
         bytes32[] memory utxos = new bytes32[](2);
         utxos[0] = bytes32(inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT]);
-        utxos[1] = _generateZAssetUtxoCommitment(
-            zkpAmountScaled,
-            inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART]
-        );
+        utxos[1] = zAssetUtxoOutCommitment;
 
         (
             zAccountUtxoQueueId,

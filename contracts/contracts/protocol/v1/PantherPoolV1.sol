@@ -20,7 +20,8 @@ import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
-import "./pantherPool/UtxoCollector.sol";
+import "./pantherPool/UtxosInserter.sol";
+import "./pantherPool/ZAssetUtxoGenerator.sol";
 
 /**
  * @title PantherPool
@@ -45,7 +46,8 @@ import "./pantherPool/UtxoCollector.sol";
 contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
-    UtxoCollector,
+    UtxosInserter,
+    ZAssetUtxoGenerator,
     NonReentrant,
     IPantherPoolV1
 {
@@ -106,7 +108,7 @@ contract PantherPoolV1 is
         address verifier
     )
         PantherForest(_owner, taxiTree, busTree, ferryTree)
-        UtxoCollector(busTree, taxiTree)
+        UtxosInserter(busTree, taxiTree)
     {
         require(
             staticTree != address(0) &&
@@ -436,6 +438,11 @@ contract PantherPoolV1 is
         uint256 zkpAmountScaled = zkpAmountOutRounded /
             inputs[PRP_CONVERSION_ZASSET_SCALE];
 
+        bytes32 zAssetUtxoOutCommitment = generateZAssetUtxoCommitment(
+            zkpAmountScaled,
+            inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART]
+        );
+
         // TODO: getting from FeeMaster
         uint96 miningRewards;
 
@@ -447,7 +454,7 @@ contract PantherPoolV1 is
             zAccountUtxoBusQueuePos
         ) = _insertPrpConversionUtxos(
             inputs,
-            zkpAmountOutRounded,
+            zAssetUtxoOutCommitment,
             transactionOptions,
             miningRewards
         );
