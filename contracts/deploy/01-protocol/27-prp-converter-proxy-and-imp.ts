@@ -36,13 +36,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'VAULT_PROXY',
     );
 
-    await deploy('PrpConverter', {
+    await deploy('PrpConverter_Implementation', {
         from: deployer,
         args: [multisig, pZkp.address, pantherPool, vaultProxy],
-        proxy: {
-            proxyContract: 'EIP173Proxy',
-            owner: multisig,
-        },
         log: true,
         autoMine: true,
     });

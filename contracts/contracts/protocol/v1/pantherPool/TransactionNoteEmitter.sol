@@ -2,7 +2,14 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+import "./Types.sol";
+import "./publicSignals/MainPublicSignals.sol";
+import "./publicSignals/ZAccountActivationPublicSignals.sol";
+import "./publicSignals/PrpClaimPublicSignals.sol";
+import "./publicSignals/PrpConversionPublicSignals.sol";
+
 import "../errMsgs/TransactionNoteEmitterErrMsgs.sol";
+import "../../../common/UtilsLib.sol";
 
 /***
  * @dev Every MASP transaction is accompanied by the "Transaction Note" - data
@@ -81,21 +88,21 @@ abstract contract TransactionNoteEmitter {
     //  - 0x00 .. 0x1F allowed
     //  - 0x20 .. 0xFF reserved (unused)
 
-    uint8 internal constant TT_ZACCOUNT_ACTIVATION = 0x01;
+    // TT_ZACCOUNT_ACTIVATION:
     // TransactionNote for this tx type MUST contain in the specified sequence:
     // - MT_UTXO_CREATE_TIME
     // - MT_UTXO_BUSTREE_IDS (for the new zAccount UTXO)
     // - MT_UTXO_ZACCOUNT
     // Then free-content messages MAY follow.
 
-    uint8 internal constant TT_PRP_CLAIM = 0x02;
+    // TT_PRP_CLAIM:
     // TransactionNote for this tx type MUST contain messages of these types:
     // - MT_UTXO_CREATE_TIME
     // - MT_UTXO_BUSTREE_IDS (for the re-created zAccount UTXO)
     // - MT_UTXO_ZACCOUNT
     // Then free-content messages MAY follow.
 
-    uint8 internal constant TT_PRP_CONVERSION = 0x03;
+    // TT_PRP_CONVERSION:
     // TransactionNote for this tx type MUST contain messages of these types:
     // - MT_UTXO_CREATE_TIME
     // - MT_UTXO_BUSTREE_IDS (for the re-created zAccount UTXO)
@@ -104,7 +111,7 @@ abstract contract TransactionNoteEmitter {
     // - MT_UTXO_ZASSET_PRIV
     // Then free-content messages MAY follow.
 
-    uint8 internal constant TT_MAIN_TRANSACTION = 0x04;
+    // TT_MAIN_TRANSACTION:
     // TransactionNote for this tx type MUST contain messages of these types:
     // - MT_UTXO_CREATE_TIME
     // - MT_UTXO_SPEND_TIME
@@ -389,5 +396,88 @@ abstract contract TransactionNoteEmitter {
         if (txType == TT_MAIN_TRANSACTION) {
             _sanitizeMainMessage(privateMessages);
         }
+    }
+
+    function _emitZAccountActivationNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(
+                inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND]
+            ),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            privateMessages
+        );
+
+        emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
+    }
+
+    function _emitPrpClaimNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            privateMessages
+        );
+
+        emit TransactionNote(TT_PRP_CLAIM, transactionNoteContent);
+    }
+
+    function _emitPrpConversionNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        uint256 zkpAmountScaled,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            MT_UTXO_ZASSET_PUB,
+            UtilsLib.safe64(zkpAmountScaled),
+            privateMessages
+        );
+
+        emit TransactionNote(TT_PRP_CONVERSION, transactionNoteContent);
+    }
+
+    function _emitMainNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[MAIN_UTXO_OUT_CREATE_TIME_IND]),
+            MT_UTXO_SPEND_TIME,
+            UtilsLib.safe32(inputs[MAIN_SPEND_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            privateMessages
+        );
+
+        emit TransactionNote(TT_MAIN_TRANSACTION, transactionNoteContent);
     }
 }

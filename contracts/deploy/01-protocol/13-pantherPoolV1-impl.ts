@@ -50,6 +50,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PrpVoucherGrantor_Proxy',
         '',
     );
+    const prpConverterProxy = await getContractAddress(
+        hre,
+        'PrpConverter_Proxy',
+        '',
+    );
 
     const pantherVerifier = await getContractAddress(
         hre,
@@ -77,6 +82,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             vaultProxy,
             zAccountsRegistryProxy,
             prpVoucherGrantor,
+            prpConverterProxy,
             pantherVerifier,
         ],
         libraries: {
@@ -100,6 +106,7 @@ func.dependencies = [
     'ferry-tree',
     'static-tree-proxy',
     'z-accounts-registry-proxy',
+    'prp-converter-proxy',
     'prp-voucher-grantor',
     'verifier',
     'crypto-libs',

@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+pragma solidity ^0.8.19;
+
+import "../../../common/crypto/PoseidonHashers.sol";
+
+abstract contract ZAssetUtxoGenerator {
+    function generateZAssetUtxoCommitment(
+        uint256 zAssetScaledAmount,
+        uint256 zAssetutxoCommitmentPrivatePart
+    ) internal pure returns (bytes32) {
+        return
+            PoseidonHashers.poseidonT3(
+                [
+                    bytes32(zAssetScaledAmount),
+                    bytes32(zAssetutxoCommitmentPrivatePart)
+                ]
+            );
+    }
+}
