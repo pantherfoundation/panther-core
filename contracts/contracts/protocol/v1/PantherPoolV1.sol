@@ -61,6 +61,7 @@ contract PantherPoolV1 is
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
+    address public immutable PRP_CONVERTER;
     address public immutable STATIC_TREE;
 
     mapping(address => bool) public vaultAssetUnlockers;
@@ -105,6 +106,7 @@ contract PantherPoolV1 is
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
+        address prpConverter,
         address verifier
     )
         PantherForest(_owner, taxiTree, busTree, ferryTree)
@@ -116,7 +118,8 @@ contract PantherPoolV1 is
                 zkpToken != address(0) &&
                 verifier != address(0) &&
                 zAccountRegistry != address(0) &&
-                prpVoucherGrantor != address(0),
+                prpVoucherGrantor != address(0) &&
+                prpConverter != address(0),
             ERR_INIT
         );
 
@@ -126,6 +129,7 @@ contract PantherPoolV1 is
         VERIFIER = IPantherVerifier(verifier);
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
+        PRP_CONVERTER = prpConverter;
     }
 
     function updateVaultAssetUnlocker(
@@ -207,8 +211,8 @@ contract PantherPoolV1 is
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
-        require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
         require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
 
         _validateSaltHash(inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND]);
 
@@ -303,8 +307,8 @@ contract PantherPoolV1 is
         // Note: This contract expects the PrpVoucherGrantor to check the following inputs:
         // input[0], input[3], input[4],
 
-        require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
         require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
 
         _validateCreationTime(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]);
 
@@ -369,7 +373,7 @@ contract PantherPoolV1 is
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
-    /// @param zkpAmountOutRounded The zkp amount to be locked in the vault, rounded by 1e12.
+    /// @param zkpAmountRounded The zkp amount to be locked in the vault, rounded by 1e12.
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
@@ -377,7 +381,7 @@ contract PantherPoolV1 is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
-        uint96 zkpAmountOutRounded,
+        uint96 zkpAmountRounded,
         uint96 /*paymasterCompensation*/,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
@@ -385,6 +389,7 @@ contract PantherPoolV1 is
         // less than the field size
 
         require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        require(msg.sender == PRP_CONVERTER, ERR_UNAUTHORIZED);
 
         // Note: extraInputsHash is computed in PrpConverter
         require(
@@ -419,7 +424,7 @@ contract PantherPoolV1 is
         );
 
         require(
-            inputs[PRP_CONVERSION_DEPOSIT_PRP_AMOUNT_IND] <= MAX_PRP_AMOUNT &&
+            inputs[PRP_CONVERSION_DEPOSIT_PRP_AMOUNT_IND] == 0 &&
                 inputs[PRP_CONVERSION_WITHDRAW_PRP_AMOUNT_IND] <=
                 MAX_PRP_AMOUNT,
             ERR_TOO_LARGE_PRP_AMOUNT
@@ -443,7 +448,7 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        uint256 zkpAmountScaled = zkpAmountOutRounded /
+        uint256 zkpAmountScaled = zkpAmountRounded /
             inputs[PRP_CONVERSION_ZASSET_SCALE_IND];
 
         bytes32 zAssetUtxoOutCommitment = generateZAssetUtxoCommitment(
@@ -467,7 +472,7 @@ contract PantherPoolV1 is
             miningRewards
         );
 
-        _lockZkp(msg.sender, zkpAmountOutRounded);
+        _lockZkp(msg.sender, zkpAmountRounded);
 
         _emitPrpConversionNote(
             inputs,
