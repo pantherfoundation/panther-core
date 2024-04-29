@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+// Indexes of public input for the prpAccountConversion zk-circuit follows
+
 uint256 constant PRP_CONVERSION_EXTRA_INPUT_HASH_IND = 0;
 uint256 constant PRP_CONVERSION_ADDED_AMOUNT_ZKP_IND = 1;
 uint256 constant PRP_CONVERSION_CHARGED_AMOUNT_ZKP_IND = 2;
