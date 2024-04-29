@@ -227,17 +227,4 @@ abstract contract UtxosInserter {
             revert(reason);
         }
     }
-
-    function _generateZAssetUtxoCommitment(
-        uint256 zAssetScaledAmount,
-        uint256 zAssetutxoCommitmentPrivatePart
-    ) private pure returns (bytes32) {
-        return
-            PoseidonHashers.poseidonT3(
-                [
-                    bytes32(zAssetScaledAmount),
-                    bytes32(zAssetutxoCommitmentPrivatePart)
-                ]
-            );
-    }
 }
