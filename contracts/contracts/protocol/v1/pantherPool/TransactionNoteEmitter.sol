@@ -406,9 +406,11 @@ abstract contract TransactionNoteEmitter {
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
             MT_UTXO_CREATE_TIME,
-            UtilsLib.safe32(inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME]),
+            UtilsLib.safe32(
+                inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND]
+            ),
             MT_UTXO_BUSTREE_IDS,
-            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT],
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND],
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             privateMessages
@@ -425,9 +427,9 @@ abstract contract TransactionNoteEmitter {
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
             MT_UTXO_CREATE_TIME,
-            UtilsLib.safe32(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME]),
+            UtilsLib.safe32(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]),
             MT_UTXO_BUSTREE_IDS,
-            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT],
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             privateMessages
@@ -445,9 +447,9 @@ abstract contract TransactionNoteEmitter {
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
             MT_UTXO_CREATE_TIME,
-            UtilsLib.safe32(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME]),
+            UtilsLib.safe32(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME_IND]),
             MT_UTXO_BUSTREE_IDS,
-            inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT],
+            inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             MT_UTXO_ZASSET_PUB,
@@ -466,11 +468,11 @@ abstract contract TransactionNoteEmitter {
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
             MT_UTXO_CREATE_TIME,
-            UtilsLib.safe32(inputs[MAIN_UTXO_OUT_CREATE_TIME]),
+            UtilsLib.safe32(inputs[MAIN_UTXO_OUT_CREATE_TIME_IND]),
             MT_UTXO_SPEND_TIME,
-            UtilsLib.safe32(inputs[MAIN_SPEND_TIME]),
+            UtilsLib.safe32(inputs[MAIN_SPEND_TIME_IND]),
             MT_UTXO_BUSTREE_IDS,
-            inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT],
+            inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             privateMessages
