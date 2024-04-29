@@ -480,6 +480,8 @@ contract PantherPoolV1 is
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
+        // The content of data escrow encrypted messages are checked by the circuit
+
         require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         _validateSaltHash(inputs[MAIN_SALT_HASH]);
@@ -515,35 +517,8 @@ contract PantherPoolV1 is
         );
 
         require(
-            inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_1] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_2] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_3] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_4] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_5] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_6] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_7] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_8] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_9] != 0 &&
-                inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_10] != 0,
-            ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-        );
-
-        require(
             inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX] != 0,
             ERR_ZERO_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
-        );
-
-        require(
-            inputs[MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_1] != 0,
-            ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-        );
-        require(
-            inputs[MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_2] != 0,
-            ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
-        );
-        require(
-            inputs[MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_3] != 0,
-            ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
         );
 
         _sanitizePrivateMessage(privateMessages, TT_MAIN_TRANSACTION);
@@ -748,7 +723,7 @@ contract PantherPoolV1 is
         uint96 depositAmount = UtilsLib.safe96(MAIN_DEPOSIT_AMOUNT);
         uint96 withdrawAmount = UtilsLib.safe96(MAIN_WITHDRAW_AMOUNT);
 
-        address token = address(uint160(inputs[MAIN_TOKEN]));
+        address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN]));
         uint256 tokenId = inputs[MAIN_TOKEN_ID];
 
         if (depositAmount > 0) {
@@ -758,7 +733,9 @@ contract PantherPoolV1 is
 
             require(
                 address(
-                    uint160(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER])
+                    UtilsLib.safe160(
+                        inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER]
+                    )
                 ) == address(VAULT),
                 ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
             );
@@ -781,7 +758,9 @@ contract PantherPoolV1 is
                     tokenId,
                     bytes32(inputs[MAIN_SALT_HASH]),
                     address(
-                        uint160(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER])
+                        UtilsLib.safe160(
+                            inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER]
+                        )
                     ),
                     depositAmount
                 )
@@ -801,7 +780,9 @@ contract PantherPoolV1 is
 
             require(
                 address(
-                    uint160(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER])
+                    UtilsLib.safe160(
+                        inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER]
+                    )
                 ) == address(VAULT),
                 ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
             );
@@ -823,7 +804,7 @@ contract PantherPoolV1 is
                     token,
                     tokenId,
                     address(
-                        uint160(
+                        UtilsLib.safe160(
                             inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER]
                         )
                     ),
