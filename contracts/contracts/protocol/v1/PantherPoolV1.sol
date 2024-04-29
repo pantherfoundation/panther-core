@@ -238,7 +238,7 @@ contract PantherPoolV1 is
 
         _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
 
-        _validateCachedForestRootIndex(
+        _validateCachedForestRoot(
             inputs[ZACCOUNT_ACTIVATION_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
@@ -331,7 +331,7 @@ contract PantherPoolV1 is
 
         _validateZNetworkChainId(inputs[PRP_CLAIM_ZNETWORK_CHAIN_ID_IND]);
 
-        _validateCachedForestRootIndex(
+        _validateCachedForestRoot(
             inputs[PRP_CLAIM_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
@@ -413,7 +413,7 @@ contract PantherPoolV1 is
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CONVERSION);
 
-        _validateCachedForestRootIndex(
+        _validateCachedForestRoot(
             inputs[PRP_CONVERSION_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
@@ -609,7 +609,7 @@ contract PantherPoolV1 is
             accountedRewards += _accountedRewards;
         }
 
-        _validateCachedForestRootIndex(
+        _validateCachedForestRoot(
             inputs[MAIN_FOREST_MERKLE_ROOT_IND],
             transactionOptions.cachedForestRootIndex()
         );
@@ -686,7 +686,7 @@ contract PantherPoolV1 is
         );
     }
 
-    function _validateCachedForestRootIndex(
+    function _validateCachedForestRoot(
         uint256 forestMerkleRoot,
         uint256 cachedForestRootIndex
     ) private view {
