@@ -192,7 +192,8 @@ contract PantherPoolV1 is
 
     /// @notice Creates zAccount utxo
     /// @dev It can be executed only by zAccountsRegistry contract.
-    /// @param inputs The public input parameters to be passed to verifier.
+    /// @param inputs The public input parameters to be passed to verifier
+    /// (refer to ZAccountActivationPublicSignals.sol).
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
     /// @param privateMessages the private message that contains zAccount utxo data.
@@ -286,7 +287,8 @@ contract PantherPoolV1 is
     /// @notice Accounts prp to zAccount
     /// @dev It spends the old zAccount utxo and create a new one with increased
     /// prp balance. It can be executed only be prpVoucherGrantor.
-    /// @param inputs The public input parameters to be passed to verifier.
+    /// @param inputs The public input parameters to be passed to verifier
+    /// (refer to PrpClaimPublicSignals.sol).
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
@@ -369,6 +371,8 @@ contract PantherPoolV1 is
     /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the
     /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.
     /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.
+    /// @param inputs The public input parameters to be passed to verifier
+    /// (refer to PrpConversionPublicSignals.sol).
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
@@ -483,7 +487,8 @@ contract PantherPoolV1 is
         );
     }
 
-    /// @param inputs The public input parameters to be passed to verifier.
+    /// @param inputs The public input parameters to be passed to verifier
+    /// (refer to MainPublicSignals.sol).
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
@@ -833,7 +838,6 @@ contract PantherPoolV1 is
         }
     }
 
-    // TODO: to be deleted in prod
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
         VAULT.lockAsset(
