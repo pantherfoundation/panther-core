@@ -373,7 +373,7 @@ contract PantherPoolV1 is
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// This data is used to spend the newly created utxo.
-    /// @param zkpAmountRounded The zkp amount to be locked in the vault, rounded by 1e12.
+    /// @param zkpAmountRounded The zkp amount to be locked in the vault, rounded by zAsset scale factor.
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
@@ -524,11 +524,6 @@ contract PantherPoolV1 is
         require(
             inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
             ERR_ZERO_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
-        );
-
-        require(
-            inputs[MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND] != 0,
-            ERR_ZERO_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX
         );
 
         require(

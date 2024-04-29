@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+// Indexes of public input for the main zk-circuit follows
+
 uint256 constant MAIN_EXTRA_INPUT_HASH_IND = 0;
 uint256 constant MAIN_DEPOSIT_AMOUNT_IND = 1;
 uint256 constant MAIN_WITHDRAW_AMOUNT_IND = 2;
@@ -13,7 +15,7 @@ uint256 constant MAIN_ZASSET_UTXO_IN_NULLIFIER_1_IND = 7;
 uint256 constant MAIN_ZASSET_UTXO_IN_NULLIFIER_2_IND = 8;
 uint256 constant MAIN_ZACCOUNT_UTXO_IN_NULLIFIER_IND = 9;
 uint256 constant MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND = 10;
-uint256 constant MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND = 11;
+// index 11 is MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND
 uint256 constant MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER_IND = 12;
 uint256 constant MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER_IND = 13;
 uint256 constant MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND = 14;
