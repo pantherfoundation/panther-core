@@ -38,15 +38,15 @@ describe('ZZoneDataEscrowElGamalEncryptionScalar circuit', function (this: any) 
             signal input zAccountId;                      // 24 bit
             1 - zAccountID (24 bit)
             -----------------------------------
-        2) ephimeralRandom, ephimeralPubKey[x,y], pubKey[x,y]
-           2.1) ephimeralPubKey[x,y] == ephimeralRandom * G
+        2) ephemeralRandom, ephemeralPubKey[x,y], pubKey[x,y]
+           2.1) ephemeralPubKey[x,y] == ephemeralRandom * G
            2.2) pubKey[x,y] - pubKey that its inclusion is proven
         3) encryptedMessage[2][x,y] - encrypted points
-            3.1) ephimeralRandomPubKey[x,y] = pubKey[x,y] * ephimeralRandom
+            3.1) ephemeralRandomPubKey[x,y] = pubKey[x,y] * ephemeralRandom
             3.2) Encrypt scalars:
                 3.2.1) scalar mapping: M_scalar_points = m_scalar * G for each scalar out of 8
                     --> M_scalar_points[1][x,y]
-                3.2.2) elgamal: encryptedScalars[8][x,y] = M_scalar_points[8][x,y] + ephimeralRandomPubKey[x,y]
+                3.2.2) elgamal: encryptedScalars[8][x,y] = M_scalar_points[8][x,y] + ephemeralRandomPubKey[x,y]
         4) Encrypted Output
             4.1) encyptedMessage[0][x,y] = encryptedscalars[0][x,y]
      ******************************************************************************************************************/
@@ -56,22 +56,22 @@ describe('ZZoneDataEscrowElGamalEncryptionScalar circuit', function (this: any) 
     let dataEscrowKeyPair = generateRandomKeypair(); // taken from the merkle-tree
     let zAccountID = BigInt(getRandomInt(0, 2 ** 24)); //  each zAssount has it
 
-    let ephimeralRandom = generateRandomInBabyJubSubField();
-    let ephimeralPubKey = [
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephimeralRandom)[0]),
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephimeralRandom)[1]),
+    let ephemeralRandom = generateRandomInBabyJubSubField();
+    let ephemeralPubKey = [
+        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[0]),
+        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[1]),
     ];
-    let ephimeralRandomPubKey = [
+    let ephemeralRandomPubKey = [
         BigInt(
             babyjub.mulPointEscalar(
                 dataEscrowKeyPair.publicKey,
-                ephimeralRandom,
+                ephemeralRandom,
             )[0],
         ),
         BigInt(
             babyjub.mulPointEscalar(
                 dataEscrowKeyPair.publicKey,
-                ephimeralRandom,
+                ephemeralRandom,
             )[1],
         ),
     ];
@@ -83,17 +83,17 @@ describe('ZZoneDataEscrowElGamalEncryptionScalar circuit', function (this: any) 
     // [2] - elgamal scalars + points
     let enctyptedMessage = [
         // scalars
-        babyjub.addPoint(M_scalar_points[0], ephimeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[0], ephemeralRandomPubKey),
     ];
 
     const input = {
-        ephimeralRandom: ephimeralRandom,
+        ephemeralRandom: ephemeralRandom,
         scalarMessage: m_scalar,
         pubKey: dataEscrowKeyPair.publicKey,
     };
 
     const output = {
-        ephimeralPubKey: ephimeralPubKey,
+        ephemeralPubKey: ephemeralPubKey,
         encryptedMessage: [
             [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
         ],

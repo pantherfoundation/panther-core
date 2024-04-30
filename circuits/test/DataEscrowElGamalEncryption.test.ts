@@ -64,17 +64,17 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             7 - utxoInOriginZoneId-1 (16 bit) << 16 | utxoOutTargetZoneId-1 (16 bit)
             8 - utxoInOriginZoneId-2 (16 bit) << 16 | utxoOutTargetZoneId-2 (16 bit)
             -----------------------------------
-        2) ephimeralRandom, ephimeralPubKey[x,y], pubKey[x,y]
-           2.1) ephimeralPubKey[x,y] == ephimeralRandom * G
+        2) ephemeralRandom, ephemeralPubKey[x,y], pubKey[x,y]
+           2.1) ephemeralPubKey[x,y] == ephemeralRandom * G
            2.2) pubKey[x,y] - pubKey that its inclusion is proven
         3) encryptedMessage[8(scalars)+2(points)][x,y] - encrypted points
-            3.1) ephimeralRandomPubKey[x,y] = pubKey[x,y] * ephimeralRandom
+            3.1) ephemeralRandomPubKey[x,y] = pubKey[x,y] * ephemeralRandom
             3.2) Encrypt scalars:
                 3.2.1) scalar mapping: M_scalar_points = m_scalar * G for each scalar out of 8
                     --> M_scalar_points[8][x,y]
-                3.2.2) elgamal: encryptedscalars[8][x,y] = M_scalar_points[8][x,y] + ephimeralRandomPubKey[x,y]
+                3.2.2) elgamal: encryptedscalars[8][x,y] = M_scalar_points[8][x,y] + ephemeralRandomPubKey[x,y]
             3.3) Encrypt Points:
-                3.3.1) elgamal: encyptedPoints[2][x,y] = M_points[2][x,y] + ephimeralRandomPubKey[x,y]
+                3.3.1) elgamal: encyptedPoints[2][x,y] = M_points[2][x,y] + ephemeralRandomPubKey[x,y]
         4) Encrypted Output
             4.1) encyptedMessage[0-to-7][x,y] = encryptedscalars[8][x,y]
             4.2) encyptedMessage[8-to-9][x,y] = encryptedPoints[8][x,y]
@@ -110,22 +110,22 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
         BigInt(getRandomInt(0, 2 ** 16)),
         BigInt(getRandomInt(0, 2 ** 16)),
     ];
-    let ephimeralRandom = generateRandomInBabyJubSubField();
-    let ephimeralPubKey = [
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephimeralRandom)[0]),
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephimeralRandom)[1]),
+    let ephemeralRandom = generateRandomInBabyJubSubField();
+    let ephemeralPubKey = [
+        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[0]),
+        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[1]),
     ];
-    let ephimeralRandomPubKey = [
+    let ephemeralRandomPubKey = [
         BigInt(
             babyjub.mulPointEscalar(
                 dataEscrowKeyPair.publicKey,
-                ephimeralRandom,
+                ephemeralRandom,
             )[0],
         ),
         BigInt(
             babyjub.mulPointEscalar(
                 dataEscrowKeyPair.publicKey,
-                ephimeralRandom,
+                ephemeralRandom,
             )[1],
         ),
     ];
@@ -170,28 +170,28 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
     // [3] - elgamal scalars + points
     let enctyptedMessage = [
         // scalars
-        babyjub.addPoint(M_scalar_points[0], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[1], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[2], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[3], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[4], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[5], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[6], ephimeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[7], ephimeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[0], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[1], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[2], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[3], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[4], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[5], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[6], ephemeralRandomPubKey),
+        babyjub.addPoint(M_scalar_points[7], ephemeralRandomPubKey),
         // points
-        babyjub.addPoint(M_points[0], ephimeralRandomPubKey),
-        babyjub.addPoint(M_points[1], ephimeralRandomPubKey),
+        babyjub.addPoint(M_points[0], ephemeralRandomPubKey),
+        babyjub.addPoint(M_points[1], ephemeralRandomPubKey),
     ];
 
     const input = {
-        ephimeralRandom: ephimeralRandom,
+        ephemeralRandom: ephemeralRandom,
         scalarMessage: m_scalar,
         pointMessage: M_points,
         pubKey: dataEscrowKeyPair.publicKey,
     };
 
     const output = {
-        ephimeralPubKey: ephimeralPubKey,
+        ephemeralPubKey: ephemeralPubKey,
         encryptedMessage: [
             [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
             [BigInt(enctyptedMessage[1][0]), BigInt(enctyptedMessage[1][1])],

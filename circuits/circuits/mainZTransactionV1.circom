@@ -14,7 +14,7 @@ component main {
         spendTime,                             // [7]
         utxoInNullifier,                       // [8] - nUtxoIn = 2
         zAccountUtxoInNullifier,               // [9]
-        zZoneDataEscrowEphimeralPubKeyAx,      // [10] - 1 (NOTE: only x-coordinate)
+        zZoneDataEscrowEphemeralPubKeyAx,      // [10] - 1 (NOTE: only x-coordinate)
         zZoneDataEscrowEncryptedMessageAx,     // [11] - 1 (NOTE: only x-coordinate)
         kytDepositSignedMessageSender,         // [12]
         kytDepositSignedMessageReceiver,       // [13]
@@ -22,9 +22,9 @@ component main {
         kytWithdrawSignedMessageSender,        // [15]
         kytWithdrawSignedMessageReceiver,      // [16]
         kytWithdrawSignedMessageHash,          // [17]
-        dataEscrowEphimeralPubKeyAx,           // [18] - 1 (NOTE: only x-coordinate)
+        dataEscrowEphemeralPubKeyAx,           // [18] - 1 (NOTE: only x-coordinate)
         dataEscrowEncryptedMessageAx,          // [19] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
-        daoDataEscrowEphimeralPubKeyAx,        // [20] - 1 (NOTE: only x-coordinate)
+        daoDataEscrowEphemeralPubKeyAx,        // [20] - 1 (NOTE: only x-coordinate)
         daoDataEscrowEncryptedMessageAx,       // [21] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
         utxoOutCreateTime,                     // [22]
         utxoOutCommitment,                     // [23] - nUtxoOut = 2

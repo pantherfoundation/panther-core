@@ -6,37 +6,37 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
 template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
-    signal input ephimeralRandom;                               // randomness
+    signal input ephemeralRandom;                               // randomness
     signal input scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
     signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
     signal input pubKey[2];                                     // public key (assumed to be priv-key * B8)
-    signal output ephimeralPubKey[2];                           // ephimeral public-key
+    signal output ephemeralPubKey[2];                           // ephemeral public-key
     signal output encryptedMessage[ScalarsSize+PointsSize][2];  // encrypted data
 
     assert(ScalarsSize > 0);
     assert(PointsSize > 0);
 
-    // [0] - Create ephimeral public key
+    // [0] - Create ephemeral public key
     component drv_rG = BabyPbk();
-    drv_rG.in <== ephimeralRandom;
-    ephimeralPubKey[0] <== drv_rG.Ax;
-    ephimeralPubKey[1] <== drv_rG.Ay;
+    drv_rG.in <== ephemeralRandom;
+    ephemeralPubKey[0] <== drv_rG.Ax;
+    ephemeralPubKey[1] <== drv_rG.Ay;
 
-    // [1] - ephimeralRandom * pubKey + M, where M = m * G
+    // [1] - ephemeralRandom * pubKey + M, where M = m * G
     component drv_mG[ScalarsSize];
 
-    // ephimeralRandom * pubKey
+    // ephemeralRandom * pubKey
     component n2b = Num2Bits(253);
 
-    n2b.in <== ephimeralRandom;
+    n2b.in <== ephemeralRandom;
     // G8 is used in case of pubKey[x,y] = [0,0]
-    component drv_ephimeralRandomPublicKey = EscalarMulAny(253);
+    component drv_ephemeralRandomPublicKey = EscalarMulAny(253);
 
-    drv_ephimeralRandomPublicKey.p[0] <== pubKey[0];
-    drv_ephimeralRandomPublicKey.p[1] <== pubKey[1];
+    drv_ephemeralRandomPublicKey.p[0] <== pubKey[0];
+    drv_ephemeralRandomPublicKey.p[1] <== pubKey[1];
 
     for (var i = 0; i < 253; i++) {
-        drv_ephimeralRandomPublicKey.e[i] <== n2b.out[i];
+        drv_ephemeralRandomPublicKey.e[i] <== n2b.out[i];
     }
 
     component drv_mGrY[ScalarsSize + PointsSize];
@@ -52,8 +52,8 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
         drv_mGrY[j] = BabyAdd();
         drv_mGrY[j].x1 <== drv_mG[j].Ax;
         drv_mGrY[j].y1 <== drv_mG[j].Ay;
-        drv_mGrY[j].x2 <== drv_ephimeralRandomPublicKey.out[0];
-        drv_mGrY[j].y2 <== drv_ephimeralRandomPublicKey.out[1];
+        drv_mGrY[j].x2 <== drv_ephemeralRandomPublicKey.out[0];
+        drv_mGrY[j].y2 <== drv_ephemeralRandomPublicKey.out[1];
 
         // ecrypted data
         encryptedMessage[j][0] <== drv_mGrY[j].xout;
@@ -61,12 +61,12 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     }
 
     for (var j = 0; j < PointsSize; j++) {
-        // ephimeralRandom * pubKey + M
+        // ephemeralRandom * pubKey + M
         drv_mGrY[ScalarsSize+j] = BabyAdd();
         drv_mGrY[ScalarsSize+j].x1 <== pointMessage[j][0];
         drv_mGrY[ScalarsSize+j].y1 <== pointMessage[j][1];
-        drv_mGrY[ScalarsSize+j].x2 <== drv_ephimeralRandomPublicKey.out[0];
-        drv_mGrY[ScalarsSize+j].y2 <== drv_ephimeralRandomPublicKey.out[1];
+        drv_mGrY[ScalarsSize+j].x2 <== drv_ephemeralRandomPublicKey.out[0];
+        drv_mGrY[ScalarsSize+j].y2 <== drv_ephemeralRandomPublicKey.out[1];
 
         // ecrypted data
         encryptedMessage[ScalarsSize+j][0] <== drv_mGrY[ScalarsSize+j].xout;
@@ -179,35 +179,35 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
 }
 
 template DataEscrowElGamalEncryptionScalar(ScalarsSize) {
-    signal input ephimeralRandom;                               // randomness
+    signal input ephemeralRandom;                               // randomness
     signal input scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
     signal input pubKey[2];                                     // public key
-    signal output ephimeralPubKey[2];                           // ephimeral public-key
+    signal output ephemeralPubKey[2];                           // ephemeral public-key
     signal output encryptedMessage[ScalarsSize][2];             // encrypted data
 
     assert(ScalarsSize > 0);
 
-    // [0] - Create ephimeral public key
+    // [0] - Create ephemeral public key
     component drv_rG = BabyPbk();
-    drv_rG.in <== ephimeralRandom;
-    ephimeralPubKey[0] <== drv_rG.Ax;
-    ephimeralPubKey[1] <== drv_rG.Ay;
+    drv_rG.in <== ephemeralRandom;
+    ephemeralPubKey[0] <== drv_rG.Ax;
+    ephemeralPubKey[1] <== drv_rG.Ay;
 
-    // [1] - ephimeralRandom * pubKey + M, where M = m * G
+    // [1] - ephemeralRandom * pubKey + M, where M = m * G
     component drv_mG[ScalarsSize];
 
-    // ephimeralRandom * pubKey
+    // ephemeralRandom * pubKey
     component n2b = Num2Bits(253);
 
-    n2b.in <== ephimeralRandom;
+    n2b.in <== ephemeralRandom;
 
-    component drv_ephimeralRandomPublicKey = EscalarMulAny(253);
+    component drv_ephemeralRandomPublicKey = EscalarMulAny(253);
 
-    drv_ephimeralRandomPublicKey.p[0] <== pubKey[0];
-    drv_ephimeralRandomPublicKey.p[1] <== pubKey[1];
+    drv_ephemeralRandomPublicKey.p[0] <== pubKey[0];
+    drv_ephemeralRandomPublicKey.p[1] <== pubKey[1];
 
     for (var i = 0; i < 253; i++) {
-        drv_ephimeralRandomPublicKey.e[i] <== n2b.out[i];
+        drv_ephemeralRandomPublicKey.e[i] <== n2b.out[i];
     }
 
     component drv_mGrY[ScalarsSize];
@@ -223,8 +223,8 @@ template DataEscrowElGamalEncryptionScalar(ScalarsSize) {
         drv_mGrY[j] = BabyAdd();
         drv_mGrY[j].x1 <== drv_mG[j].Ax;
         drv_mGrY[j].y1 <== drv_mG[j].Ay;
-        drv_mGrY[j].x2 <== drv_ephimeralRandomPublicKey.out[0];
-        drv_mGrY[j].y2 <== drv_ephimeralRandomPublicKey.out[1];
+        drv_mGrY[j].x2 <== drv_ephemeralRandomPublicKey.out[0];
+        drv_mGrY[j].y2 <== drv_ephemeralRandomPublicKey.out[1];
 
         // ecrypted data
         encryptedMessage[j][0] <== drv_mGrY[j].xout;
@@ -313,45 +313,45 @@ template DaoDataEscrowSerializer(nUtxoIn,nUtxoOut) {
 }
 
 template DataEscrowElGamalEncryptionPoint(PointsSize) {
-    signal input ephimeralRandom;                               // randomness
+    signal input ephemeralRandom;                               // randomness
     signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
     signal input pubKey[2];                                     // public key
-    signal output ephimeralPubKey[2];                           // ephimeral public-key
+    signal output ephemeralPubKey[2];                           // ephemeral public-key
     signal output encryptedMessage[PointsSize][2];              // encrypted data
 
     assert(PointsSize > 0);
 
-    // [0] - Create ephimeral public key
+    // [0] - Create ephemeral public key
     component drv_rG = BabyPbk();
-    drv_rG.in <== ephimeralRandom;
-    ephimeralPubKey[0] <== drv_rG.Ax;
-    ephimeralPubKey[1] <== drv_rG.Ay;
+    drv_rG.in <== ephemeralRandom;
+    ephemeralPubKey[0] <== drv_rG.Ax;
+    ephemeralPubKey[1] <== drv_rG.Ay;
 
-    // [1] - ephimeralRandom * pubKey + M, where M is EC-point
+    // [1] - ephemeralRandom * pubKey + M, where M is EC-point
 
-    // ephimeralRandom * pubKey
+    // ephemeralRandom * pubKey
     component n2b = Num2Bits(253);
 
-    n2b.in <== ephimeralRandom;
+    n2b.in <== ephemeralRandom;
 
-    component drv_ephimeralRandomPublicKey = EscalarMulAny(253);
+    component drv_ephemeralRandomPublicKey = EscalarMulAny(253);
 
-    drv_ephimeralRandomPublicKey.p[0] <== pubKey[0];
-    drv_ephimeralRandomPublicKey.p[1] <== pubKey[1];
+    drv_ephemeralRandomPublicKey.p[0] <== pubKey[0];
+    drv_ephemeralRandomPublicKey.p[1] <== pubKey[1];
 
     for (var i = 0; i < 253; i++) {
-        drv_ephimeralRandomPublicKey.e[i] <== n2b.out[i];
+        drv_ephemeralRandomPublicKey.e[i] <== n2b.out[i];
     }
 
     component drv_mGrY[PointsSize];
 
     for (var j = 0; j < PointsSize; j++) {
-        // ephimeralRandom * pubKey + M
+        // ephemeralRandom * pubKey + M
         drv_mGrY[j] = BabyAdd();
         drv_mGrY[j].x1 <== pointMessage[j][0];
         drv_mGrY[j].y1 <== pointMessage[j][1];
-        drv_mGrY[j].x2 <== drv_ephimeralRandomPublicKey.out[0];
-        drv_mGrY[j].y2 <== drv_ephimeralRandomPublicKey.out[1];
+        drv_mGrY[j].x2 <== drv_ephemeralRandomPublicKey.out[0];
+        drv_mGrY[j].y2 <== drv_ephemeralRandomPublicKey.out[1];
 
         // ecrypted data
         encryptedMessage[j][0] <== drv_mGrY[j].xout;

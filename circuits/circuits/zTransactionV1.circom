@@ -165,9 +165,9 @@ template ZTransactionV1( nUtxoIn,
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
     signal input zZonePathIndices[ZZoneMerkleTreeDepth];
     signal input zZoneEdDsaPubKey[2];
-    signal input zZoneDataEscrowEphimeralRandom;
-    signal input zZoneDataEscrowEphimeralPubKeyAx; // public
-    signal input zZoneDataEscrowEphimeralPubKeyAy;
+    signal input zZoneDataEscrowEphemeralRandom;
+    signal input zZoneDataEscrowEphemeralPubKeyAx; // public
+    signal input zZoneDataEscrowEphemeralPubKeyAy;
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
@@ -216,9 +216,9 @@ template ZTransactionV1( nUtxoIn,
     // data escrow
     signal input dataEscrowPubKey[2];
     signal input dataEscrowPubKeyExpiryTime;
-    signal input dataEscrowEphimeralRandom;
-    signal input dataEscrowEphimeralPubKeyAx; // public
-    signal input dataEscrowEphimeralPubKeyAy;
+    signal input dataEscrowEphemeralRandom;
+    signal input dataEscrowEphemeralPubKeyAx; // public
+    signal input dataEscrowEphemeralPubKeyAy;
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
@@ -240,9 +240,9 @@ template ZTransactionV1( nUtxoIn,
 
     // dao data escrow
     signal input daoDataEscrowPubKey[2];
-    signal input daoDataEscrowEphimeralRandom;
-    signal input daoDataEscrowEphimeralPubKeyAx; // public
-    signal input daoDataEscrowEphimeralPubKeyAy;
+    signal input daoDataEscrowEphemeralRandom;
+    signal input daoDataEscrowEphemeralPubKeyAx; // public
+    signal input daoDataEscrowEphemeralPubKeyAy;
 
     // ------------- scalars-size --------------
     // 1) 1 x 64 (zAccountId << 16 | zAccountZoneId)
@@ -916,7 +916,7 @@ template ZTransactionV1( nUtxoIn,
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
     component dataEscrow = DataEscrowElGamalEncryption(dataEscrowScalarSize,dataEscrowPointSize);
 
-    dataEscrow.ephimeralRandom <== dataEscrowEphimeralRandom;
+    dataEscrow.ephemeralRandom <== dataEscrowEphemeralRandom;
     dataEscrow.pubKey[0] <== dataEscrowPubKey[0];
     dataEscrow.pubKey[1] <== dataEscrowPubKey[1];
 
@@ -947,9 +947,9 @@ template ZTransactionV1( nUtxoIn,
         dataEscrow.pointMessage[j][1] <== utxoOutRootSpendPubKey[j][1];
     }
 
-    // verify EphimeralPubKey
-    dataEscrowEphimeralPubKeyAx === dataEscrow.ephimeralPubKey[0];
-    dataEscrowEphimeralPubKeyAy === dataEscrow.ephimeralPubKey[1];
+    // verify EphemeralPubKey
+    dataEscrowEphemeralPubKeyAx === dataEscrow.ephemeralPubKey[0];
+    dataEscrowEphemeralPubKeyAy === dataEscrow.ephemeralPubKey[1];
 
     // verify Encryption
     for (var i = 0; i < dataEscrowEncryptedPoints; i++) {
@@ -960,7 +960,7 @@ template ZTransactionV1( nUtxoIn,
     // [19] - DAO Data Escrow encryption
     component daoDataEscrow = DataEscrowElGamalEncryptionScalar(daoDataEscrowScalarSize);
 
-    daoDataEscrow.ephimeralRandom <== daoDataEscrowEphimeralRandom;
+    daoDataEscrow.ephemeralRandom <== daoDataEscrowEphemeralRandom;
     daoDataEscrow.pubKey[0] <== daoDataEscrowPubKey[0];
     daoDataEscrow.pubKey[1] <== daoDataEscrowPubKey[1];
 
@@ -981,9 +981,9 @@ template ZTransactionV1( nUtxoIn,
         daoDataEscrow.scalarMessage[j] <== daoDataEscrowScalarsSerializer.out[j];
     }
 
-    // verify EphimeralPubKey
-    daoDataEscrowEphimeralPubKeyAx === daoDataEscrow.ephimeralPubKey[0];
-    daoDataEscrowEphimeralPubKeyAy === daoDataEscrow.ephimeralPubKey[1];
+    // verify EphemeralPubKey
+    daoDataEscrowEphemeralPubKeyAx === daoDataEscrow.ephemeralPubKey[0];
+    daoDataEscrowEphemeralPubKeyAy === daoDataEscrow.ephemeralPubKey[1];
 
     // verify Encryption
     for (var i = 0; i < daoDataEscrowEncryptedPoints; i++) {
@@ -1029,14 +1029,14 @@ template ZTransactionV1( nUtxoIn,
     // [23] - zAccountId data escrow for zone operator
     component zZoneDataEscrow = DataEscrowElGamalEncryptionScalar(zZoneDataEscrowScalarSize);
 
-    zZoneDataEscrow.ephimeralRandom <== zZoneDataEscrowEphimeralRandom;
+    zZoneDataEscrow.ephemeralRandom <== zZoneDataEscrowEphemeralRandom;
     zZoneDataEscrow.pubKey[0] <== zZoneEdDsaPubKey[0];
     zZoneDataEscrow.pubKey[1] <== zZoneEdDsaPubKey[1];
     zZoneDataEscrow.scalarMessage[0] <== zAccountUtxoInId;
 
-    // verify EphimeralPubKey
-    zZoneDataEscrowEphimeralPubKeyAx === zZoneDataEscrow.ephimeralPubKey[0];
-    zZoneDataEscrowEphimeralPubKeyAy === zZoneDataEscrow.ephimeralPubKey[1];
+    // verify EphemeralPubKey
+    zZoneDataEscrowEphemeralPubKeyAx === zZoneDataEscrow.ephemeralPubKey[0];
+    zZoneDataEscrowEphemeralPubKeyAy === zZoneDataEscrow.ephemeralPubKey[1];
 
     // verify Encryption
     for (var i = 0; i < zZoneDataEscrowEncryptedPoints; i++) {
@@ -1239,9 +1239,9 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.zZonePathElements <== zZonePathElements;
     zTransactionV1RC.zZonePathIndices <== zZonePathIndices;
     zTransactionV1RC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
-    zTransactionV1RC.zZoneDataEscrowEphimeralRandom <== zZoneDataEscrowEphimeralRandom;
-    zTransactionV1RC.zZoneDataEscrowEphimeralPubKeyAx <== zZoneDataEscrowEphimeralPubKeyAx;
-    zTransactionV1RC.zZoneDataEscrowEphimeralPubKeyAy <== zZoneDataEscrowEphimeralPubKeyAy;
+    zTransactionV1RC.zZoneDataEscrowEphemeralRandom <== zZoneDataEscrowEphemeralRandom;
+    zTransactionV1RC.zZoneDataEscrowEphemeralPubKeyAx <== zZoneDataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.zZoneDataEscrowEphemeralPubKeyAy <== zZoneDataEscrowEphemeralPubKeyAy;
     zTransactionV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zTransactionV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zTransactionV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
@@ -1280,9 +1280,9 @@ template ZTransactionV1( nUtxoIn,
 
     zTransactionV1RC.dataEscrowPubKey <== dataEscrowPubKey;
     zTransactionV1RC.dataEscrowPubKeyExpiryTime <== dataEscrowPubKeyExpiryTime;
-    zTransactionV1RC.dataEscrowEphimeralRandom <== dataEscrowEphimeralRandom;
-    zTransactionV1RC.dataEscrowEphimeralPubKeyAx <== dataEscrowEphimeralPubKeyAx;
-    zTransactionV1RC.dataEscrowEphimeralPubKeyAy <== dataEscrowEphimeralPubKeyAy;
+    zTransactionV1RC.dataEscrowEphemeralRandom <== dataEscrowEphemeralRandom;
+    zTransactionV1RC.dataEscrowEphemeralPubKeyAx <== dataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.dataEscrowEphemeralPubKeyAy <== dataEscrowEphemeralPubKeyAy;
     zTransactionV1RC.dataEscrowPathElements <== dataEscrowPathElements;
     zTransactionV1RC.dataEscrowPathIndices <== dataEscrowPathIndices;
 
@@ -1290,9 +1290,9 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
 
     zTransactionV1RC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
-    zTransactionV1RC.daoDataEscrowEphimeralRandom <== daoDataEscrowEphimeralRandom;
-    zTransactionV1RC.daoDataEscrowEphimeralPubKeyAx <== daoDataEscrowEphimeralPubKeyAx;
-    zTransactionV1RC.daoDataEscrowEphimeralPubKeyAy <== daoDataEscrowEphimeralPubKeyAy;
+    zTransactionV1RC.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
+    zTransactionV1RC.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
 
     zTransactionV1RC.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
     zTransactionV1RC.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;

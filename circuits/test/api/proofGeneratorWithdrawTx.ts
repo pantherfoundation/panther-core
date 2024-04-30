@@ -787,15 +787,15 @@ const withdrawNonZeroInput = {
             6617854811593651784376273094293148407007707755076821057553730151008062424747n,
         ),
     ],
-    zZoneDataEscrowEphimeralRandom:
+    zZoneDataEscrowEphemeralRandom:
         BigInt(
             790122152066676684676093302872898287841903882354339429497975929636832086290n,
         ),
-    zZoneDataEscrowEphimeralPubKeyAx:
+    zZoneDataEscrowEphemeralPubKeyAx:
         BigInt(
             8203289148254703516772267706874329469330087297928457772489392227653451244213n,
         ),
-    zZoneDataEscrowEphimeralPubKeyAy:
+    zZoneDataEscrowEphemeralPubKeyAy:
         BigInt(
             19998992060707539017877331634603765261877243592349009808298088607668947098216n,
         ),
@@ -950,15 +950,15 @@ const withdrawNonZeroInput = {
         ),
     ],
     dataEscrowPubKeyExpiryTime: BigInt(1735689600n),
-    dataEscrowEphimeralRandom:
+    dataEscrowEphemeralRandom:
         BigInt(
             2508770261742365048726528579942226801565607871885423400214068953869627805520n,
         ),
-    dataEscrowEphimeralPubKeyAx:
+    dataEscrowEphemeralPubKeyAx:
         BigInt(
             4301916310975298895721162797900971043392040643140207582177965168853046592976n,
         ),
-    dataEscrowEphimeralPubKeyAy:
+    dataEscrowEphemeralPubKeyAy:
         BigInt(
             815388028464849479935447593762613752978886104243152067307597626016673798528n,
         ),
@@ -1095,15 +1095,15 @@ const withdrawNonZeroInput = {
             9194872949126287643523554866093178264045906284036198776275995684726142899669n,
         ),
     ],
-    daoDataEscrowEphimeralRandom:
+    daoDataEscrowEphemeralRandom:
         BigInt(
             2486295975768183987242341265649589729082265459252889119245150374183802141273n,
         ),
-    daoDataEscrowEphimeralPubKeyAx:
+    daoDataEscrowEphemeralPubKeyAx:
         BigInt(
             18172727478723733672122242648004425580927771110712257632781054272274332874233n,
         ),
-    daoDataEscrowEphimeralPubKeyAy:
+    daoDataEscrowEphemeralPubKeyAy:
         BigInt(
             18696859439217809465524370245449396885627295546811556940609392448191776076084n,
         ),
