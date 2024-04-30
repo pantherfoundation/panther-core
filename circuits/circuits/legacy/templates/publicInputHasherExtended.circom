@@ -30,14 +30,14 @@ template PublicInputHasherExtended( nUtxoIn,
     signal input zAccountUtxoInNullifier;                                   // 256 bit
     signal input zAccountBlackListMerkleRoot;                               // 256 bit
     signal input zoneRecordMerkleRoot;                                      // 256 bit
-    signal input zoneRecordDataEscrowEphimeralPubKey[2];                    // 256 bit - only `x` will be taken
+    signal input zoneRecordDataEscrowEphemeralPubKey[2];                    // 256 bit - only `x` will be taken
     signal input zoneRecordDataEscrowEncryptedMessage[nZrDataEscrow][2];    // 256 bit - only `x` will be taken
     signal input kytSignedMessageHash;                                      // 256 bit
     signal input trustProvidersMerkleRoot;                                          // 256 bit
-    signal input dataEscrowEphimeralPubKey[2];                              // 256 bit - only `x` will be taken
+    signal input dataEscrowEphemeralPubKey[2];                              // 256 bit - only `x` will be taken
     signal input dataEscrowEncryptedMessage[nDataEscrow][2];                // 256 bit - only `x` will be taken
     signal input daoDataEscrowPubKey[2];                                    // 256 bit - only `x` will be taken
-    signal input daoDataEscrowEphimeralPubKey[2];                           // 256 bit - only `x` will be taken
+    signal input daoDataEscrowEphemeralPubKey[2];                           // 256 bit - only `x` will be taken
     signal input daoDataEscrowEncryptedMessage[nDaoDataEscrow][2];          // 256 bit - only `x` will be taken
     signal input utxoOutCreateTime;                                         // 32 bit
     signal input utxoOutOriginNetworkId[nUtxoOut];                          // 6 bit
@@ -148,14 +148,14 @@ template PublicInputHasherExtended( nUtxoIn,
     // zAccountUtxoInNullifier                                  // 256 bit  <-- 3                    <-- 3
     // zAccountBlackListMerkleRoot                              // 256 bit  <-- 4                    <-- [4]        RARE CHANGE
     // zoneRecordMerkleRoot                                     // 256 bit  <-- 5                    <-- [5]        RARE CHANGE
-    // zoneRecordDataEscrowEphimeralPubKey[2]                   // 256 bit  <-- 6,7                  <-- 6
+    // zoneRecordDataEscrowEphemeralPubKey[2]                   // 256 bit  <-- 6,7                  <-- 6
     // zoneRecordDataEscrowEncryptedMessage[nZrDataEscrow][2]   // 256 bit  <-- 2 x nZrDataEscrow    <-- nZrDataEscrow
     // kytSignedMessageHash                                     // 256 bit  <-- 7                    <-- 7
     // trustProvidersMerkleRoot                                         // 256 bit  <-- 8                    <-- [8]        RARE CHANGE
-    // dataEscrowEphimeralPubKey[2]                             // 256 bit  <-- 9,10                 <-- 9
+    // dataEscrowEphemeralPubKey[2]                             // 256 bit  <-- 9,10                 <-- 9
     // dataEscrowEncryptedMessage[nDataEscrow][2]               // 256 bit  <-- 2 x nDataEscrow      <-- nDataEscrow
     // daoDataEscrowPubKey[2]                                   // 256 bit  <-- 11,12                <-- [10]       RARE CHANGE
-    // daoDataEscrowEphimeralPubKey[2]                          // 256 bit  <-- 13,14                <-- 11
+    // daoDataEscrowEphemeralPubKey[2]                          // 256 bit  <-- 13,14                <-- 11
     // daoDataEscrowEncryptedMessage[nDaoDataEscrow][2]         // 256 bit  <-- 2 x nDaoDataEscrow   <-- nDaoDataEscrow
     // utxoOutCommitments[nUtxoOut]                             // 256 bit  <-- nUtxoOut             <-- nUtxoOut
     // zAccountUtxoOutCommitment                                // 256 bit  <-- 15                   <-- 12
@@ -216,7 +216,7 @@ template PublicInputHasherExtended( nUtxoIn,
 
     // [13] ----------------------------------------------------------------------------
     for (var i = 0; i < 1; i++) {
-        hash_inputs[offset] <== zoneRecordDataEscrowEphimeralPubKey[i];
+        hash_inputs[offset] <== zoneRecordDataEscrowEphemeralPubKey[i];
     }
     offset++;
 
@@ -235,7 +235,7 @@ template PublicInputHasherExtended( nUtxoIn,
 
     // [15] ----------------------------------------------------------------------------
     for (var i = 0; i < 1; i++) {
-        hash_inputs[offset+i] <== dataEscrowEphimeralPubKey[i];
+        hash_inputs[offset+i] <== dataEscrowEphemeralPubKey[i];
     }
     offset++;
 
@@ -250,7 +250,7 @@ template PublicInputHasherExtended( nUtxoIn,
 
     // [16] ----------------------------------------------------------------------------
     for (var i = 0; i < 1; i++) {
-        hash_inputs[offset+i] <== daoDataEscrowEphimeralPubKey[i];
+        hash_inputs[offset+i] <== daoDataEscrowEphemeralPubKey[i];
     }
     offset++;
 

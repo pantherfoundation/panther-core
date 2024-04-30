@@ -113,9 +113,9 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
     signal input zZonePathIndices[ZZoneMerkleTreeDepth];
     signal input zZoneEdDsaPubKey[2];
-    signal input zZoneDataEscrowEphimeralRandom;
-    signal input zZoneDataEscrowEphimeralPubKeyAx;
-    signal input zZoneDataEscrowEphimeralPubKeyAy;
+    signal input zZoneDataEscrowEphemeralRandom;
+    signal input zZoneDataEscrowEphemeralPubKeyAx;
+    signal input zZoneDataEscrowEphemeralPubKeyAy;
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
@@ -159,9 +159,9 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // data escrow
     signal input dataEscrowPubKey[2];
     signal input dataEscrowPubKeyExpiryTime;
-    signal input dataEscrowEphimeralRandom;
-    signal input dataEscrowEphimeralPubKeyAx;
-    signal input dataEscrowEphimeralPubKeyAy;
+    signal input dataEscrowEphemeralRandom;
+    signal input dataEscrowEphemeralPubKeyAx;
+    signal input dataEscrowEphemeralPubKeyAy;
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
@@ -173,9 +173,9 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
 
     signal input daoDataEscrowPubKey[2];
-    signal input daoDataEscrowEphimeralRandom;
-    signal input daoDataEscrowEphimeralPubKeyAx;
-    signal input daoDataEscrowEphimeralPubKeyAy;
+    signal input daoDataEscrowEphemeralRandom;
+    signal input daoDataEscrowEphemeralPubKeyAx;
+    signal input daoDataEscrowEphemeralPubKeyAy;
 
     var daoDataEscrowScalarSize = 1 + max_nUtxoIn_nUtxoOut;
     var daoDataEscrowEncryptedPoints = daoDataEscrowScalarSize;
@@ -632,16 +632,16 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // zZoneDataEscrowEphimeralRandom - 256 bits
+    // zZoneDataEscrowEphemeralRandom - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // zZoneDataEscrowEphimeralPubKeyAx - 256 bits
+    // zZoneDataEscrowEphemeralPubKeyAx - 256 bits
     // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // zZoneDataEscrowEphimeralPubKeyAy - 256 bits
+    // zZoneDataEscrowEphemeralPubKeyAy - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
@@ -837,16 +837,16 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     component customRangeCheckDataEscrowPubKeyExpiryTime = RangeCheckSingleSignal(32,(2**32 - 1),0);
     customRangeCheckDataEscrowPubKeyExpiryTime.in <== dataEscrowPubKeyExpiryTime;
 
-    // dataEscrowEphimeralRandom - 256 bits
+    // dataEscrowEphemeralRandom - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // dataEscrowEphimeralPubKeyAx - 256 bits
+    // dataEscrowEphemeralPubKeyAx - 256 bits
     // Public signal
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // dataEscrowEphimeralPubKeyAy - 256 bits
+    // dataEscrowEphemeralPubKeyAy - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
@@ -871,15 +871,15 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
-    // daoDataEscrowEphimeralRandom - 256 bits
+    // daoDataEscrowEphemeralRandom - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
-    // daoDataEscrowEphimeralPubKeyAx - 256 bits
+    // daoDataEscrowEphemeralPubKeyAx - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
-    // daoDataEscrowEphimeralPubKeyAy - 256 bits
+    // daoDataEscrowEphemeralPubKeyAy - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
     // Should be checked as part of the SC
 
