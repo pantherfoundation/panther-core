@@ -11,31 +11,32 @@ component main {
         addedAmountZkp,                        // [4]
         token,                                 // [5] - can be 1 or 2
         tokenId,                               // [6] - can be 1 or 2
-        spendTime,                             // [7]
-        utxoInNullifier,                       // [8] - nUtxoIn = 2
-        zAccountUtxoInNullifier,               // [9]
-        zZoneDataEscrowEphimeralPubKeyAx,      // [10] - 1 (NOTE: only x-coordinate)
-        zZoneDataEscrowEncryptedMessageAx,     // [11] - 1 (NOTE: only x-coordinate)
-        kytDepositSignedMessageSender,         // [12]
-        kytDepositSignedMessageReceiver,       // [13]
-        kytDepositSignedMessageHash,           // [14]
-        kytWithdrawSignedMessageSender,        // [15]
-        kytWithdrawSignedMessageReceiver,      // [16]
-        kytWithdrawSignedMessageHash,          // [17]
-        dataEscrowEphimeralPubKeyAx,           // [18] - 1 (NOTE: only x-coordinate)
-        dataEscrowEncryptedMessageAx,          // [19] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
-        daoDataEscrowEphimeralPubKeyAx,        // [20] - 1 (NOTE: only x-coordinate)
-        daoDataEscrowEncryptedMessageAx,       // [21] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
-        utxoOutCreateTime,                     // [22]
-        utxoOutCommitment,                     // [23] - nUtxoOut = 2
-        zAccountUtxoOutCommitment,             // [24]
-        chargedAmountZkp,                      // [25]
-        zNetworkChainId,                       // [26]
-        staticTreeMerkleRoot,                  // [27]
-        forestMerkleRoot,                      // [28]
-        saltHash,                              // [29]
-        magicalConstraint                      // [30]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + 1 + 7 + 2 + 1 = 41
+        zAssetScale,                           // [7] - can be 1 or 2
+        spendTime,                             // [8]
+        utxoInNullifier,                       // [9] - nUtxoIn = 2
+        zAccountUtxoInNullifier,               // [10]
+        zZoneDataEscrowEphimeralPubKeyAx,      // [11] - 1 (NOTE: only x-coordinate)
+        zZoneDataEscrowEncryptedMessageAx,     // [12] - 1 (NOTE: only x-coordinate)
+        kytDepositSignedMessageSender,         // [13]
+        kytDepositSignedMessageReceiver,       // [14]
+        kytDepositSignedMessageHash,           // [15]
+        kytWithdrawSignedMessageSender,        // [16]
+        kytWithdrawSignedMessageReceiver,      // [17]
+        kytWithdrawSignedMessageHash,          // [18]
+        dataEscrowEphimeralPubKeyAx,           // [19] - 1 (NOTE: only x-coordinate)
+        dataEscrowEncryptedMessageAx,          // [20] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
+        daoDataEscrowEphimeralPubKeyAx,        // [21] - 1 (NOTE: only x-coordinate)
+        daoDataEscrowEncryptedMessageAx,       // [22] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
+        utxoOutCreateTime,                     // [23]
+        utxoOutCommitment,                     // [24] - nUtxoOut = 2
+        zAccountUtxoOutCommitment,             // [25]
+        chargedAmountZkp,                      // [26]
+        zNetworkChainId,                       // [27]
+        staticTreeMerkleRoot,                  // [28]
+        forestMerkleRoot,                      // [29]
+        saltHash,                              // [30]
+        magicalConstraint                      // [31]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + 1 + 1 + 1 + 1 + 8 + 3 + 1 = 48
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
                   8,     // UtxoLeftMerkleTreeDepth

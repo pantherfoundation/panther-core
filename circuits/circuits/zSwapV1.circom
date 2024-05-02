@@ -185,6 +185,7 @@ template ZSwapV1( nUtxoIn,
     // to switch-off:
     //      1) depositAmount = 0
     //      2) withdrawAmount = 0
+    // Note: for swap case, kyt-hash = zero also can switch-off the KYT verification check
     // switch-off control is used for internal tx
     signal input kytEdDsaPubKey[2];
     signal input kytEdDsaPubKeyExpiryTime;
@@ -757,7 +758,8 @@ template ZSwapV1( nUtxoIn,
     isKytCheckEnabled.a <== 1 - isZeroDeposit.out;
     isKytCheckEnabled.b <== 1 - isZeroWithdraw.out;
 
-    var isKytDepositCheckEnabled = 1 - isZeroDeposit.out;
+    // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
+    signal isKytDepositCheckEnabled <== isSwap ?  kytDepositSignedMessageHash * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out);
 
     component kytDepositSignedMessageHashInternal = Poseidon(9);
 
@@ -808,7 +810,8 @@ template ZSwapV1( nUtxoIn,
     // deposit package type
     kytDepositSignedMessagePackageType === 2;
 
-    var isKytWithdrawCheckEnabled = 1 - isZeroWithdraw.out;
+    // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
+    signal isKytWithdrawCheckEnabled <== isSwap ? kytWithdrawSignedMessageHash * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out);
 
     component kytWithdrawSignedMessageHashInternal = Poseidon(9);
 
