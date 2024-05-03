@@ -5,9 +5,11 @@ import {SNARK_FIELD_SIZE} from '@panther-core/crypto/lib/utils/constants';
 import {ethers} from 'ethers';
 
 const randomInputGenerator = () => {
-    return ethers.BigNumber.from(ethers.utils.randomBytes(32))
+    const randomInput = ethers.BigNumber.from(ethers.utils.randomBytes(32))
         .mod(SNARK_FIELD_SIZE)
-        .toString();
+        .toHexString();
+
+    return ethers.utils.hexZeroPad(randomInput, 32);
 };
 
 export {randomInputGenerator};
