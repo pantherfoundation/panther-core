@@ -90,6 +90,7 @@ abstract contract PantherForest is
         }
 
         _forestRoot = hash(leafs);
+        cacheNewRoot(_forestRoot);
     }
 
     function getRoot() external view returns (bytes32) {

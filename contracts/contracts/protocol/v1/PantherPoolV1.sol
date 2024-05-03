@@ -414,9 +414,7 @@ contract PantherPoolV1 is
             ERR_ZERO_ZASSET_SCALE
         );
 
-        _validateZNetworkChainId(
-            inputs[inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID_IND]]
-        );
+        _validateZNetworkChainId(inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID_IND]);
 
         _validateCreationTime(inputs[PRP_CONVERSION_UTXO_OUT_CREATE_TIME_IND]);
 
@@ -740,8 +738,10 @@ contract PantherPoolV1 is
         uint8 tokenType,
         uint96 protocolFee
     ) private {
-        uint96 depositAmount = UtilsLib.safe96(MAIN_DEPOSIT_AMOUNT_IND);
-        uint96 withdrawAmount = UtilsLib.safe96(MAIN_WITHDRAW_AMOUNT_IND);
+        uint96 depositAmount = UtilsLib.safe96(inputs[MAIN_DEPOSIT_AMOUNT_IND]);
+        uint96 withdrawAmount = UtilsLib.safe96(
+            inputs[MAIN_WITHDRAW_AMOUNT_IND]
+        );
 
         address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN_IND]));
         uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
