@@ -37,6 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     await deploy('PrpConverter_Implementation', {
+        contract: 'PrpConverter',
         from: deployer,
         args: [multisig, pZkp.address, pantherPool, vaultProxy],
         log: true,
@@ -45,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['prp-converter', 'protocol'];
+func.tags = ['prp-converter-imp', 'protocol'];
 func.dependencies = [
     'check-params',
     'deployment-consent',
