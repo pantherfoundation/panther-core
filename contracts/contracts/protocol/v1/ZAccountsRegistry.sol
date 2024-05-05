@@ -234,8 +234,6 @@ contract ZAccountsRegistry is
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
         {
-            require(inputs[2] == 0, ERR_NON_ZERO_ZKP_CHANGE);
-
             uint256 extraInputsHash = inputs[0];
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
@@ -314,17 +312,6 @@ contract ZAccountsRegistry is
         // If status is already activated, it means  Zaccount is activated at least in 1 zone.
         if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
             zAccounts[zAccountMasterEOA].status = ZACCOUNT_STATUS.ACTIVATED;
-        }
-
-        {
-            uint256 _zkpRewards = _notifyOnboardingController(
-                zAccountMasterEOA,
-                uint8(userPrevStatus),
-                uint8(ZACCOUNT_STATUS.ACTIVATED),
-                abi.encodePacked(inputs[17])
-            );
-            uint256 addedAmountZkp = inputs[1];
-            require(_zkpRewards == addedAmountZkp, ERR_UNEXPECTED_ZKP_AMOUNT);
         }
 
         utxoBusQueuePos = _createZAccountUTXO(

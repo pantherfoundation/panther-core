@@ -4,7 +4,7 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IFeeMaster.sol";
-import "./interfaces/IPantherPoolV1.sol";
+import "./interfaces/ITransactionChargesHandler.sol";
 
 import "./feeMaster/PoolKey.sol";
 import "./feeMaster/UniswapV3Handler.sol";
@@ -16,7 +16,7 @@ import "../../common/UtilsLib.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/ImmutableOwnable.sol";
 import { NATIVE_TOKEN } from "../../common/Constants.sol";
-import { TT_ZACCOUNT_ACTIVATION, TT_PRP_CLAIM, TT_PRP_CONVERSION, TT_MAIN_TRANSACTION } from "./pantherForest/Constants.sol";
+import { TT_ZACCOUNT_ACTIVATION, TT_PRP_CLAIM, TT_PRP_CONVERSION, TT_MAIN_TRANSACTION } from "./pantherPool/Types.sol";
 
 /**
  * @title FeeMaster
@@ -350,7 +350,7 @@ contract FeeMaster is
         uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
 
         try
-            IPantherPoolV1(PANTHER_POOL)
+            ITransactionChargesHandler(PANTHER_POOL)
                 .adjustVaultAssetsAndUpdateTotalFeeMasterDebt{
                 value: msgValue
             }(token, netAmount, extAccount)

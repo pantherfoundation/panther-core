@@ -23,7 +23,7 @@ interface IVaultV1 is IEthEscrow {
       May only be used if other means/contracts provide the adequate protection.
       @dev The comment above on the re-entrance is applicable for this function.
      */
-    function lockAsset(LockData calldata lData) external;
+    function lockAsset(LockData calldata lData) external payable;
 
     /***
       @notice Transfers token from this contract to the given account.
