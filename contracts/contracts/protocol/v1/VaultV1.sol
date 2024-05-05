@@ -87,7 +87,9 @@ contract VaultV1 is
     }
 
     /// @inheritdoc IVaultV1
-    function lockAsset(LockData calldata lData) external override onlyOwner {
+    function lockAsset(
+        LockData calldata lData
+    ) external payable override onlyOwner {
         _checkLockData(lData);
 
         if (lData.tokenType == ERC20_TOKEN_TYPE) {
@@ -116,7 +118,10 @@ contract VaultV1 is
                 new bytes(0)
             );
         } else {
-            revert(ERR_INVALID_TOKEN_TYPE);
+            require(
+                lData.tokenType == NATIVE_TOKEN_TYPE,
+                ERR_INVALID_TOKEN_TYPE
+            );
         }
         emit Locked(lData);
     }
@@ -195,4 +200,6 @@ contract VaultV1 is
             UtilsLib.safe96(saltedData.extAmount)
         );
     }
+
+    receive() external payable onlyOwner {}
 }

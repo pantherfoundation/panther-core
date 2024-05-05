@@ -10,6 +10,7 @@ import "./cachedRoots/CachedRoots.sol";
 import "../../../common/ImmutableOwnable.sol";
 import "../../../common/crypto/PoseidonHashers.sol";
 import "./Constants.sol";
+import "./Types.sol";
 
 /**
  * @title PantherForest
@@ -63,20 +64,18 @@ abstract contract PantherForest is
 
     constructor(
         address _owner,
-        address _taxiTreeController,
-        address _busTreeController,
-        address _ferryTreeController
+        ForestTrees memory forestTrees
     ) ImmutableOwnable(_owner) {
         require(
-            _taxiTreeController != address(0) &&
-                _busTreeController != address(0) &&
-                _ferryTreeController != address(0),
+            forestTrees.taxiTree != address(0) &&
+                forestTrees.busTree != address(0) &&
+                forestTrees.ferryTree != address(0),
             "init: zero address"
         );
 
-        TAXI_TREE_CONTROLLER = _taxiTreeController;
-        BUS_TREE_CONTROLLER = _busTreeController;
-        FERRY_TREE_CONTROLLER = _ferryTreeController;
+        TAXI_TREE_CONTROLLER = forestTrees.taxiTree;
+        BUS_TREE_CONTROLLER = forestTrees.busTree;
+        FERRY_TREE_CONTROLLER = forestTrees.ferryTree;
     }
 
     function initialize() external onlyOwner {

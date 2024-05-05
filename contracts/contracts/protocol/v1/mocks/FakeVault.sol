@@ -16,7 +16,7 @@ contract FakeVault is IVaultV1 {
         emit DebugSaltedData(data);
     }
 
-    function lockAsset(LockData calldata data) external override {
+    function lockAsset(LockData calldata data) external payable override {
         emit DebugData(data);
     }
 

@@ -22,6 +22,7 @@ import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/ZAssetUtxoGenerator.sol";
+import "./pantherPool/TransactionChargesHandler.sol";
 
 /**
  * @title PantherPool
@@ -49,15 +50,15 @@ contract PantherPoolV1 is
     UtxosInserter,
     ZAssetUtxoGenerator,
     NonReentrant,
+    TransactionChargesHandler,
     IPantherPoolV1
 {
     using TransactionOptions for uint32;
+
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
-    uint256[452] private __gap;
+    uint256[451] private __gap;
 
-    IVaultV1 public immutable VAULT;
-    address public immutable PROTOCOL_TOKEN;
     IPantherVerifier public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
@@ -86,6 +87,9 @@ contract PantherPoolV1 is
 
     // kytMessageHash => blockNumber
     mapping(bytes32 => uint256) public seenKytMessageHashes;
+    // TODO:to be deleted
+    // left for storage compatibility of the "testnet" version, must be deleted in the prod version
+    uint256 private _feeMasterDebtGap;
 
     event ZAccountRegistrationCircuitIdUpdated(uint160 newId);
     event PrpAccountingCircuitIdUpdated(uint160 newId);
@@ -99,23 +103,21 @@ contract PantherPoolV1 is
     constructor(
         address _owner,
         address zkpToken,
-        address taxiTree,
-        address busTree,
-        address ferryTree,
+        ForestTrees memory forestTrees,
         address staticTree,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
         address prpConverter,
+        address feeMaster,
         address verifier
     )
-        PantherForest(_owner, taxiTree, busTree, ferryTree)
-        UtxosInserter(busTree, taxiTree)
+        PantherForest(_owner, forestTrees)
+        UtxosInserter(forestTrees.busTree, forestTrees.taxiTree)
+        TransactionChargesHandler(zkpToken, feeMaster, vault)
     {
         require(
             staticTree != address(0) &&
-                vault != address(0) &&
-                zkpToken != address(0) &&
                 verifier != address(0) &&
                 zAccountRegistry != address(0) &&
                 prpVoucherGrantor != address(0) &&
@@ -124,8 +126,6 @@ contract PantherPoolV1 is
         );
 
         STATIC_TREE = staticTree;
-        PROTOCOL_TOKEN = zkpToken;
-        VAULT = IVaultV1(vault);
         VERIFIER = IPantherVerifier(verifier);
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
@@ -187,7 +187,7 @@ contract PantherPoolV1 is
         require(vaultAssetUnlockers[msg.sender], ERR_UNAUTHORIZED);
 
         // Trusted contract - no reentrancy guard needed
-        VAULT.unlockAsset(data);
+        IVaultV1(VAULT).unlockAsset(data);
     }
 
     /// @notice Creates zAccount utxo
@@ -206,7 +206,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint32 transactionOptions,
         address zkpPayer,
-        uint96 /*paymasterCompensation*/,
+        uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
@@ -261,11 +261,15 @@ contract PantherPoolV1 is
             );
         }
 
-        // TODO: getting from FeeMaster
-        uint96 miningRewards;
+        uint96 miningReward = accountFeesAndReturnMiningReward(
+            inputs,
+            paymasterCompensation,
+            TT_ZACCOUNT_ACTIVATION
+        );
 
         uint32 zAccountUtxoQueueId;
         uint8 zAccountUtxoIndexInQueue;
+
         (
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
@@ -273,7 +277,7 @@ contract PantherPoolV1 is
         ) = _insertZAccountActivationUtxos(
             inputs,
             transactionOptions,
-            miningRewards
+            miningReward
         );
 
         _emitZAccountActivationNote(
@@ -300,7 +304,7 @@ contract PantherPoolV1 is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
-        uint96 /*paymasterCompensation*/,
+        uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
@@ -348,8 +352,11 @@ contract PantherPoolV1 is
             ERR_FAILED_ZK_PROOF
         );
 
-        // TODO: getting from FeeMaster
-        uint96 miningRewards;
+        uint96 miningReward = accountFeesAndReturnMiningReward(
+            inputs,
+            paymasterCompensation,
+            TT_PRP_CLAIM
+        );
 
         uint32 zAccountUtxoQueueId;
         uint8 zAccountUtxoIndexInQueue;
@@ -357,7 +364,7 @@ contract PantherPoolV1 is
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             utxoBusQueuePos
-        ) = _insertPrpClaimUtxo(inputs, transactionOptions, miningRewards);
+        ) = _insertPrpClaimUtxo(inputs, transactionOptions, miningReward);
 
         _emitPrpClaimNote(
             inputs,
@@ -386,7 +393,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint32 transactionOptions,
         uint96 zkpAmountRounded,
-        uint96 /*paymasterCompensation*/,
+        uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         // Note: This contract expects the Verifier to check the `inputs[]` are
@@ -458,8 +465,11 @@ contract PantherPoolV1 is
             inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART_IND]
         );
 
-        // TODO: getting from FeeMaster
-        uint96 miningRewards;
+        uint96 miningReward = accountFeesAndReturnMiningReward(
+            inputs,
+            paymasterCompensation,
+            TT_PRP_CONVERSION
+        );
 
         uint32 zAccountUtxoQueueId;
         uint8 zAccountUtxoIndexInQueue;
@@ -471,7 +481,7 @@ contract PantherPoolV1 is
             inputs,
             zAssetUtxoOutCommitment,
             transactionOptions,
-            miningRewards
+            miningReward
         );
 
         _lockZkp(msg.sender, zkpAmountRounded);
@@ -582,7 +592,14 @@ contract PantherPoolV1 is
             isSpent[zAccountUtxoInNullifier] = true;
         }
 
-        uint96 protocolFee;
+        (
+            uint96 protocolFee,
+            uint96 miningReward
+        ) = accountFeesAndReturnProtocolFeeAndMiningReward(
+                inputs,
+                paymasterCompensation,
+                TT_MAIN_TRANSACTION
+            );
 
         {
             if (
@@ -597,19 +614,6 @@ contract PantherPoolV1 is
                 // be non-zero only if the tokenType is not native.
                 _processDepositAndWithdraw(inputs, tokenType, protocolFee);
             }
-        }
-
-        // TODO: getting from FeeMaster
-        uint96 miningRewards;
-        {
-            uint256 chargedAmountZkp = inputs[MAIN_CHARGED_AMOUNT_ZKP_IND];
-            uint96 _accountedRewards;
-
-            (miningRewards, _accountedRewards) = _distributeChargedZkps(
-                chargedAmountZkp
-            );
-
-            accountedRewards += _accountedRewards;
         }
 
         _validateCachedForestRoot(
@@ -630,7 +634,7 @@ contract PantherPoolV1 is
                 zAccountUtxoQueueId,
                 zAccountUtxoIndexInQueue,
                 zAccountUtxoBusQueuePos
-            ) = _insertMainUtxos(inputs, transactionOptions, miningRewards);
+            ) = _insertMainUtxos(inputs, transactionOptions, miningReward);
 
             _emitMainNote(
                 inputs,
@@ -708,10 +712,12 @@ contract PantherPoolV1 is
 
     function _lockAssetWithSalt(SaltedLockData memory slData) private {
         // Trusted contract - no reentrancy guard needed
+        try
+            IVaultV1(VAULT).lockAssetWithSalt{ value: msg.value }(slData)
         // solhint-disable-next-line no-empty-blocks
-        try VAULT.lockAssetWithSalt{ value: msg.value }(slData) {} catch Error(
-            string memory reason
-        ) {
+        {
+
+        } catch Error(string memory reason) {
             revert(reason);
         }
     }
@@ -719,18 +725,11 @@ contract PantherPoolV1 is
     function _unlockAsset(LockData memory lData) private {
         // Trusted contract - no reentrancy guard needed
         // solhint-disable-next-line no-empty-blocks
-        try VAULT.unlockAsset(lData) {} catch Error(string memory reason) {
+        try IVaultV1(VAULT).unlockAsset(lData) {} catch Error(
+            string memory reason
+        ) {
             revert(reason);
         }
-    }
-
-    function _distributeChargedZkps(
-        uint256 chargedAmount
-    ) internal view returns (uint96 _miningReward, uint96 _accountedRewards) {
-        _accountedRewards = kycReward;
-        require(chargedAmount > _accountedRewards, ERR_TOO_LOW_CHARGED_ZKP);
-        //TODO Subtract other rewards (protocol, etc) from `chargedAmount`
-        _miningReward = UtilsLib.safe96(chargedAmount - _accountedRewards);
     }
 
     function _processDepositAndWithdraw(
@@ -840,10 +839,10 @@ contract PantherPoolV1 is
 
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
-        VAULT.lockAsset(
+        IVaultV1(VAULT).lockAsset(
             LockData(
                 ERC20_TOKEN_TYPE,
-                PROTOCOL_TOKEN,
+                ZKP_TOKEN,
                 // tokenId undefined for ERC-20
                 0,
                 from,
