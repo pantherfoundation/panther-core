@@ -341,7 +341,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoOutNoteHasher.nullifierPubKey[1] <== zAccountUtxoInNullifierPubKey[1];
     zAccountUtxoOutNoteHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoOutNoteHasher.id <== zAccountUtxoInId;
-    zAccountUtxoOutNoteHasher.amountZkp <== zAccountUtxoInZkpAmount;
+    zAccountUtxoOutNoteHasher.amountZkp <== zAccountUtxoOutZkpAmount;
     zAccountUtxoOutNoteHasher.amountPrp <== zAccountUtxoInPrpAmount;
     zAccountUtxoOutNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zAccountUtxoOutNoteHasher.expiryTime <== zAccountUtxoOutExpiryTime;
