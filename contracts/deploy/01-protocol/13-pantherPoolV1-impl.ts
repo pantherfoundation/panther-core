@@ -56,6 +56,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         '',
     );
 
+    const feeMasterProxy = await getContractAddress(hre, 'FeeMaster_Proxy', '');
+
     const pantherVerifier = await getContractAddress(
         hre,
         'PantherVerifier',
@@ -69,20 +71,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         getContractEnvAddress(hre, 'POSEIDON_T4') ||
         (await get('PoseidonT4')).address;
 
+    const forestTrees = {
+        taxiTree: taxiTree,
+        busTree: busTreeProxy,
+        ferryTree: ferryTree,
+    };
+
     await deploy('PantherPoolV1_Implementation', {
         contract: 'PantherPoolV1',
         from: deployer,
         args: [
             multisig,
             pZkp.address,
-            taxiTree,
-            busTreeProxy,
-            ferryTree,
+            forestTrees,
             staticTreeProxy,
             vaultProxy,
             zAccountsRegistryProxy,
             prpVoucherGrantor,
             prpConverterProxy,
+            feeMasterProxy,
             pantherVerifier,
         ],
         libraries: {
@@ -108,6 +115,7 @@ func.dependencies = [
     'z-accounts-registry-proxy',
     'prp-converter-proxy',
     'prp-voucher-grantor',
+    'fee-master-proxy',
     'verifier',
     'crypto-libs',
     'vault-proxy',

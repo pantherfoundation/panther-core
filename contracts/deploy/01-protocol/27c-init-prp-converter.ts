@@ -5,16 +5,28 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isProd} from '../../lib/checkNetwork';
-import {getContract, getPZkpToken, logInfo} from '../../lib/deploymentHelpers';
+import {
+    getContractAddress,
+    getPZkpToken,
+    logInfo,
+} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
 
-    const {ethers} = hre;
+    const {ethers, artifacts} = hre;
 
-    const prpConverter = await getContract(hre, 'PrpConverter', '');
+    const prpConverterAddress = await getContractAddress(
+        hre,
+        'PrpConverter_Proxy',
+        '',
+    );
+
+    const {abi} = await artifacts.readArtifact('PrpConverter');
+    const prpConverter = await ethers.getContractAt(abi, prpConverterAddress);
 
     const zkpAmount = process.env.CONVERTIBLE_ZKP as string;
+
     const prpVirtualAmount = ethers.BigNumber.from(zkpAmount).div(
         ethers.utils.parseUnits('1', 17),
     );
@@ -47,4 +59,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['init-prp-converter', 'protocol'];
-func.dependencies = ['prp-converter'];
+func.dependencies = ['prp-converter-proxy', 'check-params'];
