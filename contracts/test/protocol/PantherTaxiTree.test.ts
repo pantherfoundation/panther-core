@@ -50,11 +50,11 @@ describe('PantherTaxiTree', () => {
         let merkleTree: MerkleTree;
 
         beforeEach(async () => {
-            oneUtxo = BigNumber.from(randomInputGenerator()).toHexString();
+            oneUtxo = randomInputGenerator();
             threeUtxos = [
-                BigNumber.from(randomInputGenerator()).toHexString(),
-                BigNumber.from(randomInputGenerator()).toHexString(),
-                BigNumber.from(randomInputGenerator()).toHexString(),
+                randomInputGenerator(),
+                randomInputGenerator(),
+                randomInputGenerator(),
             ];
 
             merkleTree = new MerkleTree(poseidon, 8, zeroLeaf);
@@ -79,9 +79,10 @@ describe('PantherTaxiTree', () => {
                 merkleTree.insert(threeUtxos[i]);
             }
 
-            const newMerkleTreeRoot = BigNumber.from(
+            const newMerkleTreeRoot = ethers.utils.hexZeroPad(
                 merkleTree.root,
-            ).toHexString();
+                32,
+            );
 
             await pantherTaxiTreeOwner.addThreeUtxos(
                 threeUtxos[0],
