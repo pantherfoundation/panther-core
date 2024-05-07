@@ -16,15 +16,13 @@ import {deriveChildPubKeyFromRootPubKey} from '@panther-core/crypto/lib/base/key
 import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
 import {bigIntToUint8Array, uint8ArrayToBigInt} from './helpers/utils';
 
-// Testing Scenario
-// ZAccount is registered and for some reason ZAccount needs to go for KYC process one more time.
-// So ZAccount have not involved in any of the protocol trasactions.
+// Scenario - KYC attestation for the current ZAccount has been expired. The ZAccount (User) needs to renew the ZAccount by providing a new KYC attestation.
 describe('ZAccount Renewal - Non Zero Input - Witness computation', async function (this: any) {
     let circuit: any;
     let mainZAccountRenewalWasm: any;
     let mainZAccountRenewalWitness: any;
 
-    this.timeout(10000000);
+    this.timeout(10_000_000);
 
     before(async () => {
         const opts = getOptions();
@@ -45,6 +43,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         );
     });
 
+    /* START ===== zAccountUtxoInCommitment computation ===== */
     // computation of ZAccountUTXO
     // const zAccountUtxoInSpendKeyRandom = moduloBabyJubSubFieldPrime(
     //     generateRandom256Bits(),
@@ -102,7 +101,9 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
     ]);
     // 19047992597093047336371215524754541878461093335047259582748851115004307254010n
     // console.log('ZAccountUTXO=>', ZAccountUTXO);
+    /* END ===== zAccountUtxoInCommitment computation ===== */
 
+    /* START ===== ZAccountNullifierHasher computation ===== */
     // ZAccountNullifierHasher computation
     const ZAccountNullifierHasher = poseidon([
         2081961849142627796057765042284889488177156119328724687723132407819597118232n,
@@ -111,7 +112,9 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
 
     // ZAccountNullifierHasher=> 14914857781069603067364359915237089909255680140753506997126505326724192453553n
     // console.log('ZAccountNullifierHasher=>', ZAccountNullifierHasher);
+    /* END ===== ZAccountNullifierHasher computation ===== */
 
+    /* START ===== zAccountUtxoOutCommitment computation ===== */
     // zAccountUtxoOutExpiryTime = zAccountUtxoOutCreateTime + zZoneKycExpiryTime;
     //           1702656400      =         1692284400        + 10368000n
 
@@ -159,7 +162,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         ZAccountRenewalUTXOOuthash,
         407487970930055136132864974074225519407787604125n,
         33,
-        100000000,
+        99999000,
         0,
         1,
         1702656400,
@@ -168,11 +171,11 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         1692288400,
         2,
     ]);
-    // 11446707391648963815162947944046990320925911574273158465080814870649012877564n
+    // 18637039208228158888837734245741621648425744122070932447721041976882941222441n
     // console.log('ZAccountRenewalUTXOOut=>', ZAccountRenewalUTXOOut);
+    /* END ===== zAccountUtxoOutCommitment computation ===== */
 
-    /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
-    /* START ========== kycSignedMessageHashInternal calculation ========== */
+    /* START ===== kycSignedMessageHashInternal calculation ===== */
     const kycSignedMessagePackageType = BigInt(1);
     const kycSignedMessageTimestamp = BigInt(1700040650n);
 
@@ -225,12 +228,11 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
     //     S: 2425607054711425321292767094874913634676093732638786371864372002385481755950n
     //   }
     // console.log('signature=>', signature);
-
-    /* END ========== kycSignedMessageHashInternal calculator ========== */
-    // /* ========== $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ==========*/
+    /* END ===== kycSignedMessageHashInternal calculator ===== */
 
     const nonZeroInput = {
         extraInputsHash: 0,
+        addedAmountZkp: 0,
         chargedAmountZkp: 10 ** 15,
 
         zAssetId: 0,
@@ -398,7 +400,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
 
         zZoneKycExpiryTime: 10368000n,
         zAccountUtxoOutCommitment:
-            18851972517613976357890936330315499613512496678315663655643763522914670006261n,
+            18637039208228158888837734245741621648425744122070932447721041976882941222441n,
 
         kycSignedMessagePackageType: 1,
         kycSignedMessageTimestamp: 1700040650,
@@ -508,7 +510,8 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
 
         zZoneMerkleRoot:
             2768686232753548194788154003002220124197365245281377680762459495658913308970n,
-        staticTreeMerkleRoot: 2321398877276501093804987746752913907619636266114014064168961796133692819230n,
+        staticTreeMerkleRoot:
+            2321398877276501093804987746752913907619636266114014064168961796133692819230n,
 
         forestMerkleRoot: 0,
         taxiMerkleRoot: 0,
@@ -521,7 +524,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         magicalConstraint: 0,
     };
 
-    it('should compute valid witness for zero input tx', async () => {
+    it('should compute valid witness for non zero input tx', async () => {
         await wtns.calculate(
             nonZeroInput,
             mainZAccountRenewalWasm,

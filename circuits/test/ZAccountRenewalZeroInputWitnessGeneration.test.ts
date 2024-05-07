@@ -11,7 +11,7 @@ describe('ZAccount Renewal - ZeroInput - Witness computation', async function (t
     let mainZAccountRenewalWasm: any;
     let mainZAccountRenewalWitness: any;
 
-    this.timeout(10000000);
+    this.timeout(10_000_000);
 
     before(async () => {
         const opts = getOptions();
@@ -34,6 +34,7 @@ describe('ZAccount Renewal - ZeroInput - Witness computation', async function (t
 
     const zeroInput = {
         extraInputsHash: 0,
+        addedAmountZkp: 0,
         chargedAmountZkp: 0,
 
         zAssetId: 0,
