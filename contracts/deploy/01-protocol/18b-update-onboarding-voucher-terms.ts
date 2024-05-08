@@ -13,11 +13,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const {artifacts, ethers} = hre;
 
-    const onboardingControllerAddress = await getContractAddress(
+    const zAccountsRegistryProxyAddress = await getContractAddress(
         hre,
-        'OnboardingController_Proxy',
+        'ZAccountsRegistry_Proxy',
         '',
     );
+
     const prpVoucherGrantorAddress = await getContractAddress(
         hre,
         'PrpVoucherGrantor_Proxy',
@@ -36,11 +37,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const onboardingGrantType = '0x93b212ae';
 
     const amount = ethers.BigNumber.from(500);
-    const limit = amount.mul(3);
+    const limit = amount.mul(10000000);
     const enabled = true;
 
     const tx = await prpVoucherGrantor.updateVoucherTerms(
-        onboardingControllerAddress,
+        zAccountsRegistryProxyAddress,
         onboardingGrantType,
         limit,
         amount,
@@ -54,4 +55,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-onboarding-voucher-terms', 'protocol'];
-func.dependencies = ['onboarding-reward-ctrl', 'prp-voucher-grantor'];
+func.dependencies = ['z-accounts-registry-proxy', 'prp-voucher-grantor'];
