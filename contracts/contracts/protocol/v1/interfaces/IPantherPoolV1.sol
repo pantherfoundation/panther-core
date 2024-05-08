@@ -27,7 +27,6 @@ interface IPantherPoolV1 {
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
-        address zkpPayer,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256);

@@ -29,12 +29,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'PantherStaticTree_Proxy',
         '',
     );
-    const onboardingController = await getContractAddress(
+    const prpVoucherGrantorProxy = await getContractAddress(
         hre,
-        'OnboardingController',
+        'PrpVoucherGrantor_Proxy',
         '',
     );
-
     const poseidonT3 =
         getContractEnvAddress(hre, 'POSEIDON_T3') ||
         (await get('PoseidonT3')).address;
@@ -42,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await deploy('ZAccountsRegistry_Implementation', {
         contract: 'ZAccountsRegistry',
         from: deployer,
-        args: [multisig, 1, pantherPool, staticTree, onboardingController],
+        args: [multisig, 1, pantherPool, staticTree, prpVoucherGrantorProxy],
         libraries: {PoseidonT3: poseidonT3},
         log: true,
         autoMine: true,

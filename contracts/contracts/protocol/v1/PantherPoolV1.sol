@@ -195,7 +195,6 @@ contract PantherPoolV1 is
     /// @param inputs The public input parameters to be passed to verifier
     /// (refer to ZAccountActivationPublicSignals.sol).
     /// @param proof A proof associated with the zAccount and a secret.
-    /// @param zkpPayer Wallet that withdraws onboarding zkp rewards
     /// @param privateMessages the private message that contains zAccount utxo data.
     /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
@@ -205,7 +204,6 @@ contract PantherPoolV1 is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
-        address zkpPayer,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
@@ -253,13 +251,6 @@ contract PantherPoolV1 is
             VERIFIER.verify(zAccountRegistrationCircuitId, inputs, proof),
             ERR_FAILED_ZK_PROOF
         );
-
-        if (inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND] != 0) {
-            _lockZkp(
-                zkpPayer,
-                inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND]
-            );
-        }
 
         uint96 miningReward = accountFeesAndReturnMiningReward(
             inputs,

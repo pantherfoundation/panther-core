@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import "./interfaces/IOnboardingController.sol";
 import "./interfaces/IPantherPoolV1.sol";
+import "./interfaces/IPrpVoucherGrantor.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 
 import "../../common/crypto/BabyJubJub.sol";
@@ -16,6 +17,7 @@ import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
 import "../../common/ImmutableOwnable.sol";
 import "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
+import { GT_ONBOARDING } from "../../common/Constants.sol";
 import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
 
 /**
@@ -50,7 +52,7 @@ contract ZAccountsRegistry is
 
     IPantherPoolV1 public immutable PANTHER_POOL;
     ITreeRootUpdater public immutable PANTHER_STATIC_TREE;
-    IOnboardingController public immutable ONBOARDING_CONTROLLER;
+    IPrpVoucherGrantor public immutable PRP_VOUCHER_GRANTOR;
 
     struct ZAccount {
         uint184 _unused; // reserved
@@ -94,7 +96,7 @@ contract ZAccountsRegistry is
         uint8 _zAccountVersion,
         address pantherPool,
         address pantherStaticTree,
-        address onboardingController
+        address prpVoucherGrantor
     )
         ImmutableOwnable(_owner)
         ZAccountsRegeistrationSignatureVerifier(_zAccountVersion)
@@ -102,13 +104,13 @@ contract ZAccountsRegistry is
         require(
             pantherPool != address(0) &&
                 pantherStaticTree != address(0) &&
-                onboardingController != address(0),
+                prpVoucherGrantor != address(0),
             ERR_INIT_CONTRACT
         );
 
         PANTHER_POOL = IPantherPoolV1(pantherPool);
         PANTHER_STATIC_TREE = ITreeRootUpdater(pantherStaticTree);
-        ONBOARDING_CONTROLLER = IOnboardingController(onboardingController);
+        PRP_VOUCHER_GRANTOR = IPrpVoucherGrantor(prpVoucherGrantor);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -312,6 +314,9 @@ contract ZAccountsRegistry is
         // If status is already activated, it means  Zaccount is activated at least in 1 zone.
         if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
             zAccounts[zAccountMasterEOA].status = ZACCOUNT_STATUS.ACTIVATED;
+
+            bytes32 secretHash = bytes32(inputs[17]);
+            _grantPrpRewardsToUser(secretHash);
         }
 
         utxoBusQueuePos = _createZAccountUTXO(
@@ -446,7 +451,6 @@ contract ZAccountsRegistry is
                 inputs,
                 proof,
                 cachedForestRootIndexAndUtxosCarrier,
-                address(ONBOARDING_CONTROLLER),
                 paymasterCompensation,
                 privateMessages
             )
@@ -457,19 +461,19 @@ contract ZAccountsRegistry is
         }
     }
 
-    function _notifyOnboardingController(
-        address _user,
-        uint8 _prevStatus,
-        uint8 _newStatus,
-        bytes memory _data
-    ) private returns (uint256 _zkpRewards) {
-        // Trusted contract - no reentrancy guard needed
-        _zkpRewards = ONBOARDING_CONTROLLER.grantRewards(
-            _user,
-            _prevStatus,
-            _newStatus,
-            _data
-        );
+    function _grantPrpRewardsToUser(bytes32 secretHash) private {
+        try
+            IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+                secretHash,
+                0, // amount defined for `GT_ONBOARDING` type will be used
+                GT_ONBOARDING
+            )
+        // solhint-disable-next-line no-empty-blocks
+        {
+
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
     }
 
     function _isBlacklisted(
