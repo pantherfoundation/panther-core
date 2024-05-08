@@ -729,7 +729,6 @@ template ZTransactionV1( nUtxoIn,
     zAccountUtxoOutHasher.totalAmountPerTimePeriod <== zAccountUtxoOutTotalAmountPerTimePeriod;
     zAccountUtxoOutHasher.createTime <== utxoOutCreateTime;
     zAccountUtxoOutHasher.networkId <== zAccountUtxoInNetworkId;
-    zAccountUtxoOutCommitment === zAccountUtxoOutHasher.out;
 
     component zAccountUtxoOutHasherProver = ForceEqualIfEnabled();
     zAccountUtxoOutHasherProver.in[0] <== zAccountUtxoOutCommitment;
