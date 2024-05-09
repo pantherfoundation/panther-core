@@ -920,12 +920,18 @@ template ZTransactionV1( nUtxoIn,
     dataEscrow.pubKey[1] <== dataEscrowPubKey[1];
 
     // --------------- scalars -----------------
-    component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut);
+    component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth);
     dataEscrowScalarsSerializer.zAsset <== utxoZAsset;
     dataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
     dataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
 
     for (var j = 0; j < nUtxoIn; j++) {
+        for(var i = 0; i < 2; i++) {
+            dataEscrowScalarsSerializer.utxoInMerkleTreeSelector[j][i] <== utxoInMerkleTreeSelector[j][i];
+        }
+        for(var i = 0; i < UtxoMerkleTreeDepth; i++) {
+            dataEscrowScalarsSerializer.utxoInPathIndices[j][i] <== utxoInPathIndices[j][i];
+        }
         dataEscrowScalarsSerializer.utxoInAmount[j] <== utxoInAmount[j];
         dataEscrowScalarsSerializer.utxoInOriginZoneId[j] <== utxoInOriginZoneId[j];
     }

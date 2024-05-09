@@ -67,21 +67,23 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
 
 // ------------- scalars-size --------------------------------
 // 1) 1 x 64 (zAsset)
-// 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
+// 2) 1 x 64 (utxoInMerkleTreeSelector[0] << 42 | utxoInMerkleTreeSelector[1] << 40 | zAccountId << 16 | zAccountZoneId << 0)
 // 3) nUtxoIn x 64 amount
 // 4) nUtxoOut x 64 amount
-// 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
+// 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
 // ------------------------------------------------------------
-template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
-    signal input zAsset;                         // 64 bit
-    signal input zAccountId;                     // 24 bit
-    signal input zAccountZoneId;                 // 16 bit
+template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
+    signal input zAsset;                                            // 64 bit
+    signal input zAccountId;                                        // 24 bit
+    signal input zAccountZoneId;                                    // 16 bit
+    signal input utxoInMerkleTreeSelector[nUtxoIn][2];              // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
+    signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];   // Max 32 bit
 
-    signal input utxoInAmount[nUtxoIn];          // 64 bit
-    signal input utxoOutAmount[nUtxoOut];        // 64 bit
+    signal input utxoInAmount[nUtxoIn];                             // 64 bit
+    signal input utxoOutAmount[nUtxoOut];                           // 64 bit
 
-    signal input utxoInOriginZoneId[nUtxoIn];    // 16 bit
-    signal input utxoOutTargetZoneId[nUtxoOut];  // 16 bit
+    signal input utxoInOriginZoneId[nUtxoIn];                       // 16 bit
+    signal input utxoOutTargetZoneId[nUtxoOut];                     // 16 bit
 
     // each signal will be < 2^64
     signal output out[1+1+nUtxoIn+nUtxoOut+nUtxoIn+nUtxoOut];
@@ -91,9 +93,10 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
     assert(zAsset < 2**32);
     out[0] <== zAsset;
 
-    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId) --
+    // 2) 1 x 64 (utxoInMerkleTreeSelector[..] << 40 | zAccountId << 16 | zAccountZoneId) --
     assert(zAccountId < 2**24);
     assert(zAccountZoneId < 2**16);
+    assert(nUtxoIn * 2 < 24); // 64 - 40 ( 24 + 16 ) = 24
 
     component n2b_zAccountId = Num2Bits(24);
     n2b_zAccountId.in <== zAccountId;
@@ -101,16 +104,23 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
     component n2b_zAccountZoneId = Num2Bits(16);
     n2b_zAccountZoneId.in <== zAccountZoneId;
 
-    component b2n_zAccountId_zAccountZoneId = Bits2Num(24+16);
+    component b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector = Bits2Num(24+16+2*nUtxoIn);
+
     for(var i = 0; i < 16; i++) {
-        b2n_zAccountId_zAccountZoneId.in[i] <== n2b_zAccountZoneId.out[i];
+        b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[i] <== n2b_zAccountZoneId.out[i];
     }
 
     for(var i = 0; i < 24; i++) {
-        b2n_zAccountId_zAccountZoneId.in[i+16] <== n2b_zAccountId.out[i];
+        b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[i+16] <== n2b_zAccountId.out[i];
     }
 
-    out[1] <== b2n_zAccountId_zAccountZoneId.out;
+    for(var i = 0; i < nUtxoIn; i++) {
+        for(var j = 0; j < 2; j++) {
+            b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[16+24 + (i*nUtxoIn) + j] <== utxoInMerkleTreeSelector[i][j];
+        }
+    }
+
+    out[1] <== b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.out;
 
     // 3) nUtxoIn x 64 amount
     for (var j = 0; j < nUtxoIn; j++) {
@@ -123,7 +133,9 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
         out[1+1+nUtxoIn+j] <== utxoOutAmount[j];
     }
 
-    // 5) nUtxoIn x originZoneId + nUtxoOut x targetZoneId
+    // 5) nUtxoIn x originZoneId + nUtxoOut x targetZoneId + nUtxoIn * utxoInPathIndices
+    assert(UtxoMerkleTreeDepth <= 32); // should be less then 32 bit, otherwise serialization will exceed 64 bit per element
+
     component n2b_utxoInOriginZoneId[nUtxoIn];
     for (var j = 0; j < nUtxoIn; j++) {
         n2b_utxoInOriginZoneId[j] = Num2Bits(16);
@@ -137,35 +149,42 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut) {
     }
 
     var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
-    component b2n_utxoInOriginZoneId_utxoOutTargetZoneId[max_nUtxoIn_nUtxoOut];
+    component b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[max_nUtxoIn_nUtxoOut];
 
     for (var j = 0; j < max_nUtxoIn_nUtxoOut; j++) {
-        b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j] = Bits2Num(32);
+        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j] = Bits2Num(32+UtxoMerkleTreeDepth);
         if( j < nUtxoIn && j < nUtxoOut ) {
             for(var i = 0; i < 16; i++) {
-                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
             }
             for(var i = 0; i < 16; i++) {
-                b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
             }
         } else {
-            if( j < nUtxoIn ) { // j > nUtxoOut ---> utxo-out-targetZoneId - set to be zero - assimetric case
+            if( j < nUtxoIn ) { // j > nUtxoOut ---> utxo-out-targetZoneId - set to be zero - asymmetric case
                 for(var i = 0; i < 16; i++) {
-                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== 0;
+                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== 0;
                 }
                 for(var i = 0; i < 16; i++) {
-                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
+                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
                 }
-            } else {            // j > nUtxoIn  ---> utxo-in-originZoneId -  set to be zero - assimetric case
+            } else {            // j > nUtxoIn  ---> utxo-in-originZoneId -  set to be zero - asymmetric case
                 for(var i = 0; i < 16; i++) {
-                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
+                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
                 }
                 for(var i = 0; i < 16; i++) {
-                    b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== 0;
+                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== 0;
                 }
             }
         }
-        out[1+1+nUtxoIn+nUtxoOut+j] <== b2n_utxoInOriginZoneId_utxoOutTargetZoneId[j].out;
+        for(var i = 0; i < UtxoMerkleTreeDepth; i++) {
+            if ( j < nUtxoIn ) {
+                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[32+i] <== utxoInPathIndices[j][i];
+            } else {
+                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[32+i] <== 0;
+            }
+        }
+        out[1+1+nUtxoIn+nUtxoOut+j] <== b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].out;
     }
 }
 
