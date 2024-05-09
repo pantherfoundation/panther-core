@@ -23,6 +23,7 @@ import "./pantherPool/TransactionNoteEmitter.sol";
 import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/ZAssetUtxoGenerator.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
+import "./pantherPool/TransactionTypes.sol";
 
 /**
  * @title PantherPool
@@ -54,6 +55,7 @@ contract PantherPoolV1 is
     IPantherPoolV1
 {
     using TransactionOptions for uint32;
+    using TransactionTypes for uint16;
 
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
@@ -204,6 +206,7 @@ contract PantherPoolV1 is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
+        uint16 transactionType,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external nonReentrant returns (uint256 utxoBusQueuePos) {
@@ -255,7 +258,7 @@ contract PantherPoolV1 is
         uint96 miningReward = accountFeesAndReturnMiningReward(
             inputs,
             paymasterCompensation,
-            TT_ZACCOUNT_ACTIVATION
+            transactionType
         );
 
         uint32 zAccountUtxoQueueId;
@@ -275,6 +278,7 @@ contract PantherPoolV1 is
             inputs,
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
+            transactionType,
             privateMessages
         );
     }
@@ -583,28 +587,29 @@ contract PantherPoolV1 is
             isSpent[zAccountUtxoInNullifier] = true;
         }
 
+        uint16 transactionType = TransactionTypes.generateMainTxType(inputs);
+
         (
             uint96 protocolFee,
             uint96 miningReward
         ) = accountFeesAndReturnProtocolFeeAndMiningReward(
                 inputs,
                 paymasterCompensation,
-                TT_MAIN_TRANSACTION
+                transactionType
             );
 
-        {
-            if (
-                inputs[MAIN_DEPOSIT_AMOUNT_IND] == 0 &&
-                inputs[MAIN_WITHDRAW_AMOUNT_IND] == 0
-            )
-                // internal tx
-                require(inputs[MAIN_TOKEN_IND] == 0, ERR_NON_ZERO_TOKEN);
-            else {
-                // depost or withdraw tx
-                // NOTE: This contract expects the Vault will check the token (inputs[4]) to
-                // be non-zero only if the tokenType is not native.
-                _processDepositAndWithdraw(inputs, tokenType, protocolFee);
-            }
+        if (transactionType.isInternal()) {
+            require(inputs[MAIN_TOKEN_IND] == 0, ERR_NON_ZERO_TOKEN);
+        } else {
+            // depost and/or withdraw tx
+            // NOTE: This contract expects the Vault will check the token (inputs[4]) to
+            // be non-zero only if the tokenType is not native.
+            _processDepositAndWithdraw(
+                inputs,
+                tokenType,
+                transactionType,
+                protocolFee
+            );
         }
 
         _validateCachedForestRoot(
@@ -631,6 +636,7 @@ contract PantherPoolV1 is
                 inputs,
                 zAccountUtxoQueueId,
                 zAccountUtxoIndexInQueue,
+                transactionType,
                 privateMessages
             );
         }
@@ -726,6 +732,7 @@ contract PantherPoolV1 is
     function _processDepositAndWithdraw(
         uint256[] calldata inputs,
         uint8 tokenType,
+        uint16 transactionType,
         uint96 protocolFee
     ) private {
         uint96 depositAmount = UtilsLib.safe96(inputs[MAIN_DEPOSIT_AMOUNT_IND]);
@@ -736,7 +743,7 @@ contract PantherPoolV1 is
         address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN_IND]));
         uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
 
-        if (depositAmount > 0) {
+        if (transactionType.isDeposit()) {
             bytes32 kytDepositSignedMessageHash = bytes32(
                 inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]
             );
@@ -779,7 +786,7 @@ contract PantherPoolV1 is
             emit SeenKytMessageHash(kytDepositSignedMessageHash);
         }
 
-        if (withdrawAmount > 0) {
+        if (transactionType.isWithdrawal()) {
             withdrawAmount = protocolFee > 0
                 ? withdrawAmount - protocolFee
                 : withdrawAmount;

@@ -12,11 +12,12 @@ import "./feeMaster/UniswapPoolsList.sol";
 import "./feeMaster/FeeAccountant.sol";
 import { ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
 
+import "./pantherPool/Types.sol";
+
 import "../../common/UtilsLib.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/ImmutableOwnable.sol";
 import { NATIVE_TOKEN } from "../../common/Constants.sol";
-import { TT_ZACCOUNT_ACTIVATION, TT_PRP_CLAIM, TT_PRP_CONVERSION, TT_MAIN_TRANSACTION } from "./pantherPool/Types.sol";
 
 /**
  * @title FeeMaster
@@ -274,7 +275,10 @@ contract FeeMaster is
         _decreaseAvailableDonation(feeData);
         cacheNativeToZkpRate();
 
-        if (feeData.txType == TT_ZACCOUNT_ACTIVATION) {
+        if (
+            feeData.txType == TT_ZACCOUNT_ACTIVATION ||
+            feeData.txType == TT_ZACCOUNT_REACTIVATION
+        ) {
             return chargedFeesPerTx = _accountActivationFees(feeData);
         }
         if (feeData.txType == TT_PRP_CLAIM) {
@@ -294,7 +298,6 @@ contract FeeMaster is
         checkAvailableDonation(feeData)
         returns (ChargedFeesPerTx memory chargedFeesPerTx)
     {
-        require(feeData.txType == TT_MAIN_TRANSACTION, "only main tx type");
         _decreaseAvailableDonation(feeData);
         cacheNativeToZkpRate();
 
