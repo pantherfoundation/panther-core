@@ -14,6 +14,8 @@ import "./zAccountsRegistry/BlacklistedZAccountIdsTree.sol";
 import "./zAccountsRegistry/ZAccountsRegeistrationSignatureVerifier.sol";
 import { ZACCOUNT_STATUS } from "./zAccountsRegistry/Constants.sol";
 
+import { TT_ZACCOUNT_ACTIVATION, TT_ZACCOUNT_REACTIVATION } from "./pantherPool/Types.sol";
+
 import "../../common/ImmutableOwnable.sol";
 import "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
@@ -310,6 +312,8 @@ contract ZAccountsRegistry is
 
         ZACCOUNT_STATUS userPrevStatus = _zAccount.status;
 
+        uint16 transactionType;
+
         // if the status is registered, then change it to activate.
         // If status is already activated, it means  Zaccount is activated at least in 1 zone.
         if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
@@ -317,12 +321,16 @@ contract ZAccountsRegistry is
 
             bytes32 secretHash = bytes32(inputs[17]);
             _grantPrpRewardsToUser(secretHash);
+            transactionType = TT_ZACCOUNT_ACTIVATION;
+        } else {
+            transactionType = TT_ZACCOUNT_REACTIVATION;
         }
 
         utxoBusQueuePos = _createZAccountUTXO(
             inputs,
             proof,
             transactionOptions,
+            transactionType,
             paymasterCompensation,
             privateMessages
         );
@@ -439,7 +447,8 @@ contract ZAccountsRegistry is
     function _createZAccountUTXO(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
-        uint32 cachedForestRootIndexAndUtxosCarrier,
+        uint32 transactionOptions,
+        uint16 transactionType,
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) private returns (uint256 utxoBusQueuePos) {
@@ -450,7 +459,8 @@ contract ZAccountsRegistry is
             PANTHER_POOL.createZAccountUtxo(
                 inputs,
                 proof,
-                cachedForestRootIndexAndUtxosCarrier,
+                transactionOptions,
+                transactionType,
                 paymasterCompensation,
                 privateMessages
             )

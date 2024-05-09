@@ -48,7 +48,7 @@ import "../../../common/UtilsLib.sol";
  */
 abstract contract TransactionNoteEmitter {
     // @notice Transaction Note, emitted with every MASP transaction
-    event TransactionNote(uint8 txType, bytes content);
+    event TransactionNote(uint16 txType, bytes content);
 
     // ******************************
     // **** `bytes content` specs ***
@@ -371,7 +371,7 @@ abstract contract TransactionNoteEmitter {
 
     function _sanitizePrivateMessage(
         bytes memory privateMessages,
-        uint8 txType
+        uint16 txType
     ) internal pure {
         uint8 mtUtxoZAccountIndex = 0;
 
@@ -402,6 +402,7 @@ abstract contract TransactionNoteEmitter {
         uint256[] calldata inputs,
         uint32 zAccountUtxoQueueId,
         uint8 zAccountUtxoIndexInQueue,
+        uint16 txType,
         bytes calldata privateMessages
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
@@ -416,7 +417,7 @@ abstract contract TransactionNoteEmitter {
             privateMessages
         );
 
-        emit TransactionNote(TT_ZACCOUNT_ACTIVATION, transactionNoteContent);
+        emit TransactionNote(txType, transactionNoteContent);
     }
 
     function _emitPrpClaimNote(
@@ -464,6 +465,7 @@ abstract contract TransactionNoteEmitter {
         uint256[] calldata inputs,
         uint32 zAccountUtxoQueueId,
         uint8 zAccountUtxoIndexInQueue,
+        uint16 txType,
         bytes calldata privateMessages
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
@@ -478,6 +480,6 @@ abstract contract TransactionNoteEmitter {
             privateMessages
         );
 
-        emit TransactionNote(TT_MAIN_TRANSACTION, transactionNoteContent);
+        emit TransactionNote(txType, transactionNoteContent);
     }
 }

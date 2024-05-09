@@ -13,8 +13,10 @@ import "./publicSignals/PrpConversionPublicSignals.sol";
 import { NATIVE_TOKEN, NATIVE_TOKEN_TYPE, ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
 import { LockData } from "../../../common/Types.sol";
 import "../../../common/UtilsLib.sol";
+import "./TransactionTypes.sol";
 
 abstract contract TransactionChargesHandler {
+    using TransactionTypes for uint16;
     using UtilsLib for uint256;
     using UtilsLib for uint96;
     using UtilsLib for uint40;
@@ -66,7 +68,7 @@ abstract contract TransactionChargesHandler {
     function accountFeesAndReturnProtocolFeeAndMiningReward(
         uint256[] calldata inputs,
         uint96 paymasterCompensation,
-        uint8 txType
+        uint16 txType
     ) internal returns (uint96 protocolFee, uint96 miningReward) {
         FeeData memory feeData;
         AssetData memory assetData;
@@ -79,7 +81,7 @@ abstract contract TransactionChargesHandler {
             .scaleDownBy1e12()
             .safe40();
 
-        if (txType == TT_MAIN_TRANSACTION) {
+        if (txType.isMain()) {
             numOutputUtxos = 5;
 
             scAddedZkpAmount = inputs[MAIN_ADDED_AMOUNT_ZKP_IND]
@@ -124,7 +126,7 @@ abstract contract TransactionChargesHandler {
     function accountFeesAndReturnMiningReward(
         uint256[] calldata inputs,
         uint96 paymasterCompensation,
-        uint8 txType
+        uint16 txType
     ) internal returns (uint96 miningReward) {
         FeeData memory feeData;
 
