@@ -3,7 +3,8 @@ pragma circom 2.1.6;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
-template LessThanWhenEnabled(n){
+// Checks if the first input signal is lesser than or equal to the second input signal when input signal enabled is true.
+template LessEqThanWhenEnabled(n){
     signal input enabled;
     signal input in[2];
     signal output out;
