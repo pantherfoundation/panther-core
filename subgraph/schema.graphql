@@ -62,16 +62,6 @@ type UtxoBusQueued @entity(immutable: true) {
     from: String!
 }
 
-type TransactionNote @entity(immutable: true) {
-    id: Bytes!
-    txType: Int! # bytes1
-    content: Bytes! # bytes
-    blockNumber: BigInt!
-    blockTimestamp: BigInt!
-    transactionHash: Bytes!
-    from: String!
-}
-
 type RewardClaimed @entity(immutable: true) {
     id: Bytes!
     secretHash: Bytes! # bytes32
@@ -103,6 +93,58 @@ type VoucherTermsUpdated @entity(immutable: true) {
     from: String!
 }
 
+type FeesAccounted @entity(immutable: true) {
+    id: Bytes!
+    chargedFeesPerTx_scMiningReward: BigInt! # uint40
+    chargedFeesPerTx_scKytFees: BigInt! # uint40
+    chargedFeesPerTx_scKycFee: BigInt! # uint40
+    chargedFeesPerTx_scPaymasterCompensationInNative: BigInt! # uint40
+    chargedFeesPerTx_protocolFee: BigInt! # uint96
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type KycRewardUpdated @entity(immutable: true) {
+    id: Bytes!
+    newReward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type MainCircuitIdUpdated @entity(immutable: true) {
+    id: Bytes!
+    newId: BigInt! # uint160
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type MaxTimeDeltaUpdated @entity(immutable: true) {
+    id: Bytes!
+    newMaxTimeDelta: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type PrpAccountConversionCircuitIdUpdated @entity(immutable: true) {
+    id: Bytes!
+    newId: BigInt! # uint160
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type PrpAccountingCircuitIdUpdated @entity(immutable: true) {
+    id: Bytes!
+    newId: BigInt! # uint160
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
 type RootUpdated @entity(immutable: true) {
     id: Bytes!
     leafIndex: BigInt! # uint256
@@ -112,5 +154,38 @@ type RootUpdated @entity(immutable: true) {
     blockNumber: BigInt!
     blockTimestamp: BigInt!
     transactionHash: Bytes!
-    from: String!
+}
+
+type SeenKytMessageHash @entity(immutable: true) {
+    id: Bytes!
+    kytMessageHash: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TransactionNote @entity(immutable: true) {
+    id: Bytes!
+    txType: Int! # uint16
+    content: Bytes! # bytes
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type VaultAssetUnlockerUpdated @entity(immutable: true) {
+    id: Bytes!
+    newAssetUnlocker: Bytes! # address
+    status: Boolean! # bool
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ZAccountRegistrationCircuitIdUpdated @entity(immutable: true) {
+    id: Bytes!
+    newId: BigInt! # uint160
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
 }
