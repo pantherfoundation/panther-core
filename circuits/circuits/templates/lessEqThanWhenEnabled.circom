@@ -7,7 +7,6 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 template LessEqThanWhenEnabled(n){
     signal input enabled;
     signal input in[2];
-    signal output out;
 
     component lt = LessThan(n);
 
