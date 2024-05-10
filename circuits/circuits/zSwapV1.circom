@@ -1068,13 +1068,13 @@ template ZSwapV1( nUtxoIn,
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
 
     // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
-    component isLessThanEqDepositTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    component isLessThanEqDepositTimeAndKytExpiryTime = LessEqThanWhenEnabled(252);
     isLessThanEqDepositTimeAndKytExpiryTime.enabled <== isKytDepositCheckEnabled;
     isLessThanEqDepositTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
     isLessThanEqDepositTimeAndKytExpiryTime.in[1] <== kytDepositSignedMessageTimestamp;
 
     // assert(kytWithdrawSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
-    component isLessThanEqWithdrawTimeAndKytExpiryTime = LessThanWhenEnabled(252);
+    component isLessThanEqWithdrawTimeAndKytExpiryTime = LessEqThanWhenEnabled(252);
     isLessThanEqWithdrawTimeAndKytExpiryTime.enabled <== isKytWithdrawCheckEnabled;
     isLessThanEqWithdrawTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
     isLessThanEqWithdrawTimeAndKytExpiryTime.in[1] <== kytWithdrawSignedMessageTimestamp;
@@ -1086,7 +1086,7 @@ template ZSwapV1( nUtxoIn,
     component iskytDepositSignedMessageTimestampZero = IsZero();
     iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
 
-    component isLessThanEqDeposit = LessThanWhenEnabled(252);
+    component isLessThanEqDeposit = LessEqThanWhenEnabled(252);
     isLessThanEqDeposit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
     isLessThanEqDeposit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
     isLessThanEqDeposit.in[1] <== utxoOutCreateTime;
@@ -1096,7 +1096,7 @@ template ZSwapV1( nUtxoIn,
     component iskytWithdrawSignedMessageTimestampZero = IsZero();
     iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
 
-    component isLessThanEqWithdraw = LessThanWhenEnabled(252);
+    component isLessThanEqWithdraw = LessEqThanWhenEnabled(252);
     isLessThanEqWithdraw.enabled <== 1 - iskytWithdrawSignedMessageTimestampZero.out;
     isLessThanEqWithdraw.in[0] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
     isLessThanEqWithdraw.in[1] <== utxoOutCreateTime;
