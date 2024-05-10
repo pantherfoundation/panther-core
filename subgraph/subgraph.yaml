@@ -6,9 +6,9 @@ dataSources:
     name: BusTree
     network: sepolia
     source:
-      address: '0x78D45C63dA1853c69BA53B58e12e5C09439E5E25' # Internal
+      address: '0x78D45C63dA1853c69BA53B58e12e5C09439E5E25'
       abi: BusTree
-      startBlock: 5690377 # Internal
+      startBlock: 5690377
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -39,35 +39,12 @@ dataSources:
           handler: handleUtxoBusQueued
       file: ./src/handleBusTreeQueues.ts
   - kind: ethereum
-    name: PoolContract
-    network: sepolia
-    source:
-      address: '0xBbfa2DeeD18B45b83b1b6b356e39631f6778905E' # Internal
-      abi: PoolContract
-      startBlock: 5802421 # Internal
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - TransactionNote
-        - RootUpdated
-      abis:
-        - name: PoolContract
-          file: ./abis/PantherPoolV1.json
-      eventHandlers:
-        - event: TransactionNote(uint8,bytes)
-          handler: handleTransactionNote
-        - event: RootUpdated(indexed uint256,bytes32,bytes32,uint256)
-          handler: handleRootUpdated
-      file: ./src/handePoolContract.ts
-  - kind: ethereum
     name: PRPVoucherGrantor
     network: sepolia
     source:
-      address: '0xC172B837615b6E2b8934B5f3ce1F33887E7a8577' # Internal
+      address: '0xC172B837615b6E2b8934B5f3ce1F33887E7a8577'
       abi: PRPVoucherGrantor
-      startBlock: 5690396 # Internal
+      startBlock: 5690396
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -87,3 +64,53 @@ dataSources:
         - event: VoucherTermsUpdated(address,bytes4,uint64,uint64)
           handler: handleVoucherTermsUpdated
       file: ./src/handlePrpVoucherGrantor.ts
+  - kind: ethereum
+    name: PantherPoolV1
+    network: sepolia
+    source:
+      address: '0xBbfa2DeeD18B45b83b1b6b356e39631f6778905E'
+      startBlock: 5867559
+      abi: PantherPoolV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - FeesAccounted
+        - KycRewardUpdated
+        - MainCircuitIdUpdated
+        - MaxTimeDeltaUpdated
+        - PrpAccountConversionCircuitIdUpdated
+        - PrpAccountingCircuitIdUpdated
+        - RootUpdated
+        - SeenKytMessageHash
+        - TransactionNote
+        - VaultAssetUnlockerUpdated
+        - ZAccountRegistrationCircuitIdUpdated
+      abis:
+        - name: PantherPoolV1
+          file: ./abis/PantherPoolV1.json
+      eventHandlers:
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: KycRewardUpdated(uint256)
+          handler: handleKycRewardUpdated
+        - event: MainCircuitIdUpdated(uint160)
+          handler: handleMainCircuitIdUpdated
+        - event: MaxTimeDeltaUpdated(uint256)
+          handler: handleMaxTimeDeltaUpdated
+        - event: PrpAccountConversionCircuitIdUpdated(uint160)
+          handler: handlePrpAccountConversionCircuitIdUpdated
+        - event: PrpAccountingCircuitIdUpdated(uint160)
+          handler: handlePrpAccountingCircuitIdUpdated
+        - event: RootUpdated(indexed uint256,bytes32,bytes32,uint256)
+          handler: handleRootUpdated
+        - event: SeenKytMessageHash(indexed bytes32)
+          handler: handleSeenKytMessageHash
+        - event: TransactionNote(uint16,bytes)
+          handler: handleTransactionNote
+        - event: VaultAssetUnlockerUpdated(address,bool)
+          handler: handleVaultAssetUnlockerUpdated
+        - event: ZAccountRegistrationCircuitIdUpdated(uint160)
+          handler: handleZAccountRegistrationCircuitIdUpdated
+      file: ./src/handlePoolContract.ts

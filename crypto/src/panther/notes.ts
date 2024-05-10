@@ -3,6 +3,7 @@
 
 import {TxNoteType1, TxNoteType3, TxNoteType4} from 'types/note';
 
+import {TxType} from '../types/transaction';
 import {bigintToBytes} from '../utils/bigint-conversions';
 
 // for reference, see contracts/protocol/pantherPool/TransactionNoteEmitter.sol
@@ -30,35 +31,46 @@ const LMT = {
     SpentUTXO: 1 + 32 + 64, // 1 byte for message type, 32 bytes for ephemeral public key, 64 bytes spentUtxoCommitment1 spentUtxoCommitment2
 };
 
-export enum TxNoteType {
-    ZAccountActivation = 0x01, // Type1
-    PrpClaiming = 0x02, // Type2
-    PrpConversion = 0x03, // Type3
-    ZTransaction = 0x04, // Type4
-}
-
 type Segment = {type: number; length: number};
 
 // Segment Configurations for each transaction note type
-const SegmentConfigs: {[key in TxNoteType]: Segment[]} = {
-    [TxNoteType.ZAccountActivation]: [
+const SegmentConfigs: {[key in TxType]: Segment[]} = {
+    [TxType.ZAccountActivation]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
         {type: MT.ZAccount, length: LMT.ZAccount},
     ],
-    [TxNoteType.PrpClaiming]: [
+    [TxType.PrpClaiming]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
         {type: MT.ZAccount, length: LMT.ZAccount},
     ],
-    [TxNoteType.PrpConversion]: [
+    [TxType.PrpConversion]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
         {type: MT.ZAssetPub, length: LMT.ZAssetPub},
         {type: MT.ZAccount, length: LMT.ZAccount},
         {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
     ],
-    [TxNoteType.ZTransaction]: [
+    [TxType.ZTransaction]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.SpendTime, length: LMT.SpendTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+    ],
+    [TxType.Deposit]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.SpendTime, length: LMT.SpendTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+    ],
+    [TxType.Withdrawal]: [
         {type: MT.CreateTime, length: LMT.CreateTime},
         {type: MT.SpendTime, length: LMT.SpendTime},
         {type: MT.BusTreeIds, length: LMT.BusTreeIds},
@@ -74,15 +86,15 @@ const BYTES_TO_STRING_LENGTH_FACTOR = 2;
 /**
  * Function to decode transaction note
  * @param {string} encodedNoteContentHex - The encoded Note Content Hex
- * @param {TxNoteType} noteType - The Note Type
+ * @param {TxType} txType - The Note Type
  * @returns {TxNoteType1 | TxNoteType3 | TxNoteType4} - returns either a TxNoteType1,
  * TxNoteType3 or TxNoteType4 depending on noteType
  */
 export function decodeTxNote(
     encodedNoteContentHex: string,
-    noteType: TxNoteType,
+    txType: TxType,
 ): TxNoteType1 | TxNoteType3 | TxNoteType4 {
-    const config = SegmentConfigs[noteType];
+    const config = SegmentConfigs[txType];
     validateInput(encodedNoteContentHex, 1 + getRequiredLength(config));
     const segments = parseSegments(encodedNoteContentHex, config);
 
@@ -90,11 +102,9 @@ export function decodeTxNote(
     let busTreeIds = decodeBusTreeIds(segments[1]);
 
     // Use switch for future extensibility
-    switch (noteType) {
-        case TxNoteType.ZAccountActivation:
-        case TxNoteType.PrpClaiming:
-            // For ZAccountActivation and PrpClaiming, we decode common fields
-            // only
+    switch (txType) {
+        case TxType.ZAccountActivation:
+        case TxType.PrpClaiming:
             return {
                 createTime,
                 ...busTreeIds,
@@ -102,11 +112,10 @@ export function decodeTxNote(
                     MT.ZAccount,
                     segments[2],
                 ),
+                txType,
             } as TxNoteType1;
 
-        case TxNoteType.PrpConversion:
-            // For PrpConversion, we additionally decode zkpAmountScaled,
-            // zAssetUTXOMessage, and commitment of the newly created zAsset
+        case TxType.PrpConversion:
             return {
                 createTime,
                 ...busTreeIds,
@@ -119,9 +128,12 @@ export function decodeTxNote(
                     MT.ZAssetPriv,
                     segments[4],
                 ),
+                txType,
             } as TxNoteType3;
 
-        case TxNoteType.ZTransaction:
+        case TxType.ZTransaction:
+        case TxType.Deposit:
+        case TxType.Withdrawal:
             const [
                 ,
                 spendTime,
@@ -146,10 +158,10 @@ export function decodeTxNote(
                     MT.SpentUTXO,
                     spentUTXO,
                 ),
-            } as TxNoteType4;
-        // ZTransaction
+                txType,
+            } as TxNoteType4; // Main transaction
         default:
-            throw new Error(`Unsupported note type: ${noteType}`);
+            throw new Error(`Unsupported note type: ${txType}`);
     }
 }
 
