@@ -156,8 +156,9 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     customRangeCheckZAssetNetwork.in <== zAssetNetwork;
 
     // zAssetOffset - 6 bits
-    // Supported range - [0 - (2**6 - 1)]
-    component customRangeCheckZAssetOffset = RangeCheckSingleSignal(6,(2**6 - 1),0);
+    // Supported range - [0 - 32]
+    // Although it is a 6 bits field, maximum value that it should be constrained to is 32.
+    component customRangeCheckZAssetOffset = RangeCheckSingleSignal(6,32,0);
     customRangeCheckZAssetOffset.in <== zAssetOffset;
 
     // zAssetWeight - 32 bits
