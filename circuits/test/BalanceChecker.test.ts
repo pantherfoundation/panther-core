@@ -77,7 +77,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetWeight = 1;
 
-            let totalScaled = (100000110n - 99999000n);
+            let totalScaled = 100000110n - 99999000n;
             let totalWeighted = totalScaled;
             await checkWitness({
                 depositScaledAmount: 10,
@@ -151,6 +151,102 @@ describe('BalanceChecker circuit', async function (this: any) {
         it('should fail when zAssetScaleZkp <= 0', async () => {
             balanceCheckerSignals.zAssetScale = 1;
             balanceCheckerSignals.zAssetScaleZkp = 0;
+
+            await checkWitnessError(balanceCheckerSignals);
+        });
+
+        /* Audit Bug - 4.1.1 V-PANC-VUL-001: depositScaledAmount is under-constrained
+        When depositScaledAmountTmp which is an intermediate signal is under constrained a malicious actor can manipulate the operations in the equation to overflow while satisfying the equality constraints.
+       
+        Ex: depositScaledAmountTmp = 21802741923121153053409505722814863857733722351976909209543133076471996743681
+            zAccountUtxoInZkpAmount = 1
+            zAssetScale = 256
+            zAccountUtxoOutZkpAmount: 85500948718122168836900022442411230814642048439125134155071110103811751937
+            depositAmount = 1
+
+        In this case a malicious actor can pass a very low zAccountUtxoInZkpAmount and forge a very high zAccountUtxoOutZkpAmount amount which ends up as $ZKP balance in their zAccount.
+        
+        This bug is fixed in the BalanceChecker template by constraining the intermediate signal value to be less than 2**252.
+        */
+        it('should fail when depositScaledAmountTmp has an overflowing value', async () => {
+            balanceCheckerSignals.zAssetScale = 256;
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = 1;
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount =
+                85500948718122168836900022442411230814642048439125134155071110103811751937n;
+            balanceCheckerSignals.zAssetScaleZkp = 1;
+            balanceCheckerSignals.depositAmount = 1;
+
+            await checkWitnessError(balanceCheckerSignals);
+        });
+
+        /* Audit Bug - 4.1.4 V-PANC-VUL-004: donatedScaledAmountZkp is under-constrained
+        When addedScaledAmountZkp which is an intermediate signal is under constrained a malicious actor can manipulate the operations in the equation to overflow while satisfying the equality constraints.
+       
+        Ex: addedScaledAmountZkp = 21802741923121153053409505722814863857733722351976909209543133076471996743681
+            zAccountUtxoInZkpAmount = 1
+            zAssetScaleZkp = 256
+            zAccountUtxoOutZkpAmount: 85500948718122168836900022442411230814642048439125134155071110103811751937
+            depositAmount = 1
+
+        In this case a malicious actor can pass a very low zAccountUtxoInZkpAmount and forge a very high zAccountUtxoOutZkpAmount amount which ends up as $ZKP balance in their zAccount.
+        
+        This bug is fixed in the BalanceChecker template by constraining the intermediate signal value to be less than 2**252.
+        */
+        it('should fail when addedScaledAmountZkp has an overflowing value', async () => {
+            balanceCheckerSignals.zAssetScale = 1;
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = 1;
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount =
+                85500948718122168836900022442411230814642048439125134155071110103811751937n;
+            balanceCheckerSignals.zAssetScaleZkp = 256;
+            balanceCheckerSignals.addedAmountZkp = 1;
+
+            await checkWitnessError(balanceCheckerSignals);
+        });
+
+        /* Audit Bug - 4.1.3 V-PANC-VUL-003: withdrawScaledAmount is under-constrained
+        When withdrawScaledAmountTmp which is an intermediate signal is under constrained a malicious actor can manipulate the operations in the equation to overflow while satisfying the equality constraints.
+       
+        Ex: withdrawScaledAmountTmp = 21802741923121153053409505722814863857733722351976909209543133076471996743681
+            zAccountUtxoInZkpAmount = 1
+            zAssetScale = 256
+            zAccountUtxoOutZkpAmount: 85500948718122168836900022442411230814642048439125134155071110103811751937
+            withdrawAmount = 1
+
+        In this case a malicious actor can pass a very low zAccountUtxoInZkpAmount and forge a very high zAccountUtxoOutZkpAmount amount which ends up as $ZKP balance in their zAccount.
+        
+        This bug is fixed in the BalanceChecker template by constraining the intermediate signal value to be less than 2**252.
+        */
+        it('should fail when withdrawScaledAmountTmp has an overflowing value', async () => {
+            balanceCheckerSignals.zAssetScale = 256;
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = 1;
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount =
+                85500948718122168836900022442411230814642048439125134155071110103811751937n;
+            balanceCheckerSignals.zAssetScaleZkp = 1;
+            balanceCheckerSignals.withdrawAmount = 1;
+
+            await checkWitnessError(balanceCheckerSignals);
+        });
+
+        /* Audit Bug - 4.1.6 V-PANC-VUL-006: chargedScaledAmountZkp is under-constrained
+        When chargedScaledAmountZkp which is an intermediate signal is under constrained a malicious actor can manipulate the operations in the equation to overflow while satisfying the equality constraints.
+       
+        Ex: chargedScaledAmountZkp = 21802741923121153053409505722814863857733722351976909209543133076471996743681
+            zAccountUtxoInZkpAmount = 1
+            zAssetScale = 256
+            zAccountUtxoOutZkpAmount: 85500948718122168836900022442411230814642048439125134155071110103811751937
+            chargedAmountZkp = 1
+
+        In this case a malicious actor can pass a very low zAccountUtxoInZkpAmount and forge a very high zAccountUtxoOutZkpAmount amount which ends up as $ZKP balance in their zAccount.
+        
+        This bug is fixed in the BalanceChecker template by constraining the intermediate signal value to be less than 2**252.
+        */
+        it('should fail when chargedScaledAmountZkp has an overflowing value', async () => {
+            balanceCheckerSignals.zAssetScale = 1;
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = 1;
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount =
+                85500948718122168836900022442411230814642048439125134155071110103811751937n;
+            balanceCheckerSignals.zAssetScaleZkp = 256;
+            balanceCheckerSignals.chargedAmountZkp = 1;
 
             await checkWitnessError(balanceCheckerSignals);
         });
