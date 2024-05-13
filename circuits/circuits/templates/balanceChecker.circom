@@ -59,6 +59,13 @@ template BalanceChecker() {
     // [1.0] - scale ( a / b = c )
     signal depositScaledAmountTmp;
     depositScaledAmountTmp <-- depositAmount \ zAssetScale;
+
+    // Audit Bug - 4.1.1 V-PANC-VUL-001: depositScaledAmount is under-constrained
+    component depositScaledAmountTmpOverflow = LessThan(252);
+    depositScaledAmountTmpOverflow.in[0] <== depositScaledAmountTmp;
+    depositScaledAmountTmpOverflow.in[1] <== 2**252;
+    depositScaledAmountTmpOverflow.out === 1;
+
     depositScaledAmount <== depositScaledAmountTmp;
 
     // [1.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a + reminder )
@@ -71,6 +78,13 @@ template BalanceChecker() {
     assert(zAssetScaleZkp > 0);
     signal addedScaledAmountZkp;
     addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
+
+    // Audit Bug - 4.1.4 V-PANC-VUL-004: donatedScaledAmountZkp is under-constrained
+    component addedScaledAmountZkpOverflow = LessThan(252);
+    addedScaledAmountZkpOverflow.in[0] <== addedScaledAmountZkp;
+    addedScaledAmountZkpOverflow.in[1] <== 2**252;
+    addedScaledAmountZkpOverflow.out === 1;
+
     addedAmountZkp === addedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Deposit //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +106,13 @@ template BalanceChecker() {
     // [2.0] - scale ( a / b = c )
     signal withdrawScaledAmountTmp;
     withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
+
+    // Audit Bug - 4.1.3 V-PANC-VUL-003: withdrawScaledAmount is under-constrained
+    component withdrawScaledAmountTmpOverflow = LessThan(252);
+    withdrawScaledAmountTmpOverflow.in[0] <== withdrawScaledAmountTmp;
+    withdrawScaledAmountTmpOverflow.in[1] <== 2**252;
+    withdrawScaledAmountTmpOverflow.out === 1;
+
     withdrawScaledAmount <== withdrawScaledAmountTmp;
 
     // [2.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a + reminder )
@@ -103,6 +124,13 @@ template BalanceChecker() {
     // [2.3] - scaled zZKP charge
     signal chargedScaledAmountZkp;
     chargedScaledAmountZkp <-- chargedAmountZkp \ zAssetScaleZkp;
+
+    // Audit Bug - 4.1.6 V-PANC-VUL-006: chargedScaledAmountZkp is under-constrained
+    component chargedScaledAmountZkpOverflow = LessThan(252);
+    chargedScaledAmountZkpOverflow.in[0] <== chargedScaledAmountZkp;
+    chargedScaledAmountZkpOverflow.in[1] <== 2**252;
+    chargedScaledAmountZkpOverflow.out === 1;
+
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +175,12 @@ template BalanceChecker() {
     signal zAccountUtxoResidualZkpAmount <== mux_input[0] + mux_input[1];
     // [5.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
     totalScaled <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
+
+    // Audit Bug - 4.1.2 V-PANC-VUL-002: zkpScaledAmount is under-constrained
+    component totalScaledOverflow = LessThan(252);
+    totalScaledOverflow.in[0] <== totalScaled;
+    totalScaledOverflow.in[1] <== 2**252;
+    totalScaledOverflow.out === 1;
+
     totalWeighted <== totalScaled * zAssetWeight;
 }
-
-
