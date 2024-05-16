@@ -222,7 +222,7 @@ template ZSwapV1( nUtxoIn,
     signal input dataEscrowPubKey[2];
     signal input dataEscrowPubKeyExpiryTime;
     signal input dataEscrowEphemeralRandom;
-    signal input dataEscrowEphemeralPubKeyAx; // public
+    signal input dataEscrowEphemeralPubKeyAx;
     signal input dataEscrowEphemeralPubKeyAy;
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
