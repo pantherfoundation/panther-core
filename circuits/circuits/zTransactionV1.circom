@@ -241,7 +241,7 @@ template ZTransactionV1( nUtxoIn,
     // dao data escrow
     signal input daoDataEscrowPubKey[2];
     signal input daoDataEscrowEphemeralRandom;
-    signal input daoDataEscrowEphemeralPubKeyAx; // public
+    signal input daoDataEscrowEphemeralPubKeyAx;
     signal input daoDataEscrowEphemeralPubKeyAy;
 
     // ------------- scalars-size --------------
