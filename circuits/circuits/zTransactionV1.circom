@@ -123,6 +123,7 @@ template ZTransactionV1( nUtxoIn,
     signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInNullifier[nUtxoIn]; // public
+    signal input utxoInDataEscrowPubKey[nUtxoIn][2];
 
     // input 'zAccount UTXO'
     signal input zAccountUtxoInId;
@@ -232,10 +233,11 @@ template ZTransactionV1( nUtxoIn,
     // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
+    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
 
     var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
     var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut;
+    var dataEscrowPointSize = nUtxoOut + nUtxoOut;
     var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
@@ -270,6 +272,7 @@ template ZTransactionV1( nUtxoIn,
     signal input utxoOutSpendPubKeyRandom[nUtxoOut];
     signal input utxoOutRootSpendPubKey[nUtxoOut][2];
     signal input utxoOutCommitment[nUtxoOut]; // public
+    signal input utxoOutNullifierPubKey[nUtxoOut][2];
 
     // output 'zAccount UTXO'
     signal input zAccountUtxoOutZkpAmount;
@@ -472,6 +475,8 @@ template ZTransactionV1( nUtxoIn,
         utxoInNoteHashers[i].originZoneId <== utxoInOriginZoneId[i];
         utxoInNoteHashers[i].targetZoneId <== zAccountUtxoInZoneId; // ALWAYS will be ZoneId of current zAccount
         utxoInNoteHashers[i].zAccountId <== utxoInZAccountId[i]; // ALWAYS will be ZAccountId of the sender
+        utxoInNoteHashers[i].dataEscrowPubKey[0] <== utxoInDataEscrowPubKey[i][0];
+        utxoInNoteHashers[i].dataEscrowPubKey[1] <== utxoInDataEscrowPubKey[i][1];
 
         // is-zero amount check
         utxoInIsEnabled[i] = IsNotZero();
@@ -511,6 +516,8 @@ template ZTransactionV1( nUtxoIn,
         // verify nullifier
         utxoInNullifierHasher[i] = NullifierHasherExtended();
         utxoInNullifierHasher[i].privKey <== zAccountUtxoInNullifierPrivKey;
+        utxoInNullifierHasher[i].pubKey[0] <== utxoInDataEscrowPubKey[i][0];
+        utxoInNullifierHasher[i].pubKey[1] <== utxoInDataEscrowPubKey[i][1];
         utxoInNullifierHasher[i].leaf <== utxoInNoteHashers[i].out;
 
         utxoInNullifierProver[i] = ForceEqualIfEnabled();
@@ -573,6 +580,8 @@ template ZTransactionV1( nUtxoIn,
         utxoOutNoteHasher[i].originZoneId <== zAccountUtxoInZoneId; // ALWAYS will be ZoneId of current zAccount
         utxoOutNoteHasher[i].targetZoneId <== utxoOutTargetZoneId[i];
         utxoOutNoteHasher[i].zAccountId <== zAccountUtxoInId; // ALWAYS will be ZAccountId of current zAccount
+        utxoOutNoteHasher[i].dataEscrowPubKey[0] <== dataEscrowPubKey[0];
+        utxoOutNoteHasher[i].dataEscrowPubKey[1] <== dataEscrowPubKey[1];
 
         utxoOutCommitmentProver[i] = ForceEqualIfEnabled();
         utxoOutCommitmentProver[i].enabled <== utxoOutCommitment[i];
@@ -913,6 +922,7 @@ template ZTransactionV1( nUtxoIn,
     // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
+    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
     component dataEscrow = DataEscrowElGamalEncryption(dataEscrowScalarSize,dataEscrowPointSize);
 
     dataEscrow.ephemeralRandom <== dataEscrowEphemeralRandom;
@@ -950,6 +960,11 @@ template ZTransactionV1( nUtxoIn,
     for (var j = 0; j < nUtxoOut; j++) {
         dataEscrow.pointMessage[j][0] <== utxoOutRootSpendPubKey[j][0];
         dataEscrow.pointMessage[j][1] <== utxoOutRootSpendPubKey[j][1];
+    }
+    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
+    for (var j = 0; j < nUtxoOut; j++) {
+        dataEscrow.pointMessage[nUtxoOut + j][0] <== utxoOutNullifierPubKey[j][0];
+        dataEscrow.pointMessage[nUtxoOut + j][1] <== utxoOutNullifierPubKey[j][1];
     }
 
     // verify EphemeralPubKey
@@ -1000,6 +1015,8 @@ template ZTransactionV1( nUtxoIn,
     zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zZoneNoteHasher.dataEscrowPubKey[0] <== dataEscrowPubKey[0];
+    zZoneNoteHasher.dataEscrowPubKey[1] <== dataEscrowPubKey[1];
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -1196,6 +1213,7 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.utxoInPathIndices <== utxoInPathIndices;
     zTransactionV1RC.utxoInPathElements <== utxoInPathElements;
     zTransactionV1RC.utxoInNullifier <== utxoInNullifier;
+    zTransactionV1RC.utxoInDataEscrowPubKey <== utxoInDataEscrowPubKey;
 
     zTransactionV1RC.zAccountUtxoInId <== zAccountUtxoInId;
     zTransactionV1RC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
@@ -1301,6 +1319,7 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
     zTransactionV1RC.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
     zTransactionV1RC.utxoOutCommitment <== utxoOutCommitment;
+    zTransactionV1RC.utxoOutNullifierPubKey <== utxoOutNullifierPubKey;
     zTransactionV1RC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     zTransactionV1RC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
     zTransactionV1RC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;

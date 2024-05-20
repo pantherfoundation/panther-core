@@ -5,20 +5,21 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZZoneNoteHasher(){
-    signal input zoneId;                                   // 16
-    signal input edDsaPubKey[2];                           // 256
-    signal input originZoneIDs;                            // 256
-    signal input targetZoneIDs;                            // 256
-    signal input networkIDsBitMap;                         // 64
-    signal input trustProvidersMerkleTreeLeafIDsAndRulesList;      // 256
-    signal input kycExpiryTime;                            // 32
-    signal input kytExpiryTime;                            // 32
-    signal input depositMaxAmount;                         // 64
-    signal input withdrawMaxAmount;                        // 64
-    signal input internalMaxAmount;                        // 64
-    signal input zAccountIDsBlackList;                     // 256
-    signal input maximumAmountPerTimePeriod;               // 256
-    signal input timePeriodPerMaximumAmount;               // 32 bit
+    signal input zoneId;                                        // 16
+    signal input edDsaPubKey[2];                                // 256
+    signal input originZoneIDs;                                 // 256
+    signal input targetZoneIDs;                                 // 256
+    signal input networkIDsBitMap;                              // 64
+    signal input trustProvidersMerkleTreeLeafIDsAndRulesList;   // 256
+    signal input kycExpiryTime;                                 // 32
+    signal input kytExpiryTime;                                 // 32
+    signal input depositMaxAmount;                              // 64
+    signal input withdrawMaxAmount;                             // 64
+    signal input internalMaxAmount;                             // 64
+    signal input zAccountIDsBlackList;                          // 256
+    signal input maximumAmountPerTimePeriod;                    // 256
+    signal input timePeriodPerMaximumAmount;                    // 32 bit
+    signal input dataEscrowPubKey[2];                           // 256
 
     signal output out;
 
@@ -39,7 +40,13 @@ template ZZoneNoteHasher(){
     hash.inputs[13] <== maximumAmountPerTimePeriod;
     hash.inputs[14] <== timePeriodPerMaximumAmount;
 
-    hash.out ==> out;
+    component hash_out = Poseidon(3);
+    hash_out.inputs[0] <== dataEscrowPubKey[0];
+    hash_out.inputs[1] <== dataEscrowPubKey[1];
+    hash_out.inputs[2] <== hash.out;
+
+    hash_out.out ==> out;
+
     /*
     component b2n_0 = Bits2Num(16+32+32+64+32); // 144+32 = 176
 

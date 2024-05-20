@@ -124,6 +124,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     // zNetworks tree
     // network parameters:
@@ -385,6 +386,8 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     utxoNoteHasher.originZoneId <== zAccountUtxoInZoneId;
     utxoNoteHasher.targetZoneId <== zAccountUtxoInZoneId;
     utxoNoteHasher.zAccountId <== zAccountUtxoInId;
+    utxoNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    utxoNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     component utxoCommitmentIsEqual = ForceEqualIfEnabled();
     utxoCommitmentIsEqual.enabled <== utxoCommitment;
@@ -418,6 +421,8 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -571,6 +576,8 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     ammV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     ammV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     ammV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    ammV1RC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    ammV1RC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     ammV1RC.zNetworkId <== zNetworkId;
     ammV1RC.zNetworkChainId <== zNetworkChainId;

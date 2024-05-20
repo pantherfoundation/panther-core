@@ -90,6 +90,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     signal input zNetworkId;
     signal input zNetworkChainId;
@@ -496,7 +497,7 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
-    // staticTreeMerkleRoot 
+    // staticTreeMerkleRoot
     // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
