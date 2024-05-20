@@ -7,15 +7,16 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // 2 Level hash, first level is private parameters, second level is quasi-private,
 // since in generare-deposits api, spendPk, zAsset and amount are publicly know parameters
 template UtxoNoteHasher(isHiddenHash){
-    signal input spendPk[2];      // 256
-    signal input zAsset;          // 64
-    signal input amount;          // 64
-    signal input originNetworkId; // 6
-    signal input targetNetworkId; // 6
-    signal input createTime;      // 32
-    signal input originZoneId;    // 16
-    signal input targetZoneId;    // 16
-    signal input zAccountId;      // 24
+    signal input spendPk[2];            // 256
+    signal input zAsset;                // 64
+    signal input amount;                // 64
+    signal input originNetworkId;       // 6
+    signal input targetNetworkId;       // 6
+    signal input createTime;            // 32
+    signal input originZoneId;          // 16
+    signal input targetZoneId;          // 16
+    signal input zAccountId;            // 24
+    signal input dataEscrowPubKey[2];   // 256
 
     signal output out;
 
@@ -27,7 +28,7 @@ template UtxoNoteHasher(isHiddenHash){
     assert(targetZoneId < 2**16);
     assert(zAccountId < 2**24);
 
-    component hiden_hash = Poseidon(9);
+    component hiden_hash = Poseidon(11);
     hiden_hash.inputs[0] <== spendPk[0];
     hiden_hash.inputs[1] <== spendPk[1];
     hiden_hash.inputs[2] <== zAsset;
@@ -37,6 +38,8 @@ template UtxoNoteHasher(isHiddenHash){
     hiden_hash.inputs[6] <== createTime;
     hiden_hash.inputs[7] <== originZoneId;
     hiden_hash.inputs[8] <== targetZoneId;
+    hiden_hash.inputs[9] <== dataEscrowPubKey[0];
+    hiden_hash.inputs[10] <== dataEscrowPubKey[1];
 
     // quasi-public hash - used for generate-deposits
     component hasher = Poseidon(2);

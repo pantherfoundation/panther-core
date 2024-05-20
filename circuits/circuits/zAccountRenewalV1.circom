@@ -116,6 +116,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     // KYC
     signal input kycEdDsaPubKey[2];
@@ -436,6 +437,8 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -583,6 +586,8 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountRenewalRC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zAccountRenewalRC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zAccountRenewalRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zAccountRenewalRC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zAccountRenewalRC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     zAccountRenewalRC.kycEdDsaPubKey <== kycEdDsaPubKey;
     zAccountRenewalRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;

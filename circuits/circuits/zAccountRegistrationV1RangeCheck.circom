@@ -65,6 +65,7 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     signal input kycEdDsaPubKey[2];
     signal input kycEdDsaPubKeyExpiryTime;
@@ -117,7 +118,7 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     // SNARK FIELD SIZE - 21888242871839275222246405745257275088548364400416034343698204186575808495617
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    // extraInputsHash - 256 bits 
+    // extraInputsHash - 256 bits
     // Public signal
     // Must be within the SNARK_FIELD
     // Must be checked as part of SC
@@ -274,7 +275,7 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
-    // zAccountCommitment 
+    // zAccountCommitment
     // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
@@ -437,7 +438,7 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     component customRangeCheckKycSignedMessageSigner = RangeCheckSingleSignal(160,(2**160 - 1),0);
     customRangeCheckKycSignedMessageSigner.in <== kycSignedMessageSigner;
 
-    // kycSignedMessageHash 
+    // kycSignedMessageHash
     // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
@@ -518,7 +519,7 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
     // Should be checked as part of the SC
 
-    // saltHash 
+    // saltHash
     // Public signal
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC

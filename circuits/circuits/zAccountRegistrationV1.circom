@@ -94,6 +94,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     // KYC
     signal input kycEdDsaPubKey[2];
@@ -392,6 +393,8 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -530,6 +533,8 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountRegistrationRC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zAccountRegistrationRC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zAccountRegistrationRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zAccountRegistrationRC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zAccountRegistrationRC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
 
     zAccountRegistrationRC.kycEdDsaPubKey <== kycEdDsaPubKey;
     zAccountRegistrationRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;

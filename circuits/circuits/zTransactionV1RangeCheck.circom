@@ -74,6 +74,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
     signal input utxoInNullifier[nUtxoIn];
+    signal input utxoInDataEscrowPubKey[nUtxoIn][2];
 
     signal input zAccountUtxoInId;
     signal input zAccountUtxoInZkpAmount;
@@ -167,7 +168,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
     var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut;
+    var dataEscrowPointSize = nUtxoOut + nUtxoOut;
     var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints];
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
@@ -191,6 +192,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input utxoOutSpendPubKeyRandom[nUtxoOut];
     signal input utxoOutRootSpendPubKey[nUtxoOut][2];
     signal input utxoOutCommitment[nUtxoOut];
+    signal input utxoOutNullifierPubKey[nUtxoOut][2];
 
     signal input zAccountUtxoOutZkpAmount;
     signal input zAccountUtxoOutSpendKeyRandom;

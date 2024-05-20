@@ -78,6 +78,7 @@ template ZAccountRenewalRangeCheck (UtxoLeftMerkleTreeDepth,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneDataEscrowPubKey[2];
 
     signal input kycEdDsaPubKey[2];
     signal input kycEdDsaPubKeyExpiryTime;
