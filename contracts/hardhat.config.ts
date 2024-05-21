@@ -88,13 +88,21 @@ const config: HardhatUserConfig = {
         sepolia: createNetworkConfig('sepolia'),
 
         polygon: createNetworkConfig('polygon'),
+        amoy: createNetworkConfig('amoy'),
     },
     etherscan: {
         apiKey: {
             mainnet: process.env.ETHERSCAN_API_KEY as string,
             sepolia: process.env.ETHERSCAN_API_KEY as string,
             polygon: process.env.POLYGONSCAN_API_KEY as string,
+            amoy: process.env.POLYGONSCAN_API_KEY as string,
         },
+        customChains: [
+            createEtherscanConfig('amoy', {
+                apiURL: 'https://api-amoy.polygonscan.com/api',
+                browserURL: 'https://amoy.polygonscan.com',
+            }),
+        ],
     },
     sourcify: {
         // setting to false to hide INFO message in console when verifying.
@@ -252,6 +260,10 @@ function getNamedAccounts() {
         pzk: {
             polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
         },
+        weth9: {
+            sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+            amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
+        },
     };
 
     return namedAccounts;
@@ -283,6 +295,22 @@ function createNetworkConfig(
         },
         extraOpts,
     );
+}
+
+function createEtherscanConfig(
+    network: string,
+    urls: {apiURL: string; browserURL: string},
+) {
+    const {apiURL, browserURL} = urls;
+
+    return Object.assign({
+        network,
+        chainId: CHAIN_IDS[network],
+        urls: {
+            apiURL,
+            browserURL,
+        },
+    });
 }
 
 function getRpcUrl(network: NetworkName): string {
