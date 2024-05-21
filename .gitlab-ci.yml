@@ -23,7 +23,7 @@ default:
   - time yarn lint
   - time yarn build:types
   - time yarn test:ci
-  - cp dapp/.env.staging dapp/.env
+  - cp dapp/.env.staging.internal dapp/.env
   - time yarn run build:dapp:staging
 
 .combined_job_template:
