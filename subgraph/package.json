@@ -8,7 +8,8 @@
     "build": "graph build",
     "deploy:hosted": "graph deploy --node https://api.thegraph.com/deploy/",
     "deploy:studio": "graph deploy --studio",
-    "subgraph:publish": "yarn codegen && yarn build && yarn deploy:studio"
+    "subgraph:publish": "yarn codegen && yarn build && yarn deploy:studio",
+    "stats:count:users": "sh scripts/countUsers.sh"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.55.0",
