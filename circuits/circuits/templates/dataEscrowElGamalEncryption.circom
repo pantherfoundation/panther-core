@@ -276,6 +276,28 @@ template EphemeralPubKeysBuilder(nPubKeys) {
     component n2b_hash[nPubKeys-1];
     component b2n_hash[nPubKeys-1];
 
+    for (var i = 1; i < nPubKeys; i++) {
+        hash[i-1] = Poseidon(2);
+        hash[i-1].inputs[0] <== drv_rG[i-1].Ax;
+        hash[i-1].inputs[1] <== drv_rG[i-1].Ay;
+        n2b_hash[i-1] = Num2Bits(254);
+        n2b_hash[i-1].in <== hash[i-1].out;
+        b2n_hash[i-1] = Bits2Num(252);
+        for(var j = 0; j < 252; j++) {
+            b2n_hash[i-1].in[j] <== n2b_hash[i-1].out[j];
+        }
+        ephemeralRandoms[i] <== b2n_hash[i-1].out;
+
+        drv_rG[i] = BabyPbk();
+        drv_rG[i].in <== ephemeralRandoms[i];
+        ephemeralPubKey[i][0] <== drv_rG[i].Ax;
+        ephemeralPubKey[i][1] <== drv_rG[i].Ay;
+    }
+
+    // ephemeralRandom * pubKey
+    component n2b[nPubKeys];
+    component drv_ephemeralRandomPublicKey[nPubKeys];
+
     for (var i = 0; i < nPubKeys; i++) {
         // derive shared key
         sharedKey_eRandMultPubKey[i] = EscalarMulAny(253);
