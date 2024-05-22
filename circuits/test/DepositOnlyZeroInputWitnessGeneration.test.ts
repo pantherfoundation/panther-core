@@ -166,9 +166,9 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zZonePathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zZoneEdDsaPubKey: [0, 0],
-        zZoneDataEscrowEphimeralRandom: 0,
-        zZoneDataEscrowEphimeralPubKeyAx: 0,
-        zZoneDataEscrowEphimeralPubKeyAy: 1,
+        zZoneDataEscrowEphemeralRandom: 0,
+        zZoneDataEscrowEphemeralPubKeyAx: 0,
+        zZoneDataEscrowEphemeralPubKeyAy: 1,
         zZoneZAccountIDsBlackList:
             '1766847064778384329583297500742918515827483896875618958121606201292619775',
 
@@ -211,9 +211,9 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
 
         dataEscrowPubKey: [0, 0],
         dataEscrowPubKeyExpiryTime: 0,
-        dataEscrowEphimeralRandom: 0,
-        dataEscrowEphimeralPubKeyAx: 0,
-        dataEscrowEphimeralPubKeyAy: 1,
+        dataEscrowEphemeralRandom: 0,
+        dataEscrowEphemeralPubKeyAx: 0,
+        dataEscrowEphemeralPubKeyAy: 1,
         dataEscrowPathElements: [
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
@@ -222,12 +222,12 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
         daoDataEscrowPubKey: [0, 0],
-        daoDataEscrowEphimeralRandom: 0,
-        daoDataEscrowEphimeralPubKeyAx: 0,
-        daoDataEscrowEphimeralPubKeyAy: 1,
+        daoDataEscrowEphemeralRandom: 0,
+        daoDataEscrowEphemeralPubKeyAx: 0,
+        daoDataEscrowEphemeralPubKeyAy: 1,
 
-        daoDataEscrowEncryptedMessageAx: [0, 0, 0],
-        daoDataEscrowEncryptedMessageAy: [1, 1, 1],
+        daoDataEscrowEncryptedMessageAx: [0],
+        daoDataEscrowEncryptedMessageAy: [1],
 
         utxoOutCreateTime: 0,
         utxoOutAmount: [0, 0],

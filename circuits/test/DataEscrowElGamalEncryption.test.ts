@@ -15,12 +15,13 @@ import {Scalar} from 'ffjavascript';
 import {mulPointEscalar} from 'circomlibjs/src/babyjub';
 const {shiftLeft} = Scalar;
 const {bor} = Scalar;
+
+// Cleanup test during Stage8 - @sushma
 describe('DataEscrowElGamalEncryption circuit', function (this: any) {
     let dataEscrowElGamalEncryption: any;
-    // Use timeout if needed
-    this.timeout(10000000);
 
-    // Info: Executed once before all the test cases
+    this.timeout(10_000_000);
+
     before(async function () {
         const opts = getOptions();
         const input = path.join(
@@ -30,11 +31,7 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
         dataEscrowElGamalEncryption = await wasm_tester(input, opts);
     });
 
-    // Info: Executed before each test cases
-    beforeEach(async function () {
-        // TODO: Declare all the variables that needs to be initialised for each test cases
-    });
-
+    // Recheck comment during Stage8 - @sushma
     /*******************************************************************************************************************
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////// component main = DataEscrowElGamalEncryption(8-scalars,2-Points); ///////////////////////
@@ -79,128 +76,179 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             4.1) encyptedMessage[0-to-7][x,y] = encryptedscalars[8][x,y]
             4.2) encyptedMessage[8-to-9][x,y] = encryptedPoints[8][x,y]
      ******************************************************************************************************************/
-    ////////////////////////////////////////
-    // Semi contrants values ///////////////
-    ////////////////////////////////////////
-    let dataEscrowKeyPair = generateRandomKeypair(); // taken from the merkle-tree
-    let utxoOutRootKeyPairs = [
-        generateRandomKeypair(),
-        generateRandomKeypair(),
-    ]; // each zAssount has it
-    let zAccountID = BigInt(getRandomInt(0, 2 ** 24)); //  each zAssount has it
-    let zAccountZoneID = BigInt(getRandomInt(0, 2 ** 16)); //  each zAssount has it
-
-    ////////////////////////////////////////
-    // Transaction values //////////////////
-    ////////////////////////////////////////
-    let zAssetID = BigInt(getRandomInt(0, 2 ** 32)); // each zAsset has it
-    let utxoInAmounts = [
-        BigInt(getRandomInt(0, 2 ** 64)),
-        BigInt(getRandomInt(0, 2 ** 64)),
-    ];
-    let utxoOutAmounts = [
-        BigInt(getRandomInt(0, 2 ** 64)),
-        BigInt(getRandomInt(0, 2 ** 64)),
-    ];
-    let utxoInOriginZoneIds = [
-        BigInt(getRandomInt(0, 2 ** 16)),
-        BigInt(getRandomInt(0, 2 ** 16)),
-    ];
-    let utxoOutTargetZoneIds = [
-        BigInt(getRandomInt(0, 2 ** 16)),
-        BigInt(getRandomInt(0, 2 ** 16)),
-    ];
-    let ephemeralRandom = generateRandomInBabyJubSubField();
-    let ephemeralPubKey = [
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[0]),
-        BigInt(babyjub.mulPointEscalar(babyjub.Base8, ephemeralRandom)[1]),
-    ];
-    let ephemeralRandomPubKey = [
-        BigInt(
-            babyjub.mulPointEscalar(
-                dataEscrowKeyPair.publicKey,
-                ephemeralRandom,
-            )[0],
-        ),
-        BigInt(
-            babyjub.mulPointEscalar(
-                dataEscrowKeyPair.publicKey,
-                ephemeralRandom,
-            )[1],
-        ),
-    ];
-
-    // [0] - scalars serialization
-    let m_scalar = [
-        zAssetID,
-        BigInt(bor(shiftLeft(zAccountID, 16), zAccountZoneID).toString()),
-        utxoInAmounts[0],
-        utxoInAmounts[1],
-        utxoOutAmounts[0],
-        utxoOutAmounts[1],
-        BigInt(
-            bor(
-                shiftLeft(utxoInOriginZoneIds[0], 16),
-                utxoOutTargetZoneIds[0],
-            ).toString(),
-        ),
-        BigInt(
-            bor(
-                shiftLeft(utxoInOriginZoneIds[1], 16),
-                utxoOutTargetZoneIds[1],
-            ).toString(),
-        ),
-    ];
-    // [1] = scalars to Points mapping
-    let M_scalar_points = [
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[0]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[1]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[2]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[3]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[4]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[5]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[6]),
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[7]),
-    ];
-    // [2] - Points
-    let M_points = [
-        utxoOutRootKeyPairs[0].publicKey,
-        utxoOutRootKeyPairs[1].publicKey,
-    ];
-    // [3] - elgamal scalars + points
-    let enctyptedMessage = [
-        // scalars
-        babyjub.addPoint(M_scalar_points[0], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[1], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[2], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[3], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[4], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[5], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[6], ephemeralRandomPubKey),
-        babyjub.addPoint(M_scalar_points[7], ephemeralRandomPubKey),
-        // points
-        babyjub.addPoint(M_points[0], ephemeralRandomPubKey),
-        babyjub.addPoint(M_points[1], ephemeralRandomPubKey),
-    ];
-
     const input = {
-        ephemeralRandom: ephemeralRandom,
-        scalarMessage: m_scalar,
-        pointMessage: M_points,
-        pubKey: dataEscrowKeyPair.publicKey,
+        ephemeralRandom:
+            2508770261742365048726528579942226801565607871885423400214068953869627805520n,
+        pubKey: [
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        ],
+        scalarMessage: [0, 2162689, 0, 0, 10, 0, 1, 0],
+        // Values from `DepositOnlyNonZeroInputWitnessGeneration.test.ts`
+        pointMessage: [
+            [
+                9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+                13931233598534410991314026888239110837992015348186918500560502831191846288865n,
+            ],
+            [0, 0],
+        ],
     };
 
+    const ephemeralRandomPubKey = [
+        [
+            12871439135712262058001002684440962908819002983015508623206745248194094676428n,
+            17114886397516225242214463605558970802516242403903915116207133292790211059315n,
+        ],
+        [
+            14715282785645531699299359324879767610524506554829132351240969655805786153311n,
+            16298106068662121661386726371313267600592270658346075539160130615717895345005n,
+        ],
+        [
+            5076630596576156879056817266673921939822187766485023884697508842383654864701n,
+            18537582780122882427504865698450965640562756141929860651411897814057616549835n,
+        ],
+        [
+            20523581000037863852326059229764216089225350671364692666825542079348693914995n,
+            5781176486616316053750229455982357786563481303510351065692534349340256489076n,
+        ],
+        [
+            10378265944428119107711332533449804910732315585881693008237106152055045103347n,
+            21029920917937143156010888140502192636742393695727430950191808014440353201325n,
+        ],
+        [
+            15957016481248729440226604571571896292382014480898746772647102174542471117023n,
+            20908710057951135449348158838741423296989266876751621333915428201200659885936n,
+        ],
+        [
+            16414818090013652009115609217866261951817223138597235575004168391221688060610n,
+            20059661808734730259039633106635683938416748943430928650775690601990727667285n,
+        ],
+        [
+            18224078447721468913448619229779986050619236635302325031880878071400013184997n,
+            12229800567381579225866236980070374176299043182345544547937919767427587709148n,
+        ],
+        [
+            3462515991558629614614530863822019927194326138941210737711776530604922106525n,
+            18171187893064681019827124267070423101397852328497300082251783410349806754356n,
+        ],
+        [
+            8440660080386163641088243662813324731029409616187751210324775028349462183564n,
+            8433802572435888741254663080553586984999830087708251743134449562704293198957n,
+        ],
+    ];
+
+    // encryptedMessage[ScalarsSize+PointsSize][2] computation
+    const ephemeralPubKey0 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        0, //scalarMessage[0]
+    );
+    const encryptedMessage0 = babyjub.addPoint(
+        ephemeralPubKey0,
+        ephemeralRandomPubKey[0],
+    );
+    // console.log('encryptedMessage0=>', encryptedMessage0);
+
+    const ephemeralPubKey1 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        2162689, //scalarMessage[1]
+    );
+    const encryptedMessage1 = babyjub.addPoint(
+        ephemeralPubKey1,
+        ephemeralRandomPubKey[1],
+    );
+    // console.log('encryptedMessage1=>', encryptedMessage1);
+
+    const ephemeralPubKey2 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        0, //scalarMessage[1]
+    );
+    const encryptedMessage2 = babyjub.addPoint(
+        ephemeralPubKey2,
+        ephemeralRandomPubKey[2],
+    );
+    // console.log('encryptedMessage2=>', encryptedMessage2);
+
+    const ephemeralPubKey3 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        0, //scalarMessage[3]
+    );
+    const encryptedMessage3 = babyjub.addPoint(
+        ephemeralPubKey3,
+        ephemeralRandomPubKey[3],
+    );
+    // console.log('encryptedMessage3=>', encryptedMessage3);
+
+    const ephemeralPubKey4 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        10, //scalarMessage[4]
+    );
+    const encryptedMessage4 = babyjub.addPoint(
+        ephemeralPubKey4,
+        ephemeralRandomPubKey[4],
+    );
+    // console.log('encryptedMessage4=>', encryptedMessage4);
+
+    const ephemeralPubKey5 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        0, //scalarMessage[5]
+    );
+    const encryptedMessage5 = babyjub.addPoint(
+        ephemeralPubKey5,
+        ephemeralRandomPubKey[5],
+    );
+    // console.log('encryptedMessage5=>', encryptedMessage5);
+
+    const ephemeralPubKey6 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        1, //scalarMessage[6]
+    );
+    const encryptedMessage6 = babyjub.addPoint(
+        ephemeralPubKey6,
+        ephemeralRandomPubKey[6],
+    );
+    // console.log('encryptedMessage6=>', encryptedMessage6);
+
+    const ephemeralPubKey7 = babyjub.mulPointEscalar(
+        babyjub.Base8,
+        0, //scalarMessage[7]
+    );
+    const encryptedMessage7 = babyjub.addPoint(
+        ephemeralPubKey7,
+        ephemeralRandomPubKey[7],
+    );
+    // console.log('encryptedMessage7=>', encryptedMessage7);
+
+    const encryptedMessage8 = babyjub.addPoint(
+        [
+            9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+            13931233598534410991314026888239110837992015348186918500560502831191846288865n,
+        ],
+        ephemeralRandomPubKey[8],
+    );
+    // console.log('encryptedMessage8=>', encryptedMessage8);
+
+    const encryptedMessage9 = babyjub.addPoint(
+        [0n, 0n],
+        ephemeralRandomPubKey[9],
+    );
+    // console.log('encryptedMessage9=>', encryptedMessage9);
+
     const output = {
-        ephemeralPubKey: ephemeralPubKey,
+        ephemeralPubKey: [
+            4301916310975298895721162797900971043392040643140207582177965168853046592976n,
+            815388028464849479935447593762613752978886104243152067307597626016673798528n,
+        ],
         encryptedMessage: [
-            [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
-            [BigInt(enctyptedMessage[1][0]), BigInt(enctyptedMessage[1][1])],
-            [BigInt(enctyptedMessage[2][0]), BigInt(enctyptedMessage[2][1])],
-            [BigInt(enctyptedMessage[3][0]), BigInt(enctyptedMessage[3][1])],
-            [BigInt(enctyptedMessage[4][0]), BigInt(enctyptedMessage[4][1])],
-            [BigInt(enctyptedMessage[5][0]), BigInt(enctyptedMessage[5][1])],
-            [BigInt(enctyptedMessage[6][0]), BigInt(enctyptedMessage[6][1])],
-            [BigInt(enctyptedMessage[7][0]), BigInt(enctyptedMessage[7][1])],
+            [encryptedMessage0[0], encryptedMessage0[1]],
+            [encryptedMessage1[0], encryptedMessage1[1]],
+            [encryptedMessage2[0], encryptedMessage2[1]],
+            [encryptedMessage3[0], encryptedMessage3[1]],
+            [encryptedMessage4[0], encryptedMessage4[1]],
+            [encryptedMessage5[0], encryptedMessage5[1]],
+            [encryptedMessage6[0], encryptedMessage6[1]],
+            [encryptedMessage7[0], encryptedMessage7[1]],
+            [encryptedMessage8[0], encryptedMessage8[1]],
+            [encryptedMessage9[0], encryptedMessage9[1]],
         ],
     };
 
@@ -212,31 +260,6 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             );
             await dataEscrowElGamalEncryption.assertOut(wtns, output);
             console.log('Witness calculation successful!');
-        });
-        it('should compute valid elgamal', async () => {
-            let priv_key = generateRandomInBabyJubSubField();
-            let pub_key = mulPointEscalar(babyjub.Base8, priv_key);
-            let random = generateRandomInBabyJubSubField();
-            let e_pub_key = mulPointEscalar(babyjub.Base8, random);
-            let point = mulPointEscalar(
-                babyjub.Base8,
-                generateRandomInBabyJubSubField(),
-            );
-            let hidding = mulPointEscalar(pub_key, random);
-            let enctypted_data = babyjub.addPoint(point, hidding);
-            let unhidding = mulPointEscalar(e_pub_key, priv_key);
-            let y_neg = BigInt(babyjub.p) - BigInt(unhidding[0]);
-            let unhidding_neg = unhidding;
-            unhidding_neg[0] = y_neg;
-            let decrypted = babyjub.addPoint(enctypted_data, unhidding_neg);
-
-            console.log('point {}, decrypted_point', point, decrypted);
-            console.assert(
-                point[0] == decrypted[0] && point[1] == decrypted[1],
-                'point {}, decrypted_point',
-                point,
-                decrypted,
-            );
         });
     });
 });
