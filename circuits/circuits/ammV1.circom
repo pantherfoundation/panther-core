@@ -225,6 +225,8 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
+    totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
 
     // verify zAsset is ZKP
     zAssetChecker.isZkpToken === 1;

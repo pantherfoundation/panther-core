@@ -205,6 +205,7 @@ template ZSwapV1( nUtxoIn,
     signal input kytDepositSignedMessageSessionId;
     signal input kytDepositSignedMessageRuleId;
     signal input kytDepositSignedMessageAmount;
+    signal input kytDepositSignedMessageChargedAmountZkp;
     signal input kytDepositSignedMessageSigner;
     signal input kytDepositSignedMessageHash;                // public
     signal input kytDepositSignature[3];                     // S,R8x,R8y
@@ -217,6 +218,7 @@ template ZSwapV1( nUtxoIn,
     signal input kytWithdrawSignedMessageSessionId;
     signal input kytWithdrawSignedMessageRuleId;
     signal input kytWithdrawSignedMessageAmount;
+    signal input kytWithdrawSignedMessageChargedAmountZkp;
     signal input kytWithdrawSignedMessageSigner;
     signal input kytWithdrawSignedMessageHash;                // public
     signal input kytWithdrawSignature[3];                     // S,R8x,R8y
@@ -382,6 +384,9 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.zAssetWeight <== zAssetWeight[transactedToken];
     totalBalanceChecker.zAssetScale <== zAssetScale[transactedToken];
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
+    totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
+
 
     // verify change is zero
     depositChange === 0;
@@ -770,7 +775,7 @@ template ZSwapV1( nUtxoIn,
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
     signal isKytDepositCheckEnabled <== isSwap ?  kytDepositSignedMessageHash * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out);
 
-    component kytDepositSignedMessageHashInternal = Poseidon(9);
+    component kytDepositSignedMessageHashInternal = Poseidon(10);
 
     kytDepositSignedMessageHashInternal.inputs[0] <== kytDepositSignedMessagePackageType;
     kytDepositSignedMessageHashInternal.inputs[1] <== kytDepositSignedMessageTimestamp;
@@ -781,6 +786,7 @@ template ZSwapV1( nUtxoIn,
     kytDepositSignedMessageHashInternal.inputs[6] <== kytDepositSignedMessageRuleId;
     kytDepositSignedMessageHashInternal.inputs[7] <== kytDepositSignedMessageAmount;
     kytDepositSignedMessageHashInternal.inputs[8] <== kytDepositSignedMessageSigner;
+    kytDepositSignedMessageHashInternal.inputs[9] <== kytDepositSignedMessageChargedAmountZkp;
 
     component kytDepositSignatureVerifier = EdDSAPoseidonVerifier();
     kytDepositSignatureVerifier.enabled <== isKytDepositCheckEnabled;
@@ -822,7 +828,7 @@ template ZSwapV1( nUtxoIn,
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
     signal isKytWithdrawCheckEnabled <== isSwap ? kytWithdrawSignedMessageHash * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out);
 
-    component kytWithdrawSignedMessageHashInternal = Poseidon(9);
+    component kytWithdrawSignedMessageHashInternal = Poseidon(10);
 
     kytWithdrawSignedMessageHashInternal.inputs[0] <== kytWithdrawSignedMessagePackageType;
     kytWithdrawSignedMessageHashInternal.inputs[1] <== kytWithdrawSignedMessageTimestamp;
@@ -833,6 +839,7 @@ template ZSwapV1( nUtxoIn,
     kytWithdrawSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageRuleId;
     kytWithdrawSignedMessageHashInternal.inputs[7] <== kytWithdrawSignedMessageAmount;
     kytWithdrawSignedMessageHashInternal.inputs[8] <== kytWithdrawSignedMessageSigner;
+    kytWithdrawSignedMessageHashInternal.inputs[9] <== kytWithdrawSignedMessageChargedAmountZkp;
 
     component kytWithdrawSignatureVerifier = EdDSAPoseidonVerifier();
     kytWithdrawSignatureVerifier.enabled <== isKytWithdrawCheckEnabled;
