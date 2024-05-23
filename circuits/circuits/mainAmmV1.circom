@@ -12,16 +12,15 @@ component main {
         depositAmountPrp,                      // [5]
         withdrawAmountPrp,                     // [6]
         utxoCommitment,                        // [7]
-        utxoSpendPubKey,                       // [8] - x,y
-        zAssetScale,                           // [9]
-        zAccountUtxoInNullifier,               // [10]
-        zAccountUtxoOutCommitment,             // [11]
-        zNetworkChainId,                       // [12]
-        staticTreeMerkleRoot,                  // [13]
-        forestMerkleRoot,                      // [14]
-        saltHash,                              // [15]
-        magicalConstraint                      // [16]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 16 + 1 = 17
+        zAssetScale,                           // [8]
+        zAccountUtxoInNullifier,               // [9]
+        zAccountUtxoOutCommitment,             // [10]
+        zNetworkChainId,                       // [11]
+        staticTreeMerkleRoot,                  // [12]
+        forestMerkleRoot,                      // [13]
+        saltHash,                              // [14]
+        magicalConstraint                      // [15]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 15
     ]} = AmmV1 ( 8,     // UtxoLeftMerkleTreeDepth
                  26,    // UtxoMiddleMerkleTreeDepth
                  6,     // ZNetworkMerkleTreeDepth
