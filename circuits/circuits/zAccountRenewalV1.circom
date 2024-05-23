@@ -236,6 +236,8 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
+    totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
 
     // [4] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInRootSpendPubKeyCheck = BabyPbk();

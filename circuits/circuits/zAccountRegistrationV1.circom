@@ -280,6 +280,8 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
+    totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
 
     // verify deposit limit
     assert(zAccountZkpAmount * zAssetWeight <= zZoneDepositMaxAmount);

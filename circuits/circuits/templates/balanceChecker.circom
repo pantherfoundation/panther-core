@@ -35,6 +35,8 @@ template BalanceChecker() {
     signal input zAssetWeight;
     signal input zAssetScale;
     signal input zAssetScaleZkp;
+    signal input kytDepositChargedAmountZkp;
+    signal input kytWithdrawChargedAmountZkp;
     signal output depositScaledAmount;
     signal output depositWeightedScaledAmount;
     signal output withdrawWeightedScaledAmount;
@@ -86,6 +88,18 @@ template BalanceChecker() {
     addedScaledAmountZkpOverflow.out === 1;
 
     addedAmountZkp === addedScaledAmountZkp * zAssetScaleZkp;
+
+    // [1.4] - scaled zZKP deposit KYT amount
+    signal kytDepositScaledChargedAmountZkp;
+    kytDepositScaledChargedAmountZkp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
+
+    component kytDepositScaledChargedAmountZkpOverflow = LessThan(252);
+    kytDepositScaledChargedAmountZkpOverflow.in[0] <== kytDepositScaledChargedAmountZkp;
+    kytDepositScaledChargedAmountZkpOverflow.in[1] <== 2**252;
+    kytDepositScaledChargedAmountZkpOverflow.out === 1;
+
+    kytDepositChargedAmountZkp === kytDepositScaledChargedAmountZkp * zAssetScaleZkp;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Deposit //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,6 +146,18 @@ template BalanceChecker() {
     chargedScaledAmountZkpOverflow.out === 1;
 
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
+
+    // [2.4] - scaled zZKP deposit KYT amount
+    signal kytWithdrawScaledChargedAmountZkp;
+    kytWithdrawScaledChargedAmountZkp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
+
+    component kytWithdrawScaledChargedAmountZkpOverflow = LessThan(252);
+    kytWithdrawScaledChargedAmountZkpOverflow.in[0] <== kytWithdrawScaledChargedAmountZkp;
+    kytWithdrawScaledChargedAmountZkpOverflow.in[1] <== 2**252;
+    kytWithdrawScaledChargedAmountZkpOverflow.out === 1;
+
+    kytWithdrawChargedAmountZkp === kytWithdrawScaledChargedAmountZkp * zAssetScaleZkp;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,11 +165,14 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [3] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    signal kytChargedScaledAmountZkp;
+    kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp;
+
     signal totalBalanceIn;
     totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
 
     signal totalBalanceOut;
-    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp );
+    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp );
 
     component totalBalanceIsEqual = ForceEqualIfEnabled();
     totalBalanceIsEqual.enabled <== 1; // always enabled
@@ -157,7 +186,7 @@ template BalanceChecker() {
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
     zAccountUtxoOutZkpAmountChecker.enabled <== 1 - isZkpToken;
     zAccountUtxoOutZkpAmountChecker.in[0] <== zAccountUtxoInZkpAmount + addedScaledAmountZkp;
-    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp;
+    zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [5] - Compute scaled & weighted /////////////////////////////////////////////////////////////////////////////////

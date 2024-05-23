@@ -200,6 +200,7 @@ template ZTransactionV1( nUtxoIn,
     signal input kytDepositSignedMessageSessionId;
     signal input kytDepositSignedMessageRuleId;
     signal input kytDepositSignedMessageAmount;
+    signal input kytDepositSignedMessageChargedAmountZkp;
     signal input kytDepositSignedMessageSigner;
     signal input kytDepositSignedMessageHash;                // public
     signal input kytDepositSignature[3];                     // S,R8x,R8y
@@ -212,6 +213,7 @@ template ZTransactionV1( nUtxoIn,
     signal input kytWithdrawSignedMessageSessionId;
     signal input kytWithdrawSignedMessageRuleId;
     signal input kytWithdrawSignedMessageAmount;
+    signal input kytWithdrawSignedMessageChargedAmountZkp;
     signal input kytWithdrawSignedMessageSigner;
     signal input kytWithdrawSignedMessageHash;                // public
     signal input kytWithdrawSignature[3];                     // S,R8x,R8y
@@ -375,6 +377,8 @@ template ZTransactionV1( nUtxoIn,
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScaleZkp;
+    totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
 
     // verify change is zero
     depositChange === 0;
@@ -765,7 +769,7 @@ template ZTransactionV1( nUtxoIn,
 
     var isKytDepositCheckEnabled = 1 - isZeroDeposit.out;
 
-    component kytDepositSignedMessageHashInternal = Poseidon(9);
+    component kytDepositSignedMessageHashInternal = Poseidon(10);
 
     kytDepositSignedMessageHashInternal.inputs[0] <== kytDepositSignedMessagePackageType;
     kytDepositSignedMessageHashInternal.inputs[1] <== kytDepositSignedMessageTimestamp;
@@ -776,6 +780,7 @@ template ZTransactionV1( nUtxoIn,
     kytDepositSignedMessageHashInternal.inputs[6] <== kytDepositSignedMessageRuleId;
     kytDepositSignedMessageHashInternal.inputs[7] <== kytDepositSignedMessageAmount;
     kytDepositSignedMessageHashInternal.inputs[8] <== kytDepositSignedMessageSigner;
+    kytDepositSignedMessageHashInternal.inputs[9] <== kytDepositSignedMessageChargedAmountZkp;
 
     component kytDepositSignatureVerifier = EdDSAPoseidonVerifier();
     kytDepositSignatureVerifier.enabled <== isKytDepositCheckEnabled;
@@ -816,7 +821,7 @@ template ZTransactionV1( nUtxoIn,
 
     var isKytWithdrawCheckEnabled = 1 - isZeroWithdraw.out;
 
-    component kytWithdrawSignedMessageHashInternal = Poseidon(9);
+    component kytWithdrawSignedMessageHashInternal = Poseidon(10);
 
     kytWithdrawSignedMessageHashInternal.inputs[0] <== kytWithdrawSignedMessagePackageType;
     kytWithdrawSignedMessageHashInternal.inputs[1] <== kytWithdrawSignedMessageTimestamp;
@@ -827,6 +832,7 @@ template ZTransactionV1( nUtxoIn,
     kytWithdrawSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageRuleId;
     kytWithdrawSignedMessageHashInternal.inputs[7] <== kytWithdrawSignedMessageAmount;
     kytWithdrawSignedMessageHashInternal.inputs[8] <== kytWithdrawSignedMessageSigner;
+    kytWithdrawSignedMessageHashInternal.inputs[9] <== kytWithdrawSignedMessageChargedAmountZkp;
 
     component kytWithdrawSignatureVerifier = EdDSAPoseidonVerifier();
     kytWithdrawSignatureVerifier.enabled <== isKytWithdrawCheckEnabled;
