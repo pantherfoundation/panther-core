@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title **Classic staking**
+
+'autonumber
+
+<style>
+</style>
+
+hide footbox
+actor "Staker" as staker
+
+box "Smart Contracts on Mainet"
+  database "Staking\n" as Staking
+  'database "StakingMsgProcessor\n" as SMP
+  database "RewardMaster\n" as rMaster
+  database "StakeRewardAdviser\n" as adviser
+  database "RewardPool\n" as rPool
+  database "VestingPools\n" as vPools
+  database "$ZKP\nToken" as ZKP
+end box
+
+staker -> Staking ++ : ""stake()""
+  Staking -> Staking ++ : ""_createStake()""
+    Staking -> ZKP ++ : ""transferFrom()""
+    deactivate
+    opt ""if (_terms.isRewarded)""
+      Staking -> Staking ++ : ""_sendStakedMsg()""
+        'Staking -> SMP: _encodeStakeActionType()
+        'return
+        Staking -> rMaster ++ : ""onAction()""
+          rMaster -> adviser ++ : ""getRewardAdvice()""
+          return ""Advice""
+          rMaster -> rMaster ++ : ""_grantShares()""
+            rMaster -> rMaster ++ : ""_triggerVesting()""
+              rMaster -> rPool ++ : ""vestRewards()""
+                rPool -> rPool ++ : ""_releasableAmount()""
+                  rPool -> vPools ++ : ""releasableAmount(poolId)""
+                  return ""amount""
+                return ""amount""
+                rPool -> vPools ++ : ""releaseTo()""
+                  vPools -> ZKP ++ : ""transfer()""\n""or mint()""
+                  deactivate
+                deactivate
+              deactivate
+            deactivate
+          deactivate
+        deactivate
+      deactivate
+    end
+@enduml

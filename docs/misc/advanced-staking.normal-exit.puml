@@ -1,0 +1,44 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title **Advanced unstaking - normal exit**
+
+'autonumber
+
+<style>
+</style>
+
+hide footbox
+actor "Staker" as staker
+
+box "Smart Contracts on Polygon"
+  database "Staking\n" as staking
+  database "RewardMaster\n" as rMaster
+  database "AdvancedStakeController\n" as aSCtrl
+  database "MASP v.1\n(w/ proxy)" as pool
+  database "$ZKP\nToken" as zkp
+end box
+
+staker -> staking ++ : ""unstake(stakeID)""
+  staking -> zkp ++ : ""transfer(staker, stakedAmount)""
+    staking --> staker : ""stakedAmount""
+  deactivate zkp
+  staking -> staking ++ : ""_sendUnstakedMsg()""
+    'staking -> SMP: _encodeStakeActionType()
+    'return
+    staking -> rMaster ++ : ""onAction()""
+      rMaster -> aSCtrl ++ : ""getRewardAdvice()""
+note right of aSCtrl
+  No special action required
+  on zZKP rewards, as UTXO is
+  already spendable separately.
+end note
+
+      return ""0 rewards Advice""
+    deactivate rMaster
+  deactivate staking
+deactivate staking
+
+staker --> staking : check events emitted
+
+@enduml
