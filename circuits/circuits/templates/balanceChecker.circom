@@ -37,6 +37,7 @@ template BalanceChecker() {
     signal input zAssetScaleZkp;
     signal input kytDepositChargedAmountZkp;
     signal input kytWithdrawChargedAmountZkp;
+    signal input kytInternalChargedAmountZkp;
     signal output depositScaledAmount;
     signal output depositWeightedScaledAmount;
     signal output withdrawWeightedScaledAmount;
@@ -163,10 +164,28 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [3] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
+    // [3] - scaled zZKP internal KYT amount ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    signal kytInternalScaledChargedAmountZkp;
+    kytInternalScaledChargedAmountZkp <-- kytInternalChargedAmountZkp \ zAssetScaleZkp;
+
+    component kytInternalScaledChargedAmountZkpOverflow = LessThan(252);
+    kytInternalScaledChargedAmountZkpOverflow.in[0] <== kytInternalScaledChargedAmountZkp;
+    kytInternalScaledChargedAmountZkpOverflow.in[1] <== 2**252;
+    kytInternalScaledChargedAmountZkpOverflow.out === 1;
+
+    kytInternalChargedAmountZkp === kytInternalScaledChargedAmountZkp * zAssetScaleZkp;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [4] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     signal kytChargedScaledAmountZkp;
-    kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp;
+    kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
+
+    component kytChargedScaledAmountZkpCheck = LessThan(252);
+    kytChargedScaledAmountZkpCheck.in[0] <== kytChargedScaledAmountZkp;
+    kytChargedScaledAmountZkpCheck.in[1] <== 2**252;
+    kytChargedScaledAmountZkpCheck.out === 1;
 
     signal totalBalanceIn;
     totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
@@ -180,7 +199,7 @@ template BalanceChecker() {
     totalBalanceIsEqual.in[1] <== totalBalanceOut;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [4] - Verify zAccountUtxoOutZkpAmount ///////////////////////////////////////////////////////////////////////////
+    // [5] - Verify zAccountUtxoOutZkpAmount ///////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     component zAccountUtxoOutZkpAmountChecker = ForceEqualIfEnabled();
     // disabled if zZKP token since if zZKP the balance is checked via totalBalance IN/OUT
@@ -189,20 +208,20 @@ template BalanceChecker() {
     zAccountUtxoOutZkpAmountChecker.in[1] <== zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [5] - Compute scaled & weighted /////////////////////////////////////////////////////////////////////////////////
+    // [6] - Compute scaled & weighted /////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [5.0] - check if IN =< OUT
+    // [6.0] - check if IN =< OUT
     component lessThen = LessEqThan(252);
     lessThen.in[0] <== zAccountUtxoInZkpAmount;
     lessThen.in[1] <== zAccountUtxoOutZkpAmount;
 
-    // [5.1] - choose IN if IN < OUT, choose OUT if OUT < IN
+    // [6.1] - choose IN if IN < OUT, choose OUT if OUT < IN
     signal mux_input[2];
     mux_input[0] <== lessThen.out * zAccountUtxoInZkpAmount;        // NOT zero if IN =< OUT
     mux_input[1] <== (1 - lessThen.out) * zAccountUtxoOutZkpAmount; // NOT zero if OUT < IN
 
     signal zAccountUtxoResidualZkpAmount <== mux_input[0] + mux_input[1];
-    // [5.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
+    // [6.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
     totalScaled <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
 
     // Audit Bug - 4.1.2 V-PANC-VUL-002: zkpScaledAmount is under-constrained

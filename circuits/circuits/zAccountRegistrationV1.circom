@@ -95,6 +95,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneDataEscrowPubKey[2];
+    signal input zZoneSealing;
 
     // KYC
     signal input kycEdDsaPubKey[2];
@@ -282,6 +283,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
     totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
+    totalBalanceChecker.kytInternalChargedAmountZkp <== 0;
 
     // verify deposit limit
     assert(zAccountZkpAmount * zAssetWeight <= zZoneDepositMaxAmount);
@@ -397,6 +399,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zZoneNoteHasher.sealing <== zZoneSealing;
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
