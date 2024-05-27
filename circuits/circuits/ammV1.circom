@@ -125,6 +125,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneDataEscrowPubKey[2];
+    signal input zZoneSealing;
 
     // zNetworks tree
     // network parameters:
@@ -227,6 +228,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
     totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
+    totalBalanceChecker.kytInternalChargedAmountZkp <== 0;
 
     // verify zAsset is ZKP
     zAssetChecker.isZkpToken === 1;
@@ -425,6 +427,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zZoneNoteHasher.sealing <== zZoneSealing;
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;

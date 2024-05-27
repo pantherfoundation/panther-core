@@ -22,19 +22,20 @@ component main {
         kytWithdrawSignedMessageSender,        // [15]
         kytWithdrawSignedMessageReceiver,      // [16]
         kytWithdrawSignedMessageHash,          // [17]
-        dataEscrowEncryptedMessageAx,          // [18] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
-        daoDataEscrowEphemeralPubKeyAx,        // [19] - 1 (NOTE: only x-coordinate)
-        daoDataEscrowEncryptedMessageAx,       // [20] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
-        utxoOutCreateTime,                     // [21]
-        utxoOutCommitment,                     // [22] - nUtxoOut = 2
-        zAccountUtxoOutCommitment,             // [23]
-        chargedAmountZkp,                      // [24]
-        zNetworkChainId,                       // [25]
-        staticTreeMerkleRoot,                  // [26]
-        forestMerkleRoot,                      // [27]
-        saltHash,                              // [28]
-        magicalConstraint                      // [29]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 29 + 1 + 7 + 2 + 1 = 41 (TODO: count is 40, but circom shows 41 - fix)
+        kytSignedMessageHash,                  // [18]
+        dataEscrowEncryptedMessageAx,          // [19] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
+        daoDataEscrowEphemeralPubKeyAx,        // [20] - 1 (NOTE: only x-coordinate)
+        daoDataEscrowEncryptedMessageAx,       // [21] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
+        utxoOutCreateTime,                     // [22]
+        utxoOutCommitment,                     // [23] - nUtxoOut = 2
+        zAccountUtxoOutCommitment,             // [24]
+        chargedAmountZkp,                      // [25]
+        zNetworkChainId,                       // [26]
+        staticTreeMerkleRoot,                  // [27]
+        forestMerkleRoot,                      // [28]
+        saltHash,                              // [29]
+        magicalConstraint                      // [30]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + 1 + 7 + 2 + 1 = 41 (TODO: count is 41, but circom shows 42 - fix)
     ]} = ZTransactionV1( 2,     // nUtxoIn
                          2,     // nUtxoOut
                          8,     // UtxoLeftMerkleTreeDepth

@@ -23,7 +23,7 @@ component main {
         kytWithdrawSignedMessageSender,        // [16]
         kytWithdrawSignedMessageReceiver,      // [17]
         kytWithdrawSignedMessageHash,          // [18]
-        dataEscrowEphemeralPubKeyAx,           // [19] - 1 (NOTE: only x-coordinate)
+        kytSignedMessageHash,                  // [19]
         dataEscrowEncryptedMessageAx,          // [20] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
         daoDataEscrowEphemeralPubKeyAx,        // [21] - 1 (NOTE: only x-coordinate)
         daoDataEscrowEncryptedMessageAx,       // [22] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
@@ -36,7 +36,7 @@ component main {
         forestMerkleRoot,                      // [29]
         saltHash,                              // [30]
         magicalConstraint                      // [31]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + 1 + 1 + 1 + 1 + 8 + 3 + 1 = 48
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + 2 + 2 + 2 + 7 + 2 + 1 = 47 (TODO: count is 44, but circom shows 48 - fix)
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
                   8,     // UtxoLeftMerkleTreeDepth

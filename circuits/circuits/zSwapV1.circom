@@ -176,6 +176,7 @@ template ZSwapV1( nUtxoIn,
     signal input zZoneZAccountIDsBlackList;
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneSealing;
 
     // ------------- ec-points-size -------------
     // 1) The only point is the data-escrow ephemeral pub-key
@@ -222,6 +223,15 @@ template ZSwapV1( nUtxoIn,
     signal input kytWithdrawSignedMessageSigner;
     signal input kytWithdrawSignedMessageHash;                // public
     signal input kytWithdrawSignature[3];                     // S,R8x,R8y
+    // internal case
+    signal input kytSignedMessagePackageType;
+    signal input kytSignedMessageTimestamp;
+    signal input kytSignedMessageSessionId;
+    signal input kytSignedMessageChargedAmountZkp;
+    signal input kytSignedMessageSigner;
+    signal input kytSignedMessageDataEscrowHash;      // of data-escrow encrypted points
+    signal input kytSignedMessageHash;                // public - Hash( 6-signed-message-params )
+    signal input kytSignature[3];                     // S,R8x,R8y
 
     // data escrow
     signal input dataEscrowPubKey[2];
@@ -386,6 +396,7 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
     totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
+    totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
 
 
     // verify change is zero
@@ -1011,7 +1022,44 @@ template ZSwapV1( nUtxoIn,
        daoDataEscrowEncryptedMessageAy[i] === daoDataEscrow.encryptedMessage[i][1];
     }
 
-    // [20] - Verify zZone membership
+    // [20] - internal KYT
+    var isInternalKytCheckEnabled = zZoneSealing;
+
+    component kytSignedMessageHashInternal = Poseidon(6);
+
+    kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+    kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+    kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
+    kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
+    kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
+    kytSignedMessageHashInternal.inputs[5] <== dataEscrow.encryptedMessageHash;
+
+    component kytSignatureVerifier = EdDSAPoseidonVerifier();
+    kytSignatureVerifier.enabled <== isInternalKytCheckEnabled;
+    kytSignatureVerifier.Ax <== kytEdDsaPubKey[0];
+    kytSignatureVerifier.Ay <== kytEdDsaPubKey[1];
+    kytSignatureVerifier.S <== kytSignature[0];
+    kytSignatureVerifier.R8x <== kytSignature[1];
+    kytSignatureVerifier.R8y <== kytSignature[2];
+
+    kytSignatureVerifier.M <== kytSignedMessageHashInternal.out;
+
+    // internal Master EOA check
+    component kytMasterEOAIsEqual = ForceEqualIfEnabled();
+    kytMasterEOAIsEqual.enabled <== isInternalKytCheckEnabled;
+    kytMasterEOAIsEqual.in[0] <== kytSignedMessageSigner;
+    kytMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
+
+    // internal kyt hash
+    component kytSignedMessageHashIsEqual = ForceEqualIfEnabled();
+    kytSignedMessageHashIsEqual.enabled <== isInternalKytCheckEnabled;
+    kytSignedMessageHashIsEqual.in[0] <== kytSignedMessageHash;
+    kytSignedMessageHashIsEqual.in[1] <== kytSignedMessageHashInternal.out;
+
+    // internal package type
+    kytSignedMessagePackageType === 3;
+
+    // [21] - Verify zZone membership
     component zZoneNoteHasher = ZZoneNoteHasher();
     zZoneNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zZoneNoteHasher.edDsaPubKey[0] <== zZoneEdDsaPubKey[0];
@@ -1030,6 +1078,7 @@ template ZSwapV1( nUtxoIn,
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zZoneNoteHasher.dataEscrowPubKey[0] <== dataEscrowPubKey[0];
     zZoneNoteHasher.dataEscrowPubKey[1] <== dataEscrowPubKey[1];
+    zZoneNoteHasher.sealing <== zZoneSealing;
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -1039,16 +1088,16 @@ template ZSwapV1( nUtxoIn,
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
-    // [21] - Verify zZone max external limits
+    // [22] - Verify zZone max external limits
     assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
     assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawWeightedScaledAmount);
 
-    // [22] - Verify zAccountId exclusion
+    // [23] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
     zZoneZAccountBlackListExclusionProver.zAccountId <== zAccountUtxoInId;
     zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
 
-    // [23] - zAccountId data escrow for zone operator
+    // [24] - zAccountId data escrow for zone operator
     component zZoneDataEscrow = DataEscrowElGamalEncryptionPoint(zZoneDataEscrowEncryptedPoints);
 
     zZoneDataEscrow.ephemeralRandom <== zZoneDataEscrowEphemeralRandom;
@@ -1069,7 +1118,7 @@ template ZSwapV1( nUtxoIn,
         zZoneDataEscrowEncryptedMessageAy[i] === zZoneDataEscrow.encryptedMessage[i][1];
     }
 
-    // [24] - Verify zNetwork's membership and decode its weight
+    // [25] - Verify zNetwork's membership and decode its weight
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -1087,7 +1136,7 @@ template ZSwapV1( nUtxoIn,
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 
-    // [25] - verify expiryTimes
+    // [26] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
 
     // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
@@ -1104,7 +1153,7 @@ template ZSwapV1( nUtxoIn,
 
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
 
-    // [25.1] - deposit
+    // [26.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytDepositSignedMessageTimestampZero = IsZero();
     iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
@@ -1114,7 +1163,7 @@ template ZSwapV1( nUtxoIn,
     isLessThanEqDeposit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
     isLessThanEqDeposit.in[1] <== utxoOutCreateTime;
 
-    // [25.2] - withdraw
+    // [26.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component iskytWithdrawSignedMessageTimestampZero = IsZero();
     iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
@@ -1124,7 +1173,7 @@ template ZSwapV1( nUtxoIn,
     isLessThanEqWithdraw.in[0] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
     isLessThanEqWithdraw.in[1] <== utxoOutCreateTime;
 
-    // [26] - Verify static-merkle-root
+    // [27] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
     staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
@@ -1138,7 +1187,7 @@ template ZSwapV1( nUtxoIn,
     isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
-    // [27] - Verify forest-merkle-roots
+    // [28] - Verify forest-merkle-roots
     component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
@@ -1150,7 +1199,7 @@ template ZSwapV1( nUtxoIn,
     isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
     isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
 
-    // [28] - Verify salt
+    // [29] - Verify salt
     component saltVerify = Poseidon(1);
     saltVerify.inputs[0] <== salt;
 
@@ -1160,7 +1209,7 @@ template ZSwapV1( nUtxoIn,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [29] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    // [30] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
 }

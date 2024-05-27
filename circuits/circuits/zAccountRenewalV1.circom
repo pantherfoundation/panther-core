@@ -117,6 +117,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneDataEscrowPubKey[2];
+    signal input zZoneSealing;
 
     // KYC
     signal input kycEdDsaPubKey[2];
@@ -238,6 +239,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
     totalBalanceChecker.kytDepositChargedAmountZkp <== 0;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== 0;
+    totalBalanceChecker.kytInternalChargedAmountZkp <== 0;
 
     // [4] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInRootSpendPubKeyCheck = BabyPbk();
@@ -441,6 +443,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zZoneNoteHasher.sealing <== zZoneSealing;
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
