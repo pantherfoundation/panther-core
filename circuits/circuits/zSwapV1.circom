@@ -398,7 +398,6 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
 
-
     // verify change is zero
     depositChange === 0;
     withdrawChange === 0;
