@@ -3,15 +3,16 @@ pragma circom 2.1.6;
 
 include "./templates/rangeCheck.circom";
 
-template ZTransactionV1RangeCheck( nUtxoIn,
-                                   nUtxoOut,
-                                   UtxoLeftMerkleTreeDepth,
-                                   UtxoMiddleMerkleTreeDepth,
-                                   ZNetworkMerkleTreeDepth,
-                                   ZAssetMerkleTreeDepth,
-                                   ZAccountBlackListMerkleTreeDepth,
-                                   ZZoneMerkleTreeDepth,
-                                   TrustProvidersMerkleTreeDepth ) {
+template ZSwapV1RangeCheck( nUtxoIn,
+                            nUtxoOut,
+                            UtxoLeftMerkleTreeDepth,
+                            UtxoMiddleMerkleTreeDepth,
+                            ZNetworkMerkleTreeDepth,
+                            ZAssetMerkleTreeDepth,
+                            ZAccountBlackListMerkleTreeDepth,
+                            ZZoneMerkleTreeDepth,
+                            TrustProvidersMerkleTreeDepth,
+                            isSwap ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
@@ -30,32 +31,37 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input depositChange;
     signal input withdrawAmount;   // public
     signal input withdrawChange;
-    signal input addedAmountZkp;   // public
-    signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
-    signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
-    signal input utxoZAsset;       // used both for in & out utxo
+    signal input addedAmountZkp; // public
+
+    assert(0 <= isSwap < 2);
+    var arraySizeInCaseOfSwap = 1;
+    if ( isSwap ) {
+        arraySizeInCaseOfSwap = 2;
+    }
+    var transactedToken = 0;
+    var swapToken = 1;
+
+    signal input token[arraySizeInCaseOfSwap];            // public - 160 bit ERC20 address - in case of internal tx will be zero
+    signal input tokenId[arraySizeInCaseOfSwap];          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
+    signal input utxoZAsset[arraySizeInCaseOfSwap];       // used both for in & out utxo
 
     // zAsset
-    signal input zAssetId;
-    signal input zAssetToken;
-    signal input zAssetTokenId;
-    signal input zAssetNetwork;
-    signal input zAssetOffset;
-    signal input zAssetWeight;
-    signal input zAssetScale;
-    signal input zAssetMerkleRoot;
-    signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
-    signal input zAssetPathElements[ZAssetMerkleTreeDepth];
+    var zkpToken = 1;
+    if ( isSwap ) {
+        zkpToken = 2;
+    }
+    var zAssetArraySize = arraySizeInCaseOfSwap + 1; // zkp token in last position
 
-    signal input zAssetIdZkp;
-    signal input zAssetTokenZkp;
-    signal input zAssetTokenIdZkp;
-    signal input zAssetNetworkZkp;
-    signal input zAssetOffsetZkp;
-    signal input zAssetWeightZkp;
-    signal input zAssetScaleZkp;
-    signal input zAssetPathIndicesZkp[ZAssetMerkleTreeDepth];
-    signal input zAssetPathElementsZkp[ZAssetMerkleTreeDepth];
+    signal input zAssetId[zAssetArraySize];
+    signal input zAssetToken[zAssetArraySize];
+    signal input zAssetTokenId[zAssetArraySize];
+    signal input zAssetNetwork[zAssetArraySize];
+    signal input zAssetOffset[zAssetArraySize];
+    signal input zAssetWeight[zAssetArraySize];
+    signal input zAssetScale[zAssetArraySize];
+    signal input zAssetMerkleRoot;
+    signal input zAssetPathIndices[zAssetArraySize][ZAssetMerkleTreeDepth];
+    signal input zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth];
 
     // reward computation params
     signal input forTxReward;
@@ -149,6 +155,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // to switch-off:
     //      1) depositAmount = 0
     //      2) withdrawAmount = 0
+    // Note: for swap case, kyt-hash = zero also can switch-off the KYT verification check
     // switch-off control is used for internal tx
     signal input kytEdDsaPubKey[2];
     signal input kytEdDsaPubKeyExpiryTime;
@@ -348,8 +355,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     // token - 160 bits
     // Public signal
     // Supported range - [0 to (2**160 - 1)]
-    component customRangeCheck_Token = RangeCheckSingleSignal(160,(2**160 - 1),0);
-    customRangeCheck_Token.in <== token;
+    component customRangeCheck_Token[arraySizeInCaseOfSwap];
 
     // tokenId - 256 bits
     // Public signal
@@ -358,18 +364,23 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // utxoZAsset - 64 bits
     // Supported range - [0 to (2**64 - 1)]
-    component customRangeCheck_UtxoZAsset = RangeCheckSingleSignal(64,(2**64 - 1),0);
-    customRangeCheck_UtxoZAsset.in <== utxoZAsset;
+    component customRangeCheck_UtxoZAsset[arraySizeInCaseOfSwap];
+    for(var i = 0; i < arraySizeInCaseOfSwap; i++) {
+
+        customRangeCheck_Token[i] = RangeCheckSingleSignal(160,(2**160 - 1),0);
+        customRangeCheck_Token[i].in <== token[i];
+
+        customRangeCheck_UtxoZAsset[i] = RangeCheckSingleSignal(64,(2**64 - 1),0);
+        customRangeCheck_UtxoZAsset[i].in <== utxoZAsset[i];
+    }
 
     // zAssetId - 64 bits
     // Supported range - [0 to (2**64 - 1)]
-    component customRangeCheck_ZAssetId = RangeCheckSingleSignal(64,(2**64 - 1),0);
-    customRangeCheck_ZAssetId.in <== zAssetId;
+    component customRangeCheck_ZAssetId[zAssetArraySize];
 
     // zAssetToken - 160 bits ERC20 token
     // Supported range - [0 to (2**160 - 1)]
-    component customRangeCheck_ZAssetToken = RangeCheckSingleSignal(160,(2**160 - 1),0);
-    customRangeCheck_ZAssetToken.in <== zAssetToken;
+    component customRangeCheck_ZAssetToken[zAssetArraySize];
 
     // zAssetTokenId - 256 bits
     // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
@@ -377,82 +388,66 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // zAssetNetwork - 6 bits
     // Supported range - [0 to (2**6 - 1)]
-    component customRangeCheck_ZAssetNetwork = RangeCheckSingleSignal(6,(2**6 - 1),0);
-    customRangeCheck_ZAssetNetwork.in <== zAssetNetwork;
+    component customRangeCheck_ZAssetNetwork[zAssetArraySize];
 
     // zAssetOffset - 6 bits
     // Supported range - [0 to 32]
     // Although it is a 6 bits field, maximum value that it should be constrained to is 32.
-    component customRangeCheck_ZAssetOffset = RangeCheckSingleSignal(6,32,0);
-    customRangeCheck_ZAssetOffset.in <== zAssetOffset;
+    component customRangeCheck_ZAssetOffset[zAssetArraySize];
 
     // zAssetWeight - 32 bits
     // Supported range - [0 to (2**32 - 1)]
-    component customRangeCheck_ZAssetWeight = RangeCheckSingleSignal(32,(2**32 - 1),0);
-    customRangeCheck_ZAssetWeight.in <== zAssetWeight;
+    component customRangeCheck_ZAssetWeight[zAssetArraySize];
 
     // zAssetScale - 252 bits
     // Supported range - [0 to (2**252 - 1)]
-    component customRangeCheck_ZAssetScale = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheck_ZAssetScale.in <== zAssetScale;
+    component customRangeCheck_ZAssetScale[zAssetArraySize];
 
     // zAssetMerkleRoot
     // Must be within the SNARK_FIELD
     // Should be checked as part of the SC
 
     // zAssetPathIndices
-    // ToDo - Path Indices should be fixed to 1 bit?
-    component customRangeCheck_ZAssetPathIndices = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    customRangeCheck_ZAssetPathIndices.in <== zAssetPathIndices;
+    // ToDo - Path Indices should be fixed to 1 bit? - YES , please FIXME
+    component customRangeCheck_ZAssetPathIndices[zAssetArraySize];
 
-    // zAssetPathElements
+    // zAssetPathElements TODO: FIXME - why SC checked ?
     // Must be within the SNARK_FIELD
-    // Should be checked as part of the SC
+    // component customRangeCheck_ZAssetPathElements[zAssetArraySize];
 
-    // zAssetIdZkp - 64 bits
-    // Supported range - [0 to (2**64 - 1)]
-    component customRangeCheck_ZAssetIdZkp = RangeCheckSingleSignal(64,(2**64 - 1),0);
-    customRangeCheck_ZAssetIdZkp.in <== zAssetIdZkp;
+    for( var i = 0; i < zAssetArraySize; i++ ) {
+        customRangeCheck_ZAssetId[i] = RangeCheckSingleSignal(64,(2**64 - 1),0);
+        customRangeCheck_ZAssetId[i].in <== zAssetId[i];
 
-    // zAssetTokenZkp - 160 bits ERC20 token
-    // Supported range - [0 to (2**160 - 1)]
-    component customRangeCheck_ZAssetTokenZkp = RangeCheckSingleSignal(160,(2**160 - 1),0);
-    customRangeCheck_ZAssetTokenZkp.in <== zAssetTokenZkp;
+        customRangeCheck_ZAssetToken[i] = RangeCheckSingleSignal(160,(2**160 - 1),0);
+        customRangeCheck_ZAssetToken[i].in <== zAssetToken[i];
 
-    // zAssetTokenIdZkp - 256 bits
-    // Public signal
-    // Range checking tool in circom supports only till 252 bits, hence it can't be checked here
-    // Must be checked from SC end
+        // zAssetTokenId - 256 bits
+        // Range checking tool in circom supports only till 252 bits, hence it can't be checked here.
+        // Must be checked from SC end
 
-    // zAssetNetworkZkp - 6 bits
-    // Supported range - [0 to (2**6 - 1)]
-    component customRangeCheck_ZAssetNetworkZkp = RangeCheckSingleSignal(6,(2**6 - 1),0);
-    customRangeCheck_ZAssetNetworkZkp.in <== zAssetNetworkZkp;
+        customRangeCheck_ZAssetNetwork[i] = RangeCheckSingleSignal(6,(2**6 - 1),0);
+        customRangeCheck_ZAssetNetwork[i].in <== zAssetNetwork[i];
 
-    // zAssetOffsetZkp - 6 bits
-    // Supported range - [0 - 32]
-    // Although it is a 6 bits field, maximum value that it should be constrained to is 32.
-    component customRangeCheck_ZAssetOffsetZkp = RangeCheckSingleSignal(6,32,0);
-    customRangeCheck_ZAssetOffsetZkp.in <== zAssetOffsetZkp;
+        customRangeCheck_ZAssetOffset[i] = RangeCheckSingleSignal(6,32,0);
+        customRangeCheck_ZAssetOffset[i].in <== zAssetOffset[i];
 
-    // zAssetWeightZkp - 32 bits
-    // Supported range - [0 to (2**32 - 1)]
-    component customRangeCheck_ZAssetWeightZkp = RangeCheckSingleSignal(32,(2**32 - 1),0);
-    customRangeCheck_ZAssetWeightZkp.in <== zAssetWeightZkp;
+        customRangeCheck_ZAssetWeight[i] = RangeCheckSingleSignal(32,(2**32 - 1),0);
+        customRangeCheck_ZAssetWeight[i].in <== zAssetWeight[i];
 
-    // zAssetScaleZkp - 252 bits
-    // Supported range - [0 to (2**252 - 1)]
-    component customRangeCheck_ZAssetScaleZkp = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheck_ZAssetScaleZkp.in <== zAssetScaleZkp;
+        customRangeCheck_ZAssetScale[i] = RangeCheckSingleSignal(252,(2**252 - 1),0);
+        customRangeCheck_ZAssetScale[i].in <== zAssetScale[i];
 
-    // zAssetPathIndicesZkp
-    // ToDo - Path Indices should be fixed to 1 bit
-    // component customRangeCheck_ZAssetPathIndicesZkp = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
-    // customRangeCheck_ZAssetPathIndicesZkp.in <== zAssetPathIndicesZkp;
+        // zAssetPathIndices
+        // ToDo - Path Indices should be fixed to 1 bit? - YES, please FIXME
+        customRangeCheck_ZAssetPathIndices[i] = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
+        customRangeCheck_ZAssetPathIndices[i].in <== zAssetPathIndices[i];
 
-    // zAssetPathElementsZkp
-    // Must be within the SNARK_FIELD
-    // Should be checked as part of the SC
+        // zAssetPathElements TODO: FIXME - why SC checked ? It should be 254 bit since its hash
+        // Must be within the SNARK_FIELD
+        //        customRangeCheck_ZAssetPathElements[i] = RangeCheckGroupOfSignals(16, 252,(2**252 - 1),0);
+        //        customRangeCheck_ZAssetPathElements[i].in <== zAssetPathElements[i];
+    }
 
     // forTxReward - 40 bits
     // Supported range - [0 to (2**40 - 1)]

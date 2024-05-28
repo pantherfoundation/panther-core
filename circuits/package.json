@@ -19,6 +19,7 @@
     "compile:main-z-transaction-docker": "scripts/circomDocker.sh --r1cs --wasm --sym -o compiled/ circuits/mainZTransactionV1.circom",
     "compile:main-amm": "circom --r1cs --wasm --sym -o compiled/ circuits/mainAmmV1.circom",
     "compile:main-z-transaction": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZTransactionV1.circom",
+    "compile:main-z-transaction-a": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZTransactionV1a.circom",
     "compile:main-z-swap": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZSwapV1.circom",
     "compile:main-z-account-registration": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRegistrationV1.circom",
     "compile:main-z-account-renewal": "circom --r1cs --wasm --sym -o compiled/ circuits/mainZAccountRenewalV1.circom",
