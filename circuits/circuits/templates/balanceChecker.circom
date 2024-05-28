@@ -7,16 +7,15 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 // CASE-A ) - if tokenPrivate != zZKP then
 //     1) totalAmountIn = deposit + sigma(UTXO-In[i]::Amount)
 //     2) totalAmountOut = withdraw + sigma(UTXO-Out[i]::Amount)
-//     3) zAccountUtxoOutZkpAmount = zAccountUtxoInZkpAmount - chargedAmountZkp
+//     3) totalAmountZkpIn = zAccountUtxoInZkpAmount + addedAmountZkp
+//     4) totalAmountZkpOut = zAccountUtxoOutZkpAmount + chargedAmountZkp + kytChargedAmountZkp
 //
 //     ---> AND totalAmountIn === totalAmountOut
+//     ---> AND totalAmountZkpIn === totalAmountZkpOut
 //
 // CASE-B) - if tokenPrivate == zZKP then
-//     1) totalAmountIn = deposit + sigma(UTXO-In[i]::Amount) + zAccountUtxoInZkpAmount
+//     1) totalAmountIn = deposit + sigma(UTXO-In[i]::Amount) + zAccountUtxoInZkpAmount + addedAmountZkp
 //     2) totalAmountOut = withdraw + sigma(UTXO-Out[i]::Amount) + zAccountUtxoOutZkpAmount + chargedAmountZkp
-//     3) zAccountUtxoOutZkpAmount =
-//              deposit + sigma(UTXO-In[i]::Amount) + zAccountUtxoInZkpAmount     |||||| totalAmountIn
-//              - withdraw - sigma(UTXO-Out[i]::Amount) - chargedAmountZkp        |||||| totalAmountOut
 //
 //     ---> AND totalAmountIn === totalAmountOut
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,8 +59,7 @@ template BalanceChecker() {
     isDepositAndChangeEqual.enabled <== isZeroDeposit.out;
 
     // [1.0] - scale ( a / b = c )
-    signal depositScaledAmountTmp;
-    depositScaledAmountTmp <-- depositAmount \ zAssetScale;
+    signal depositScaledAmountTmp <-- depositAmount \ zAssetScale;
 
     // Audit Bug - 4.1.1 V-PANC-VUL-001: depositScaledAmount is under-constrained
     component depositScaledAmountTmpOverflow = LessThan(252);
@@ -79,8 +77,7 @@ template BalanceChecker() {
 
     // [1.3] - scaled zZKP donation
     assert(zAssetScaleZkp > 0);
-    signal addedScaledAmountZkp;
-    addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
+    signal addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
 
     // Audit Bug - 4.1.4 V-PANC-VUL-004: donatedScaledAmountZkp is under-constrained
     component addedScaledAmountZkpOverflow = LessThan(252);
@@ -91,8 +88,7 @@ template BalanceChecker() {
     addedAmountZkp === addedScaledAmountZkp * zAssetScaleZkp;
 
     // [1.4] - scaled zZKP deposit KYT amount
-    signal kytDepositScaledChargedAmountZkp;
-    kytDepositScaledChargedAmountZkp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
+    signal kytDepositScaledChargedAmountZkp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
 
     component kytDepositScaledChargedAmountZkpOverflow = LessThan(252);
     kytDepositScaledChargedAmountZkpOverflow.in[0] <== kytDepositScaledChargedAmountZkp;
@@ -119,8 +115,7 @@ template BalanceChecker() {
     isWithdrawAndChangeEqual.enabled <== isZeroWithdraw.out;
 
     // [2.0] - scale ( a / b = c )
-    signal withdrawScaledAmountTmp;
-    withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
+    signal withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
 
     // Audit Bug - 4.1.3 V-PANC-VUL-003: withdrawScaledAmount is under-constrained
     component withdrawScaledAmountTmpOverflow = LessThan(252);
@@ -137,8 +132,7 @@ template BalanceChecker() {
     withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
 
     // [2.3] - scaled zZKP charge
-    signal chargedScaledAmountZkp;
-    chargedScaledAmountZkp <-- chargedAmountZkp \ zAssetScaleZkp;
+    signal chargedScaledAmountZkp <-- chargedAmountZkp \ zAssetScaleZkp;
 
     // Audit Bug - 4.1.6 V-PANC-VUL-006: chargedScaledAmountZkp is under-constrained
     component chargedScaledAmountZkpOverflow = LessThan(252);
@@ -149,8 +143,7 @@ template BalanceChecker() {
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
 
     // [2.4] - scaled zZKP deposit KYT amount
-    signal kytWithdrawScaledChargedAmountZkp;
-    kytWithdrawScaledChargedAmountZkp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
+    signal kytWithdrawScaledChargedAmountZkp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
 
     component kytWithdrawScaledChargedAmountZkpOverflow = LessThan(252);
     kytWithdrawScaledChargedAmountZkpOverflow.in[0] <== kytWithdrawScaledChargedAmountZkp;
@@ -166,8 +159,7 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [3] - scaled zZKP internal KYT amount ///////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    signal kytInternalScaledChargedAmountZkp;
-    kytInternalScaledChargedAmountZkp <-- kytInternalChargedAmountZkp \ zAssetScaleZkp;
+    signal kytInternalScaledChargedAmountZkp <-- kytInternalChargedAmountZkp \ zAssetScaleZkp;
 
     component kytInternalScaledChargedAmountZkpOverflow = LessThan(252);
     kytInternalScaledChargedAmountZkpOverflow.in[0] <== kytInternalScaledChargedAmountZkp;
@@ -179,19 +171,16 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [4] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    signal kytChargedScaledAmountZkp;
-    kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
+    signal kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
 
     component kytChargedScaledAmountZkpCheck = LessThan(252);
     kytChargedScaledAmountZkpCheck.in[0] <== kytChargedScaledAmountZkp;
     kytChargedScaledAmountZkpCheck.in[1] <== 2**252;
     kytChargedScaledAmountZkpCheck.out === 1;
 
-    signal totalBalanceIn;
-    totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
+    signal totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
 
-    signal totalBalanceOut;
-    totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp );
+    signal totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp );
 
     component totalBalanceIsEqual = ForceEqualIfEnabled();
     totalBalanceIsEqual.enabled <== 1; // always enabled

@@ -778,7 +778,7 @@ template ZTransactionV1( nUtxoIn,
     isKytCheckEnabled.a <== 1 - isZeroDeposit.out;
     isKytCheckEnabled.b <== 1 - isZeroWithdraw.out;
 
-    var isKytDepositCheckEnabled = 1 - isZeroDeposit.out;
+    signal isKytDepositCheckEnabled <== 1 - isZeroDeposit.out;
 
     component kytDepositSignedMessageHashInternal = Poseidon(10);
 
@@ -830,7 +830,7 @@ template ZTransactionV1( nUtxoIn,
     // deposit package type
     kytDepositSignedMessagePackageType === 2;
 
-    var isKytWithdrawCheckEnabled = 1 - isZeroWithdraw.out;
+    signal isKytWithdrawCheckEnabled <== 1 - isZeroWithdraw.out;
 
     component kytWithdrawSignedMessageHashInternal = Poseidon(10);
 
