@@ -28,6 +28,7 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./zSwapV1RangeCheck.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -1211,4 +1212,199 @@ template ZSwapV1( nUtxoIn,
     // [30] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [31] - Range check ////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    component zSwapV1RangeCheck = ZSwapV1RangeCheck( nUtxoIn,
+                                                     nUtxoOut,
+                                                     UtxoLeftMerkleTreeDepth,
+                                                     UtxoMiddleMerkleTreeDepth,
+                                                     ZNetworkMerkleTreeDepth,
+                                                     ZAssetMerkleTreeDepth,
+                                                     ZAccountBlackListMerkleTreeDepth,
+                                                     ZZoneMerkleTreeDepth,
+                                                     TrustProvidersMerkleTreeDepth,
+                                                     isSwap );
+
+    zSwapV1RangeCheck.extraInputsHash <== extraInputsHash;
+    zSwapV1RangeCheck.depositAmount <== depositAmount;
+    zSwapV1RangeCheck.depositChange <== depositChange;
+    zSwapV1RangeCheck.withdrawAmount <== withdrawAmount;
+    zSwapV1RangeCheck.withdrawChange <== withdrawChange;
+    zSwapV1RangeCheck.addedAmountZkp <== addedAmountZkp;
+    zSwapV1RangeCheck.token <== token;
+    zSwapV1RangeCheck.tokenId <== tokenId;
+    zSwapV1RangeCheck.utxoZAsset <== utxoZAsset;
+
+    zSwapV1RangeCheck.zAssetId <== zAssetId;
+    zSwapV1RangeCheck.zAssetToken <== zAssetToken;
+    zSwapV1RangeCheck.zAssetTokenId <== zAssetTokenId;
+    zSwapV1RangeCheck.zAssetNetwork <== zAssetNetwork;
+    zSwapV1RangeCheck.zAssetOffset <== zAssetOffset;
+    zSwapV1RangeCheck.zAssetWeight <== zAssetWeight;
+    zSwapV1RangeCheck.zAssetScale <== zAssetScale;
+    zSwapV1RangeCheck.zAssetMerkleRoot <== zAssetMerkleRoot;
+    zSwapV1RangeCheck.zAssetPathIndices <== zAssetPathIndices;
+    zSwapV1RangeCheck.zAssetPathElements <== zAssetPathElements;
+
+    zSwapV1RangeCheck.forTxReward <== forTxReward;
+    zSwapV1RangeCheck.forUtxoReward <== forUtxoReward;
+    zSwapV1RangeCheck.forDepositReward <== forDepositReward;
+    zSwapV1RangeCheck.spendTime <== spendTime;
+
+    zSwapV1RangeCheck.utxoInSpendPrivKey <== utxoInSpendPrivKey;
+    zSwapV1RangeCheck.utxoInSpendKeyRandom <== utxoInSpendKeyRandom;
+    zSwapV1RangeCheck.utxoInAmount <== utxoInAmount;
+    zSwapV1RangeCheck.utxoInOriginZoneId <== utxoInOriginZoneId;
+    zSwapV1RangeCheck.utxoInOriginZoneIdOffset <== utxoInOriginZoneIdOffset;
+    zSwapV1RangeCheck.utxoInOriginNetworkId <== utxoInOriginNetworkId;
+    zSwapV1RangeCheck.utxoInTargetNetworkId <== utxoInTargetNetworkId;
+    zSwapV1RangeCheck.utxoInCreateTime <== utxoInCreateTime;
+    zSwapV1RangeCheck.utxoInZAccountId <== utxoInZAccountId;
+    zSwapV1RangeCheck.utxoInMerkleTreeSelector <== utxoInMerkleTreeSelector;
+    zSwapV1RangeCheck.utxoInPathIndices <== utxoInPathIndices;
+    zSwapV1RangeCheck.utxoInPathElements <== utxoInPathElements;
+    zSwapV1RangeCheck.utxoInNullifier <== utxoInNullifier;
+    zSwapV1RangeCheck.utxoInDataEscrowPubKey <== utxoInDataEscrowPubKey;
+
+    zSwapV1RangeCheck.zAccountUtxoInId <== zAccountUtxoInId;
+    zSwapV1RangeCheck.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    zSwapV1RangeCheck.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
+    zSwapV1RangeCheck.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
+    zSwapV1RangeCheck.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
+    zSwapV1RangeCheck.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
+    zSwapV1RangeCheck.zAccountUtxoInNonce <== zAccountUtxoInNonce;
+    zSwapV1RangeCheck.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zSwapV1RangeCheck.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
+    zSwapV1RangeCheck.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
+    zSwapV1RangeCheck.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
+    zSwapV1RangeCheck.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
+    zSwapV1RangeCheck.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
+    zSwapV1RangeCheck.zAccountUtxoInSpendPrivKey <== zAccountUtxoInSpendPrivKey;
+    zSwapV1RangeCheck.zAccountUtxoInReadPrivKey <== zAccountUtxoInReadPrivKey;
+    zSwapV1RangeCheck.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
+    zSwapV1RangeCheck.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
+    zSwapV1RangeCheck.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
+    zSwapV1RangeCheck.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
+    zSwapV1RangeCheck.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
+
+    zSwapV1RangeCheck.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    zSwapV1RangeCheck.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    zSwapV1RangeCheck.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+    zSwapV1RangeCheck.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    zSwapV1RangeCheck.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    zSwapV1RangeCheck.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zSwapV1RangeCheck.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    zSwapV1RangeCheck.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    zSwapV1RangeCheck.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    zSwapV1RangeCheck.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    zSwapV1RangeCheck.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
+    zSwapV1RangeCheck.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    zSwapV1RangeCheck.zZoneMerkleRoot <== zZoneMerkleRoot;
+    zSwapV1RangeCheck.zZonePathElements <== zZonePathElements;
+    zSwapV1RangeCheck.zZonePathIndices <== zZonePathIndices;
+    zSwapV1RangeCheck.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
+    zSwapV1RangeCheck.zZoneDataEscrowEphemeralRandom <== zZoneDataEscrowEphemeralRandom;
+    zSwapV1RangeCheck.zZoneDataEscrowEphemeralPubKeyAx <== zZoneDataEscrowEphemeralPubKeyAx;
+    zSwapV1RangeCheck.zZoneDataEscrowEphemeralPubKeyAy <== zZoneDataEscrowEphemeralPubKeyAy;
+    zSwapV1RangeCheck.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zSwapV1RangeCheck.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zSwapV1RangeCheck.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zSwapV1RangeCheck.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
+    zSwapV1RangeCheck.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+    zSwapV1RangeCheck.zZoneSealing <== zZoneSealing;
+
+    zSwapV1RangeCheck.kytEdDsaPubKey <== kytEdDsaPubKey;
+    zSwapV1RangeCheck.kytEdDsaPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
+    zSwapV1RangeCheck.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    zSwapV1RangeCheck.kytPathElements <== kytPathElements;
+    zSwapV1RangeCheck.kytPathIndices <== kytPathIndices;
+    zSwapV1RangeCheck.kytMerkleTreeLeafIDsAndRulesOffset <== kytMerkleTreeLeafIDsAndRulesOffset;
+    zSwapV1RangeCheck.kytDepositSignedMessagePackageType <== kytDepositSignedMessagePackageType;
+    zSwapV1RangeCheck.kytDepositSignedMessageTimestamp <== kytDepositSignedMessageTimestamp;
+    zSwapV1RangeCheck.kytDepositSignedMessageSender <== kytDepositSignedMessageSender;
+    zSwapV1RangeCheck.kytDepositSignedMessageReceiver <== kytDepositSignedMessageReceiver;
+    zSwapV1RangeCheck.kytDepositSignedMessageToken <== kytDepositSignedMessageToken;
+    zSwapV1RangeCheck.kytDepositSignedMessageSessionId <== kytDepositSignedMessageSessionId;
+    zSwapV1RangeCheck.kytDepositSignedMessageRuleId <== kytDepositSignedMessageRuleId;
+    zSwapV1RangeCheck.kytDepositSignedMessageAmount <== kytDepositSignedMessageAmount;
+    zSwapV1RangeCheck.kytDepositSignedMessageChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
+    zSwapV1RangeCheck.kytDepositSignedMessageSigner <== kytDepositSignedMessageSigner;
+    zSwapV1RangeCheck.kytDepositSignedMessageHash <== kytDepositSignedMessageHash;
+    zSwapV1RangeCheck.kytDepositSignature <== kytDepositSignature;
+
+    zSwapV1RangeCheck.kytWithdrawSignedMessagePackageType <== kytWithdrawSignedMessagePackageType;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageTimestamp <== kytWithdrawSignedMessageTimestamp;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageSender <== kytWithdrawSignedMessageSender;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageReceiver <== kytWithdrawSignedMessageReceiver;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageToken <== kytWithdrawSignedMessageToken;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageSessionId <== kytWithdrawSignedMessageSessionId;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageRuleId <== kytWithdrawSignedMessageRuleId;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageAmount <== kytWithdrawSignedMessageAmount;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageSigner <== kytWithdrawSignedMessageSigner;
+    zSwapV1RangeCheck.kytWithdrawSignedMessageHash <== kytWithdrawSignedMessageHash;
+    zSwapV1RangeCheck.kytWithdrawSignature <== kytWithdrawSignature;
+
+    zSwapV1RangeCheck.kytSignedMessagePackageType <== kytSignedMessagePackageType;
+    zSwapV1RangeCheck.kytSignedMessageTimestamp <== kytSignedMessageTimestamp;
+    zSwapV1RangeCheck.kytSignedMessageSessionId <== kytSignedMessageSessionId;
+    zSwapV1RangeCheck.kytSignedMessageChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
+    zSwapV1RangeCheck.kytSignedMessageSigner <== kytSignedMessageSigner;
+    zSwapV1RangeCheck.kytSignedMessageDataEscrowHash <== kytSignedMessageDataEscrowHash;
+    zSwapV1RangeCheck.kytSignedMessageHash <== kytSignedMessageHash;
+    zSwapV1RangeCheck.kytSignature <== kytSignature;
+
+    zSwapV1RangeCheck.dataEscrowPubKey <== dataEscrowPubKey;
+    zSwapV1RangeCheck.dataEscrowPubKeyExpiryTime <== dataEscrowPubKeyExpiryTime;
+    zSwapV1RangeCheck.dataEscrowEphemeralRandom <== dataEscrowEphemeralRandom;
+    zSwapV1RangeCheck.dataEscrowEphemeralPubKeyAx <== dataEscrowEphemeralPubKeyAx;
+    zSwapV1RangeCheck.dataEscrowEphemeralPubKeyAy <== dataEscrowEphemeralPubKeyAy;
+    zSwapV1RangeCheck.dataEscrowPathElements <== dataEscrowPathElements;
+    zSwapV1RangeCheck.dataEscrowPathIndices <== dataEscrowPathIndices;
+
+    zSwapV1RangeCheck.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
+    zSwapV1RangeCheck.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+
+    zSwapV1RangeCheck.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    zSwapV1RangeCheck.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
+    zSwapV1RangeCheck.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
+    zSwapV1RangeCheck.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
+
+    zSwapV1RangeCheck.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
+    zSwapV1RangeCheck.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+
+    zSwapV1RangeCheck.utxoOutCreateTime <== utxoOutCreateTime;
+    zSwapV1RangeCheck.utxoOutAmount <== utxoOutAmount;
+    zSwapV1RangeCheck.utxoOutOriginNetworkId <== utxoOutOriginNetworkId;
+    zSwapV1RangeCheck.utxoOutTargetNetworkId <== utxoOutTargetNetworkId;
+    zSwapV1RangeCheck.utxoOutTargetZoneId <== utxoOutTargetZoneId;
+    zSwapV1RangeCheck.utxoOutTargetZoneIdOffset <== utxoOutTargetZoneIdOffset;
+    zSwapV1RangeCheck.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
+    zSwapV1RangeCheck.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
+    zSwapV1RangeCheck.utxoOutCommitment <== utxoOutCommitment;
+    zSwapV1RangeCheck.utxoOutNullifierPubKey <== utxoOutNullifierPubKey;
+    zSwapV1RangeCheck.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    zSwapV1RangeCheck.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
+    zSwapV1RangeCheck.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
+    zSwapV1RangeCheck.chargedAmountZkp <== chargedAmountZkp;
+
+    zSwapV1RangeCheck.zNetworkId <== zNetworkId;
+    zSwapV1RangeCheck.zNetworkChainId <== zNetworkChainId;
+    zSwapV1RangeCheck.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    zSwapV1RangeCheck.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    zSwapV1RangeCheck.zNetworkTreePathElements <== zNetworkTreePathElements;
+    zSwapV1RangeCheck.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    zSwapV1RangeCheck.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+
+    zSwapV1RangeCheck.forestMerkleRoot <== forestMerkleRoot;
+    zSwapV1RangeCheck.taxiMerkleRoot <== taxiMerkleRoot;
+    zSwapV1RangeCheck.busMerkleRoot <== busMerkleRoot;
+    zSwapV1RangeCheck.ferryMerkleRoot <== ferryMerkleRoot;
+    zSwapV1RangeCheck.salt <== salt;
+    zSwapV1RangeCheck.saltHash <== saltHash;
+    zSwapV1RangeCheck.magicalConstraint <== magicalConstraint;
 }

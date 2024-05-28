@@ -28,6 +28,7 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./zTransactionV1RangeCheck.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -37,7 +38,6 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
-include "./zTransactionV1RangeCheck.circom";
 
 template ZTransactionV1( nUtxoIn,
                          nUtxoOut,
@@ -1217,7 +1217,7 @@ template ZTransactionV1( nUtxoIn,
                                                             ZAssetMerkleTreeDepth,
                                                             ZAccountBlackListMerkleTreeDepth,
                                                             ZZoneMerkleTreeDepth,
-                                                            TrustProvidersMerkleTreeDepth);
+                                                            TrustProvidersMerkleTreeDepth );
 
     zTransactionV1RC.extraInputsHash <== extraInputsHash;
     zTransactionV1RC.depositAmount <== depositAmount;
@@ -1313,9 +1313,9 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zTransactionV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zTransactionV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
-
     zTransactionV1RC.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
     zTransactionV1RC.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+    zTransactionV1RC.zZoneSealing <== zZoneSealing;
 
     zTransactionV1RC.kytEdDsaPubKey <== kytEdDsaPubKey;
     zTransactionV1RC.kytEdDsaPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
@@ -1331,9 +1331,11 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.kytDepositSignedMessageSessionId <== kytDepositSignedMessageSessionId;
     zTransactionV1RC.kytDepositSignedMessageRuleId <== kytDepositSignedMessageRuleId;
     zTransactionV1RC.kytDepositSignedMessageAmount <== kytDepositSignedMessageAmount;
+    zTransactionV1RC.kytDepositSignedMessageChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
     zTransactionV1RC.kytDepositSignedMessageSigner <== kytDepositSignedMessageSigner;
     zTransactionV1RC.kytDepositSignedMessageHash <== kytDepositSignedMessageHash;
     zTransactionV1RC.kytDepositSignature <== kytDepositSignature;
+
     zTransactionV1RC.kytWithdrawSignedMessagePackageType <== kytWithdrawSignedMessagePackageType;
     zTransactionV1RC.kytWithdrawSignedMessageTimestamp <== kytWithdrawSignedMessageTimestamp;
     zTransactionV1RC.kytWithdrawSignedMessageSender <== kytWithdrawSignedMessageSender;
@@ -1342,9 +1344,19 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1RC.kytWithdrawSignedMessageSessionId <== kytWithdrawSignedMessageSessionId;
     zTransactionV1RC.kytWithdrawSignedMessageRuleId <== kytWithdrawSignedMessageRuleId;
     zTransactionV1RC.kytWithdrawSignedMessageAmount <== kytWithdrawSignedMessageAmount;
+    zTransactionV1RC.kytWithdrawSignedMessageChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     zTransactionV1RC.kytWithdrawSignedMessageSigner <== kytWithdrawSignedMessageSigner;
     zTransactionV1RC.kytWithdrawSignedMessageHash <== kytWithdrawSignedMessageHash;
     zTransactionV1RC.kytWithdrawSignature <== kytWithdrawSignature;
+
+    zTransactionV1RC.kytSignedMessagePackageType <== kytSignedMessagePackageType;
+    zTransactionV1RC.kytSignedMessageTimestamp <== kytSignedMessageTimestamp;
+    zTransactionV1RC.kytSignedMessageSessionId <== kytSignedMessageSessionId;
+    zTransactionV1RC.kytSignedMessageChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
+    zTransactionV1RC.kytSignedMessageSigner <== kytSignedMessageSigner;
+    zTransactionV1RC.kytSignedMessageDataEscrowHash <== kytSignedMessageDataEscrowHash;
+    zTransactionV1RC.kytSignedMessageHash <== kytSignedMessageHash;
+    zTransactionV1RC.kytSignature <== kytSignature;
 
     zTransactionV1RC.dataEscrowPubKey <== dataEscrowPubKey;
     zTransactionV1RC.dataEscrowPubKeyExpiryTime <== dataEscrowPubKeyExpiryTime;
