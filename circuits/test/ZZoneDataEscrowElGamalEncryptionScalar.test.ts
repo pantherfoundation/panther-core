@@ -77,13 +77,9 @@ describe('ZZoneDataEscrowElGamalEncryptionScalar circuit', function (this: any) 
     ];
 
     // [0] - scalars serialization
-    let m_scalar = [
-        zAccountID,
-    ];
+    let m_scalar = [zAccountID];
     // [1] = scalars to Points mapping
-    let M_scalar_points = [
-        babyjub.mulPointEscalar(babyjub.Base8, m_scalar[0]),
-    ];
+    let M_scalar_points = [babyjub.mulPointEscalar(babyjub.Base8, m_scalar[0])];
     // [2] - elgamal scalars + points
     let enctyptedMessage = [
         // scalars
@@ -99,10 +95,7 @@ describe('ZZoneDataEscrowElGamalEncryptionScalar circuit', function (this: any) 
     const output = {
         ephimeralPubKey: ephimeralPubKey,
         encryptedMessage: [
-            [
-                BigInt(enctyptedMessage[0][0]),
-                BigInt(enctyptedMessage[0][1]),
-            ],
+            [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
         ],
     };
 

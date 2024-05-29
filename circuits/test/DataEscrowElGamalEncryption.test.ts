@@ -7,9 +7,12 @@ import {getOptions} from './helpers/circomTester';
 import {babyjub} from 'circomlibjs';
 import {generateRandomKeypair} from '@panther-core/crypto/lib/base/keypairs';
 import {getRandomInt} from './helpers/utility';
-import {generateRandom256Bits, generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
+import {
+    generateRandom256Bits,
+    generateRandomInBabyJubSubField,
+} from '@panther-core/crypto/lib/base/field-operations';
 import {Scalar} from 'ffjavascript';
-import {mulPointEscalar} from "circomlibjs/src/babyjub";
+import {mulPointEscalar} from 'circomlibjs/src/babyjub';
 const {shiftLeft} = Scalar;
 const {bor} = Scalar;
 describe('DataEscrowElGamalEncryption circuit', function (this: any) {
@@ -130,20 +133,22 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
     // [0] - scalars serialization
     let m_scalar = [
         zAssetID,
-        BigInt(bor(shiftLeft(zAccountID, 16),zAccountZoneID).toString()),
+        BigInt(bor(shiftLeft(zAccountID, 16), zAccountZoneID).toString()),
         utxoInAmounts[0],
         utxoInAmounts[1],
         utxoOutAmounts[0],
         utxoOutAmounts[1],
         BigInt(
-            bor(shiftLeft(utxoInOriginZoneIds[0], 16),
-                utxoOutTargetZoneIds[0])
-                .toString()
+            bor(
+                shiftLeft(utxoInOriginZoneIds[0], 16),
+                utxoOutTargetZoneIds[0],
+            ).toString(),
         ),
         BigInt(
-            bor(shiftLeft(utxoInOriginZoneIds[1], 16),
-                utxoOutTargetZoneIds[1])
-                .toString()
+            bor(
+                shiftLeft(utxoInOriginZoneIds[1], 16),
+                utxoOutTargetZoneIds[1],
+            ).toString(),
         ),
     ];
     // [1] = scalars to Points mapping
@@ -188,39 +193,14 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
     const output = {
         ephimeralPubKey: ephimeralPubKey,
         encryptedMessage: [
-            [
-                BigInt(enctyptedMessage[0][0]),
-                BigInt(enctyptedMessage[0][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[1][0]),
-                BigInt(enctyptedMessage[1][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[2][0]),
-                BigInt(enctyptedMessage[2][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[3][0]),
-                BigInt(enctyptedMessage[3][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[4][0]),
-                BigInt(enctyptedMessage[4][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[5][0]),
-                BigInt(enctyptedMessage[5][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[6][0]),
-                BigInt(enctyptedMessage[6][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[7][0]),
-                BigInt(enctyptedMessage[7][1]),
-            ],
-
+            [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
+            [BigInt(enctyptedMessage[1][0]), BigInt(enctyptedMessage[1][1])],
+            [BigInt(enctyptedMessage[2][0]), BigInt(enctyptedMessage[2][1])],
+            [BigInt(enctyptedMessage[3][0]), BigInt(enctyptedMessage[3][1])],
+            [BigInt(enctyptedMessage[4][0]), BigInt(enctyptedMessage[4][1])],
+            [BigInt(enctyptedMessage[5][0]), BigInt(enctyptedMessage[5][1])],
+            [BigInt(enctyptedMessage[6][0]), BigInt(enctyptedMessage[6][1])],
+            [BigInt(enctyptedMessage[7][0]), BigInt(enctyptedMessage[7][1])],
         ],
     };
 
@@ -238,17 +218,25 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             let pub_key = mulPointEscalar(babyjub.Base8, priv_key);
             let random = generateRandomInBabyJubSubField();
             let e_pub_key = mulPointEscalar(babyjub.Base8, random);
-            let point = mulPointEscalar(babyjub.Base8, generateRandomInBabyJubSubField());
+            let point = mulPointEscalar(
+                babyjub.Base8,
+                generateRandomInBabyJubSubField(),
+            );
             let hidding = mulPointEscalar(pub_key, random);
-            let enctypted_data = babyjub.addPoint(point,hidding);
+            let enctypted_data = babyjub.addPoint(point, hidding);
             let unhidding = mulPointEscalar(e_pub_key, priv_key);
             let y_neg = BigInt(babyjub.p) - BigInt(unhidding[0]);
             let unhidding_neg = unhidding;
             unhidding_neg[0] = y_neg;
             let decrypted = babyjub.addPoint(enctypted_data, unhidding_neg);
 
-            console.log("point {}, decrypted_point", point, decrypted);
-            console.assert(point[0] == decrypted[0] && point[1] == decrypted[1], "point {}, decrypted_point", point, decrypted);
+            console.log('point {}, decrypted_point', point, decrypted);
+            console.assert(
+                point[0] == decrypted[0] && point[1] == decrypted[1],
+                'point {}, decrypted_point',
+                point,
+                decrypted,
+            );
         });
     });
 });
