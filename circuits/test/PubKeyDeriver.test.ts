@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import {expect} from 'chai';
 import {bufferToBigInt} from '@panther-core/crypto/lib/utils/bigint-conversions';
 import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
-import { PublicKey } from '@panther-core/crypto/lib/types/keypair';
+import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
 import {
     derivePubKeyFromPrivKey,
     deriveChildPubKeyFromRootPubKey,

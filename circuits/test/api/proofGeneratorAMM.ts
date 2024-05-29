@@ -96,12 +96,12 @@ const zeroInput = {
     zAccountUtxoInNullifier: 0,
     zAccountUtxoInMerkleTreeSelector: [1, 0],
     zAccountUtxoInPathIndices: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInPathElements: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
     ],
 
     zAccountUtxoOutZkpAmount: 0,
@@ -223,8 +223,7 @@ const nonZeroInputVoucherExchange = {
     zAccountUtxoInNullifierPrivKey:
         2081961849142627796057765042284889488177156119328724687723132407819597118232n,
 
-    zAccountUtxoInMasterEOA:
-        407487970930055136132864974074225519407787604125n,
+    zAccountUtxoInMasterEOA: 407487970930055136132864974074225519407787604125n,
     zAccountUtxoInId: 33,
     zAccountUtxoInPrpAmount: 0,
     zAccountUtxoInZoneId: 1,
@@ -251,8 +250,8 @@ const nonZeroInputVoucherExchange = {
 
     zAccountUtxoInMerkleTreeSelector: [1, 0],
     zAccountUtxoInPathIndices: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInPathElements: [
         2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -473,8 +472,7 @@ const nonZeroInputAMMExchange = {
     zAccountUtxoInSpendKeyRandom:
         185557730709061450306117592388043477299652441972445952549541952981196070710n,
 
-    zAccountUtxoInMasterEOA:
-        407487970930055136132864974074225519407787604125n,
+    zAccountUtxoInMasterEOA: 407487970930055136132864974074225519407787604125n,
     zAccountUtxoInId: 33,
     zAccountUtxoInPrpAmount: 500,
     zAccountUtxoInZoneId: 1,
@@ -504,8 +502,8 @@ const nonZeroInputAMMExchange = {
 
     zAccountUtxoInMerkleTreeSelector: [1, 0],
     zAccountUtxoInPathIndices: [
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInPathElements: [
         9775219500384962933792568081585395848317570806746644855790488573783186458332n,
