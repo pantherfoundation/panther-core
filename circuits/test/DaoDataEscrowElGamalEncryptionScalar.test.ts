@@ -96,16 +96,18 @@ describe('DaoDataEscrowElGamalEncryptionScalar circuit', function (this: any) {
 
     // [0] - scalars serialization
     let m_scalar = [
-        BigInt(bor(shiftLeft(zAccountID, 16),zAccountZoneID).toString()),
+        BigInt(bor(shiftLeft(zAccountID, 16), zAccountZoneID).toString()),
         BigInt(
-            bor(shiftLeft(utxoInOriginZoneIds[0], 16),
-                utxoOutTargetZoneIds[0])
-                .toString()
+            bor(
+                shiftLeft(utxoInOriginZoneIds[0], 16),
+                utxoOutTargetZoneIds[0],
+            ).toString(),
         ),
         BigInt(
-            bor(shiftLeft(utxoInOriginZoneIds[1], 16),
-                utxoOutTargetZoneIds[1])
-                .toString()
+            bor(
+                shiftLeft(utxoInOriginZoneIds[1], 16),
+                utxoOutTargetZoneIds[1],
+            ).toString(),
         ),
     ];
     // [1] = scalars to Points mapping
@@ -131,14 +133,8 @@ describe('DaoDataEscrowElGamalEncryptionScalar circuit', function (this: any) {
     const output = {
         ephimeralPubKey: ephimeralPubKey,
         encryptedMessage: [
-            [
-                BigInt(enctyptedMessage[0][0]),
-                BigInt(enctyptedMessage[0][1]),
-            ],
-            [
-                BigInt(enctyptedMessage[1][0]),
-                BigInt(enctyptedMessage[1][1]),
-            ],
+            [BigInt(enctyptedMessage[0][0]), BigInt(enctyptedMessage[0][1])],
+            [BigInt(enctyptedMessage[1][0]), BigInt(enctyptedMessage[1][1])],
         ],
     };
 

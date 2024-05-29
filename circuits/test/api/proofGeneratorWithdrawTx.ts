@@ -156,8 +156,7 @@ const withdrawNonZeroInput = {
         ),
     ],
 
-    zAssetTokenZkp:
-        BigInt(365481738974395054943628650313028055219811856521n),
+    zAssetTokenZkp: BigInt(365481738974395054943628650313028055219811856521n),
     zAssetTokenIdZkp: BigInt(0n),
     zAssetNetworkZkp: BigInt(2n),
     zAssetOffsetZkp: BigInt(0n),
