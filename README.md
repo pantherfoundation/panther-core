@@ -10,13 +10,12 @@ This repository contains the heart of the Panther Protocol code:
 - [`dapp/`](dapp) - the frontend web-based dApp interface
 - [`subgraph/`](subgraph) - code for Panther's subgraph on [The Graph](https://thegraph.com/en/)
 
-It does _not_ include the zero knowledge circuits, although these will
-be published in the future.
+It does _not_ include the zero knowledge circuits, although these will be published in the future.
 
-At the time of writing, the repository contains the code for v0.5 of
-the MASP, which provides both advanced staking and the foundation
-(i.e. a significant part but not the entirety) of the future v1.0
+At the time of writing, the repository contains the code for v0.5 of the MASP, which provides both advanced staking and the foundation (i.e. a significant part but not the entirety) of the future v1.0
 release.
+
+To understand more about this codebase see [the documentation](docs/get-started.md)
 
 ## Development / testing / contributing
 
@@ -29,14 +28,15 @@ The development guide in [`docs/dev-guide.md`](docs/dev-guide.md)
 explains how to deploy a test environment. This is currently work in
 progress.
 
-Please see [`CONTRIBUTING.md`](CONTRIBUTING.md) and the below
-community links for how to contribute.
+Please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+<!-- PVL the software development company can't host DAO-related content for legal reasons, therefore the following links are deprecated and the content will be relocated to a new home. Retain these links until such time as the content has a new home, as they point at the (delinked) backend material available in the repo that host these docs:
 
 ## Community resources
 
-Please see the Panther DAO documentation on
-[Community](https://docs.pantherprotocol.io/dao/support/community) and
-[Other resources](https://docs.pantherprotocol.io/dao/support/other-resources).
+Please see the Panther DAO documentation on -->
+<!-- [Community](https://docs.pantherprotocol.io/dao/support/community) and -->
+<!-- [Other resources](https://docs.pantherprotocol.io/dao/support/other-resources). -->
 
 ## Licenses
 
