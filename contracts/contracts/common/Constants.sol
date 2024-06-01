@@ -48,6 +48,9 @@ bytes4 constant GT_ONBOARDING = 0x93b212ae;
 // The "prp grant type" for the "release and bridge" ZKPs
 // bytes4(keccak256("panther-zkp-release"))
 bytes4 constant GT_ZKP_RELEASE = 0x53a1eb85;
+// The "prp grant type" for the refilling the PayMaster's EntryPoint deposit
+// bytes4(keccak256('panther-paymaster-refund-grantor'))
+bytes4 constant GT_PAYMASTER_REFUND = 0x3002a002;
 
 // Number of 32-bit words of the CiphertextMsg for UTXO_DATA_TYPE1
 // (ephemeral key (packed) - 32 bytes, encrypted `random` - 32 bytes)
@@ -67,3 +70,9 @@ address constant NATIVE_TOKEN = address(0);
 
 // 100% expressed in 1/100th of 1% ("pips")
 uint256 constant HUNDRED_PERCENT = 100 * 100;
+
+// Prtocol token decimals
+uint256 constant PROTOCOL_TOKEN_DECIMALS = 1e18;
+
+//TODO SCALE_FACTOR to bae a part of cirquit public inputs
+uint256 constant SCALE_FACTOR = 1e12;
