@@ -6,6 +6,8 @@ import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {callculateAndGetNonce} from '../../lib/calcAndGetNonce';
+import {composeExecData} from '../../lib/composeExecData';
+import {TokenType} from '../../lib/token';
 import {toBytes32} from '../../lib/utilities';
 import {UserOperationStruct} from '../../types/contracts/EntryPoint';
 
@@ -14,7 +16,6 @@ import {
     generatePrivateMessage,
     TransactionTypes,
 } from './data/samples/transactionNote.data';
-import {composeExecData, TokenType} from './helpers/lockData';
 import {
     composeETHEscrowStealthAddress,
     getEncodedProof,
