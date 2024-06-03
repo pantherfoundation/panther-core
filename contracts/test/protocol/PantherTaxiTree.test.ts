@@ -63,9 +63,10 @@ describe('PantherTaxiTree', () => {
         it('should insert one utxo', async () => {
             merkleTree.insert(oneUtxo);
 
-            const newMerkleTreeRoot = BigNumber.from(
+            const newMerkleTreeRoot = ethers.utils.hexZeroPad(
                 merkleTree.root,
-            ).toHexString();
+                32,
+            );
 
             await pantherTaxiTreeOwner.addUtxo(oneUtxo);
             const newTaxiTreeRoot =
