@@ -204,7 +204,7 @@ contract VaultV1 is
     function getBalance(
         address token,
         uint256 tokenId
-    ) external returns (uint256) {
+    ) external view returns (uint256) {
         return token._getBalance(address(this), tokenId);
     }
 }

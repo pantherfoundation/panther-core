@@ -35,7 +35,7 @@ interface IVaultV1 is IEthEscrow {
     function getBalance(
         address token,
         uint256 tokenId
-    ) external returns (uint256);
+    ) external view returns (uint256);
 
     event Locked(LockData data);
     event Unlocked(LockData data);
