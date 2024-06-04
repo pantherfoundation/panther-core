@@ -219,4 +219,55 @@ library TransferHelper {
             "TransferHelper: token contract call failed"
         );
     }
+
+    function _getBalance(
+        address token,
+        address account,
+        uint256 tokenId
+    ) internal onlyDeployedToken(token) returns (uint256) {
+        bytes4 balanceOfSelector;
+        bool success;
+        bytes memory data;
+
+        // Native token (ETH, MATIC, etc.)
+        if (token == address(0)) {
+            return account.balance;
+        }
+
+        // Check if the token is ERC20 by calling balanceOf(address)
+        balanceOfSelector = 0x70a08231;
+        (success, data) = token.staticcall(
+            abi.encodeWithSelector(balanceOfSelector, account)
+        );
+        if (success && data.length == 32) {
+            return abi.decode(data, (uint256));
+        }
+
+        // Check if the token is ERC1155 by calling balanceOf(address,uint256)
+        balanceOfSelector = 0x00fdd58e;
+        (success, data) = token.staticcall(
+            abi.encodeWithSelector(balanceOfSelector, account, tokenId)
+        );
+        if (success && data.length == 32) {
+            return abi.decode(data, (uint256));
+        }
+
+        // Check if the token is ERC721 by calling ownerOf(uint256)
+        balanceOfSelector = 0x6352211e;
+        (success, data) = token.staticcall(
+            abi.encodeWithSelector(balanceOfSelector, tokenId)
+        );
+        if (success && data.length == 32) {
+            address owner = abi.decode(data, (address));
+            bool isOwner = (owner == account);
+            if (isOwner) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        // Return unknown type if none match
+        revert("Unknown token");
+    }
 }
