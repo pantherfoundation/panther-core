@@ -224,7 +224,7 @@ library TransferHelper {
         address token,
         address account,
         uint256 tokenId
-    ) internal onlyDeployedToken(token) returns (uint256) {
+    ) internal view onlyDeployedToken(token) returns (uint256) {
         bytes4 balanceOfSelector;
         bool success;
         bytes memory data;
