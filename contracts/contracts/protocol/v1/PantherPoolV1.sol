@@ -9,11 +9,12 @@ import "./interfaces/IPantherTaxiTree.sol";
 import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IVaultV1.sol";
-
+import "../../common/PluginExecutor.sol";
 import "../../common/NonReentrant.sol";
 import "../../common/ImmutableOwnable.sol";
-import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
-import { LockData } from "../../common/Types.sol";
+import "../../common/ScaleHandler.sol";
+import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT, SCALE_FACTOR } from "../../common/Constants.sol";
+import { LockData, PluginData } from "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
@@ -24,6 +25,8 @@ import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/ZAssetUtxoGenerator.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
 import "./pantherPool/TransactionTypes.sol";
+import "./pantherPool/publicSignals/ExecPluginPublicSignals.sol";
+import "./interfaces/IPluginRegistry.sol";
 
 /**
  * @title PantherPool
@@ -56,6 +59,8 @@ contract PantherPoolV1 is
 {
     using TransactionOptions for uint32;
     using TransactionTypes for uint16;
+    using PluginExecutor for address;
+    using ScaleHandler for uint256;
 
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
@@ -66,7 +71,7 @@ contract PantherPoolV1 is
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable PRP_CONVERTER;
     address public immutable STATIC_TREE;
-
+    address public immutable PLUGIN_REGISTRY;
     mapping(address => bool) public vaultAssetUnlockers;
 
     // TODO added in a mapping: bytes4(keccak256(`circuit-name`)) => uint160
@@ -101,6 +106,7 @@ contract PantherPoolV1 is
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
     event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
     event SeenKytMessageHash(bytes32 indexed kytMessageHash);
+    event PluginExecuted(bytes32 commitment);
 
     constructor(
         address _owner,
@@ -112,7 +118,8 @@ contract PantherPoolV1 is
         address prpVoucherGrantor,
         address prpConverter,
         address feeMaster,
-        address verifier
+        address verifier,
+        address pluginRegistry
     )
         PantherForest(_owner, forestTrees)
         UtxosInserter(forestTrees.busTree, forestTrees.taxiTree)
@@ -132,6 +139,7 @@ contract PantherPoolV1 is
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
         PRP_CONVERTER = prpConverter;
+        PLUGIN_REGISTRY = pluginRegistry;
     }
 
     function updateVaultAssetUnlocker(
@@ -847,5 +855,82 @@ contract PantherPoolV1 is
                 UtilsLib.safe96(amount)
             )
         );
+    }
+
+    function execPlugin(
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        uint32 transactionOptions,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages,
+        PluginData calldata pData
+    ) external returns (bool success) {
+        _validateExtraInputHash(
+            inputs[EXEC_PLUGIN_EXTRA_INPUTS_HASH],
+            abi.encodePacked(
+                transactionOptions,
+                paymasterCompensation,
+                privateMessages
+            )
+        );
+
+        _validateMagicalConstraint(inputs[EXEC_PLUGIN_MAGICAL_CONSTRAINT]);
+
+        _validateSaltHash(inputs[EXEC_PLUGIN_SALT_HASH]);
+
+        _validateZNetworkChainId(inputs[EXEC_PLUGIN_ZNETWORK_CHAIN_ID]);
+
+        _validateCachedForestRoot(
+            inputs[EXEC_PLUGIN_FOREST_MERKLE_ROOT],
+            transactionOptions.cachedForestRootIndex()
+        );
+
+        address plugin = pData.lDataIn.extAccount;
+
+        require(
+            IPluginRegistry(PLUGIN_REGISTRY).isRegistered(plugin),
+            "ERR_PLUGIN_NOT_REGISTERED"
+        );
+
+        require(pData.lDataOut.extAccount == address(VAULT), "ERR_NOT_VAULT");
+
+        // TODO: zSwapCircuitId to be registered in mapping
+        uint160 zSwapCircuitId;
+        // Trusted contract - no reentrancy guard needed
+        require(
+            VERIFIER.verify(zSwapCircuitId, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
+
+        _unlockAsset(pData.lDataIn);
+
+        uint256 balanceBefore = VAULT.getBalance(
+            pData.lDataOut.token,
+            pData.lDataOut.tokenId
+        );
+
+        //TODO return bytes from executor
+
+        plugin.safeExecute(pData);
+
+        uint256 balanceAfter = VAULT.getBalance(
+            pData.lDataOut.token,
+            pData.lDataOut.tokenId
+        );
+
+        uint256 amount = balanceAfter - balanceBefore;
+
+        require(amount > 0, "ERR_ZERO_AMOUNT");
+
+        require(amount >= pData.lDataOut.extAmount, "ERR_WRONG_PLUGIN_RESULT");
+
+        require(amount.getScaled(SCALE_FACTOR) > 0, "ERR_ZERO_OUT");
+
+        bytes32 generateDepositCommitment = generateZAssetUtxoCommitment(
+            amount.getScaled(SCALE_FACTOR),
+            inputs[EXEC_PLUGIN_UTXO_OUT_COMMITMENT_2]
+        );
+
+        emit PluginExecuted(generateDepositCommitment);
     }
 }
