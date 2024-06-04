@@ -81,6 +81,7 @@ const config: HardhatUserConfig = {
                 ? forkingConfig
                 : undefined,
             chainId: parseInt(process.env.HARDHAT_CHAIN_ID || '31337'),
+            allowUnlimitedContractSize: true,
         },
         pchain: {url: 'http://127.0.0.1:8545'},
 
