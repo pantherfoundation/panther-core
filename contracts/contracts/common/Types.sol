@@ -30,8 +30,13 @@ struct SnarkProof {
 }
 
 struct PluginData {
-    address contractAddress;
-    bytes callData;
+    // token to send to exchange LockData extAmount = amountIN
+    // lDataIn.extAccount  == plugin - contract to interact with external system
+    LockData lDataIn;
+    // token to receive LockData extAmount == amountOutMinimum
+    LockData lDataOut;
+    // DeFi protocol specific data
+    bytes userData;
 }
 
 struct ElGamalCiphertext {
