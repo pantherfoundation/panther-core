@@ -63,6 +63,51 @@ export const depositInputs = async () => {
     };
 };
 
+export const generateExecPluginTestInputs = async () => {
+    const getBlockTimestamp = async () => {
+        // Mock or actual implementation to fetch the current block timestamp
+        return Math.floor(Date.now() / 1000);
+    };
+
+    const chainId = (await ethers.provider.getNetwork()).chainId;
+
+    return {
+        extraInputsHash: await getSnarkFriendlyBytes(), // inputs[0] - extraInputsHash
+        depositAmount: ethers.utils.parseEther('1000'), // inputs[1] - depositAmount
+        withdrawAmount: '0', // inputs[2] - withdrawAmount
+        donatedAmountZkp: '0', // inputs[3] - donatedAmountZkp
+        tokenIn: ethers.Wallet.createRandom().address, // inputs[4] - tokenIn
+        tokenOut: ethers.Wallet.createRandom().address, // inputs[5] - tokenOut
+        tokenInId: '0', // inputs[6] - tokenInId
+        tokenOutId: '0', // inputs[7] - tokenOutId
+        spendTime: ((await getBlockTimestamp()) - 60).toString(), // inputs[8] - spendTime
+        utxoInNullifier1: await getSnarkFriendlyBytes(), // inputs[9] - utxoInNullifier1
+        utxoInNullifier2: await getSnarkFriendlyBytes(), // inputs[10] - utxoInNullifier2
+        zAccountUtxoInNullifier: await getSnarkFriendlyBytes(), // inputs[11] - zAccountUtxoInNullifier
+        zZoneDataEscrowEphimeralPubKeyAx: await getSnarkFriendlyBytes(), // inputs[12] - zZoneDataEscrowEphimeralPubKeyAx
+        zZoneDataEscrowEncryptedMessageAx: await getSnarkFriendlyBytes(), // inputs[13] - zZoneDataEscrowEncryptedMessageAx
+        kytDepositSignedMessageSender: await getSnarkFriendlyBytes(), // inputs[14] - kytDepositSignedMessageSender
+        kytDepositSignedMessageReceiver: await getSnarkFriendlyBytes(), // inputs[15] - kytDepositSignedMessageReceiver
+        kytDepositSignedMessageHash: await getSnarkFriendlyBytes(), // inputs[16] - kytDepositSignedMessageHash
+        kytWithdrawSignedMessageSender: await getSnarkFriendlyBytes(), // inputs[17] - kytWithdrawSignedMessageSender
+        kytWithdrawSignedMessageReceiver: await getSnarkFriendlyBytes(), // inputs[18] - kytWithdrawSignedMessageReceiver
+        kytWithdrawSignedMessageHash: await getSnarkFriendlyBytes(), // inputs[19] - kytWithdrawSignedMessageHash
+        dataEscrowEphimeralPubKeyAx: await getSnarkFriendlyBytes(), // inputs[20] - dataEscrowEphimeralPubKeyAx
+        dataEscrowEncryptedMessageAx: await getSnarkFriendlyBytes(), // inputs[21] - dataEscrowEncryptedMessageAx
+        daoDataEscrowEphimeralPubKeyAx: await getSnarkFriendlyBytes(), // inputs[22] - daoDataEscrowEphimeralPubKeyAx
+        daoDataEscrowEncryptedMessageAx: await getSnarkFriendlyBytes(), // inputs[23] - daoDataEscrowEncryptedMessageAx
+        utxoOutCreateTime: ((await getBlockTimestamp()) + 60).toString(), // inputs[24] - utxoOutCreateTime
+        utxoOutCommitment1: await getSnarkFriendlyBytes(), // inputs[25] - utxoOutCommitment1
+        utxoOutCommitment2: await getSnarkFriendlyBytes(), // inputs[26] - utxoOutCommitment2
+        zAccountUtxoOutCommitment: await getSnarkFriendlyBytes(), // inputs[27] - zAccountUtxoOutCommitment
+        chargedAmountZkp: ethers.utils.parseEther('1'), // inputs[28] - chargedAmountZkp
+        zNetworkChainId: chainId, // inputs[29] - zNetworkChainId
+        forestMerkleRoot: await getSnarkFriendlyBytes(), // inputs[30] - forestMerkleRoot
+        saltHash: await getSnarkFriendlyBytes(), // inputs[31] - saltHash
+        magicalConstraint: await getSnarkFriendlyBytes(), // inputs[32] - magicalConstraint
+    };
+};
+
 export const sampleProof: SnarkProofStruct = {
     a: {x: getSnarkFriendlyBytes(), y: getSnarkFriendlyBytes()},
     b: {
