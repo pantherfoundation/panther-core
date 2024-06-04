@@ -10,6 +10,7 @@ import "./publicSignals/ZAccountActivationPublicSignals.sol";
 import "./publicSignals/PrpClaimPublicSignals.sol";
 import "./publicSignals/PrpConversionPublicSignals.sol";
 import "./publicSignals/MainPublicSignals.sol";
+import "./publicSignals/ZSwapPublicSignals.sol";
 
 import "../../../common/crypto/PoseidonHashers.sol";
 
@@ -134,6 +135,38 @@ abstract contract UtxosInserter {
         utxos[2] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_2_IND]);
         utxos[3] = bytes32(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
         utxos[4] = bytes32(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
+
+        (
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            zAccountUtxoBusQueuePos
+        ) = _addUtxosToBusQueue(utxos, miningRewards);
+
+        if (transactionOptions.isTaxiApplicable()) {
+            _addThreeUtxosToTaxiTree(utxos[0], utxos[1], utxos[2]);
+        }
+    }
+
+    function _insertZSwapUtxos(
+        uint256[] calldata inputs,
+        bytes32[2] memory zAssetUtxos,
+        uint32 transactionOptions,
+        uint96 miningRewards
+    )
+        internal
+        returns (
+            uint32 zAccountUtxoQueueId,
+            uint8 zAccountUtxoIndexInQueue,
+            uint256 zAccountUtxoBusQueuePos
+        )
+    {
+        bytes32[] memory utxos = new bytes32[](5);
+
+        utxos[0] = bytes32(inputs[ZSWAP_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]);
+        utxos[1] = zAssetUtxos[0];
+        utxos[2] = zAssetUtxos[1];
+        utxos[3] = bytes32(inputs[ZSWAP_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
+        utxos[4] = bytes32(inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
 
         (
             zAccountUtxoQueueId,
