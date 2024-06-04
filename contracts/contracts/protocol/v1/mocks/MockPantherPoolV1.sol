@@ -9,30 +9,28 @@ contract MockPantherPoolV1 is PantherPoolV1 {
     constructor(
         address _owner,
         address zkpToken,
-        address taxiTree,
-        address busTree,
-        address ferryTree,
+        ForestTrees memory forestTrees,
         address staticTree,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
+        address prpConverter,
         address feeMaster,
         address verifier,
-        address pluginChecker
+        address pluginRegistry
     )
         PantherPoolV1(
             _owner,
             zkpToken,
-            taxiTree,
-            busTree,
-            ferryTree,
+            forestTrees,
             staticTree,
             vault,
             zAccountRegistry,
             prpVoucherGrantor,
+            prpConverter,
             feeMaster,
             verifier,
-            pluginChecker
+            pluginRegistry
         )
     {}
 

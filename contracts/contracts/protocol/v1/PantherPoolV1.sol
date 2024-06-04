@@ -74,14 +74,8 @@ contract PantherPoolV1 is
     address public immutable PLUGIN_REGISTRY;
     mapping(address => bool) public vaultAssetUnlockers;
 
-    // TODO added in a mapping: bytes4(keccak256(`circuit-name`)) => uint160
-    uint160 public zAccountRegistrationCircuitId;
-    uint160 public prpAccountingCircuitId;
-    uint160 public prpAccountConversionCircuitId;
-    uint160 public mainCircuitId;
-
-    // TODO: to be removed when the total number of circuits in known
-    uint256[9] private __circuiteIdsGap;
+    // TODO: to be removed in production
+    uint256[13] private __circuiteIdsGap;
 
     // @notice Seen (i.e. spent) commitment nullifiers
     // nullifier hash => spent
@@ -97,11 +91,10 @@ contract PantherPoolV1 is
     // TODO:to be deleted
     // left for storage compatibility of the "testnet" version, must be deleted in the prod version
     uint256 private _feeMasterDebtGap;
+    // transaction type => circuit id
+    mapping(uint16 => uint160) public circuitIds;
 
-    event ZAccountRegistrationCircuitIdUpdated(uint160 newId);
-    event PrpAccountingCircuitIdUpdated(uint160 newId);
-    event PrpAccountConversionCircuitIdUpdated(uint160 newId);
-    event MainCircuitIdUpdated(uint160 newId);
+    event CircuitIdUpdated(uint16 txType, uint160 newId);
     event KycRewardUpdated(uint256 newReward);
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
     event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
@@ -142,49 +135,22 @@ contract PantherPoolV1 is
         PLUGIN_REGISTRY = pluginRegistry;
     }
 
-    function updateVaultAssetUnlocker(
-        address _unlocker,
-        bool _status
+    // function updateVaultAssetUnlocker(
+    //     address _unlocker,
+    //     bool _status
+    // ) external onlyOwner {
+    //     vaultAssetUnlockers[_unlocker] = _status;
+
+    //     emit VaultAssetUnlockerUpdated(_unlocker, _status);
+    // }
+
+    function updateCircuitId(
+        uint16 txType,
+        uint160 circuitId
     ) external onlyOwner {
-        vaultAssetUnlockers[_unlocker] = _status;
+        circuitIds[txType] = circuitId;
 
-        emit VaultAssetUnlockerUpdated(_unlocker, _status);
-    }
-
-    function updateZAccountRegistrationCircuitId(
-        uint160 _circuitId
-    ) external onlyOwner {
-        zAccountRegistrationCircuitId = _circuitId;
-
-        emit ZAccountRegistrationCircuitIdUpdated(_circuitId);
-    }
-
-    function updatePrpAccountingCircuitId(
-        uint160 _circuitId
-    ) external onlyOwner {
-        prpAccountingCircuitId = _circuitId;
-
-        emit PrpAccountingCircuitIdUpdated(_circuitId);
-    }
-
-    function updatePrpAccountConversionCircuitId(
-        uint160 _circuitId
-    ) external onlyOwner {
-        prpAccountConversionCircuitId = _circuitId;
-
-        emit PrpAccountConversionCircuitIdUpdated(_circuitId);
-    }
-
-    function updateMainCircuitId(uint160 _circuitId) external onlyOwner {
-        mainCircuitId = _circuitId;
-
-        emit MainCircuitIdUpdated(_circuitId);
-    }
-
-    function updateKycReward(uint96 _kycReward) external onlyOwner {
-        kycReward = _kycReward;
-
-        emit KycRewardUpdated(_kycReward);
+        emit CircuitIdUpdated(txType, circuitId);
     }
 
     function updateMaxTimeDelta(uint32 _maxTimeDelta) external onlyOwner {
@@ -221,26 +187,29 @@ contract PantherPoolV1 is
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
-        require(zAccountRegistrationCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         require(msg.sender == ZACCOUNT_REGISTRY, ERR_UNAUTHORIZED);
-
-        _validateSaltHash(inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND]);
-
-        _validateMagicalConstraint(
-            inputs[ZACCOUNT_ACTIVATION_MAGICAL_CONSTRAINT_IND]
-        );
-        require(
-            inputs[ZACCOUNT_ACTIVATION_NULLIFIER_ZONE_IND] != 0,
-            ERR_ZERO_ZACCOUNT_NULLIFIER
+        uint160 zAccountRegistrationCircuitId = _getCircuitIdOrRevert(
+            TT_ZACCOUNT_ACTIVATION
         );
 
-        require(
-            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND] != 0,
+        _validateNonZero(
+            inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND],
+            ERR_ZERO_SALT_HASH
+        );
+        _validateNonZero(
+            inputs[ZACCOUNT_ACTIVATION_MAGICAL_CONSTRAINT_IND],
+            ERR_ZERO_MAGIC_CONSTR
+        );
+        _validateNonZero(
+            inputs[ZACCOUNT_ACTIVATION_NULLIFIER_ZONE_IND],
+            ERR_ZERO_NULLIFIER
+        );
+        _validateNonZero(
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND],
             ERR_ZERO_ZACCOUNT_COMMIT
         );
-
-        require(
-            inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND] != 0,
+        _validateNonZero(
+            inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND],
             ERR_ZERO_KYC_MSG_HASH
         );
 
@@ -257,11 +226,7 @@ contract PantherPoolV1 is
             transactionOptions.cachedForestRootIndex()
         );
 
-        // Trusted contract - no reentrancy guard needed
-        require(
-            VERIFIER.verify(zAccountRegistrationCircuitId, inputs, proof),
-            ERR_FAILED_ZK_PROOF
-        );
+        _verifyProof(zAccountRegistrationCircuitId, inputs, proof);
 
         uint96 miningReward = accountFeesAndReturnMiningReward(
             inputs,
@@ -316,8 +281,8 @@ contract PantherPoolV1 is
         // Note: This contract expects the PrpVoucherGrantor to check the following inputs:
         // input[0], input[3], input[4],
 
-        require(prpAccountingCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         require(msg.sender == PRP_VOUCHER_GRANTOR, ERR_UNAUTHORIZED);
+        uint160 prpAccountingCircuitId = _getCircuitIdOrRevert(TT_PRP_CLAIM);
 
         _validateCreationTime(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]);
 
@@ -325,22 +290,14 @@ contract PantherPoolV1 is
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
-        require(
-            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND] != 0,
+        _validateNonZero(
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
             ERR_ZERO_ZACCOUNT_COMMIT
         );
 
-        {
-            // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[PRP_CLAIM_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
-            );
-            require(
-                !isSpent[zAccountUtxoInNullifier],
-                ERR_SPENT_ZACCOUNT_NULLIFIER
-            );
-            isSpent[zAccountUtxoInNullifier] = true;
-        }
+        _validateAndSpendNullifier(
+            inputs[PRP_CLAIM_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
+        );
 
         _validateZNetworkChainId(inputs[PRP_CLAIM_ZNETWORK_CHAIN_ID_IND]);
 
@@ -349,11 +306,7 @@ contract PantherPoolV1 is
             transactionOptions.cachedForestRootIndex()
         );
 
-        // Trusted contract - no reentrancy guard needed
-        require(
-            VERIFIER.verify(prpAccountingCircuitId, inputs, proof),
-            ERR_FAILED_ZK_PROOF
-        );
+        _verifyProof(prpAccountingCircuitId, inputs, proof);
 
         uint96 miningReward = accountFeesAndReturnMiningReward(
             inputs,
@@ -402,25 +355,30 @@ contract PantherPoolV1 is
         // Note: This contract expects the Verifier to check the `inputs[]` are
         // less than the field size
 
-        require(prpAccountConversionCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
         require(msg.sender == PRP_CONVERTER, ERR_UNAUTHORIZED);
+        uint160 prpAccountConversionCircuitId = _getCircuitIdOrRevert(
+            TT_PRP_CONVERSION
+        );
 
         // Note: extraInputsHash is computed in PrpConverter
-        require(
-            inputs[PRP_CONVERSION_EXTRA_INPUT_HASH_IND] != 0,
+        _validateNonZero(
+            inputs[PRP_CONVERSION_EXTRA_INPUT_HASH_IND],
             ERR_ZERO_EXTRA_INPUT_HASH
         );
 
-        _validateSaltHash(inputs[PRP_CONVERSION_SALT_HASH_IND]);
-
-        _validateMagicalConstraint(
-            inputs[PRP_CONVERSION_MAGICAL_CONSTRAINT_IND]
+        _validateNonZero(
+            inputs[PRP_CONVERSION_SALT_HASH_IND],
+            ERR_ZERO_SALT_HASH
+        );
+        _validateNonZero(
+            inputs[PRP_CONVERSION_MAGICAL_CONSTRAINT_IND],
+            ERR_ZERO_MAGIC_CONSTR
         );
 
         _validateStaticRoot(inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT_IND]);
 
-        require(
-            inputs[PRP_CONVERSION_ZASSET_SCALE_IND] != 0,
+        _validateNonZero(
+            inputs[PRP_CONVERSION_ZASSET_SCALE_IND],
             ERR_ZERO_ZASSET_SCALE
         );
 
@@ -442,23 +400,11 @@ contract PantherPoolV1 is
             ERR_TOO_LARGE_PRP_AMOUNT
         );
 
-        {
-            // spending zAccount utxo
-            bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[PRP_CONVERSION_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
-            );
-            require(
-                !isSpent[zAccountUtxoInNullifier],
-                ERR_SPENT_ZACCOUNT_NULLIFIER
-            );
-            isSpent[zAccountUtxoInNullifier] = true;
-        }
-
-        // Trusted contract - no reentrancy guard needed
-        require(
-            VERIFIER.verify(prpAccountConversionCircuitId, inputs, proof),
-            ERR_FAILED_ZK_PROOF
+        _validateAndSpendNullifier(
+            inputs[PRP_CONVERSION_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
         );
+
+        _verifyProof(prpAccountConversionCircuitId, inputs, proof);
 
         uint256 zkpAmountScaled = zkpAmountRounded /
             inputs[PRP_CONVERSION_ZASSET_SCALE_IND];
@@ -518,37 +464,41 @@ contract PantherPoolV1 is
     ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         // The content of data escrow encrypted messages are checked by the circuit
 
-        require(mainCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        uint160 mainCircuitId = _getCircuitIdOrRevert(TT_MAIN_TRANSACTION);
 
-        _validateSaltHash(inputs[MAIN_SALT_HASH_IND]);
-
-        _validateMagicalConstraint(inputs[MAIN_MAGICAL_CONSTRAINT_IND]);
-
-        _validateZNetworkChainId(inputs[MAIN_ZNETWORK_CHAIN_ID_IND]);
-
-        bytes memory extraInp = abi.encodePacked(
-            transactionOptions,
-            tokenType,
-            paymasterCompensation,
-            privateMessages
+        _validateNonZero(inputs[MAIN_SALT_HASH_IND], ERR_ZERO_SALT_HASH);
+        _validateNonZero(
+            inputs[MAIN_MAGICAL_CONSTRAINT_IND],
+            ERR_ZERO_MAGIC_CONSTR
         );
 
-        _validateExtraInputHash(inputs[MAIN_EXTRA_INPUT_HASH_IND], extraInp);
+        _validateZNetworkChainId(inputs[MAIN_ZNETWORK_CHAIN_ID_IND]);
+        {
+            bytes memory extraInp = abi.encodePacked(
+                transactionOptions,
+                tokenType,
+                paymasterCompensation,
+                privateMessages
+            );
+
+            _validateExtraInputHash(
+                inputs[MAIN_EXTRA_INPUT_HASH_IND],
+                extraInp
+            );
+        }
 
         _validateStaticRoot(inputs[MAIN_STATIC_MERKLE_ROOT_IND]);
 
-        require(
-            inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
+        _validateNonZero(
+            inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
-
-        require(
-            inputs[MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
+        _validateNonZero(
+            inputs[MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
-
-        require(
-            inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND] != 0,
+        _validateNonZero(
+            inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
 
@@ -558,42 +508,9 @@ contract PantherPoolV1 is
 
         _validateSpendTime(inputs[MAIN_SPEND_TIME_IND]);
 
-        {
-            bytes32 zAssetUtxoInNullifier1 = bytes32(
-                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_1_IND]
-            );
-            bytes32 zAssetUtxoInNullifier2 = bytes32(
-                inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_2_IND]
-            );
-
-            require(
-                zAssetUtxoInNullifier1 > 0 && zAssetUtxoInNullifier2 > 0,
-                ERR_ZERO_ZASSET_NULLIFIER
-            );
-
-            require(
-                !isSpent[zAssetUtxoInNullifier1] &&
-                    !isSpent[zAssetUtxoInNullifier2],
-                ERR_SPENT_ZASSET_NULLIFIER
-            );
-
-            isSpent[zAssetUtxoInNullifier1] = true;
-            isSpent[zAssetUtxoInNullifier2] = true;
-        }
-
-        {
-            bytes32 zAccountUtxoInNullifier = bytes32(
-                inputs[MAIN_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
-            );
-
-            require(zAccountUtxoInNullifier > 0, ERR_ZERO_ZACCOUNT_NULLIFIER);
-
-            require(
-                !isSpent[zAccountUtxoInNullifier],
-                ERR_SPENT_ZACCOUNT_NULLIFIER
-            );
-            isSpent[zAccountUtxoInNullifier] = true;
-        }
+        _validateAndSpendNullifier(inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_1_IND]);
+        _validateAndSpendNullifier(inputs[MAIN_ZASSET_UTXO_IN_NULLIFIER_2_IND]);
+        _validateAndSpendNullifier(inputs[MAIN_ZACCOUNT_UTXO_IN_NULLIFIER_IND]);
 
         uint16 transactionType = TransactionTypes.generateMainTxType(inputs);
 
@@ -625,11 +542,7 @@ contract PantherPoolV1 is
             transactionOptions.cachedForestRootIndex()
         );
 
-        // Trusted contract - no reentrancy guard needed
-        require(
-            VERIFIER.verify(mainCircuitId, inputs, proof),
-            ERR_FAILED_ZK_PROOF
-        );
+        _verifyProof(mainCircuitId, inputs, proof);
 
         {
             uint32 zAccountUtxoQueueId;
@@ -650,14 +563,99 @@ contract PantherPoolV1 is
         }
     }
 
-    function _validateSaltHash(uint256 saltHash) private pure {
-        require(saltHash != 0, ERR_ZERO_SALT_HASH);
+    function execPlugin(
+        uint256[] calldata inputs,
+        SnarkProof calldata proof,
+        uint32 transactionOptions,
+        uint96 paymasterCompensation,
+        bytes memory privateMessages,
+        PluginData calldata pData
+    ) external returns (bool success) {
+        _validateExtraInputHash(
+            inputs[EXEC_PLUGIN_EXTRA_INPUTS_HASH],
+            abi.encodePacked(
+                transactionOptions,
+                paymasterCompensation,
+                privateMessages
+            )
+        );
+
+        _validateNonZero(inputs[EXEC_PLUGIN_SALT_HASH], ERR_ZERO_SALT_HASH);
+        _validateNonZero(
+            inputs[EXEC_PLUGIN_MAGICAL_CONSTRAINT],
+            ERR_ZERO_MAGIC_CONSTR
+        );
+
+        _validateZNetworkChainId(inputs[EXEC_PLUGIN_ZNETWORK_CHAIN_ID]);
+
+        _validateCachedForestRoot(
+            inputs[EXEC_PLUGIN_FOREST_MERKLE_ROOT],
+            transactionOptions.cachedForestRootIndex()
+        );
+
+        address plugin = pData.lDataIn.extAccount;
+
+        require(
+            IPluginRegistry(PLUGIN_REGISTRY).isRegistered(plugin),
+            "ERR_PLUGIN_NOT_REGISTERED"
+        );
+
+        require(pData.lDataOut.extAccount == address(VAULT), "ERR_NOT_VAULT");
+
+        // TODO: zSwapCircuitId to be registered in mapping
+        uint160 zSwapCircuitId;
+        // Trusted contract - no reentrancy guard needed
+        require(
+            VERIFIER.verify(zSwapCircuitId, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
+
+        _unlockAsset(pData.lDataIn);
+
+        uint256 balanceBefore = IVaultV1(VAULT).getBalance(
+            pData.lDataOut.token,
+            pData.lDataOut.tokenId
+        );
+
+        //TODO return bytes from executor
+
+        plugin.safeExecute(pData);
+
+        uint256 balanceAfter = IVaultV1(VAULT).getBalance(
+            pData.lDataOut.token,
+            pData.lDataOut.tokenId
+        );
+
+        uint256 amount = balanceAfter - balanceBefore;
+
+        require(amount > 0, "ERR_ZERO_AMOUNT");
+
+        require(amount >= pData.lDataOut.extAmount, "ERR_WRONG_PLUGIN_RESULT");
+
+        require(amount.getScaled(SCALE_FACTOR) > 0, "ERR_ZERO_OUT");
+
+        bytes32 generateDepositCommitment = generateZAssetUtxoCommitment(
+            amount.getScaled(SCALE_FACTOR),
+            inputs[EXEC_PLUGIN_UTXO_OUT_COMMITMENT_2]
+        );
+
+        emit PluginExecuted(generateDepositCommitment);
     }
 
-    function _validateMagicalConstraint(
-        uint256 magicalConstraint
-    ) private pure {
-        require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
+    function _getCircuitIdOrRevert(
+        uint16 txType
+    ) private view returns (uint160 circuitId) {
+        circuitId = circuitIds[txType];
+        require(circuitId != 0, ERR_UNDEFINED_CIRCUIT);
+    }
+
+    function _validateAndSpendNullifier(uint256 nullifier) private {
+        bytes32 _nullifier = bytes32(nullifier);
+
+        require(_nullifier > 0, ERR_ZERO_NULLIFIER);
+        require(!isSpent[_nullifier], ERR_SPENT_NULLIFIER);
+
+        isSpent[_nullifier] = true;
     }
 
     function _validateZNetworkChainId(uint256 zNetworkChainId) private view {
@@ -713,6 +711,13 @@ contract PantherPoolV1 is
             bytes32(staticMerkleRoot) == ITreeRootGetter(STATIC_TREE).getRoot(),
             ERR_INVALID_STATIC_ROOT
         );
+    }
+
+    function _validateNonZero(
+        uint256 value,
+        string memory errMsg
+    ) private pure {
+        require(value != 0, errMsg);
     }
 
     function _lockAssetWithSalt(SaltedLockData memory slData) private {
@@ -857,80 +862,12 @@ contract PantherPoolV1 is
         );
     }
 
-    function execPlugin(
+    function _verifyProof(
+        uint160 circuitId,
         uint256[] calldata inputs,
-        SnarkProof calldata proof,
-        uint32 transactionOptions,
-        uint96 paymasterCompensation,
-        bytes memory privateMessages,
-        PluginData calldata pData
-    ) external returns (bool success) {
-        _validateExtraInputHash(
-            inputs[EXEC_PLUGIN_EXTRA_INPUTS_HASH],
-            abi.encodePacked(
-                transactionOptions,
-                paymasterCompensation,
-                privateMessages
-            )
-        );
-
-        _validateMagicalConstraint(inputs[EXEC_PLUGIN_MAGICAL_CONSTRAINT]);
-
-        _validateSaltHash(inputs[EXEC_PLUGIN_SALT_HASH]);
-
-        _validateZNetworkChainId(inputs[EXEC_PLUGIN_ZNETWORK_CHAIN_ID]);
-
-        _validateCachedForestRoot(
-            inputs[EXEC_PLUGIN_FOREST_MERKLE_ROOT],
-            transactionOptions.cachedForestRootIndex()
-        );
-
-        address plugin = pData.lDataIn.extAccount;
-
-        require(
-            IPluginRegistry(PLUGIN_REGISTRY).isRegistered(plugin),
-            "ERR_PLUGIN_NOT_REGISTERED"
-        );
-
-        require(pData.lDataOut.extAccount == address(VAULT), "ERR_NOT_VAULT");
-
-        // TODO: zSwapCircuitId to be registered in mapping
-        uint160 zSwapCircuitId;
+        SnarkProof calldata proof
+    ) private view {
         // Trusted contract - no reentrancy guard needed
-        require(
-            VERIFIER.verify(zSwapCircuitId, inputs, proof),
-            ERR_FAILED_ZK_PROOF
-        );
-
-        _unlockAsset(pData.lDataIn);
-
-        uint256 balanceBefore = VAULT.getBalance(
-            pData.lDataOut.token,
-            pData.lDataOut.tokenId
-        );
-
-        //TODO return bytes from executor
-
-        plugin.safeExecute(pData);
-
-        uint256 balanceAfter = VAULT.getBalance(
-            pData.lDataOut.token,
-            pData.lDataOut.tokenId
-        );
-
-        uint256 amount = balanceAfter - balanceBefore;
-
-        require(amount > 0, "ERR_ZERO_AMOUNT");
-
-        require(amount >= pData.lDataOut.extAmount, "ERR_WRONG_PLUGIN_RESULT");
-
-        require(amount.getScaled(SCALE_FACTOR) > 0, "ERR_ZERO_OUT");
-
-        bytes32 generateDepositCommitment = generateZAssetUtxoCommitment(
-            amount.getScaled(SCALE_FACTOR),
-            inputs[EXEC_PLUGIN_UTXO_OUT_COMMITMENT_2]
-        );
-
-        emit PluginExecuted(generateDepositCommitment);
+        require(VERIFIER.verify(circuitId, inputs, proof), ERR_FAILED_ZK_PROOF);
     }
 }
