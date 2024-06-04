@@ -156,7 +156,12 @@ export class PluginFixture {
     public prpConverter!: PrpConverter;
     public broker: MockFeeMaster;
 
+    public uniswapV3Plugin: UniswapV3Plugin;
+    public mockUniSwapV3Router: MockUniSwapV3Router;
+    public feeMasterDebtUpdater: FeeMasterDebtUpdater;
+
     public pantherStaticTree: FakeContract<PantherStaticTree>;
+    public pluginRegistry: PluginRegistry;
 
     async initFixture() {
         [this.ethersSigner, this.bundler] = await hre.ethers.getSigners();
@@ -342,6 +347,30 @@ export class PluginFixture {
             await ethers.getContractFactory('MockFeeMaster')
         ).deploy('0x0000000000000000000000000000000000000000', deployerAddress);
 
+        const UniswapV3Plugin =
+            await ethers.getContractFactory('UniswapV3Plugin');
+
+        this.pluginRegistry = await (
+            await ethers.getContractFactory('PluginRegistry')
+        ).deploy(deployerAddress);
+
+        this.weth = await (await ethers.getContractFactory('WETH9')).deploy();
+        await this.weth.deposit({value: parseEther('1000')});
+
+        this.mockUniSwapV3Router = await (
+            await ethers.getContractFactory('MockUniSwapV3Router')
+        ).deploy(this.weth.address);
+
+        this.uniswapV3Plugin = await UniswapV3Plugin.deploy(
+            this.mockUniSwapV3Router.address,
+        );
+
+        await this.mockUniSwapV3Router.deposit({
+            value: ethers.utils.parseEther('100'),
+        });
+
+        await this.pluginRegistry.registerPlugin(this.uniswapV3Plugin.address);
+
         this.pantherPoolV1Impl = await MockPantherPoolV1.deploy(
             deployerAddress,
             this.zkpToken.address,
@@ -354,8 +383,19 @@ export class PluginFixture {
             this.prpVoucherGrantor.address,
             ADDRESS_ONE,
             this.pantherVerifier.address,
+            this.pluginRegistry.address,
         );
         await this.pantherPoolV1Impl.deployed();
+
+        const runtimeBytecode = await ethers.provider.getCode(
+            this.pantherPoolV1Impl.address,
+        );
+
+        console.log(
+            `PantherPoolV1Impl Runtime bytecode size: ${
+                runtimeBytecode.length / 2 - 1
+            } bytes`,
+        );
 
         await this.pantherPoolV1Proxy.upgradeTo(this.pantherPoolV1Impl.address);
 
