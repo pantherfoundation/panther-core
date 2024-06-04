@@ -201,5 +201,10 @@ contract VaultV1 is
         );
     }
 
-    receive() external payable onlyOwner {}
+    function getBalance(
+        address token,
+        uint256 tokenId
+    ) external returns (uint256) {
+        return token._getBalance(address(this), tokenId);
+    }
 }
