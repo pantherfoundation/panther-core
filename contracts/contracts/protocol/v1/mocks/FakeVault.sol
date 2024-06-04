@@ -40,4 +40,12 @@ contract FakeVault is IVaultV1 {
         this;
         escrowAddr = address(uint160(0x1010));
     }
+
+    function getBalance(
+        address token,
+        uint256 tokenId
+    ) external returns (uint256) {
+        (tokenId, token);
+        return 0;
+    }
 }

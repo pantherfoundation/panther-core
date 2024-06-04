@@ -28,9 +28,14 @@ interface IVaultV1 is IEthEscrow {
     /***
       @notice Transfers token from this contract to the given account.
       Only the owner may call.
-      @dev The comment above on the re-entrance is applicable for this function.
+      @dev The comment above on the re-entrance is applicable for9 this function.
      */
     function unlockAsset(LockData calldata lData) external;
+
+    function getBalance(
+        address token,
+        uint256 tokenId
+    ) external returns (uint256);
 
     event Locked(LockData data);
     event Unlocked(LockData data);
