@@ -227,4 +227,27 @@ abstract contract UtxosInserter {
             revert(reason);
         }
     }
+
+    function _insertGenerateDepositUtxos(
+        bytes32 generateDepositCommitment,
+        uint32 transactionOptions,
+        uint96 miningRewards
+    )
+        internal
+        returns (
+            uint32 zAccountUtxoQueueId,
+            uint8 zAccountUtxoIndexInQueue,
+            uint256 zAccountUtxoBusQueuePos
+        )
+    {
+        (
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            zAccountUtxoBusQueuePos
+        ) = _addUtxoToBusQueue(generateDepositCommitment, miningRewards);
+
+        if (transactionOptions.isTaxiApplicable()) {
+            _addUtxoToTaxiTree(generateDepositCommitment);
+        }
+    }
 }
