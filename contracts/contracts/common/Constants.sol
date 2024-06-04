@@ -73,6 +73,3 @@ uint256 constant HUNDRED_PERCENT = 100 * 100;
 
 // Prtocol token decimals
 uint256 constant PROTOCOL_TOKEN_DECIMALS = 1e18;
-
-//TODO SCALE_FACTOR to bae a part of cirquit public inputs
-uint256 constant SCALE_FACTOR = 1e12;
