@@ -35,7 +35,7 @@ component main {
         forestMerkleRoot,                      // [28]
         saltHash,                              // [29]
         magicalConstraint                      // [30]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + 1 + 7 + 2 + 1 = 41 (TODO: count is 41, but circom shows 42 - fix)
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + ... = 43
     ]} = ZTransactionV1( 2,     // nUtxoIn
                          2,     // nUtxoOut
                          8,     // UtxoLeftMerkleTreeDepth
