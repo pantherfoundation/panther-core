@@ -520,6 +520,13 @@ export class PluginFixture {
 
         await tx.wait();
 
+        tx = await this.pantherPool.updatePluginStatus(
+            this.uniswapV3Plugin.address,
+            true,
+        );
+
+        await tx.wait();
+
         this.PAYMASTER_VOUCHER_TYPE_ID = ethers.utils
             .id('panther-paymaster-refund-grantor')
             .slice(0, 10);

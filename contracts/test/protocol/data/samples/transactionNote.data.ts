@@ -8,6 +8,7 @@ export enum TransactionTypes {
     prpClaim = '2',
     prpConversion = '3',
     main = '4',
+    swapZAsset = '252',
 }
 
 enum UtxoMessageTypes {

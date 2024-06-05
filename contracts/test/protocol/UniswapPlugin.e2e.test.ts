@@ -4,13 +4,12 @@
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 
-import {encodePriceSqrt} from '../../lib/encodePriceSqrt';
 import {TokenType} from '../../lib/token';
 import {SaltedLockDataStruct} from '../types/contracts/Vault';
 
 import {
-    generateExecPluginTestInputs,
     generateExtraInputsHash,
+    generatezAssetSwapTestInputs,
     sampleProof,
 } from './data/samples/pantherPool.data';
 import {
@@ -23,17 +22,12 @@ import {
     setupInputFields,
 } from './shared';
 
-type Params = {
-    deadline: BigNumber;
-    sqrtPriceLimitX96: BigNumber;
-    fee: number;
-};
+const oneToken = ethers.constants.WeiPerEther;
 
 describe('UniswapPlugin', function () {
     let fixture: PluginFixture;
     let stealthAddress: string;
     let currentLockData: SaltedLockDataStruct;
-    // let currentPluginData: PluginDataStruct;
     let cachedForestRootIndex: BigNumber;
     let tokenType: TokenType;
     let inputsArray: any;
@@ -117,73 +111,39 @@ describe('UniswapPlugin', function () {
         );
     });
 
-    //TODO geta it back working accounting code changes
-    it.skip('should swapZAsset', async () => {
+    it('should revert swapZAsset as plugin not updated yet', async () => {
         cachedForestRootIndex = '1';
+        privateMessage = generatePrivateMessage(TransactionTypes.swapZAsset);
+        const inputs = await generatezAssetSwapTestInputs(
+            fixture.zkpToken.address,
+            fixture.weth.address,
+            oneToken,
+            '0',
+        );
 
-        const execPluginInputs = await generateExecPluginTestInputs();
+        inputs.extraInputsHash = generateExtraInputsHash(
+            ['uint32', 'uint96', 'address', 'bytes'],
+            [
+                cachedForestRootIndex,
+                paymasterCompensation,
+                fixture.uniswapV3Plugin.address,
+                privateMessage,
+            ],
+        );
 
         const hexForestRoot = ethers.utils.hexlify(
-            BigNumber.from(execPluginInputs.forestMerkleRoot),
+            BigNumber.from(inputs.forestMerkleRoot),
         );
 
-        execPluginInputs.extraInputsHash = generateExtraInputsHash(
-            ['uint32', 'uint96', 'bytes'],
-            [cachedForestRootIndex, paymasterCompensation, privateMessage],
-        );
-
-        const execPluginInputsArray = Object.values(execPluginInputs);
+        const execPluginInputsArray = Object.values(inputs);
 
         const tx =
             await fixture.pantherPool.internalCacheNewRoot(hexForestRoot);
 
         await tx.wait();
 
-        const lockDataIn = {
-            tokenType: tokenType,
-            token: fixture.zkpToken.address,
-            tokenId: 0,
-            saltHash: salt,
-            extAccount: fixture.uniswapV3Plugin.address,
-            extAmount: amount,
-        };
-
-        const lockDataOut = {
-            tokenType: tokenType,
-            token: fixture.weth.address,
-            tokenId: 0,
-            saltHash: salt,
-            extAccount: fixture.vault.address,
-            extAmount: amount,
-        };
-
-        const sqrtQ96Price = encodePriceSqrt(
-            BigNumber.from('1'),
-            BigNumber.from('33'),
-        );
-
-        const params: Params = {
-            deadline: ethers.BigNumber.from('1635799050'), // example timestamp
-            sqrtPriceLimitX96: sqrtQ96Price, // example limit
-            fee: 500, // example fee
-        };
-
-        const encodedParams = ethers.utils.defaultAbiCoder.encode(
-            ['tuple(uint256 deadline, uint160 sqrtPriceLimitX96, uint24 fee)'],
-            [[params.deadline, params.sqrtPriceLimitX96, params.fee]],
-        );
-
-        currentPluginData = {
-            destination: fixture.mockUniSwapV3Router.address,
-            lDataIn: lockDataIn,
-            lDataOut: lockDataOut,
-            userData: encodedParams,
-        };
-
-        console.log(currentPluginData);
-
         await expect(
-            await fixture.pantherPool.swapZAsset(
+            fixture.pantherPool.swapZAsset(
                 execPluginInputsArray,
                 sampleProof,
                 cachedForestRootIndex,
@@ -191,6 +151,7 @@ describe('UniswapPlugin', function () {
                 fixture.uniswapV3Plugin.address,
                 privateMessage,
             ),
-        ).to.emit(fixture.pantherPool, 'PluginExecuted');
+        ).to.revertedWith('Zero output');
+        // .to.emit(fixture.pantherPool, 'PluginExecuted');
     });
 });
