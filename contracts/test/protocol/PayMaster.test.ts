@@ -46,7 +46,7 @@ describe('Paymaster contract', function () {
         beforeEach(async function () {
             feeData = await ethers.provider.getFeeData();
 
-            zkpPrice = await fixture.broker.cachedNativeRateInZkp();
+            zkpPrice = await fixture.feeMaster.cachedNativeRateInZkp();
 
             nonce = await callculateAndGetNonce(
                 zeroBytesCallData,
@@ -128,7 +128,10 @@ describe('Paymaster contract', function () {
                 fixture.paymasterProxy.address,
             );
 
-            const debt = await fixture.broker.debts(ADDRESS_ZERO, ADDRESS_ZERO);
+            const debt = await fixture.feeMaster.debts(
+                ADDRESS_ZERO,
+                ADDRESS_ZERO,
+            );
 
             await fixture.paymaster.claimEthAndRefundEntryPoint(toBytes32(0));
 
