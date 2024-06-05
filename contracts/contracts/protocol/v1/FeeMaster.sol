@@ -301,7 +301,12 @@ contract FeeMaster is
         _decreaseAvailableDonation(feeData);
         cacheNativeToZkpRate();
 
-        chargedFeesPerTx = _accountMainFees(feeData, assetData);
+        if (feeData.txType == TT_MAIN_TRANSACTION) {
+            return chargedFeesPerTx = _accountMainFees(feeData, assetData);
+        }
+        if (feeData.txType == TT_ZSWAP) {
+            return chargedFeesPerTx = _accountZSwap(feeData, assetData);
+        }
     }
 
     // ?? having a special function to payoff paymaster and try to

@@ -196,6 +196,45 @@ abstract contract FeeAccountant {
         });
     }
 
+    function _accountZSwap(
+        FeeData calldata feeData,
+        AssetData calldata assetData
+    ) internal returns (ChargedFeesPerTx memory chargedFeesPerTx) {
+        FeeParams memory _feeParams = feeParams;
+
+        uint256 perKytFee = _feeParams.scPerKytFee.scaleUpBy1e12();
+        uint256 perUtxoReward = _feeParams.scPerUtxoReward.scaleUpBy1e12();
+        uint256 paymasterZkpFee = feeData.scPaymasterZkpFee.scaleUpBy1e12();
+        uint256 chargedZkpAmount = feeData.scChargedZkpAmount.scaleUpBy1e12();
+
+        uint256 paymasterCompensationInNative = _accountDebtForPaymaster(
+            paymasterZkpFee
+        );
+        uint256 kytFees = _calculateKytFees(
+            perKytFee,
+            assetData.depositAmount,
+            assetData.withdrawAmount
+        );
+
+        uint256 paymasterAndKytFees = paymasterZkpFee + kytFees;
+        uint256 miningReward = _accountDebtForBusTree(
+            perUtxoReward,
+            feeData.numOutputUtxos,
+            paymasterAndKytFees,
+            chargedZkpAmount
+        );
+
+        chargedFeesPerTx = ChargedFeesPerTx({
+            scMiningReward: miningReward.scaleDownBy1e12().safe40(),
+            scKytFees: kytFees.scaleDownBy1e12().safe40(),
+            scPaymasterCompensationInNative: paymasterCompensationInNative
+                .scaleDownBy1e12()
+                .safe40(),
+            protocolFee: 0,
+            scKycFee: 0
+        });
+    }
+
     function _accountDebtForPaymaster(
         uint256 paymasterCompensationInZkp
     ) internal returns (uint256 paymasterFeeInNative) {
