@@ -24,6 +24,6 @@ uint16 constant TF_INTERNAL_TRANSACTION = 0x00; // 0
 uint16 constant TF_DEPOSIT_TRANSACTION = 0x10; // 16
 uint16 constant TF_WITHDRAWAL_TRANSACTION = 0x20; // 32
 
-uint16 constant TT_ZSWAP_TRANSACTION = 0x106;
+uint16 constant TT_ZSWAP = 0x106;
 
 // TODO: adding message types here

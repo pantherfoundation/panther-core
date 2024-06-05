@@ -592,7 +592,7 @@ contract PantherPoolV1 is
         address plugin,
         bytes calldata privateMessages
     ) external returns (uint256 zAccountUtxoBusQueuePos) {
-        uint160 zSwapCircuitId = _getCircuitIdOrRevert(TT_ZSWAP_TRANSACTION);
+        uint160 zSwapCircuitId = _getCircuitIdOrRevert(TT_ZSWAP);
 
         {
             uint256 extraInputsHash = inputs[ZSWAP_EXTRA_INPUTS_HASH_IND];
@@ -617,7 +617,7 @@ contract PantherPoolV1 is
         _validateZNetworkChainId(inputs[ZSWAP_ZNETWORK_CHAIN_ID_IND]);
 
         // TODO: extend it to sanitize the message
-        // _sanitizePrivateMessage(privateMessages, TT_ZSWAP_TRANSACTION);
+        // _sanitizePrivateMessage(privateMessages, TT_ZSWAP);
 
         _validateCreationTime(inputs[ZSWAP_UTXO_OUT_CREATE_TIME_IND]);
 
@@ -649,7 +649,7 @@ contract PantherPoolV1 is
             ) = accountFeesAndReturnProtocolFeeAndMiningReward(
                 inputs,
                 paymasterCompensation,
-                TT_ZSWAP_TRANSACTION
+                TT_ZSWAP
             );
         }
 
