@@ -154,7 +154,7 @@ export class PluginFixture {
     public PAYMASTER_VOUCHER_TYPE_ID: string;
 
     public prpConverter!: PrpConverter;
-    public broker: MockFeeMaster;
+    public feeMaster: MockFeeMaster;
 
     public uniswapV3Plugin: UniswapV3Plugin;
     public mockUniSwapV3Router: MockUniSwapV3Router;
@@ -343,9 +343,10 @@ export class PluginFixture {
             },
         );
 
-        this.broker = await (
-            await ethers.getContractFactory('MockFeeMaster')
-        ).deploy('0x0000000000000000000000000000000000000000', deployerAddress);
+        this.feeMaster = await smock.fake('FeeMaster');
+
+        // represents 42 to 1 ZKP/MATIC rate
+        this.feeMaster.cachedNativeRateInZkp.returns('42000000000000000000');
 
         const UniswapV3Plugin =
             await ethers.getContractFactory('UniswapV3Plugin');
@@ -371,17 +372,26 @@ export class PluginFixture {
 
         await this.pluginRegistry.registerPlugin(this.uniswapV3Plugin.address);
 
+        export type ForestTreesStruct = {
+            taxiTree: string;
+            busTree: string;
+            ferryTree: string;
+        };
+
         this.pantherPoolV1Impl = await MockPantherPoolV1.deploy(
             deployerAddress,
             this.zkpToken.address,
-            this.pantherTaxiTree.address,
-            this.pantherBusTree.address,
-            this.pantherFerryTree.address,
+            [
+                this.pantherTaxiTree.address,
+                this.pantherBusTree.address,
+                this.pantherFerryTree.address,
+            ],
             this.pantherStaticTreeProxy.address,
             vaultProxy.address,
             this.zAssetsRegistryV1.address,
             this.prpVoucherGrantor.address,
             ADDRESS_ONE,
+            this.feeMaster.address,
             this.pantherVerifier.address,
             this.pluginRegistry.address,
         );
@@ -484,7 +494,7 @@ export class PluginFixture {
         const paymasterImpl = await PayMasterFactory.deploy(
             this.entryPoint.address,
             this.smartAccount.address,
-            this.broker.address,
+            this.feeMaster.address,
             this.prpVoucherGrantor.address,
         );
 
@@ -495,16 +505,20 @@ export class PluginFixture {
         );
 
         this.paymaster = PayMasterFactory.attach(this.paymasterProxy.address);
-        // await this.pantherPool.updateVaultAssetUnlocker(
-        //     this.paymaster.address,
-        //     true,
-        // );
 
-        await this.pantherPool.updateMainCircuitId(this.cirquitId);
+        let tx = await this.pantherPool.updateCircuitId(
+            261,
+            BigInt(this.cirquitId),
+        );
 
-        `    // await this.pantherPool.updateZAccountRegistrationCircuitId(
-        //     this.cirquitId,
-        // );`;
+        await tx.wait();
+
+        tx = await this.pantherPool.updateCircuitId(
+            262,
+            BigInt(this.cirquitId),
+        );
+
+        await tx.wait();
 
         this.PAYMASTER_VOUCHER_TYPE_ID = ethers.utils
             .id('panther-paymaster-refund-grantor')
@@ -519,7 +533,7 @@ export class PluginFixture {
         );
 
         await this.ethersSigner.sendTransaction({
-            to: this.broker.address,
+            to: this.feeMaster.address,
             value: 100e9,
         });
 

@@ -228,7 +228,10 @@ describe('Account e2e', function () {
                 fixture.paymasterProxy.address,
             );
 
-            const debt = await fixture.broker.debts(ADDRESS_ZERO, ADDRESS_ZERO);
+            const debt = await fixture.feeMaster.debts(
+                ADDRESS_ZERO,
+                ADDRESS_ZERO,
+            );
 
             await fixture.paymaster.claimEthAndRefundEntryPoint(toBytes32(0));
 
