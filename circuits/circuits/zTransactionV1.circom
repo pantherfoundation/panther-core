@@ -774,9 +774,16 @@ template ZTransactionV1( nUtxoIn,
     component isZeroWithdraw = IsZero();
     isZeroWithdraw.in <== withdrawAmount;
 
+    component isZeroInternal = IsZero();
+    isZeroInternal.in <== zZoneSealing;
+
+    component isKytCheckEnabled_deposit_withdraw = OR(); // result = a+b - a*b
+    isKytCheckEnabled_deposit_withdraw.a <== 1 - isZeroDeposit.out;
+    isKytCheckEnabled_deposit_withdraw.b <== 1 - isZeroWithdraw.out;
+
     component isKytCheckEnabled = OR(); // result = a+b - a*b
-    isKytCheckEnabled.a <== 1 - isZeroDeposit.out;
-    isKytCheckEnabled.b <== 1 - isZeroWithdraw.out;
+    isKytCheckEnabled.a <== 1 - isZeroInternal.out;
+    isKytCheckEnabled.b <== isKytCheckEnabled_deposit_withdraw.out;
 
     signal isKytDepositCheckEnabled <== 1 - isZeroDeposit.out;
 
@@ -1016,7 +1023,7 @@ template ZTransactionV1( nUtxoIn,
     }
 
     // [20] - internal KYT
-    var isInternalKytCheckEnabled = zZoneSealing;
+    signal isKytInternalCheckEnabled <== 1 - isZeroInternal.out;
 
     component kytSignedMessageHashInternal = Poseidon(6);
 
@@ -1028,7 +1035,7 @@ template ZTransactionV1( nUtxoIn,
     kytSignedMessageHashInternal.inputs[5] <== dataEscrow.encryptedMessageHash;
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
-    kytSignatureVerifier.enabled <== isInternalKytCheckEnabled;
+    kytSignatureVerifier.enabled <== isKytInternalCheckEnabled;
     kytSignatureVerifier.Ax <== kytEdDsaPubKey[0];
     kytSignatureVerifier.Ay <== kytEdDsaPubKey[1];
     kytSignatureVerifier.S <== kytSignature[0];
@@ -1039,13 +1046,13 @@ template ZTransactionV1( nUtxoIn,
 
     // internal Master EOA check
     component kytMasterEOAIsEqual = ForceEqualIfEnabled();
-    kytMasterEOAIsEqual.enabled <== isInternalKytCheckEnabled;
+    kytMasterEOAIsEqual.enabled <== isKytInternalCheckEnabled;
     kytMasterEOAIsEqual.in[0] <== kytSignedMessageSigner;
     kytMasterEOAIsEqual.in[1] <== zAccountUtxoInMasterEOA;
 
     // internal kyt hash
     component kytSignedMessageHashIsEqual = ForceEqualIfEnabled();
-    kytSignedMessageHashIsEqual.enabled <== isInternalKytCheckEnabled;
+    kytSignedMessageHashIsEqual.enabled <== isKytInternalCheckEnabled;
     kytSignedMessageHashIsEqual.in[0] <== kytSignedMessageHash;
     kytSignedMessageHashIsEqual.in[1] <== kytSignedMessageHashInternal.out;
 
@@ -1131,20 +1138,34 @@ template ZTransactionV1( nUtxoIn,
 
     // [26] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
+    component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.enabled <== 1; // always
+    isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[0] <== utxoOutCreateTime;
+    isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[1] <== zAccountUtxoInExpiryTime;
 
     // assert(kytDepositSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
-    component isLessThanEqDepositTimeAndKytExpiryTime = LessEqThanWhenEnabled(252);
-    isLessThanEqDepositTimeAndKytExpiryTime.enabled <== isKytDepositCheckEnabled;
-    isLessThanEqDepositTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
-    isLessThanEqDepositTimeAndKytExpiryTime.in[1] <== kytDepositSignedMessageTimestamp;
+    component isLessThanEq_DepositTime_kytEdDsaPubKeyExpiryTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_DepositTime_kytEdDsaPubKeyExpiryTime.enabled <== isKytDepositCheckEnabled;
+    isLessThanEq_DepositTime_kytEdDsaPubKeyExpiryTime.in[0] <== kytDepositSignedMessageTimestamp;
+    isLessThanEq_DepositTime_kytEdDsaPubKeyExpiryTime.in[1] <== kytEdDsaPubKeyExpiryTime;
 
     // assert(kytWithdrawSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
-    component isLessThanEqWithdrawTimeAndKytExpiryTime = LessEqThanWhenEnabled(252);
-    isLessThanEqWithdrawTimeAndKytExpiryTime.enabled <== isKytWithdrawCheckEnabled;
-    isLessThanEqWithdrawTimeAndKytExpiryTime.in[0] <== kytEdDsaPubKeyExpiryTime;
-    isLessThanEqWithdrawTimeAndKytExpiryTime.in[1] <== kytWithdrawSignedMessageTimestamp;
+    component isLessThanEq_WithdrawTime_kytEdDsaPubKeyExpiryTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_WithdrawTime_kytEdDsaPubKeyExpiryTime.enabled <== isKytWithdrawCheckEnabled;
+    isLessThanEq_WithdrawTime_kytEdDsaPubKeyExpiryTime.in[0] <== kytWithdrawSignedMessageTimestamp;
+    isLessThanEq_WithdrawTime_kytEdDsaPubKeyExpiryTime.in[1] <== kytEdDsaPubKeyExpiryTime;
+
+    // assert(kytSignedMessageTimestamp <= kytEdDsaPubKeyExpiryTime);
+    component isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime.enabled <== isKytInternalCheckEnabled;
+    isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime.in[0] <== kytSignedMessageTimestamp;
+    isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime.in[1] <== kytEdDsaPubKeyExpiryTime;
 
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
+    component isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.enabled <== 1; // always
+    isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[0] <== utxoOutCreateTime;
+    isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[1] <== dataEscrowPubKeyExpiryTime;
 
     // [26.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
@@ -1153,8 +1174,8 @@ template ZTransactionV1( nUtxoIn,
 
     component isLessThanEqDeposit = LessEqThanWhenEnabled(252);
     isLessThanEqDeposit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
-    isLessThanEqDeposit.in[0] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
-    isLessThanEqDeposit.in[1] <== utxoOutCreateTime;
+    isLessThanEqDeposit.in[0] <== utxoOutCreateTime;
+    isLessThanEqDeposit.in[1] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
 
     // [26.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
@@ -1163,8 +1184,8 @@ template ZTransactionV1( nUtxoIn,
 
     component isLessThanEqWithdraw = LessEqThanWhenEnabled(252);
     isLessThanEqWithdraw.enabled <== 1 - iskytWithdrawSignedMessageTimestampZero.out;
-    isLessThanEqWithdraw.in[0] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
-    isLessThanEqWithdraw.in[1] <== utxoOutCreateTime;
+    isLessThanEqWithdraw.in[0] <== utxoOutCreateTime;
+    isLessThanEqWithdraw.in[1] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
 
     // [27] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);

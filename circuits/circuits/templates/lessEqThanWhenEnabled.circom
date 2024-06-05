@@ -8,7 +8,7 @@ template LessEqThanWhenEnabled(n){
     signal input enabled;
     signal input in[2];
 
-    component lt = LessThan(n);
+    component lt = LessEqThan(n);
 
     lt.in[0] <== in[0];
     lt.in[1] <== in[1]+1;

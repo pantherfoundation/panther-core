@@ -11,7 +11,7 @@ component main {
         addedAmountZkp,                        // [4]
         token,                                 // [5] - can be 1 or 2
         tokenId,                               // [6] - can be 1 or 2
-        zAssetScale,                           // [7] - can be 1 or 2
+        zAssetScale,                           // [7] - can be 2 or 3
         spendTime,                             // [8]
         utxoInNullifier,                       // [9] - nUtxoIn = 2
         zAccountUtxoInNullifier,               // [10]
@@ -36,7 +36,7 @@ component main {
         forestMerkleRoot,                      // [29]
         saltHash,                              // [30]
         magicalConstraint                      // [31]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + 2 + 2 + 2 + 7 + 2 + 1 = 47 (TODO: count is 44, but circom shows 48 - fix)
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + ... = 48
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
                   8,     // UtxoLeftMerkleTreeDepth
