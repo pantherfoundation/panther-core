@@ -4,11 +4,11 @@
 import {utils} from 'ethers';
 
 export enum TransactionTypes {
-    zAccountActivation = '1',
-    prpClaim = '2',
-    prpConversion = '3',
-    main = '4',
-    swapZAsset = '252',
+    zAccountActivation = 0x100,
+    prpClaim = 0x103,
+    prpConversion = 0x104,
+    main = 0x105,
+    swapZAsset = 0x106,
 }
 
 enum UtxoMessageTypes {
