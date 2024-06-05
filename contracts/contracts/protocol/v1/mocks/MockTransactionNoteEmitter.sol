@@ -9,7 +9,7 @@ contract MockTransactionNoteEmitter is TransactionNoteEmitter {
 
     function internalSanitizePrivateMessage(
         bytes memory privateMessages,
-        uint8 txType
+        uint16 txType
     ) external {
         _sanitizePrivateMessage(privateMessages, txType);
 
