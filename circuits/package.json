@@ -9,6 +9,7 @@
     "build": "yarn build:types && yarn build:ts",
     "build:main-amm": "./scripts/buildAMM.sh",
     "build:main-z-transaction": "./scripts/buildMainTransactionV1Extended.sh",
+    "build:main-z-transaction-a": "./scripts/buildMainTransactionV1Extended_a.sh",
     "build:main-z-account-registration-v1-extended": "./scripts/buildMainZaccountRegistrationV1Extended.sh",
     "build:main-z-account-renewal-v1-extended": "./scripts/buildMainZaccountRenewalV1Extended.sh",
     "build:main-z-swap": "./scripts/buildMainZSwap.sh",

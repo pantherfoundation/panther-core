@@ -461,6 +461,7 @@ template ZTransactionV1( nUtxoIn,
     component utxoInZNetworkOriginNetworkIdInclusionProver[nUtxoIn];
     component utxoInZNetworkTargetNetworkIdInclusionProver[nUtxoIn];
     component utxoInIsEnabled[nUtxoIn];
+    component isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[nUtxoIn];
 
     for (var i = 0 ; i < nUtxoIn; i++){
 
@@ -563,6 +564,10 @@ template ZTransactionV1( nUtxoIn,
 
         // verify zone max internal limits
         assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight));
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = LessEqThanWhenEnabled(252);
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].enabled <== 1; // always
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight;
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
@@ -571,10 +576,11 @@ template ZTransactionV1( nUtxoIn,
     component utxoOutSpendPubKeyDeriver[nUtxoOut];
     component utxoOutOriginNetworkIdInclusionProver[nUtxoOut];
     component utxoOutTargetNetworkIdInclusionProver[nUtxoOut];
-    component utxoOutOriginNetworkIdZNetoworkInclusionProver[nUtxoOut];
-    component utxoOutTargetNetworkIdZNetoworkInclusionProver[nUtxoOut];
+    component utxoOutOriginNetworkIdZNetworkInclusionProver[nUtxoOut];
+    component utxoOutTargetNetworkIdZNetworkInclusionProver[nUtxoOut];
     component utxoOutZoneIdInclusionProver[nUtxoOut];
     component utxoOutIsEnabled[nUtxoOut];
+    component isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[nUtxoOut];
 
     for (var i = 0; i < nUtxoOut; i++){
         // derive spending pubkey from root-spend-pubkey (anchor to zAccount)
@@ -623,24 +629,32 @@ template ZTransactionV1( nUtxoIn,
         utxoOutTargetNetworkIdInclusionProver[i].networkIdsBitMap <== zZoneNetworkIDsBitMap;
 
         // verify origin networkId is allowed (same as zNetworkId) in zNetwork
-        utxoOutOriginNetworkIdZNetoworkInclusionProver[i] = ForceEqualIfEnabled();
-        utxoOutOriginNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutCommitment[i];
-        utxoOutOriginNetworkIdZNetoworkInclusionProver[i].in[0] <== zNetworkId;
-        utxoOutOriginNetworkIdZNetoworkInclusionProver[i].in[1] <== utxoOutOriginNetworkId[i];
+        utxoOutOriginNetworkIdZNetworkInclusionProver[i] = ForceEqualIfEnabled();
+        utxoOutOriginNetworkIdZNetworkInclusionProver[i].enabled <== utxoOutCommitment[i];
+        utxoOutOriginNetworkIdZNetworkInclusionProver[i].in[0] <== zNetworkId;
+        utxoOutOriginNetworkIdZNetworkInclusionProver[i].in[1] <== utxoOutOriginNetworkId[i];
 
         // verify target networkId is allowed in zNetwork
-        utxoOutTargetNetworkIdZNetoworkInclusionProver[i] = NetworkIdInclusionProver();
-        utxoOutTargetNetworkIdZNetoworkInclusionProver[i].enabled <== utxoOutCommitment[i];
-        utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkId <== utxoOutTargetNetworkId[i];
-        utxoOutTargetNetworkIdZNetoworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
+        utxoOutTargetNetworkIdZNetworkInclusionProver[i] = NetworkIdInclusionProver();
+        utxoOutTargetNetworkIdZNetworkInclusionProver[i].enabled <== utxoOutCommitment[i];
+        utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkId <== utxoOutTargetNetworkId[i];
+        utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
         // verify zone max internal limits
         assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight));
-
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = LessEqThanWhenEnabled(252);
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].enabled <== 1; // always
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight;
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
 
     // [7] - Verify zZone max amount per time period
     assert(utxoOutCreateTime >= zAccountUtxoInCreateTime);
+    component isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime = LessEqThanWhenEnabled(252);
+    isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.enabled <== 1; // always
+    isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[0] <== zAccountUtxoInCreateTime;
+    isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[1] <== utxoOutCreateTime;
+
     signal deltaTime <== utxoOutCreateTime - zAccountUtxoInCreateTime;
 
     component isDeltaTimeLessEqThen = LessEqThan(252); // 1 if deltaTime <= zZoneTimePeriodPerMaximumAmount
@@ -648,8 +662,13 @@ template ZTransactionV1( nUtxoIn,
     isDeltaTimeLessEqThen.in[1] <== zZoneTimePeriodPerMaximumAmount;
 
     signal zAccountUtxoOutTotalAmountPerTimePeriod <== isDeltaTimeLessEqThen.out * (totalBalanceChecker.totalWeighted + zAccountUtxoInTotalAmountPerTimePeriod);
+
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
+    component isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod = LessEqThanWhenEnabled(252);
+    isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.enabled <== 1; // always
+    isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[0] <== zAccountUtxoOutTotalAmountPerTimePeriod;
+    isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[1] <== zZoneMaximumAmountPerTimePeriod;
 
     // [8] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInSpendPubKey = BabyPbk();
@@ -1090,7 +1109,16 @@ template ZTransactionV1( nUtxoIn,
 
     // [22] - Verify zZone max external limits
     assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
+    component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = LessEqThanWhenEnabled(252);
+    isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.enabled <== 1; // always
+    isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[0] <== totalBalanceChecker.depositWeightedScaledAmount;
+    isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[1] <== zZoneDepositMaxAmount;
+
     assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawWeightedScaledAmount);
+    component isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount = LessEqThanWhenEnabled(252);
+    isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.enabled <== 1; // always
+    isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[0] <== totalBalanceChecker.withdrawWeightedScaledAmount;
+    isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[1] <== zZoneWithrawMaxAmount;
 
     // [23] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
@@ -1169,23 +1197,17 @@ template ZTransactionV1( nUtxoIn,
 
     // [26.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
-    component iskytDepositSignedMessageTimestampZero = IsZero();
-    iskytDepositSignedMessageTimestampZero.in <== kytDepositSignedMessageTimestamp;
-
-    component isLessThanEqDeposit = LessEqThanWhenEnabled(252);
-    isLessThanEqDeposit.enabled <== 1 - iskytDepositSignedMessageTimestampZero.out;
-    isLessThanEqDeposit.in[0] <== utxoOutCreateTime;
-    isLessThanEqDeposit.in[1] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
+    component isLessThanEq_utxoOutCreateTime_depositTimestamp = LessEqThanWhenEnabled(252);
+    isLessThanEq_utxoOutCreateTime_depositTimestamp.enabled <== isKytDepositCheckEnabled;
+    isLessThanEq_utxoOutCreateTime_depositTimestamp.in[0] <== utxoOutCreateTime;
+    isLessThanEq_utxoOutCreateTime_depositTimestamp.in[1] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
 
     // [26.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
-    component iskytWithdrawSignedMessageTimestampZero = IsZero();
-    iskytWithdrawSignedMessageTimestampZero.in <== kytWithdrawSignedMessageTimestamp;
-
-    component isLessThanEqWithdraw = LessEqThanWhenEnabled(252);
-    isLessThanEqWithdraw.enabled <== 1 - iskytWithdrawSignedMessageTimestampZero.out;
-    isLessThanEqWithdraw.in[0] <== utxoOutCreateTime;
-    isLessThanEqWithdraw.in[1] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
+    component isLessThanEq_utxoOutCreateTime_withdrawTimestamp = LessEqThanWhenEnabled(252);
+    isLessThanEq_utxoOutCreateTime_withdrawTimestamp.enabled <== isKytWithdrawCheckEnabled;
+    isLessThanEq_utxoOutCreateTime_withdrawTimestamp.in[0] <== utxoOutCreateTime;
+    isLessThanEq_utxoOutCreateTime_withdrawTimestamp.in[1] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
 
     // [27] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
