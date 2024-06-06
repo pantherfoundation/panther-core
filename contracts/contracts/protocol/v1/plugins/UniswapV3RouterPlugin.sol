@@ -3,8 +3,16 @@ pragma solidity ^0.8.19;
 
 import "../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
+import "../DeFi/uniswap/interfaces/ISwapRouter.sol";
+import "../interfaces/IPlugin.sol";
+
+import "../../../common/TransferHelper.sol";
+import "./PluginLib.sol";
 
 contract UniswapV3RouterPlugin {
+    using TransferHelper for address;
+    using PluginLib for bytes;
+
     address public immutable UNISWAP_ROUTER;
     address public immutable UNISWAP_QUOTERV2;
     address public immutable VAULT;
@@ -48,6 +56,43 @@ contract UniswapV3RouterPlugin {
             initializedTicksCrossed,
             gasEstimate
         ) = IQuoterV2(UNISWAP_QUOTERV2).quoteExactInputSingle(params);
+    }
+
+    function execute(
+        PluginData calldata pluginData
+    ) external payable returns (uint256 amountOut) {
+        (
+            uint32 deadline,
+            uint96 amountOutMinimum,
+            uint24 fee,
+            uint160 sqrtPriceLimitX96
+        ) = pluginData.data.decodeUniswapRouterData();
+
+        if (msg.value == 0) {
+            pluginData.tokenIn.safeApprove(UNISWAP_ROUTER, pluginData.amountIn);
+        }
+
+        ISwapRouter.ExactInputSingleParams
+            memory pluginParamsParams = ISwapRouter.ExactInputSingleParams({
+                tokenIn: pluginData.tokenIn,
+                tokenOut: pluginData.tokenOut,
+                amountIn: pluginData.amountIn,
+                amountOutMinimum: amountOutMinimum,
+                sqrtPriceLimitX96: sqrtPriceLimitX96,
+                deadline: deadline,
+                fee: fee,
+                recipient: VAULT
+            });
+
+        try
+            ISwapRouter(UNISWAP_ROUTER).exactInputSingle{ value: msg.value }(
+                pluginParamsParams
+            )
+        returns (uint256 amount) {
+            amountOut = amount;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
     }
 
     // /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall

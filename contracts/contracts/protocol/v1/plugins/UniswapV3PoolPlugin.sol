@@ -9,13 +9,11 @@ import "../mocks/MockPoolAddress.sol";
 import "../DeFi/UniswapV3FlashSwap.sol";
 import "../interfaces/IPlugin.sol";
 
-contract UniswapV3PoolPlugin is IPlugin {
+contract UniswapV3PoolPlugin {
     address public immutable FACTORY;
-
     using UniswapV3FlashSwap for address;
     using TransferHelper for address;
     using TransferHelper for address payable;
-
     uint24 public fee = 500;
 
     constructor(address _factory) {
@@ -25,34 +23,10 @@ contract UniswapV3PoolPlugin is IPlugin {
     /**
      * @dev Params specific to UnipluginParamsV3
      */
-
     struct Params {
         uint256 deadline;
         uint160 sqrtPriceLimitX96;
         uint24 fee;
-    }
-
-    function exec(
-        PluginData calldata pluginParams
-    ) external returns (uint256 amountOut) {
-        Params memory params = abi.decode(pluginParams.userData, (Params));
-
-        IUniswapV3Pool pool = getPool(
-            pluginParams.lDataIn.token,
-            pluginParams.lDataOut.token,
-            params.fee
-        );
-
-        (int256 amount0, int256 amount1) = pool.swap(
-            pluginParams.lDataIn.token,
-            true,
-            int256(uint256(pluginParams.lDataIn.extAmount)),
-            params.sqrtPriceLimitX96,
-            new bytes(0)
-        );
-
-        // TODO amounts
-        (amount0, amount1);
     }
 
     /// @dev Returns the pool for the given token pair and fee. The pool contract may or may not exist.
@@ -83,7 +57,6 @@ contract UniswapV3PoolPlugin is IPlugin {
             IUniswapV3Pool(msg.sender).token1(),
             fee
         );
-
         if (amount0Delta > 0) {
             IERC20(IUniswapV3Pool(msg.sender).token0()).transfer(
                 msg.sender,

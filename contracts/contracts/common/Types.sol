@@ -29,16 +29,6 @@ struct SnarkProof {
     G1Point c;
 }
 
-struct PluginData {
-    // token to send to exchange LockData extAmount = amountIN
-    // lDataIn.extAccount  == plugin - contract to interact with external system
-    LockData lDataIn;
-    // token to receive LockData extAmount == amountOutMinimum
-    LockData lDataOut;
-    // DeFi protocol specific data
-    bytes userData;
-}
-
 struct ElGamalCiphertext {
     G1Point c1;
     G1Point c2;

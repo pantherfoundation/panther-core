@@ -111,7 +111,9 @@ abstract contract TransactionChargesHandler {
 
             // TODO: change the deposit and withdraw amounts
             assetData = AssetData({
-                tokenAddress: address(inputs[ZSWAP_TOKEN_IN_IND].safe160()),
+                tokenAddress: address(
+                    inputs[ZSWAP_EXISTING_TOKEN_IND].safe160()
+                ),
                 depositAmount: inputs[ZSWAP_DEPOSIT_AMOUNT_IND].safe128(),
                 withdrawAmount: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe128()
             });
