@@ -7,6 +7,7 @@ import "./publicSignals/MainPublicSignals.sol";
 import "./publicSignals/ZAccountActivationPublicSignals.sol";
 import "./publicSignals/PrpClaimPublicSignals.sol";
 import "./publicSignals/PrpConversionPublicSignals.sol";
+import "./publicSignals/ZSwapPublicSignals.sol";
 
 import "../errMsgs/TransactionNoteEmitterErrMsgs.sol";
 import "../../../common/UtilsLib.sol";
@@ -481,5 +482,26 @@ abstract contract TransactionNoteEmitter {
         );
 
         emit TransactionNote(txType, transactionNoteContent);
+    }
+
+    function _emitZSwapNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[ZSWAP_UTXO_OUT_CREATE_TIME_IND]),
+            MT_UTXO_SPEND_TIME,
+            UtilsLib.safe32(inputs[ZSWAP_SPEND_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[ZSWAP_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            privateMessages
+        );
+
+        emit TransactionNote(TT_ZSWAP, transactionNoteContent);
     }
 }

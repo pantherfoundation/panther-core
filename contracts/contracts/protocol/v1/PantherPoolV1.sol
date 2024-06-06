@@ -9,13 +9,14 @@ import "./interfaces/IPantherTaxiTree.sol";
 import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IVaultV1.sol";
-import "../../common/PluginExecutor.sol";
+import "./interfaces/IPlugin.sol";
 import "../../common/NonReentrant.sol";
 import "../../common/ImmutableOwnable.sol";
 import "../../common/ScaleHandler.sol";
 import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
 import { LockData } from "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
+import "./plugins/PluginLib.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
@@ -25,7 +26,6 @@ import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/ZAssetUtxoGenerator.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
 import "./pantherPool/TransactionTypes.sol";
-import "./interfaces/IPluginRegistry.sol";
 
 /**
  * @title PantherPool
@@ -58,7 +58,7 @@ contract PantherPoolV1 is
 {
     using TransactionOptions for uint32;
     using TransactionTypes for uint16;
-    using PluginExecutor for address;
+    using PluginLib for bytes;
     using ScaleHandler for uint256;
 
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
@@ -102,7 +102,6 @@ contract PantherPoolV1 is
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
     event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
     event SeenKytMessageHash(bytes32 indexed kytMessageHash);
-    event PluginExecuted(bytes32 commitment);
 
     constructor(
         address _owner,
@@ -581,7 +580,7 @@ contract PantherPoolV1 is
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
-    /// @param plugin The address of plugin that manages the swap proccess
+    /// @param pluginData The address of plugin that manages the swap proccess
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
     function swapZAsset(
@@ -589,7 +588,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint32 transactionOptions,
         uint96 paymasterCompensation,
-        address plugin,
+        bytes memory pluginData,
         bytes calldata privateMessages
     ) external returns (uint256 zAccountUtxoBusQueuePos) {
         uint160 zSwapCircuitId = _getCircuitIdOrRevert(TT_ZSWAP);
@@ -599,7 +598,7 @@ contract PantherPoolV1 is
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
                 paymasterCompensation,
-                plugin,
+                pluginData,
                 privateMessages
             );
             require(
@@ -608,9 +607,9 @@ contract PantherPoolV1 is
             );
         }
 
-        _validateNonZero(inputs[MAIN_SALT_HASH_IND], ERR_ZERO_SALT_HASH);
+        _validateNonZero(inputs[ZSWAP_SALT_HASH_IND], ERR_ZERO_SALT_HASH);
         _validateNonZero(
-            inputs[MAIN_MAGICAL_CONSTRAINT_IND],
+            inputs[ZSWAP_MAGICAL_CONSTRAINT_IND],
             ERR_ZERO_MAGIC_CONSTR
         );
 
@@ -642,7 +641,6 @@ contract PantherPoolV1 is
         uint96 miningReward;
 
         {
-            // TODO: accounting protocol fees in the feeMaster
             (
                 protocolFee,
                 miningReward
@@ -653,17 +651,13 @@ contract PantherPoolV1 is
             );
         }
 
-        bytes32[2] memory zAssetUtxos = _handleSwap(
-            inputs,
-            protocolFee,
-            plugin
-        );
-
         _verifyProof(zSwapCircuitId, inputs, proof);
 
         {
             uint32 zAccountUtxoQueueId;
             uint8 zAccountUtxoIndexInQueue;
+            bytes32[2] memory zAssetUtxos = _handleSwap(inputs, pluginData);
+
             (
                 zAccountUtxoQueueId,
                 zAccountUtxoIndexInQueue,
@@ -675,11 +669,10 @@ contract PantherPoolV1 is
                 miningReward
             );
 
-            _emitMainNote(
+            _emitZSwapNote(
                 inputs,
                 zAccountUtxoQueueId,
                 zAccountUtxoIndexInQueue,
-                0,
                 privateMessages
             );
         }
@@ -687,51 +680,54 @@ contract PantherPoolV1 is
 
     function _handleSwap(
         uint256[] calldata inputs,
-        uint96 protocolFee,
-        address plugin
+        bytes memory pluginData
     ) private returns (bytes32[2] memory zAssetUtxos) {
+        address plugin = pluginData.extractPluginAddress();
         require(zSwapPlugins[plugin], "Invalid plugin");
-        // unlock assets to plugin
 
         _unlockAsset(
             LockData(
-                0,
-                address(uint160(inputs[ZSWAP_TOKEN_IN_IND])),
-                inputs[ZSWAP_TOKEN_IN_ID_IND],
+                ERC20_TOKEN_TYPE,
+                address(uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])),
+                inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
                 plugin,
-                UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND]) - protocolFee
+                UtilsLib.safe96(inputs[ZSWAP_DEPOSIT_AMOUNT_IND])
             )
         );
 
-        // get initial vault balance
         uint256 vaultInitialBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_TOKEN_OUT_IND])),
-            inputs[ZSWAP_TOKEN_OUT_ID_IND]
+            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
 
-        // safe execute plugin, maybe return the output amount
-        // plugin.safeExecute(pData);
+        IPlugin(plugin).execute(
+            PluginData({
+                tokenIn: address(uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])),
+                tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_ID_IND])),
+                amountIn: UtilsLib.safe96(inputs[ZSWAP_DEPOSIT_AMOUNT_IND]),
+                data: pluginData
+            })
+        );
 
-        // check updated vault blance
         uint256 vaultUpdatedBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_TOKEN_OUT_IND])),
-            inputs[ZSWAP_TOKEN_OUT_ID_IND]
+            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
 
         uint256 amount = vaultUpdatedBalance - vaultInitialBalance;
+
         _validateNonZero(amount, "Zero output");
 
-        uint256 scale = inputs[ZSWAP_ZASSET_IN_SCALE_IND];
+        uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
+        uint256 scaledAmount = amount / scale;
 
-        zAssetUtxos[0] = generateZAssetUtxoCommitment(
-            amount / scale,
+        zAssetUtxos[0] = bytes32(
             inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
         );
-
-        // zAssetUtxos[1] = generateZAssetUtxoCommitment(
-        //     scaledAmount,
-        //     inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_IND]
-        // );
+        zAssetUtxos[1] = generateZAssetUtxoCommitment(
+            scaledAmount,
+            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_PRIVATE_PART_IND]
+        );
     }
 
     function _getCircuitIdOrRevert(
