@@ -36,7 +36,7 @@ component main {
         forestMerkleRoot,                      // [29]
         saltHash,                              // [30]
         magicalConstraint                      // [31]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + ... = 48
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + ... = 46
     ]} = ZSwapV1( 2,     // nUtxoIn
                   2,     // nUtxoOut
                   8,     // UtxoLeftMerkleTreeDepth

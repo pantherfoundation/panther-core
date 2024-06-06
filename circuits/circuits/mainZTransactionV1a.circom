@@ -35,7 +35,7 @@ component main {
         forestMerkleRoot,                      // [28]
         saltHash,                              // [29]
         magicalConstraint                      // [30]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + ... = 43
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + ... = 41
     ]} = ZTransactionV1a( 2,     // nUtxoIn
                           2,     // nUtxoOut
                           8,     // UtxoLeftMerkleTreeDepth

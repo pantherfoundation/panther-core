@@ -206,14 +206,13 @@ template ZTransactionV1a( nUtxoIn,
     // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
     // 3) nUtxoIn x 64 amount
     // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
+    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
 
     var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
     var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut + nUtxoOut;
+    var dataEscrowPointSize = nUtxoOut;
     var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
@@ -248,7 +247,6 @@ template ZTransactionV1a( nUtxoIn,
     signal input utxoOutSpendPubKeyRandom[nUtxoOut];
     signal input utxoOutRootSpendPubKey[nUtxoOut][2];
     signal input utxoOutCommitment[nUtxoOut]; // public
-    signal input utxoOutNullifierPubKey[nUtxoOut][2];
 
     // output 'zAccount UTXO'
     signal input zAccountUtxoOutZkpAmount;
@@ -481,7 +479,6 @@ template ZTransactionV1a( nUtxoIn,
     zTransactionV1.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
     zTransactionV1.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
     zTransactionV1.utxoOutCommitment <== utxoOutCommitment;
-    zTransactionV1.utxoOutNullifierPubKey <== utxoOutNullifierPubKey;
     zTransactionV1.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     zTransactionV1.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
     zTransactionV1.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;

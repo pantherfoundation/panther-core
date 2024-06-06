@@ -248,14 +248,13 @@ template ZSwapV1( nUtxoIn,
     // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
     // 3) nUtxoIn x 64 amount
     // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
+    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
 
     var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
     var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut + nUtxoOut;
+    var dataEscrowPointSize = nUtxoOut;
     var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
@@ -290,7 +289,6 @@ template ZSwapV1( nUtxoIn,
     signal input utxoOutSpendPubKeyRandom[nUtxoOut];
     signal input utxoOutRootSpendPubKey[nUtxoOut][2];
     signal input utxoOutCommitment[nUtxoOut]; // public
-    signal input utxoOutNullifierPubKey[nUtxoOut][2];
 
     // output 'zAccount UTXO'
     signal input zAccountUtxoOutZkpAmount;
@@ -556,8 +554,7 @@ template ZSwapV1( nUtxoIn,
 
         // verify zone max internal limits
         assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[transactedToken]));
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = LessEqThanWhenEnabled(252);
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].enabled <== 1; // always
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = LessEqThan(252);
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight[transactedToken];
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
@@ -609,7 +606,7 @@ template ZSwapV1( nUtxoIn,
         utxoOutCommitmentProver[i].in[0] <== utxoOutCommitment[i];
         utxoOutCommitmentProver[i].in[1] <== utxoOutNoteHasher[i].out;
 
-        // verify if target zoneId is allowed in zZone (originZoneId vefiried via zAccount)
+        // verify if target zoneId is allowed in zZone (originZoneId verified via zAccount)
         utxoOutZoneIdInclusionProver[i] = ZoneIdInclusionProver();
         utxoOutZoneIdInclusionProver[i].enabled <== utxoOutCommitment[i];
         utxoOutZoneIdInclusionProver[i].zoneId <== utxoOutTargetZoneId[i];
@@ -640,28 +637,22 @@ template ZSwapV1( nUtxoIn,
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkId <== utxoOutTargetNetworkId[i];
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
+        // verify zone max internal limits
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = LessEqThan(252);
         if ( isSwapUtxo ) {
-            // verify zone max internal limits
             assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = LessEqThanWhenEnabled(252);
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].enabled <== 1; // always
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[swapToken];
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
         }
         else {
-            // verify zone max internal limits
             assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = LessEqThanWhenEnabled(252);
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].enabled <== 1; // always
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
         }
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
 
     // [7] - Verify zZone max amount per time period
     assert(utxoOutCreateTime >= zAccountUtxoInCreateTime);
-    component isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime = LessEqThanWhenEnabled(252);
-    isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.enabled <== 1; // always
+    component isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime = LessEqThan(252);
     isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[0] <== zAccountUtxoInCreateTime;
     isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[1] <== utxoOutCreateTime;
 
@@ -675,8 +666,7 @@ template ZSwapV1( nUtxoIn,
 
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
-    component isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod = LessEqThanWhenEnabled(252);
-    isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.enabled <== 1; // always
+    component isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod = LessEqThan(252);
     isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[0] <== zAccountUtxoOutTotalAmountPerTimePeriod;
     isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[1] <== zZoneMaximumAmountPerTimePeriod;
 
@@ -974,10 +964,9 @@ template ZSwapV1( nUtxoIn,
     // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
     // 3) nUtxoIn x 64 amount
     // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( utxo-in-origin-zones-ids & utxo-out-target-zone-ids - 32 bit )
+    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
     component dataEscrow = DataEscrowElGamalEncryption(dataEscrowScalarSize,dataEscrowPointSize);
 
     dataEscrow.ephemeralRandom <== dataEscrowEphemeralRandom;
@@ -1015,11 +1004,6 @@ template ZSwapV1( nUtxoIn,
     for (var j = 0; j < nUtxoOut; j++) {
         dataEscrow.pointMessage[j][0] <== utxoOutRootSpendPubKey[j][0];
         dataEscrow.pointMessage[j][1] <== utxoOutRootSpendPubKey[j][1];
-    }
-    // 2) nUtxoOut x NullifierPubKey of the receiver (x,y) - (already a points on EC)
-    for (var j = 0; j < nUtxoOut; j++) {
-        dataEscrow.pointMessage[nUtxoOut + j][0] <== utxoOutNullifierPubKey[j][0];
-        dataEscrow.pointMessage[nUtxoOut + j][1] <== utxoOutNullifierPubKey[j][1];
     }
 
     // verify EphemeralPubKey
@@ -1121,14 +1105,12 @@ template ZSwapV1( nUtxoIn,
 
     // [22] - Verify zZone max external limits
     assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
-    component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = LessEqThanWhenEnabled(252);
-    isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.enabled <== 1; // always
+    component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = LessEqThan(252);
     isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[0] <== totalBalanceChecker.depositWeightedScaledAmount;
     isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[1] <== zZoneDepositMaxAmount;
 
     assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawWeightedScaledAmount);
-    component isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount = LessEqThanWhenEnabled(252);
-    isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.enabled <== 1; // always
+    component isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount = LessEqThan(252);
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[0] <== totalBalanceChecker.withdrawWeightedScaledAmount;
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[1] <== zZoneWithrawMaxAmount;
 
@@ -1178,8 +1160,7 @@ template ZSwapV1( nUtxoIn,
 
     // [26] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
-    component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = LessEqThanWhenEnabled(252);
-    isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.enabled <== 1; // always
+    component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = LessEqThan(252);
     isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[1] <== zAccountUtxoInExpiryTime;
 
@@ -1202,8 +1183,7 @@ template ZSwapV1( nUtxoIn,
     isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime.in[1] <== kytEdDsaPubKeyExpiryTime;
 
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
-    component isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime = LessEqThanWhenEnabled(252);
-    isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.enabled <== 1; // always
+    component isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime = LessEqThan(252);
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[1] <== dataEscrowPubKeyExpiryTime;
 
@@ -1433,7 +1413,6 @@ template ZSwapV1( nUtxoIn,
     zSwapV1RangeCheck.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
     zSwapV1RangeCheck.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
     zSwapV1RangeCheck.utxoOutCommitment <== utxoOutCommitment;
-    zSwapV1RangeCheck.utxoOutNullifierPubKey <== utxoOutNullifierPubKey;
     zSwapV1RangeCheck.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     zSwapV1RangeCheck.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
     zSwapV1RangeCheck.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
