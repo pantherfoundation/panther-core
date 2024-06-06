@@ -24,7 +24,6 @@ template NullifierHasherExtended() {
     signal input leaf;
 
     signal output out;
-    signal output sharedKey[2];
 
     component sharedSecret = NullifierSharedSecret();
     sharedSecret.privKey <== privKey;
@@ -38,8 +37,6 @@ template NullifierHasherExtended() {
     noteHasher.inputs[2] <== leaf;
 
     noteHasher.out ==> out;
-    sharedSecret.sharedKey[0] ==> sharedKey[0];
-    sharedSecret.sharedKey[1] ==> sharedKey[1];
 }
 
 template NullifierSharedSecret() {
