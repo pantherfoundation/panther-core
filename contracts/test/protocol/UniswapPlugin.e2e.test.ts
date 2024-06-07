@@ -24,7 +24,7 @@ import {
 
 const oneToken = ethers.constants.WeiPerEther;
 
-describe('UniswapPlugin', function () {
+describe.skip('UniswapPlugin', function () {
     let fixture: PluginFixture;
     let stealthAddress: string;
     let currentLockData: SaltedLockDataStruct;

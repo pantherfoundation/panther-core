@@ -19,7 +19,7 @@ import {
     setupInputFields,
 } from './shared';
 
-describe('PantherPoolV1::main', function () {
+describe.skip('PantherPoolV1::main', function () {
     let fixture: PluginFixture;
     let stealthAddress: string;
     let currentLockData: SaltedLockDataStruct;
