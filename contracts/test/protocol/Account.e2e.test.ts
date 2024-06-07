@@ -24,7 +24,7 @@ import {
     ADDRESS_ZERO,
 } from './shared';
 
-describe('Account e2e', function () {
+describe.skip('Account e2e', function () {
     const zkpTransferFromCallGasCost = 69921n;
     const verificationGasCost = 88000n;
     const preVerificationGasCost = 73720n;

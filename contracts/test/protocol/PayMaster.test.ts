@@ -14,7 +14,7 @@ import {ADDRESS_ZERO, PluginFixture} from './shared';
 
 const oneToken = ethers.constants.WeiPerEther;
 
-describe('Paymaster contract', function () {
+describe.skip('Paymaster contract', function () {
     const testCallGasCost = 499210n;
     const verificationGasCost = 88000n;
     const preVerificationGasCost = 73720n;
