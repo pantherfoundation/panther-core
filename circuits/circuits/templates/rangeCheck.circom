@@ -17,21 +17,19 @@ template RangeCheckGroupOfSignals(N, maxBits, LessThanValue, GreaterThanValue) {
         greaterThen[i] = GreaterThan(maxBits);
         greaterThen[i].in[0] <== GreaterThanValue;
         greaterThen[i].in[1] <== in[i];
-        greaterThen[i].out === 0;
+        greaterThen[i].out === 1;
     }
 }
 
 template RangeCheckSingleSignal(maxBits, LessThanValue, GreaterThanValue) {
     signal input in;
-    component less;
-    less = LessThan(maxBits);
+    component less = LessThan(maxBits);
     less.in[0] <== in;
     less.in[1] <== LessThanValue;
     less.out === 1;
 
-    component greater;
-    greater = GreaterThan(maxBits);
+    component greater = GreaterThan(maxBits);
     greater.in[0] <== GreaterThanValue;
     greater.in[1] <== in;
-    greater.out === 0;
+    greater.out === 1;
 }

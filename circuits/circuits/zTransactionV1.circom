@@ -28,6 +28,7 @@ include "./templates/zoneIdInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utils.circom";
 include "./zTransactionV1RangeCheck.circom";
 
 // 3rd-party deps
@@ -50,13 +51,21 @@ template ZTransactionV1( nUtxoIn,
                          TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
-    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Equal to ferry MT size
-    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    var UtxoMerkleTreeDepth = UtxoMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Bus MT extra levels
-    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    var UtxoMiddleExtraLevels = UtxoMiddleExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, UtxoLeftMerkleTreeDepth);
     // Ferry MT extra levels
-    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    var UtxoRightExtraLevels = UtxoRightExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
+    // zZone data-escrow
+    var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
+    // main data-escrow
+    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    // dao data-escrow
+    var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
     //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
@@ -174,10 +183,6 @@ template ZTransactionV1( nUtxoIn,
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneSealing;
 
-    // ------------- ec-points-size -------------
-    // 1) The only point is the data-escrow ephemeral pub-key
-    var zZoneDataEscrowPointSize = 1;
-    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowPointSize;
     signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
     signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
 
@@ -237,19 +242,6 @@ template ZTransactionV1( nUtxoIn,
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
-    // ------------- scalars-size --------------------------------
-    // 1) 1 x 64 (zAsset)
-    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-    // 3) nUtxoIn x 64 amount
-    // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
-    // ------------- ec-points-size -------------
-    // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-
-    var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
-    var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut;
-    var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
 
@@ -259,10 +251,6 @@ template ZTransactionV1( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx;
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    // ------------- ec-points-size -------------
-    // 1) The only point is the data-escrow ephemeral pub-key
-    var daoDataEscrowPointSize = 1;
-    var daoDataEscrowEncryptedPoints = daoDataEscrowPointSize;
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
     signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
 
@@ -562,7 +550,7 @@ template ZTransactionV1( nUtxoIn,
 
         // verify zone max internal limits
         assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight));
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = LessEqThan(252);
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight;
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
@@ -639,14 +627,14 @@ template ZTransactionV1( nUtxoIn,
 
         // verify zone max internal limits
         assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight));
-        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = LessEqThan(252);
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight;
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
 
     // [7] - Verify zZone max amount per time period
     assert(utxoOutCreateTime >= zAccountUtxoInCreateTime);
-    component isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime = LessEqThan(252);
+    component isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime = ForceLessEqThan(252);
     isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[0] <== zAccountUtxoInCreateTime;
     isLessThanEq_zAccountUtxoInCreateTime_utxoOutCreateTime.in[1] <== utxoOutCreateTime;
 
@@ -660,7 +648,7 @@ template ZTransactionV1( nUtxoIn,
 
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
-    component isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod = LessEqThan(252);
+    component isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod = ForceLessEqThan(252);
     isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[0] <== zAccountUtxoOutTotalAmountPerTimePeriod;
     isLessThanEq_zAccountUtxoOutTotalAmountPerTimePeriod_zZoneMaximumAmountPerTimePeriod.in[1] <== zZoneMaximumAmountPerTimePeriod;
 
@@ -1097,12 +1085,12 @@ template ZTransactionV1( nUtxoIn,
 
     // [22] - Verify zZone max external limits
     assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
-    component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = LessEqThan(252);
+    component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = ForceLessEqThan(252);
     isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[0] <== totalBalanceChecker.depositWeightedScaledAmount;
     isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[1] <== zZoneDepositMaxAmount;
 
     assert(zZoneWithrawMaxAmount >= totalBalanceChecker.withdrawWeightedScaledAmount);
-    component isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount = LessEqThan(252);
+    component isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount = ForceLessEqThan(252);
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[0] <== totalBalanceChecker.withdrawWeightedScaledAmount;
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithrawMaxAmount.in[1] <== zZoneWithrawMaxAmount;
 
@@ -1152,7 +1140,7 @@ template ZTransactionV1( nUtxoIn,
 
     // [26] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
-    component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = LessEqThan(252);
+    component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = ForceLessEqThan(252);
     isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[1] <== zAccountUtxoInExpiryTime;
 
@@ -1175,7 +1163,7 @@ template ZTransactionV1( nUtxoIn,
     isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime.in[1] <== kytEdDsaPubKeyExpiryTime;
 
     assert(dataEscrowPubKeyExpiryTime >= utxoOutCreateTime);
-    component isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime = LessEqThan(252);
+    component isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime = ForceLessEqThan(252);
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[1] <== dataEscrowPubKeyExpiryTime;
 
