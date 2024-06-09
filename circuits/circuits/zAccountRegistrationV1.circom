@@ -15,6 +15,7 @@ include "./templates/zNetworkNoteInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./zAccountRegistrationV1RangeCheck.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -23,8 +24,6 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
-
-include "./zAccountRegistrationV1RangeCheck.circom";
 
 template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
                                   ZAssetMerkleTreeDepth,

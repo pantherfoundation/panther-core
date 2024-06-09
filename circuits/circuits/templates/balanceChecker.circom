@@ -219,5 +219,11 @@ template BalanceChecker() {
     totalScaledOverflow.in[1] <== 2**252;
     totalScaledOverflow.out === 1;
 
+    // [6.3] - compute total-weighted
     totalWeighted <== totalScaled * zAssetWeight;
+
+    component totalWeightedOverflow = LessThan(252);
+    totalWeightedOverflow.in[0] <== totalWeighted;
+    totalWeightedOverflow.in[1] <== 2**252;
+    totalWeightedOverflow.out === 1;
 }

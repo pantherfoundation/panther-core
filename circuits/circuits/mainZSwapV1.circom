@@ -26,7 +26,7 @@ component main {
         kytSignedMessageHash,                  // [19]
         dataEscrowEncryptedMessageAx,          // [20] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
         daoDataEscrowEphemeralPubKeyAx,        // [21] - 1 (NOTE: only x-coordinate)
-        daoDataEscrowEncryptedMessageAx,       // [22] - 1 + MAX(nUtxoIn,nUtxoOut) = 3 (NOTE: only x-coordinate)
+        daoDataEscrowEncryptedMessageAx,       // [22] - 1 (NOTE: only x-coordinate)
         utxoOutCreateTime,                     // [23]
         utxoOutCommitment,                     // [24] - nUtxoOut = 2
         zAccountUtxoOutCommitment,             // [25]

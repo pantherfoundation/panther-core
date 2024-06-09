@@ -17,6 +17,8 @@ include "./templates/zNetworkNoteInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utils.circom";
+include "./zAccountRenewalV1RangeCheck.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -25,8 +27,6 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
-
-include "./zAccountRenewalV1RangeCheck.circom";
 
 template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              UtxoMiddleMerkleTreeDepth,
@@ -37,13 +37,13 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
-    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Equal to ferry MT size
-    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    var UtxoMerkleTreeDepth = UtxoMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Bus MT extra levels
-    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    var UtxoMiddleExtraLevels = UtxoMiddleExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, UtxoLeftMerkleTreeDepth);
     // Ferry MT extra levels
-    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    var UtxoRightExtraLevels = UtxoRightExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public

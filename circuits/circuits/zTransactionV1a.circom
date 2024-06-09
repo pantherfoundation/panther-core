@@ -14,13 +14,21 @@ template ZTransactionV1a( nUtxoIn,
                           TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
-    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Equal to ferry MT size
-    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    var UtxoMerkleTreeDepth = UtxoMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Bus MT extra levels
-    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    var UtxoMiddleExtraLevels = UtxoMiddleExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, UtxoLeftMerkleTreeDepth);
     // Ferry MT extra levels
-    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    var UtxoRightExtraLevels = UtxoRightExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
+    // zZone data-escrow
+    var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
+    // main data-escrow
+    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    // dao data-escrow
+    var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
     //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
@@ -138,10 +146,6 @@ template ZTransactionV1a( nUtxoIn,
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneSealing;
 
-    // ------------- ec-points-size -------------
-    // 1) The only point is the data-escrow ephemeral pub-key
-    var zZoneDataEscrowPointSize = 1;
-    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowPointSize;
     signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
     signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
 
@@ -201,19 +205,6 @@ template ZTransactionV1a( nUtxoIn,
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
-    // ------------- scalars-size --------------------------------
-    // 1) 1 x 64 (zAsset)
-    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-    // 3) nUtxoIn x 64 amount
-    // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
-    // ------------- ec-points-size -------------
-    // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-
-    var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
-    var dataEscrowScalarSize = 1+1+nUtxoIn+nUtxoOut+max_nUtxoIn_nUtxoOut;
-    var dataEscrowPointSize = nUtxoOut;
-    var dataEscrowEncryptedPoints = dataEscrowScalarSize + dataEscrowPointSize;
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
 
@@ -223,10 +214,6 @@ template ZTransactionV1a( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx; // public
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    // ------------- ec-points-size -------------
-    // 1) The only point is the data-escrow ephemeral pub-key
-    var daoDataEscrowPointSize = 1;
-    var daoDataEscrowEncryptedPoints = daoDataEscrowPointSize;
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
     signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
 
@@ -298,9 +285,9 @@ template ZTransactionV1a( nUtxoIn,
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // START OF CODE /////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    var transactedToken = 0;
-    var zkpToken = 1;
     var notZSwap = 0;
+    var transactedToken = TransactedTokenIndex();
+    var zkpToken = ZkpTokenIndex( notZSwap );
     component zTransactionV1 = ZSwapV1( nUtxoIn,
                                         nUtxoOut,
                                         UtxoLeftMerkleTreeDepth,
