@@ -528,7 +528,6 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                                                                  TrustProvidersMerkleTreeDepth);
 
     zAccountRenewalRC.extraInputsHash <== extraInputsHash;
-
     zAccountRenewalRC.addedAmountZkp <== addedAmountZkp;
     zAccountRenewalRC.chargedAmountZkp <== chargedAmountZkp;
 
@@ -593,6 +592,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountRenewalRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zAccountRenewalRC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     zAccountRenewalRC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zAccountRenewalRC.zZoneSealing <== zZoneSealing;
 
     zAccountRenewalRC.kycEdDsaPubKey <== kycEdDsaPubKey;
     zAccountRenewalRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;

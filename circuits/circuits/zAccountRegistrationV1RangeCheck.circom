@@ -8,12 +8,15 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
                                          ZAccountBlackListMerkleTreeDepth,
                                          ZZoneMerkleTreeDepth,
                                          TrustProvidersMerkleTreeDepth) {
+    // external data anchoring
+    signal input extraInputsHash;  // public
 
-    signal input extraInputsHash;
+    // zkp amounts (not scaled)
+    signal input addedAmountZkp;   // public
+    // output 'protocol + relayer fee in ZKP'
+    signal input chargedAmountZkp; // public
 
-    signal input addedAmountZkp;
-    signal input chargedAmountZkp;
-
+    // zAsset
     signal input zAssetId;
     signal input zAssetToken;
     signal input zAssetTokenId;
@@ -25,7 +28,8 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
 
-    signal input zAccountId;
+    // zAccount
+    signal input zAccountId; // public
     signal input zAccountZkpAmount;
     signal input zAccountPrpAmount;
     signal input zAccountZoneId;
@@ -34,21 +38,23 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     signal input zAccountNonce;
     signal input zAccountTotalAmountPerTimePeriod;
     signal input zAccountCreateTime;
-    signal input zAccountRootSpendPubKey[2];
-    signal input zAccountReadPubKey[2];
-    signal input zAccountNullifierPubKey[2];
-    signal input zAccountMasterEOA;
+    signal input zAccountRootSpendPubKey[2]; // public
+    signal input zAccountReadPubKey[2];      // public
+    signal input zAccountNullifierPubKey[2]; // public
+    signal input zAccountMasterEOA;          // public
     signal input zAccountRootSpendPrivKey;
     signal input zAccountReadPrivKey;
     signal input zAccountNullifierPrivKey;
     signal input zAccountSpendKeyRandom;
-    signal input zAccountNullifier;
-    signal input zAccountCommitment;
+    signal input zAccountNullifier;  // public
+    signal input zAccountCommitment; // public
 
+    // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
     signal input zAccountBlackListMerkleRoot;
     signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
 
+    // zZone
     signal input zZoneOriginZoneIDs;
     signal input zZoneTargetZoneIDs;
     signal input zZoneNetworkIDsBitMap;
@@ -66,24 +72,32 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneDataEscrowPubKey[2];
+    signal input zZoneSealing;
 
+    // KYC
     signal input kycEdDsaPubKey[2];
     signal input kycEdDsaPubKeyExpiryTime;
     signal input trustProvidersMerkleRoot;
     signal input kycPathElements[TrustProvidersMerkleTreeDepth];
     signal input kycPathIndices[TrustProvidersMerkleTreeDepth];
     signal input kycMerkleTreeLeafIDsAndRulesOffset;
-
-    signal input kycSignedMessagePackageType;
+    // signed message
+    signal input kycSignedMessagePackageType;         // 1 - KYC
     signal input kycSignedMessageTimestamp;
-    signal input kycSignedMessageSender;
-    signal input kycSignedMessageReceiver;
+    signal input kycSignedMessageSender;              // 0
+    signal input kycSignedMessageReceiver;            // 0
     signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
     signal input kycSignedMessageSigner;
-    signal input kycSignedMessageHash;
-    signal input kycSignature[3];
+    signal input kycSignedMessageHash;                // public
+    signal input kycSignature[3];                     // S,R8x,R8y
 
+    // zNetworks tree
+    // network parameters:
+    // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
+    // 2) network-id - 6 bit
+    // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
+    // 4) daoDataEscrowPubKey[2]
     signal input zNetworkId;
     signal input zNetworkChainId;
     signal input zNetworkIDsBitMap;
@@ -96,17 +110,31 @@ template ZAccountRegistrationRangeCheck (ZNetworkMerkleTreeDepth,
     signal input forUtxoReward;
     signal input forDepositReward;
 
+    // static tree merkle root
+    // Poseidon of:
+    // 1) zAssetMerkleRoot
+    // 2) zAccountBlackListMerkleRoot
+    // 3) zNetworkTreeMerkleRoot
+    // 4) zZoneMerkleRoot
+    // 5) trustProvidersMerkleRoot
     signal input staticTreeMerkleRoot;
 
-    signal input forestMerkleRoot;
+    // forest root
+    // Poseidon of:
+    // 1) UTXO-Taxi-Tree   - 8 levels MT
+    // 2) UTXO-Bus-Tree    - 26 levels MT
+    // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
+    signal input forestMerkleRoot;   // public
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
     signal input ferryMerkleRoot;
 
+    // salt
     signal input salt;
-    signal input saltHash;
+    signal input saltHash; // public - poseidon(salt)
 
-    signal input magicalConstraint;
+    // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
+    signal input magicalConstraint; // public
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Format of comments:

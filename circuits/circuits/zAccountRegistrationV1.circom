@@ -26,11 +26,11 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
 
 include "./zAccountRegistrationV1RangeCheck.circom";
 
-template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
-                                 ZAssetMerkleTreeDepth,
-                                 ZAccountBlackListMerkleTreeDepth,
-                                 ZZoneMerkleTreeDepth,
-                                 TrustProvidersMerkleTreeDepth ) {
+template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
+                                  ZAssetMerkleTreeDepth,
+                                  ZAccountBlackListMerkleTreeDepth,
+                                  ZZoneMerkleTreeDepth,
+                                  TrustProvidersMerkleTreeDepth ) {
     // external data anchoring
     signal input extraInputsHash;  // public
 
@@ -505,12 +505,10 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountRegistrationRC.zAccountNonce <== zAccountNonce;
     zAccountRegistrationRC.zAccountTotalAmountPerTimePeriod <== zAccountTotalAmountPerTimePeriod;
     zAccountRegistrationRC.zAccountCreateTime <== zAccountCreateTime;
-
     zAccountRegistrationRC.zAccountRootSpendPubKey <== zAccountRootSpendPubKey;
     zAccountRegistrationRC.zAccountReadPubKey <== zAccountReadPubKey;
     zAccountRegistrationRC.zAccountNullifierPubKey <== zAccountNullifierPubKey;
     zAccountRegistrationRC.zAccountMasterEOA <== zAccountMasterEOA;
-
     zAccountRegistrationRC.zAccountRootSpendPrivKey <== zAccountRootSpendPrivKey;
     zAccountRegistrationRC.zAccountReadPrivKey <== zAccountReadPrivKey;
     zAccountRegistrationRC.zAccountNullifierPrivKey <== zAccountNullifierPrivKey;
@@ -540,6 +538,7 @@ template ZAccountRegitrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountRegistrationRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     zAccountRegistrationRC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     zAccountRegistrationRC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zAccountRegistrationRC.zZoneSealing <== zZoneSealing;
 
     zAccountRegistrationRC.kycEdDsaPubKey <== kycEdDsaPubKey;
     zAccountRegistrationRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;

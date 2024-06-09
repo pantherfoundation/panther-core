@@ -20,29 +20,34 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     // Ferry MT extra levels
     var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
     //////////////////////////////////////////////////////////////////////////////////////////////
-    signal input extraInputsHash;
+    // external data anchoring
+    signal input extraInputsHash;  // public
 
-    signal input addedAmountZkp;
-    signal input chargedAmountZkp;
-    signal input createTime;
-    signal input depositAmountPrp;
-    signal input withdrawAmountPrp;
+    signal input addedAmountZkp;   // public
+    // output 'protocol + relayer fee in ZKP'
+    signal input chargedAmountZkp;       // public
+    signal input createTime;             // public
+    signal input depositAmountPrp;       // public
+    signal input withdrawAmountPrp;      // public
 
-    signal input utxoCommitment;
-    signal input utxoSpendPubKey[2];
+    // utxo - hidden part
+    signal input utxoCommitment;         // public
+    signal input utxoSpendPubKey[2];     // public
     signal input utxoSpendKeyRandom;
 
+    // zAsset
     signal input zAssetId;
     signal input zAssetToken;
     signal input zAssetTokenId;
     signal input zAssetNetwork;
     signal input zAssetOffset;
     signal input zAssetWeight;
-    signal input zAssetScale;
+    signal input zAssetScale; // public
     signal input zAssetMerkleRoot;
     signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
     signal input zAssetPathElements[ZAssetMerkleTreeDepth];
 
+    // zAccount Input
     signal input zAccountUtxoInId;
     signal input zAccountUtxoInZkpAmount;
     signal input zAccountUtxoInPrpAmount;
@@ -55,25 +60,29 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zAccountUtxoInRootSpendPubKey[2];
     signal input zAccountUtxoInReadPubKey[2];
     signal input zAccountUtxoInNullifierPubKey[2];
-    signal input zAccountUtxoInSpendPrivKey;
+    signal input zAccountUtxoInSpendPrivKey;       // TODO: refactor to be unified - should be RootSpend
     signal input zAccountUtxoInNullifierPrivKey;
     signal input zAccountUtxoInMasterEOA;
     signal input zAccountUtxoInSpendKeyRandom;
     signal input zAccountUtxoInCommitment;
-    signal input zAccountUtxoInNullifier;
-    signal input zAccountUtxoInMerkleTreeSelector[2];
+    signal input zAccountUtxoInNullifier;  // public
+    signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
     signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
     signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
 
+    // zAccount Output
     signal input zAccountUtxoOutZkpAmount;
     signal input zAccountUtxoOutPrpAmount;
     signal input zAccountUtxoOutSpendKeyRandom;
-    signal input zAccountUtxoOutCommitment;
+    signal input zAccountUtxoOutCommitment; // public
 
+
+    // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
     signal input zAccountBlackListMerkleRoot;
     signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
 
+    // zZone
     signal input zZoneOriginZoneIDs;
     signal input zZoneTargetZoneIDs;
     signal input zZoneNetworkIDsBitMap;
@@ -91,9 +100,16 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneDataEscrowPubKey[2];
+    signal input zZoneSealing;
 
+    // zNetworks tree
+    // network parameters:
+    // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
+    // 2) network-id - 6 bit
+    // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
+    // 4) daoDataEscrowPubKey[2]
     signal input zNetworkId;
-    signal input zNetworkChainId;
+    signal input zNetworkChainId; // public
     signal input zNetworkIDsBitMap;
     signal input zNetworkTreeMerkleRoot;
     signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
@@ -104,16 +120,33 @@ template AmmV1RangeCheck  ( UtxoLeftMerkleTreeDepth,
     signal input forUtxoReward;
     signal input forDepositReward;
 
+    // static tree merkle root
+    // Poseidon of:
+    // 1) zAssetMerkleRoot
+    // 2) zAccountBlackListMerkleRoot
+    // 3) zNetworkTreeMerkleRoot
+    // 4) zZoneMerkleRoot
+    // 5) trustProvidersMerkleRoot
     signal input trustProvidersMerkleRoot;
     signal input staticTreeMerkleRoot;
-    signal input forestMerkleRoot;
+
+    // forest root
+    // Poseidon of:
+    // 1) UTXO-Taxi-Tree   - 6 levels MT
+    // 2) UTXO-Bus-Tree    - 26 levels MT
+    // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
+    // 4) Static-Tree
+    signal input forestMerkleRoot;   // public
     signal input taxiMerkleRoot;
     signal input busMerkleRoot;
     signal input ferryMerkleRoot;
 
+    // salt
     signal input salt;
-    signal input saltHash;
-    signal input magicalConstraint;
+    signal input saltHash; // public - poseidon(salt)
+
+    // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
+    signal input magicalConstraint; // public
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Format of comments:

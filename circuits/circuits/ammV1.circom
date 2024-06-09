@@ -583,6 +583,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     ammV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
     ammV1RC.zZoneDataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
     ammV1RC.zZoneDataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    ammV1RC.zZoneSealing <== zZoneSealing;
 
     ammV1RC.zNetworkId <== zNetworkId;
     ammV1RC.zNetworkChainId <== zNetworkChainId;
