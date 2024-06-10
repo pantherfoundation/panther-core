@@ -33,6 +33,10 @@ template Selectable3TreeInclusionProof(
     assert(treeSelector[1]<=1);
     // Enforce treeSelector can't be [1,1]
     0 === treeSelector[0]*treeSelector[1];
+    // Enforce treeSelector is 0|1
+    for(var i = 0; i < 2; i++) {
+        treeSelector[i] - treeSelector[i] * treeSelector[i] === 0;
+    }
 
     // Assuming the leaf is in the left tree, compute the left tree root
     component lTree = MerkleInclusionProof(l_levels);
@@ -41,6 +45,8 @@ template Selectable3TreeInclusionProof(
         // elements which follow the first `l_levels` ones, are ignored
         lTree.pathElements[l] <== pathElements[l];
         lTree.pathIndices[l] <== pathIndices[l];
+        // Enforce path-index is binary
+        pathIndices[l] - pathIndices[l] * pathIndices[l] === 0;
     }
 
     // Assuming the leaf is in the middle tree, go on computing the root
