@@ -40,6 +40,10 @@ template MerkleTreeInclusionProof(n_levels) {
     hashers[0].inputs[1] <== temp + pathIndices[1]*(pathElements[1] - pathElements[0]);
     hashers[0].inputs[2] <== pathElements[1] + pathIndices[1]*(leaf -pathElements[1]);
 
+    for (var i = 0; i < n_levels; i++) {
+        // enforce binary index
+        pathIndices[i] - pathIndices[i] * pathIndices[i] === 0;
+    }
     // ... then iterate through levels above leaves
     for (var i = 1; i < n_levels; i++) {
         // (outL,outR) = sel==0 ? (L,R) : (R,L)
@@ -74,6 +78,11 @@ template MerkleTreeInclusionProofDoubleLeaves(n_levels) {
     hashers[0] = Poseidon(2);
     hashers[0].inputs[0] <== switchers[0].outL;
     hashers[0].inputs[1] <== switchers[0].outR;
+
+    for (var i = 0; i < n_levels; i++) {
+        // enforce binary index
+        pathIndices[i] - pathIndices[i] * pathIndices[i] === 0;
+    }
 
     // ... then iterate through levels above leaves
     for (var i = 1; i < n_levels; i++) {
