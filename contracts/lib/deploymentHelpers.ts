@@ -509,6 +509,23 @@ function getDefaultSalt() {
     return ethers.utils.id('pantherprotocol');
 }
 
+export async function attemptVerify(
+    hre: HardhatRuntimeEnvironment,
+    artifactName: string,
+    address: string,
+): Promise<void> {
+    const {args} = await hre.deployments.get(artifactName);
+
+    try {
+        await hre.run('verify:verify', {
+            address: address,
+            constructorArguments: args,
+        });
+    } catch (error) {
+        console.error('Error during run verification:', error);
+    }
+}
+
 export {
     reuseEnvAddress,
     logInfo,

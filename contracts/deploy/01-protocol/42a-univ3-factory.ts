@@ -6,8 +6,6 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../lib/deploymentHelpers';
 
-import {attemptVerify} from './common/tenderly';
-
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
@@ -22,12 +20,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
         autoMine: true,
     });
-
-    await attemptVerify(
-        hre,
-        'MockUniswapV3Factory_Implementation',
-        '0xEB81E484610a3c7edbFe30AFb906a5D9ABeA6D60',
-    );
 };
 export default func;
 
