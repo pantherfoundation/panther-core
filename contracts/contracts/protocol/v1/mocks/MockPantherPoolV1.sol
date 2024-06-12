@@ -16,8 +16,7 @@ contract MockPantherPoolV1 is PantherPoolV1 {
         address prpVoucherGrantor,
         address prpConverter,
         address feeMaster,
-        address verifier,
-        address pluginRegistry
+        address verifier
     )
         PantherPoolV1(
             _owner,
@@ -29,8 +28,7 @@ contract MockPantherPoolV1 is PantherPoolV1 {
             prpVoucherGrantor,
             prpConverter,
             feeMaster,
-            verifier,
-            pluginRegistry
+            verifier
         )
     {}
 
