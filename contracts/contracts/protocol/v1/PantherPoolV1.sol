@@ -70,7 +70,7 @@ contract PantherPoolV1 is
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable PRP_CONVERTER;
     address public immutable STATIC_TREE;
-    address public immutable PLUGIN_REGISTRY;
+
     mapping(address => bool) public vaultAssetUnlockers;
 
     // TODO: to be removed in production
@@ -113,8 +113,7 @@ contract PantherPoolV1 is
         address prpVoucherGrantor,
         address prpConverter,
         address feeMaster,
-        address verifier,
-        address pluginRegistry
+        address verifier
     )
         PantherForest(_owner, forestTrees)
         UtxosInserter(forestTrees.busTree, forestTrees.taxiTree)
@@ -134,7 +133,6 @@ contract PantherPoolV1 is
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
         PRP_CONVERTER = prpConverter;
-        PLUGIN_REGISTRY = pluginRegistry;
     }
 
     // function updateVaultAssetUnlocker(
