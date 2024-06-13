@@ -9,7 +9,7 @@ This template checks for the pre-requisite equalities for all types of transacti
 
 @input signals -
 1. token - external token address
-2. tokenId - tokenId associated with the token 
+2. tokenId - tokenId associated with the token
 3. zAssetId - ID generated for adding a ZAsset to ZAsset Registry
 4. zAssetToken - tokenId associated with the ZAsset
 5. zAssetOffset - specific number of bits
@@ -40,6 +40,10 @@ template ZAssetChecker() {
     var enable_If_ExternalAmountsAre_Zero = isZeroExternalAmounts.out;
     var enable_If_ExternalAmountsAre_NOT_Zero = 1 - isZeroExternalAmounts.out;
 
+    component isZeroOffset = IsZero();
+    isZeroOffset.in <== zAssetOffset;
+    var enable_If_zAssetOffsetAre_NOT_Zero = 1 - isZeroOffset.out;
+
     // [0] - zAsset::token == token
     component isZAssetTokenEqualToToken = ForceEqualIfEnabled();
     isZAssetTokenEqualToToken.in[0] <== zAssetToken;
@@ -64,7 +68,7 @@ template ZAssetChecker() {
     isZAssetIdEqualToTokenId.zAssetTokenId <== zAssetTokenId;
     isZAssetIdEqualToTokenId.tokenId <== tokenId;
     isZAssetIdEqualToTokenId.offset <== zAssetOffset;
-    isZAssetIdEqualToTokenId.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+    isZAssetIdEqualToTokenId.enabled <== enable_If_ExternalAmountsAre_NOT_Zero * enable_If_zAssetOffsetAre_NOT_Zero;
 
     // [3] - UTXO::tokenId == tokenId with respect to offset
     component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
@@ -92,7 +96,7 @@ template ZAssetChecker() {
 /*
 Checks 'zAssetId' is equal to the 'utxoZAssetId' with respect to the 'offset'
 
-This will be checked for the following transactions - 
+This will be checked for the following transactions -
     1. Deposit Transaction
     2. Withdraw Transaction
     3. Internal transfer of ZAssets
@@ -137,7 +141,7 @@ template IsZAssetIdEqualToUtxoZAssetId() {
 /*
 Checks 'tokenId' is equal to the 'zAssetTokenId' with respect to the 'offset'
 
-This will be checked for the following transactions - 
+This will be checked for the following transactions -
     1. Deposit Transaction
     2. Withdraw Transaction
 */
@@ -175,7 +179,7 @@ template IsZAssetTokenIdEqualToTokenId() {
 /*
 Checks 'tokenId' is equal to the 'utxoZAssetId' with respect to the 'offset'
 
-This will be checked for the following transactions - 
+This will be checked for the following transactions -
     1. Deposit Transaction
     2. Withdraw Transaction
 
