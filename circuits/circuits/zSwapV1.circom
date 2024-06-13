@@ -533,7 +533,9 @@ template ZSwapV1( nUtxoIn,
         // switch-on membership if amount != 0, otherwise switch-off
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
-        // verify zone max internal limits
+        // verify zone max internal limits, no need to RC amount since its checked via utxo-out
+        assert(0 <= utxoInAmount[i] < 2**64);
+        // utxoInAmount[i] * zAssetWeight[transactedToken] - no need to RC since `zAssetWeight` anchored via MT & `amount`
         assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[transactedToken]));
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight[transactedToken];
@@ -622,6 +624,7 @@ template ZSwapV1( nUtxoIn,
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         if ( isSwapUtxo ) {
             assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken]));
+            // TODO: FIXME - RC: 0 <= amount < 2^64
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[swapToken];
         }
         else {

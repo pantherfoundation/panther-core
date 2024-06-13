@@ -1,6 +1,18 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
+include "../../node_modules/circomlib/circuits/comparators.circom";
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Range-Check signals tags //////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// [1] - `public-tag` - public signal, checked by smart-contracts
+// [2] - `anchored-tag` - signal is part of preimage that is publicly known and checked by smart-contracts (maybe not directly)
+// [3] - `range-check-tag` - signal needs to be range-checked
+// [4] - `assumed-tag` - signal needs to be constraint somewhere in the code
+// [5] - `binary-tag` - signals needs to be binary range-checked: `s - s*s === 0`
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // this index exists for zSwap & zTransaction
 function TransactedTokenIndex() {
     return 0;
@@ -100,4 +112,34 @@ function DaoDataEscrowPoints_Fn() {
 
 function DaoDataEscrowEncryptedPoints_Fn() {
     return DaoDataEscrowPoints_Fn();
+}
+
+template SafePositiveMultiplier( isPositiveCheckRequiredForFirstSignal,
+                                 firstSignalUpperBound,
+                                 isPositiveCheckRequiredForSecondSignal,
+                                 secondSignalUpperBound) {
+    signal input in[2];
+    signal output out;
+    // this requirement insure a possibility of an overflow
+    assert(firstSignalUpperBound + secondSignalUpperBound < 252);
+
+    component rc[2];
+    if( isPositiveCheckRequiredForFirstSignal ) {
+        rc[0] = LessEqThan(firstSignalUpperBound);
+        rc[0].in[0] <== in[0];
+        rc[0].in[1] <== 2**firstSignalUpperBound;
+        rc[0].out === 1;
+    }
+    if( isPositiveCheckRequiredForSecondSignal ) {
+        rc[0] = LessEqThan(secondSignalUpperBound);
+        rc[0].in[0] <== in[1];
+        rc[0].in[1] <== 2**secondSignalUpperBound;
+        rc[0].out === 1;
+    }
+    out <== in[0] * in[1];
+}
+
+template Globals() {
+    signal output true <== 1;
+    signal output false <== 0;
 }
