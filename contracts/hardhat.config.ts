@@ -324,6 +324,15 @@ function getRpcUrl(network: NetworkName): string {
     if (network === 'bsctest')
         return 'https://data-seed-prebsc-1-s1.binance.org:8545';
     if (network === 'polygon') return 'https://polygon-rpc.com/';
+    if (network === 'amoy')
+        return (
+            'https://polygon-amoy.infura.io/v3/' + process.env.INFURA_API_KEY
+        );
+    if (network === 'sepolia')
+        return (
+            'https://sepolia.gateway.tenderly.co/' +
+            process.env.TENDERLY_API_KEY
+        );
     return 'undefined RPC provider URL';
 }
 
