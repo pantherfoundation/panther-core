@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log('Adding prp account conversion key to panther pool');
     const circuitId = getContractEnvAddress(hre, 'VK_PRPACCOUNTCONVERSION');
 
-    const tx = await pantherPool.updatePrpAccountConversionCircuitId(circuitId);
+    const tx = await pantherPool.updateCircuitId(0x104, circuitId);
     const res = await tx.wait();
     console.log('Transaction confirmed', res.transactionHash);
 };
