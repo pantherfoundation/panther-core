@@ -4,8 +4,8 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../../common/TransferHelper.sol";
 import "../../../common/Types.sol";
-import "../DeFi/uniswap/libraries/CallbackValidation.sol";
-import "../DeFi/uniswap/libraries/PoolAddress.sol";
+import "../mocks/MockCallbackValidation.sol";
+import "../mocks/MockPoolAddress.sol";
 import "../DeFi/UniswapV3FlashSwap.sol";
 import "../interfaces/IPlugin.sol";
 
@@ -63,9 +63,9 @@ contract UniswapV3PoolPlugin is IPlugin {
     ) private view returns (IUniswapV3Pool) {
         return
             IUniswapV3Pool(
-                PoolAddress.computeAddress(
+                MockPoolAddress.computeAddress(
                     FACTORY,
-                    PoolAddress.getPoolKey(tokenA, tokenB, fee)
+                    MockPoolAddress.getPoolKey(tokenA, tokenB, fee)
                 )
             );
     }
@@ -77,7 +77,7 @@ contract UniswapV3PoolPlugin is IPlugin {
     ) external {
         // TODO data
         (data);
-        CallbackValidation.verifyCallback(
+        MockCallbackValidation.verifyCallback(
             FACTORY,
             IUniswapV3Pool(msg.sender).token0(),
             IUniswapV3Pool(msg.sender).token1(),
