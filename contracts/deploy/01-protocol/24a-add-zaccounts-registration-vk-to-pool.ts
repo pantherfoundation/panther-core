@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log('Adding zAccount registration key to panther pool');
     const circuitId = getContractEnvAddress(hre, 'VK_ZACCOUNTSREGISTRATION');
 
-    const tx = await pantherPool.updateZAccountRegistrationCircuitId(circuitId);
+    const tx = await pantherPool.updateCircuitId(0x100, circuitId);
     const res = await tx.wait();
     console.log('Transaction confirmed', res.transactionHash);
 };

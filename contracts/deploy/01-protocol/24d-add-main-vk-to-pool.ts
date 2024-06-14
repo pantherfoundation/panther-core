@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log('Adding main key to panther pool');
     const circuitId = getContractEnvAddress(hre, 'VK_MAIN');
 
-    const tx = await pantherPool.updateMainCircuitId(circuitId);
+    const tx = await pantherPool.updateCircuitId(0x105, circuitId);
     const res = await tx.wait();
     console.log('Transaction confirmed', res.transactionHash);
 };
@@ -35,4 +35,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['add-main-key-to-pool', 'protocol'];
-func.dependencies = ['check-params', 'pool-v1-proxy', 'add-verification-key'];
+func.dependencies = ['check-params', 'add-verification-key'];
