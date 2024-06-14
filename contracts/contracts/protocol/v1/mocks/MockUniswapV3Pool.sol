@@ -2,27 +2,20 @@ pragma solidity ^0.8.19;
 
 import "../DeFi/uniswap/interfaces/IUniswapV3SwapCallback.sol";
 import "../DeFi/uniswap/libraries/TickMath.sol";
-import "../../../common/ImmutableOwnable.sol";
 import "../../../common/TransferHelper.sol";
 import "../../../staking/interfaces/IErc20Min.sol";
 import "../DeFi/UniswapV3PriceFeed.sol";
-import "hardhat/console.sol";
 
 interface IUniswapV3PoolDeployer {
     function parameters() external view returns (
         address factory,
         address token0,
         address token1,
-        uint24 fee,
-        int24 tickSpacing
+        uint24 fee
     );
 }
 
-interface IMockUniswapV3Factory {
-    function feeMaster() external view returns (address);
-}
-
-contract MockUniswapV3Pool is ImmutableOwnable {
+contract MockUniswapV3Pool {
 
     address public immutable factory;
     address public immutable token0;
@@ -33,8 +26,8 @@ contract MockUniswapV3Pool is ImmutableOwnable {
 
     using UniswapV3PriceFeed for address;
 
-    constructor(address _owner) ImmutableOwnable(_owner){
-        (factory, token0, token1, fee,) = IUniswapV3PoolDeployer(msg.sender).parameters();
+    constructor() {
+        (factory, token0, token1, fee) = IUniswapV3PoolDeployer(msg.sender).parameters();
     }
 
 
@@ -65,8 +58,6 @@ contract MockUniswapV3Pool is ImmutableOwnable {
         feeProtocol = 0;
         unlocked = false;
     }
-
-    //tickCumulatives The tick * time elapsed since the pool was first initialized, as of each `secondsAgo'
 
     function observe(uint32[] calldata secondsAgos)
     external
@@ -105,24 +96,24 @@ contract MockUniswapV3Pool is ImmutableOwnable {
         int256 amountSpecified,
         uint160 sqrtPriceLimitX96,
         bytes calldata data
-    ) external isFeeMasterOrOwner() {
+    ) external returns (uint256 amount0, uint256 amount1) {
 
         require(amountSpecified > 0, 'Amount must be positive');
 
         // Calculate both amounts in one go
-        (uint256 amount0, uint256 amount1) = calculateAmount(zeroForOne, sqrtPriceLimitX96, uint256(amountSpecified));
+        ( amount0, amount1 ) = calculateAmount(zeroForOne, sqrtPriceLimitX96, uint256(amountSpecified));
 
         // Transfer tokens and perform swap callbacks based on the swap direction
         if (zeroForOne) {
             TransferHelper.safeTransfer(token1, recipient, amount1);
-            uint256 balance1Before = balance1();
-            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amountSpecified, int256(amount1), data);
-            require(balance1Before + amount1 <= balance1(), 'Invalid balance after swap');
+            uint256 balance1Before = balance0();
+            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amountSpecified, int256(amount0), data);
+            require(balance1Before + amount0 <= balance0(), 'Invalid balance after swap');
         } else {
             TransferHelper.safeTransfer(token0, recipient, amount0);
-            uint256 balance0Before = balance0();
-            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(-int256(amount0), int256(amountSpecified), data);
-            require(balance0Before + amount0 <= balance0(), 'Invalid balance after swap');
+            uint256 balance0Before = balance1();
+            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(-int256(amount1), int256(amountSpecified), data);
+            require(balance0Before + amount1 <= balance1(), 'Invalid balance after swap');
         }
     }
 
@@ -165,27 +156,6 @@ contract MockUniswapV3Pool is ImmutableOwnable {
         }
     }
 
-    modifier isFeeMasterOrOwner() {
-        require(
-            OWNER == msg.sender || IMockUniswapV3Factory(factory).feeMaster() == msg.sender,
-            "ERR_NOT_FEE_MASTER_OR_OWNER"
-        );
-        _;
-    }
 
-
-    function getQuoteAmount(
-        bool zeroForOne,
-        uint256 inputAmount,
-        uint256 twapPeriod
-    ) public view returns (uint256) {
-        require(twapPeriod != 0, "twap0");
-        if (zeroForOne) {
-            return address(this).getQuoteAmount(token0, token1, inputAmount, twapPeriod);
-        } else {
-            return address(this).getQuoteAmount(token1, token0, inputAmount, twapPeriod);
-        }
-
-    }
 
 }
