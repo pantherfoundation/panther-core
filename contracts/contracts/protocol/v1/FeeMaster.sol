@@ -14,6 +14,7 @@ import { ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
 
 import "./pantherPool/Types.sol";
 
+import "./pantherPool/TransactionTypes.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/ImmutableOwnable.sol";
@@ -38,6 +39,7 @@ contract FeeMaster is
     IFeeMaster
 {
     using TransferHelper for address;
+    using TransactionTypes for uint16;
     using UtilsLib for uint256;
     using UtilsLib for uint40;
     using UtilsLib for uint32;
@@ -301,7 +303,7 @@ contract FeeMaster is
         _decreaseAvailableDonation(feeData);
         cacheNativeToZkpRate();
 
-        if (feeData.txType == TT_MAIN_TRANSACTION) {
+        if (feeData.txType.isMain()) {
             return chargedFeesPerTx = _accountMainFees(feeData, assetData);
         }
         if (feeData.txType == TT_ZSWAP) {
