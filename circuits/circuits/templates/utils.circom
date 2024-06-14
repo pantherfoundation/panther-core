@@ -10,7 +10,6 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 // [2] - `anchored-tag` - signal is part of preimage that is publicly known and checked by smart-contracts (maybe not directly)
 // [3] - `range-check-tag` - signal needs to be range-checked
 // [4] - `assumed-tag` - signal needs to be constraint somewhere in the code
-// [5] - `binary-tag` - signals needs to be binary range-checked: `s - s*s === 0`
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // this index exists for zSwap & zTransaction
@@ -142,4 +141,23 @@ template SafePositiveMultiplier( isPositiveCheckRequiredForFirstSignal,
 template Globals() {
     signal output true <== 1;
     signal output false <== 0;
+}
+
+template BinaryRangeCheck() {
+    signal input in;
+    in - in * in === 0;
+}
+
+template LessThanBits(nBits) {
+    signal input in;
+
+    // "positive" input assumed
+    assert(nBits < 252);
+
+    component lessThan = LessThan(nBits);
+    lessThan.in[0] <== in;
+    lessThan.in[1] <== 2**nBits;
+
+    // force
+    lessThan.out === 1;
 }

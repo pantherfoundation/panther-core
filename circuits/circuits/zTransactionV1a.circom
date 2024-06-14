@@ -35,9 +35,7 @@ template ZTransactionV1a( nUtxoIn,
 
     // tx api
     signal input depositAmount;    // public
-    signal input depositChange;
     signal input withdrawAmount;   // public
-    signal input withdrawChange;
     signal input addedAmountZkp;   // public
     signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
     signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
@@ -301,9 +299,7 @@ template ZTransactionV1a( nUtxoIn,
 
     zTransactionV1.extraInputsHash <== extraInputsHash;
     zTransactionV1.depositAmount <== depositAmount;
-    zTransactionV1.depositChange <== depositChange;
     zTransactionV1.withdrawAmount <== withdrawAmount;
-    zTransactionV1.withdrawChange <== withdrawChange;
     zTransactionV1.addedAmountZkp <== addedAmountZkp;
     zTransactionV1.token[transactedToken] <== token;
     zTransactionV1.tokenId[transactedToken] <== tokenId;

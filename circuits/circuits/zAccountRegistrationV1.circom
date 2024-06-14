@@ -268,9 +268,7 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     component totalBalanceChecker = BalanceChecker();
     totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
     totalBalanceChecker.depositAmount <== 0;
-    totalBalanceChecker.depositChange <== 0;
     totalBalanceChecker.withdrawAmount <== 0;
-    totalBalanceChecker.withdrawChange <== 0;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
     totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== 0;
