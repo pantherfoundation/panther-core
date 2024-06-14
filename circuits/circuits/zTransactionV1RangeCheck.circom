@@ -35,9 +35,7 @@ template ZTransactionV1RangeCheck( nUtxoIn,
 
     // tx api
     signal input depositAmount;    // public
-    signal input depositChange;
     signal input withdrawAmount;   // public
-    signal input withdrawChange;
     signal input addedAmountZkp;   // public
     signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
     signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
@@ -304,24 +302,12 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     component customRangeCheck_DepositAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheck_DepositAmount.in <== depositAmount;
 
-    // depositChange - 252 bits
-    // Supported range - [0 to (2**252 - 1)]
-    // ToDo - Can be restricted to be 250 bits?
-    component customRangeCheck_DepositChange = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheck_DepositChange.in <== depositChange;
-
     // withdrawAmount  - 252 bits
     // Public signal
     // Supported range - [0 to (2**252 - 1)]
     // ToDo - Can be restricted to be 250 bits?
     component customRangeCheck_WithdrawAmount = RangeCheckSingleSignal(252,(2**252 - 1),0);
     customRangeCheck_WithdrawAmount.in <== withdrawAmount;
-
-    // withdrawChange - 252 bits
-    // Supported range - [0 to (2**252 - 1)]
-    // ToDo - Can be restricted to be 250 bits?
-    component customRangeCheck_WithdrawChange = RangeCheckSingleSignal(252,(2**252 - 1),0);
-    customRangeCheck_WithdrawChange.in <== withdrawChange;
 
     // addedAmountZkp - 252 bits
     // Public signal - Checked as part of Smart Contract

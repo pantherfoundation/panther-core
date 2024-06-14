@@ -80,9 +80,7 @@ template ZSwapV1( nUtxoIn,
 
     // tx api
     signal input depositAmount;    // public
-    signal input depositChange;
     signal input withdrawAmount;   // public
-    signal input withdrawChange;
     signal input addedAmountZkp; // public
 
     signal input token[arraySizeInCaseOfSwap];            // public - 160 bit ERC20 address - in case of internal tx will be zero
@@ -362,9 +360,7 @@ template ZSwapV1( nUtxoIn,
     component totalBalanceChecker = BalanceChecker();
     totalBalanceChecker.isZkpToken <== zAssetChecker[transactedToken].isZkpToken;
     totalBalanceChecker.depositAmount <== depositAmount;
-    totalBalanceChecker.depositChange <== depositChange;
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
-    totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
     totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
@@ -377,10 +373,6 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
-
-    // verify change is zero
-    depositChange === 0;
-    withdrawChange === 0;
 
     // [3] - Verify zAsset's membership and decode its weight
     component zAssetNoteInclusionProver[arraySizeInCaseOfSwap];
@@ -553,6 +545,7 @@ template ZSwapV1( nUtxoIn,
     component utxoOutZoneIdInclusionProver[nUtxoOut];
     component utxoOutIsEnabled[nUtxoOut];
     component isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[nUtxoOut];
+    component rc_utxoOutAmount[nUtxoOut];
 
     for (var i = 0; i < nUtxoOut; i++){
         // derive spending pubkey from root-spend-pubkey (anchor to zAccount)
@@ -624,7 +617,6 @@ template ZSwapV1( nUtxoIn,
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         if ( isSwapUtxo ) {
             assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken]));
-            // TODO: FIXME - RC: 0 <= amount < 2^64
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[swapToken];
         }
         else {
@@ -632,6 +624,11 @@ template ZSwapV1( nUtxoIn,
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
         }
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
+
+        // ensure output amounts ranges
+        assert(0 <= utxoOutAmount[i] < 2**64);
+        rc_utxoOutAmount[i] = LessThanBits(64);
+        rc_utxoOutAmount[i].in <== utxoOutAmount[i];
     }
 
     // [7] - Verify zZone max amount per time period
@@ -1242,9 +1239,7 @@ template ZSwapV1( nUtxoIn,
 
     zSwapV1RangeCheck.extraInputsHash <== extraInputsHash;
     zSwapV1RangeCheck.depositAmount <== depositAmount;
-    zSwapV1RangeCheck.depositChange <== depositChange;
     zSwapV1RangeCheck.withdrawAmount <== withdrawAmount;
-    zSwapV1RangeCheck.withdrawChange <== withdrawChange;
     zSwapV1RangeCheck.addedAmountZkp <== addedAmountZkp;
     zSwapV1RangeCheck.token <== token;
     zSwapV1RangeCheck.tokenId <== tokenId;

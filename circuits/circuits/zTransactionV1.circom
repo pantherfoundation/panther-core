@@ -72,9 +72,7 @@ template ZTransactionV1( nUtxoIn,
 
     // tx api
     signal input depositAmount;    // public
-    signal input depositChange;
     signal input withdrawAmount;   // public
-    signal input withdrawChange;
     signal input addedAmountZkp;   // public
     signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
     signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
@@ -361,9 +359,7 @@ template ZTransactionV1( nUtxoIn,
     component totalBalanceChecker = BalanceChecker();
     totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
     totalBalanceChecker.depositAmount <== depositAmount;
-    totalBalanceChecker.depositChange <== depositChange;
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
-    totalBalanceChecker.withdrawChange <== withdrawChange;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
     totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
@@ -376,10 +372,6 @@ template ZTransactionV1( nUtxoIn,
     totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
-
-    // verify change is zero
-    depositChange === 0;
-    withdrawChange === 0;
 
     // [3] - Verify zAsset's membership and decode its weight
     component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
@@ -548,7 +540,9 @@ template ZTransactionV1( nUtxoIn,
         // switch-on membership if amount != 0, otherwise switch-off
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
-        // verify zone max internal limits
+        // verify zone max internal limits, no need to RC amount since its checked via utxo-out
+        assert(0 <= utxoInAmount[i] < 2**64);
+        // utxoInAmount[i] * zAssetWeight[transactedToken] - no need to RC since `zAssetWeight` anchored via MT & `amount`
         assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight));
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight;
@@ -566,6 +560,7 @@ template ZTransactionV1( nUtxoIn,
     component utxoOutZoneIdInclusionProver[nUtxoOut];
     component utxoOutIsEnabled[nUtxoOut];
     component isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[nUtxoOut];
+    component rc_utxoOutAmount[nUtxoOut];
 
     for (var i = 0; i < nUtxoOut; i++){
         // derive spending pubkey from root-spend-pubkey (anchor to zAccount)
@@ -630,6 +625,11 @@ template ZTransactionV1( nUtxoIn,
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight;
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
+
+        // ensure output amounts ranges
+        assert(0 <= utxoOutAmount[i] < 2**64);
+        rc_utxoOutAmount[i] = LessThanBits(64);
+        rc_utxoOutAmount[i].in <== utxoOutAmount[i];
     }
 
     // [7] - Verify zZone max amount per time period
@@ -1236,9 +1236,7 @@ template ZTransactionV1( nUtxoIn,
 
     zTransactionV1RC.extraInputsHash <== extraInputsHash;
     zTransactionV1RC.depositAmount <== depositAmount;
-    zTransactionV1RC.depositChange <== depositChange;
     zTransactionV1RC.withdrawAmount <== withdrawAmount;
-    zTransactionV1RC.withdrawChange <== withdrawChange;
     zTransactionV1RC.addedAmountZkp <== addedAmountZkp;
     zTransactionV1RC.token <== token;
     zTransactionV1RC.tokenId <== tokenId;
