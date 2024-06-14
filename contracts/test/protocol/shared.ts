@@ -163,6 +163,8 @@ export class PluginFixture {
     public pantherStaticTree: FakeContract<PantherStaticTree>;
     public pluginRegistry: PluginRegistry;
 
+    public factory: MockUniswapV3Factory;
+
     async initFixture() {
         [this.ethersSigner, this.bundler] = await hre.ethers.getSigners();
 
@@ -358,9 +360,13 @@ export class PluginFixture {
         this.weth = await (await ethers.getContractFactory('WETH9')).deploy();
         await this.weth.deposit({value: parseEther('1000')});
 
+        this.factory = await (
+            await ethers.getContractFactory('MockUniswapV3Factory')
+        ).deploy();
+
         this.mockUniSwapV3Router = await (
             await ethers.getContractFactory('MockUniSwapV3Router')
-        ).deploy(this.weth.address);
+        ).deploy(this.factory.address, this.weth.address);
 
         this.uniswapV3Plugin = await UniswapV3Plugin.deploy(
             this.mockUniSwapV3Router.address,
