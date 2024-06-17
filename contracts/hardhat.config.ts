@@ -265,6 +265,12 @@ function getNamedAccounts() {
             sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
             amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
         },
+        swapRouter: {
+            amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
+        },
+        quoterV2: {
+            amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
+        },
     };
 
     return namedAccounts;
