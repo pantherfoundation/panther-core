@@ -7,9 +7,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {
     getContractEnvAddress,
     getNamedAccount,
+    attemptVerify,
 } from '../../lib/deploymentHelpers';
-
-import {attemptVerify} from './common/tenderly';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
