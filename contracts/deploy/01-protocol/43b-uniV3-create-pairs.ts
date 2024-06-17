@@ -9,7 +9,7 @@ import {encodePriceSqrt} from '../../lib/encodePriceSqrt';
 
 import {FeeAmount, fetchDecimals, getTokenName} from './common/common';
 import {processPairsWithParams} from './common/pairs';
-import {logtTenderly} from './common/tenderly';
+// import {logtTenderly} from './common/tenderly';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const zkpAddress = await getContractEnvAddress(hre, 'ZKP_TOKEN');
@@ -72,7 +72,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             tx = await factory.createPool(token0, token1, currentFee, {
                 gasPrice,
             });
-            logtTenderly(tx.hash);
+            // logtTenderly(tx.hash);
             await tx.wait();
         } else {
             console.log(`Contract already exists at address ${poolAddress}.`);
@@ -95,7 +95,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         tx = await pool.initialize(sqrtPriceX96, {
             gasPrice,
         });
-        logtTenderly(tx.hash);
+        // logtTenderly(tx.hash);
         await tx.wait();
 
         console.log(
