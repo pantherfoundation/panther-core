@@ -6,6 +6,7 @@ import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
 import "../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../interfaces/IPlugin.sol";
 
+import { ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
 import "../../../common/TransferHelper.sol";
 import "./PluginLib.sol";
 
@@ -68,7 +69,7 @@ contract UniswapV3RouterPlugin {
             uint160 sqrtPriceLimitX96
         ) = pluginData.data.decodeUniswapRouterData();
 
-        if (msg.value == 0) {
+        if (pluginData.tokenType == ERC20_TOKEN_TYPE) {
             pluginData.tokenIn.safeApprove(UNISWAP_ROUTER, pluginData.amountIn);
         }
 
@@ -85,15 +86,17 @@ contract UniswapV3RouterPlugin {
             });
 
         try
-            ISwapRouter(UNISWAP_ROUTER).exactInputSingle{ value: msg.value }(
-                pluginParamsParams
-            )
+            ISwapRouter(UNISWAP_ROUTER).exactInputSingle{
+                value: pluginData.amountIn
+            }(pluginParamsParams)
         returns (uint256 amount) {
             amountOut = amount;
         } catch Error(string memory reason) {
             revert(reason);
         }
     }
+
+    receive() external payable {}
 
     // /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall
     // function getTokenInputSwapInfos(
