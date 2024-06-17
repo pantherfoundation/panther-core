@@ -683,10 +683,18 @@ contract PantherPoolV1 is
         address plugin = pluginData.extractPluginAddress();
         require(zSwapPlugins[plugin], "Invalid plugin");
 
+        // TODO: get TokenType from inputs
+        address existingToken = address(
+            uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
+        );
+        uint8 tokenType = existingToken == NATIVE_TOKEN
+            ? NATIVE_TOKEN_TYPE
+            : ERC20_TOKEN_TYPE;
+
         _unlockAsset(
             LockData(
-                ERC20_TOKEN_TYPE,
-                address(uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])),
+                tokenType,
+                existingToken,
                 inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
                 plugin,
                 UtilsLib.safe96(inputs[ZSWAP_DEPOSIT_AMOUNT_IND])
@@ -700,9 +708,10 @@ contract PantherPoolV1 is
 
         IPlugin(plugin).execute(
             PluginData({
-                tokenIn: address(uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])),
+                tokenIn: existingToken,
                 tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_ID_IND])),
                 amountIn: UtilsLib.safe96(inputs[ZSWAP_DEPOSIT_AMOUNT_IND]),
+                tokenType: tokenType,
                 data: pluginData
             })
         );
@@ -717,7 +726,9 @@ contract PantherPoolV1 is
         _validateNonZero(amount, "Zero output");
 
         uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
-        uint256 scaledAmount = amount / scale;
+
+        uint256 amountRounded = UtilsLib.safe96((amount / scale) * scale);
+        uint256 scaledAmount = amountRounded / scale;
 
         zAssetUtxos[0] = bytes32(
             inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]

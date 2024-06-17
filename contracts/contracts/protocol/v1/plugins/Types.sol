@@ -7,5 +7,6 @@ struct PluginData {
     address tokenIn;
     uint96 amountIn;
     address tokenOut;
+    uint8 tokenType;
     bytes data;
 }
