@@ -1,52 +1,53 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import "../DeFi/uniswap/libraries/CallbackValidation.sol";
 import "../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
-import "../DeFi/uniswap/interfaces/IUniswapV3Factory.sol";
-import "../DeFi/uniswap/Types.sol";
 
 contract UniswapV3RouterPlugin {
-    address public immutable ROUTER;
+    address public immutable UNISWAP_ROUTER;
+    address public immutable UNISWAP_QUOTERV2;
     address public immutable VAULT;
-    address public immutable QUOTER;
-    address public immutable FACTORY;
 
-    uint16[] public feeTiers = [500, 3000, 10000];
+    uint24[4] public feeTiers = [100, 500, 3000, 10000];
 
-    constructor(
-        address router,
-        address vault,
-        address quoter,
-        address factory
-    ) {
-        ROUTER = router;
+    constructor(address uniswapRouter, address uniswapQuoterV2, address vault) {
+        require(
+            uniswapRouter != address(0) &&
+                uniswapQuoterV2 != address(0) &&
+                vault != address(0),
+            "init: zero address"
+        );
+
+        UNISWAP_ROUTER = uniswapRouter;
+        UNISWAP_QUOTERV2 = uniswapQuoterV2;
         VAULT = vault;
-        QUOTER = quoter;
-        FACTORY = factory;
     }
 
-    /// @dev  getQuoterV2InputSingle is not gas efficient and should be called offchain using staticCall
-    function getQuoterV2InputSingle(
-        address tokenIn,
-        address tokenOut,
-        uint24 fee,
-        uint256 amountToSwap
+    function getSqrtPriceX96(
+        address pool
+    ) external view returns (uint160 sqrtPriceX96) {
+        (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
+    }
+
+    /// @dev  quoteExactInputSingle is not gas efficient and should be called offchain using staticCall
+    function quoteExactInputSingle(
+        QuoteExactInputSingleParams memory params
     )
         external
-        returns (uint256 amountOut, uint160 sqrtRatioX96, uint256 gasEstimate)
+        returns (
+            uint256 amountOut,
+            uint160 sqrtPriceX96After,
+            uint32 initializedTicksCrossed,
+            uint256 gasEstimate
+        )
     {
-        (amountOut, sqrtRatioX96, , gasEstimate) = IQuoterV2(QUOTER)
-            .quoteExactInputSingle(
-                IQuoterV2.QuoteExactInputSingleParams({
-                    tokenIn: tokenIn,
-                    tokenOut: tokenOut,
-                    amountIn: amountToSwap,
-                    fee: fee,
-                    sqrtPriceLimitX96: 0
-                })
-            );
+        (
+            amountOut,
+            sqrtPriceX96After,
+            initializedTicksCrossed,
+            gasEstimate
+        ) = IQuoterV2(UNISWAP_QUOTERV2).quoteExactInputSingle(params);
     }
 
     // /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall
