@@ -49,71 +49,71 @@ contract UniswapV3RouterPlugin {
             );
     }
 
-    /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall
-    function getTokenInputSwapInfos(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountToSwap,
-        uint160 minimumSqrtPrice
-    ) external returns (SwapInfo[] memory swapInfos) {
-        swapInfos = new SwapInfo[](feeTiers.length);
+    // /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall
+    // function getTokenInputSwapInfos(
+    //     address tokenIn,
+    //     address tokenOut,
+    //     uint256 amountToSwap,
+    //     uint160 minimumSqrtPrice
+    // ) external returns (SwapInfo[] memory swapInfos) {
+    //     swapInfos = new SwapInfo[](feeTiers.length);
 
-        for (uint256 i = 0; i < feeTiers.length; i++) {
-            address pool = IUniswapV3Factory(FACTORY).getPool(
-                tokenIn,
-                tokenOut,
-                feeTiers[i]
-            );
-            uint128 liquidity = 0;
-            bool sufficientLiquidity = false;
+    //     for (uint256 i = 0; i < feeTiers.length; i++) {
+    //         address pool = IUniswapV3Factory(FACTORY).getPool(
+    //             tokenIn,
+    //             tokenOut,
+    //             feeTiers[i]
+    //         );
+    //         uint128 liquidity = 0;
+    //         bool sufficientLiquidity = false;
 
-            if (pool != address(0)) {
-                liquidity = IUniswapV3Pool(pool).liquidity();
-                (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool)
-                    .slot0();
+    //         if (pool != address(0)) {
+    //             liquidity = IUniswapV3Pool(pool).liquidity();
+    //             (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool)
+    //                 .slot0();
 
-                address token0 = IUniswapV3Pool(pool).token0();
+    //             address token0 = IUniswapV3Pool(pool).token0();
 
-                if (tokenIn == token0) {
-                    uint256 reserve0 = (liquidity * uint256(sqrtPriceX96)) >>
-                        96;
-                    sufficientLiquidity = reserve0 >= amountToSwap;
-                } else {
-                    uint256 reserve1 = liquidity <<
-                        (96 / uint256(sqrtPriceX96));
-                    sufficientLiquidity = reserve1 >= amountToSwap;
-                }
+    //             if (tokenIn == token0) {
+    //                 uint256 reserve0 = (liquidity * uint256(sqrtPriceX96)) >>
+    //                     96;
+    //                 sufficientLiquidity = reserve0 >= amountToSwap;
+    //             } else {
+    //                 uint256 reserve1 = liquidity <<
+    //                     (96 / uint256(sqrtPriceX96));
+    //                 sufficientLiquidity = reserve1 >= amountToSwap;
+    //             }
 
-                try
-                    IQuoterV2(QUOTER).quoteExactInputSingle(
-                        IQuoterV2.QuoteExactInputSingleParams({
-                            tokenIn: tokenIn,
-                            tokenOut: tokenOut,
-                            amountIn: amountToSwap,
-                            fee: feeTiers[i],
-                            sqrtPriceLimitX96: minimumSqrtPrice
-                        })
-                    )
-                returns (
-                    uint256 amountOut,
-                    uint160 sqrtRatioX96,
-                    uint32 initializedTicksCrossed,
-                    uint256 gasEstimate
-                ) {
-                    swapInfos[i] = SwapInfo({
-                        pool: pool,
-                        feeTier: feeTiers[i],
-                        amountOut: amountOut,
-                        sqrtRatioX96: sqrtRatioX96,
-                        initializedTicksCrossed: initializedTicksCrossed,
-                        gasEstimate: gasEstimate,
-                        liquidity: IUniswapV3Pool(pool).liquidity(),
-                        sufficientLiquidity: sufficientLiquidity
-                    });
-                } catch {
-                    continue;
-                }
-            }
-        }
-    }
+    //             try
+    //                 IQuoterV2(QUOTER).quoteExactInputSingle(
+    //                     IQuoterV2.QuoteExactInputSingleParams({
+    //                         tokenIn: tokenIn,
+    //                         tokenOut: tokenOut,
+    //                         amountIn: amountToSwap,
+    //                         fee: feeTiers[i],
+    //                         sqrtPriceLimitX96: minimumSqrtPrice
+    //                     })
+    //                 )
+    //             returns (
+    //                 uint256 amountOut,
+    //                 uint160 sqrtRatioX96,
+    //                 uint32 initializedTicksCrossed,
+    //                 uint256 gasEstimate
+    //             ) {
+    //                 swapInfos[i] = SwapInfo({
+    //                     pool: pool,
+    //                     feeTier: feeTiers[i],
+    //                     amountOut: amountOut,
+    //                     sqrtRatioX96: sqrtRatioX96,
+    //                     initializedTicksCrossed: initializedTicksCrossed,
+    //                     gasEstimate: gasEstimate,
+    //                     liquidity: IUniswapV3Pool(pool).liquidity(),
+    //                     sufficientLiquidity: sufficientLiquidity
+    //                 });
+    //             } catch {
+    //                 continue;
+    //             }
+    //         }
+    //     }
+    // }
 }
