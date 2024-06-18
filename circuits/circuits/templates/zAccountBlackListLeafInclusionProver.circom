@@ -16,10 +16,10 @@ This template checks if the ZAccount is blacklisted or not.
 4. pathElements - path elements that leads to the merkle root
 */
 template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
-    signal input zAccountId;
-    signal input leaf;
-    signal input merkleRoot;
-    signal input pathElements[ZAccountBlackListMerkleTreeDepth];
+    signal input {uint24} zAccountId;
+    signal input          leaf;
+    signal input          merkleRoot;
+    signal input          pathElements[ZAccountBlackListMerkleTreeDepth];
 
     component zAccountBlackListInlcusionProver = ZAccountNoteInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.note <== leaf;
@@ -28,7 +28,7 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     assert(ZAccountBlackListMerkleTreeDepth < 17);
     assert(zAccountId < 2**(ZAccountBlackListMerkleTreeDepth+8));
 
-    // copy path ellements
+    // copy path elements
     for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
         zAccountBlackListInlcusionProver.pathElements[j] <== pathElements[j];
     }
@@ -36,9 +36,10 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     component n2b_zAccountId = Num2Bits(ZAccountBlackListMerkleTreeDepth+8); // LSB is a bit number inside leaf
     n2b_zAccountId.in <== zAccountId;
 
+    var ACTIVE = Active();
     // build the path inside merkle-tree
     for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
-        zAccountBlackListInlcusionProver.pathIndices[j] <== n2b_zAccountId.out[j+8]; // +8 --> path is ZAccountBlackListMerkleTreeDepth MSB bits
+        zAccountBlackListInlcusionProver.pathIndices[j] <== BinaryTag(ACTIVE)(n2b_zAccountId.out[j+8]); // +8 --> path is ZAccountBlackListMerkleTreeDepth MSB bits
     }
 
     // build the index inside leaf

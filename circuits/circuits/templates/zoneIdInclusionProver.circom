@@ -7,9 +7,9 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZoneIdInclusionProver(){
     signal input enabled;
-    signal input zoneId;   // 16 bit
-    signal input zoneIds;  // 256 bit
-    signal input offset;   // 4 bit
+    signal input {uint16} zoneId;  // 16 bit
+    signal input zoneIds;          // 256 bit
+    signal input {uint4} offset;   // 4 bit
 
     assert(offset < 16);
 

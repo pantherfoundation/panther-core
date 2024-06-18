@@ -7,16 +7,16 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template RewardsExtended(nUtxoIn) {
-    signal input depositAmount;             // public-tag, assumed to be: 0 - 2^64
-    signal input forTxReward;               // anchored-tag, assumed to be: 0 - 2^40
-    signal input forUtxoReward;             // anchored-tag, assumed to be: 0 - 2^40
-    signal input forDepositReward;          // anchored-tag, assumed to be: 0 - 2^40
-    signal input spendTime;                 // public-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
-    signal input assetWeight;               // anchored-tag, assumed to be: 0 - 2^32
-    signal input utxoInAmount[nUtxoIn];     // assumed-tag, assumed to be: 0 - 2^64
-    signal input utxoInCreateTime[nUtxoIn]; // assumed-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
+    signal input {uint64}          depositAmount;             // public-tag, assumed to be: 0 - 2^64
+    signal input {uint40}          forTxReward;               // anchored-tag, assumed to be: 0 - 2^40
+    signal input {uint40}          forUtxoReward;             // anchored-tag, assumed to be: 0 - 2^40
+    signal input {uint40}          forDepositReward;          // anchored-tag, assumed to be: 0 - 2^40
+    signal input {uint32}          spendTime;                 // public-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
+    signal input {non_zero_uint32} assetWeight;               // anchored-tag, assumed to be: 0 - 2^32
+    signal input {uint64}          utxoInAmount[nUtxoIn];     // assumed-tag, assumed to be: 0 - 2^64
+    signal input {uint32}          utxoInCreateTime[nUtxoIn]; // assumed-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
 
-    signal output amountPrp;                // range-check-tag, assumed to be: 0 - 2^(253-60) = 2^193
+    signal output amountPrp;                // range-check-tag, assumed to be: 0 - 2^(253-60) < 2^193
 
     /*
      * R = forTxReward
@@ -77,8 +77,7 @@ template RewardsExtended(nUtxoIn) {
         b2n.in[i-prpScaleFactor] <== n2b.out[i];
     }
     // at most 2^(253 - 60) = 2^196
-    amountPrp <== b2n.out;
-
-    component rc_amountPrp = LessThanBits(253 - prpScaleFactor);
-    rc_amountPrp.in <== amountPrp;
+    assert(253 - prpScaleFactor < 196);
+    var ACTIVE = Active();
+    amountPrp <== Uint196Tag(ACTIVE)(b2n.out);
 }

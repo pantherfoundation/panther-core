@@ -8,12 +8,12 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template TrustProvidersNoteInclusionProver(n_levels) {
-    signal input enabled;
-    signal input root;
-    signal input key[2];
-    signal input expiryTime;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input          enabled;
+    signal input          root;
+    signal input          key[2];
+    signal input {uint32} expiryTime;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
 
     assert(enabled < 2);
     enabled * enabled - enabled === 0;

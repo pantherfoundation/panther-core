@@ -19,9 +19,9 @@ in the array are leaves (pair leaves to the one set by the `leaf` signal).
 */
 
 template MerkleTreeInclusionProof(n_levels) {
-    signal input leaf;
-    signal input pathIndices[n_levels+1];
-    signal input pathElements[n_levels+1]; // extra slot for third leave
+    signal input          leaf;
+    signal input {binary} pathIndices[n_levels+1];
+    signal input          pathElements[n_levels+1]; // extra slot for third leave
 
     signal output root;
 
@@ -60,9 +60,9 @@ template MerkleTreeInclusionProof(n_levels) {
 }
 
 template MerkleTreeInclusionProofDoubleLeaves(n_levels) {
-    signal input leaf;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input          leaf;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
 
     signal output root;
 
@@ -107,7 +107,7 @@ template Selector3() {
     signal input R;
 
     // Selector that chooses the input signal
-    signal input sel[2];
+    signal input {binary} sel[2];
 
     signal output out;
 
@@ -149,11 +149,11 @@ template MerkleTreeInclusionProofDoubleLeavesSelectable(
     var r_levels = m_levels + r_extraLevels;
 
     // If the left ([0,0]) or middle ([1,0]) or right ([0,1]) tree to be selected
-    signal input treeSelector[2];
+    signal input {binary} treeSelector[2];
 
-    signal input leaf;
-    signal input pathElements[r_levels];
-    signal input pathIndices[r_levels];
+    signal input          leaf;
+    signal input          pathElements[r_levels];
+    signal input {binary} pathIndices[r_levels];
 
     signal output root;
 

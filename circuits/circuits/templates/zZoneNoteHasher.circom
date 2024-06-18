@@ -5,22 +5,22 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZZoneNoteHasher(){
-    signal input zoneId;                                        // 16
-    signal input edDsaPubKey[2];                                // 256
-    signal input originZoneIDs;                                 // 256
-    signal input targetZoneIDs;                                 // 256
-    signal input networkIDsBitMap;                              // 64
-    signal input trustProvidersMerkleTreeLeafIDsAndRulesList;   // 256
-    signal input kycExpiryTime;                                 // 32
-    signal input kytExpiryTime;                                 // 32
-    signal input depositMaxAmount;                              // 64
-    signal input withdrawMaxAmount;                             // 64
-    signal input internalMaxAmount;                             // 64
-    signal input zAccountIDsBlackList;                          // 256
-    signal input maximumAmountPerTimePeriod;                    // 256
-    signal input timePeriodPerMaximumAmount;                    // 32 bit
-    signal input dataEscrowPubKey[2];                           // 256
-    signal input sealing;                                       // 1 bit
+    signal input {uint16}  zoneId;                                        // 16
+    signal input           edDsaPubKey[2];                                // 256
+    signal input {uint16}  originZoneIDs;                                 // 256
+    signal input {uint16}  targetZoneIDs;                                 // 256
+    signal input {uint64}  networkIDsBitMap;                              // 64
+    signal input           trustProvidersMerkleTreeLeafIDsAndRulesList;   // 256
+    signal input {uint32}  kycExpiryTime;                                 // 32
+    signal input {uint32}  kytExpiryTime;                                 // 32
+    signal input           depositMaxAmount;                              // 64
+    signal input           withdrawMaxAmount;                             // 64
+    signal input           internalMaxAmount;                             // 64
+    signal input {uint240} zAccountIDsBlackList;                          // 256
+    signal input           maximumAmountPerTimePeriod;                    // 256
+    signal input {uint32}  timePeriodPerMaximumAmount;                    // 32 bit
+    signal input           dataEscrowPubKey[2];                           // 256
+    signal input {binary}  sealing;                                       // 1 bit
 
     signal output out;
 

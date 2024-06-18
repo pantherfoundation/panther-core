@@ -8,13 +8,16 @@ include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
     signal input enabled;
-    signal input leafId;                // 16 bit
-    signal input rule;                  // 8 bit
-    signal input leafIDsAndRulesList;   // 240 bit
-    signal input offset;                // 4 bit
+    signal input {uint16}  leafId;                // 16 bit
+    signal input {uint8}   rule;                  // 8 bit
+    signal input {uint240} leafIDsAndRulesList;   // 240 bit
+    signal input {uint4}   offset;                // 4 bit
 
     assert(leafIDsAndRulesList < 2**240);
     assert(offset < 10);
+    component offset_lessThan_10 = LessThan(4);
+    offset_lessThan_10.in[0] <== offset;
+    offset_lessThan_10.in[1] <== 10;
 
     component n2b_leafIDsAndRulesList = Num2Bits(10 * 24);
     n2b_leafIDsAndRulesList.in <== leafIDsAndRulesList;
