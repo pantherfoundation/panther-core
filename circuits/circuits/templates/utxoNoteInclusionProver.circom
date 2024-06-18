@@ -8,11 +8,11 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template UtxoNoteInclusionProver(n_levels) {
-    signal input root;
-    signal input note;
-    signal input pathIndices[n_levels+1];
-    signal input pathElements[n_levels+1]; // extra slot for 3rd leave
-    signal input enabled;
+    signal input          root;
+    signal input          note;
+    signal input {binary} pathIndices[n_levels+1];
+    signal input          pathElements[n_levels+1]; // extra slot for 3rd leave
+    signal input          enabled;
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProof(n_levels);
@@ -30,11 +30,11 @@ template UtxoNoteInclusionProver(n_levels) {
 }
 
 template UtxoNoteInclusionProverBinary(n_levels) {
-    signal input root;
-    signal input note;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
-    signal input enabled;
+    signal input          root;
+    signal input          note;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
+    signal input          enabled;
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProofDoubleLeaves(n_levels);
@@ -57,12 +57,12 @@ template UtxoNoteInclusionProverBinarySelectable(l_levels,m_extraLevels,r_extraL
     // the right tree must have no less levels than the middle one
     var r_levels = m_levels + r_extraLevels;
 
-    signal input root[3];
-    signal input treeSelector[2];
-    signal input note;
-    signal input pathIndices[r_levels];
-    signal input pathElements[r_levels];
-    signal input enabled;
+    signal input          root[3];
+    signal input {binary} treeSelector[2];
+    signal input          note;
+    signal input {binary} pathIndices[r_levels];
+    signal input          pathElements[r_levels];
+    signal input          enabled;
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProofDoubleLeavesSelectable(l_levels,m_extraLevels,r_extraLevels);

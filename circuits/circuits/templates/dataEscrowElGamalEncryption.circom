@@ -64,13 +64,13 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 // subgroup may be generated (from Base8) by a single scalar multiplication.
 
 template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
-    signal input ephemeralRandom;                               // randomness
-    signal input scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
-    signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
-    signal input pubKey[2];                                     // public key (assumed to be priv-key * B8)
-    signal output ephemeralPubKey[2];                           // ephemeral public-key
-    signal output encryptedMessage[ScalarsSize+PointsSize][2];  // encrypted data
-    signal output encryptedMessageHash;                         // multi-poseidon hash
+    signal input {sub_order_bj_sf} ephemeralRandom;                               // randomness
+    signal input {uint64}          scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
+    signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
+    signal input                   pubKey[2];                                     // public key (assumed to be priv-key * B8)
+    signal output                  ephemeralPubKey[2];                            // ephemeral public-key
+    signal output                  encryptedMessage[ScalarsSize+PointsSize][2];   // encrypted data
+    signal output                  encryptedMessageHash;                          // multi-poseidon hash
 
     assert(ScalarsSize > 0);
     assert(PointsSize > 0);
@@ -141,20 +141,20 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
 // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
 // ------------------------------------------------------------
 template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
-    signal input zAsset;                                            // 64 bit
-    signal input zAccountId;                                        // 24 bit
-    signal input zAccountZoneId;                                    // 16 bit
-    signal input utxoInMerkleTreeSelector[nUtxoIn][2];              // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
-    signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];   // Max 32 bit
+    signal input {uint64} zAsset;                                            // 64 bit
+    signal input          zAccountId;                                        // 24 bit
+    signal input          zAccountZoneId;                                    // 16 bit
+    signal input {binary} utxoInMerkleTreeSelector[nUtxoIn][2];              // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
+    signal input {binary} utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];   // Max 32 bit
 
-    signal input utxoInAmount[nUtxoIn];                             // 64 bit
-    signal input utxoOutAmount[nUtxoOut];                           // 64 bit
+    signal input {uint64} utxoInAmount[nUtxoIn];                             // 64 bit
+    signal input {uint64} utxoOutAmount[nUtxoOut];                           // 64 bit
 
-    signal input utxoInOriginZoneId[nUtxoIn];                       // 16 bit
-    signal input utxoOutTargetZoneId[nUtxoOut];                     // 16 bit
+    signal input          utxoInOriginZoneId[nUtxoIn];                       // 16 bit
+    signal input          utxoOutTargetZoneId[nUtxoOut];                     // 16 bit
 
     // each signal will be < 2^64
-    signal output out[DataEscrowScalarSize_Fn(nUtxoIn, nUtxoOut)];
+    signal output {uint64} out[DataEscrowScalarSize_Fn(nUtxoIn, nUtxoOut)];
 
     // ---------------- Scalars ----------------------
     // 1) 1 x 64 (zAsset) ----------------------------
@@ -440,11 +440,11 @@ template DaoDataEscrowSerializer(nUtxoIn,nUtxoOut) {
 }
 
 template DataEscrowElGamalEncryptionPoint(PointsSize) {
-    signal input ephemeralRandom;                               // randomness
-    signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
-    signal input pubKey[2];                                     // public key
-    signal output ephemeralPubKey[2];                           // ephemeral public-key
-    signal output encryptedMessage[PointsSize][2];              // encrypted data
+    signal input {sub_order_bj_sf} ephemeralRandom;                               // randomness
+    signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
+    signal input                   pubKey[2];                                     // public key
+    signal output                  ephemeralPubKey[2];                           // ephemeral public-key
+    signal output                  encryptedMessage[PointsSize][2];              // encrypted data
 
     assert(PointsSize > 0);
 

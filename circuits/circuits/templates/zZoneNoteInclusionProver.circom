@@ -8,10 +8,10 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template ZZoneNoteInclusionProver(n_levels) {
-    signal input root;
-    signal input zZoneCommitment;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input          root;
+    signal input          zZoneCommitment;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProofDoubleLeaves(n_levels);

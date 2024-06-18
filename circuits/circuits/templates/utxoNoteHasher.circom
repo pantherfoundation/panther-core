@@ -8,14 +8,14 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // since in generare-deposits api, spendPk, zAsset and amount are publicly know parameters
 template UtxoNoteHasher(isHiddenHash){
     signal input spendPk[2];            // 256
-    signal input zAsset;                // 64
-    signal input amount;                // 64
-    signal input originNetworkId;       // 6
-    signal input targetNetworkId;       // 6
-    signal input createTime;            // 32
-    signal input originZoneId;          // 16
-    signal input targetZoneId;          // 16
-    signal input zAccountId;            // 24
+    signal input {uint64} zAsset;                // 64
+    signal input {uint64} amount;                // 64
+    signal input {uint6}  originNetworkId;       // 6
+    signal input {uint6}  targetNetworkId;       // 6
+    signal input {uint32} createTime;            // 32
+    signal input {uint16} originZoneId;          // 16
+    signal input {uint16} targetZoneId;          // 16
+    signal input {uint24} zAccountId;            // 24
     signal input dataEscrowPubKey[2];   // 256
 
     signal output out;

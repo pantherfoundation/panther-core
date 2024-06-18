@@ -4,8 +4,8 @@ pragma circom 2.1.6;
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 
 template ZAccountNullifierHasher(){
-    signal input privKey;
-    signal input commitment;
+    signal input {sub_order_bj_sf} privKey;
+    signal input                   commitment;
 
     signal output out;
 

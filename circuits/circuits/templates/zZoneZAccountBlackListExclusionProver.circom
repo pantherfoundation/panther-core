@@ -13,8 +13,8 @@ This template checks if the given ZAccount in a ZZone is not blacklisted.
 2. zAccountIDsBlackList - List of all ZAccounts that are blacklisted.
 */
 template ZZoneZAccountBlackListExclusionProver(){
-    signal input zAccountId;              // 24 bit
-    signal input zAccountIDsBlackList;    // 10 x 24 bit at most
+    signal input {uint24}  zAccountId;              // 24 bit
+    signal input {uint240} zAccountIDsBlackList;    // 10 x 24 bit at most
 
     assert(zAccountId < 2**24);
 

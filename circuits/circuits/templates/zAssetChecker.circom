@@ -21,16 +21,16 @@ This template checks for the pre-requisite equalities for all types of transacti
 1. isZkpToken - 1 if ZAsset is ZKP, 0 otherwise
 */
 template ZAssetChecker() {
-    signal input token;               // 160 bit - public value
-    signal input tokenId;             // 256 bit - public value
-    signal input zAssetId;            // 64 bit  - zAsset-Leaf
-    signal input zAssetToken;         // 160 bit - zAsset-Leaf
-    signal input zAssetTokenId;       // 256 bit - zAsset-Leaf
-    signal input zAssetOffset;        // 6 bit   - zAsset-Leaf
-    signal input depositAmount;       // 256 bit - public value
-    signal input withdrawAmount;      // 256 bit - public value
-    signal input utxoZAssetId;        // 64 bit  - UTXO in & out preimage value
-    signal output isZkpToken;         // 1 bit -- 0-FALSE, 1-TRUE
+    signal input {uint168} token;               // 168 bit - public value
+    signal input {uint252} tokenId;             // 252 bit - public value
+    signal input {uint64}  zAssetId;            // 64 bit  - zAsset-Leaf
+    signal input {uint168} zAssetToken;         // 168 bit - zAsset-Leaf
+    signal input {uint252} zAssetTokenId;       // 252 bit - zAsset-Leaf
+    signal input {uint6}   zAssetOffset;        // 6 bit   - zAsset-Leaf
+    signal input {uint96}  depositAmount;       // 96 bit - public value
+    signal input {uint96}  withdrawAmount;      // 96 bit - public value
+    signal input {uint64}  utxoZAssetId;        // 64 bit  - UTXO in & out preimage value
+    signal output {binary} isZkpToken;          // 1 bit -- 0-FALSE, 1-TRUE
 
     assert(depositAmount < 2**250);
     assert(withdrawAmount < 2**250);

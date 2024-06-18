@@ -5,20 +5,20 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZAccountNoteHasher(){
-    signal input spendPubKey[2];            // 2 x 256 bit
-    signal input rootSpendPubKey[2];        // 2 x 256 bit
-    signal input readPubKey[2];             // 2 x 256 bit
-    signal input nullifierPubKey[2];        // 2 x 256 bit
-    signal input masterEOA;                 // 160 bit
-    signal input id;                        // 24 bit
-    signal input amountZkp;                 // 252 bit
-    signal input amountPrp;                 // 64 bit
-    signal input zoneId;                    // 16 bit
-    signal input expiryTime;                // 32 bit
-    signal input nonce;                     // 16 bit
-    signal input totalAmountPerTimePeriod;  // 256 bit
-    signal input createTime;                // 32 bit
-    signal input networkId;                 // 6 bit
+    signal input           spendPubKey[2];            // 2 x 256 bit
+    signal input           rootSpendPubKey[2];        // 2 x 256 bit
+    signal input           readPubKey[2];             // 2 x 256 bit
+    signal input           nullifierPubKey[2];        // 2 x 256 bit
+    signal input {uint160} masterEOA;                 // 160 bit
+    signal input {uint24}  id;                        // 24 bit
+    signal input {uint64}  amountZkp;                 // 252 bit
+    signal input           amountPrp;                 // 64 bit TODO:FIXME - should be tag uint64
+    signal input {uint16}  zoneId;                    // 16 bit
+    signal input {uint32}  expiryTime;                 // 32 bit
+    signal input           nonce;                      // 16 bit TODO: FIXME - why 16 bit ?
+    signal input           totalAmountPerTimePeriod;   // 256 bit
+    signal input {uint32}  createTime;                 // 32 bit
+    signal input {uint6}   networkId;                  // 6 bit
 
     signal output out;
 

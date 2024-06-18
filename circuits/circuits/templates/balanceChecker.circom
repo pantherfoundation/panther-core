@@ -21,27 +21,27 @@ include "./utils.circom";
 //     ---> AND totalAmountIn === totalAmountOut
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template BalanceChecker() {
-    signal input isZkpToken;                        // range-check-tag, assumed to be: 0 - 1
-    signal input depositAmount;                     // public-tag, assumed to be: 0 - 2^96
-    signal input withdrawAmount;                    // public-tag, assumed to be: 0 - 2^96
-    signal input chargedAmountZkp;                  // public-tag, assumed to be: 0 - 2^96
-    signal input addedAmountZkp;                    // public-tag, assumed to be: 0 - 2^96
-    signal input zAccountUtxoInZkpAmount;           // anchored-tag, assumed to be: 0 - 2^64
-    signal input zAccountUtxoOutZkpAmount;          // anchored-tag, assumed to be: 0 - 2^64
-    signal input totalUtxoInAmount;                 // anchored-tag, assumed to be: 0 - nUtxoIn x 2^64 < 2^70
-    signal input totalUtxoOutAmount;                // anchored-tag, assumed to be: 0 - nUtxoOut x 2^64 < 2^70
-    signal input zAssetWeight;                      // anchored-tag, assumed to be: 1 - 2^32
-    signal input zAssetScale;                       // anchored-tag, assumed to be: 1 - 2^64
-    signal input zAssetScaleZkp;                    // anchored-tag, assumed to be: 1 - 2^64
-    signal input kytDepositChargedAmountZkp;        // range-check-tag, assumed to be: 0 - 2^96
-    signal input kytWithdrawChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
-    signal input kytInternalChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
-    signal output depositScaledAmount;              // range-check-tag, assumed to be: 0 - 2^64
-    signal output depositWeightedScaledAmount;      // range-check-tag, assumed to be: 0 - 2^96
-    signal output withdrawScaledAmount;             // range-check-tag, assumed to be: 0 - 2^64
-    signal output withdrawWeightedScaledAmount;     // range-check-tag, assumed to be: 0 - 2^96
-    signal output totalScaled;                      // range-check-tag, assumed to be: 0 - 2^96
-    signal output totalWeighted;                    // range-check-tag, assumed to be: 0 - 2^96
+    signal input {binary} isZkpToken;                        // range-check-tag, assumed to be: 0 - 1
+    signal input {uint96} depositAmount;                     // public-tag, assumed to be: 0 - 2^96
+    signal input {uint96} withdrawAmount;                    // public-tag, assumed to be: 0 - 2^96
+    signal input {uint96} chargedAmountZkp;                  // public-tag, assumed to be: 0 - 2^96
+    signal input {uint96} addedAmountZkp;                    // public-tag, assumed to be: 0 - 2^96
+    signal input {uint64} zAccountUtxoInZkpAmount;           // anchored-tag, assumed to be: 0 - 2^64
+    signal input {uint64} zAccountUtxoOutZkpAmount;          // anchored-tag, assumed to be: 0 - 2^64
+    signal input {uint70} totalUtxoInAmount;                 // anchored-tag, assumed to be: 0 - nUtxoIn x 2^64 < 2^70
+    signal input {uint70} totalUtxoOutAmount;                // anchored-tag, assumed to be: 0 - nUtxoOut x 2^64 < 2^70
+    signal input {non_zero_uint32} zAssetWeight;             // anchored-tag, assumed to be: 1 - 2^32
+    signal input {non_zero_uint64} zAssetScale;              // anchored-tag, assumed to be: 1 - 2^64
+    signal input {non_zero_uint64} zAssetScaleZkp;           // anchored-tag, assumed to be: 1 - 2^64
+    signal input {uint96} kytDepositChargedAmountZkp;        // range-check-tag, assumed to be: 0 - 2^96
+    signal input {uint96} kytWithdrawChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
+    signal input {uint96} kytInternalChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
+    signal output {uint64} depositScaledAmount;              // range-check-tag, assumed to be: 0 - 2^64
+    signal output {uint96} depositWeightedScaledAmount;      // range-check-tag, assumed to be: 0 - 2^96
+    signal output {uint64} withdrawScaledAmount;             // range-check-tag, assumed to be: 0 - 2^64
+    signal output {uint96} withdrawWeightedScaledAmount;     // range-check-tag, assumed to be: 0 - 2^96
+    signal output {uint96} totalScaled;                      // range-check-tag, assumed to be: 0 - 2^96
+    signal output {uint96} totalWeighted;                    // range-check-tag, assumed to be: 0 - 2^96
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [0] - Asserts ///////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,46 +61,38 @@ template BalanceChecker() {
     assert(0 <= kytWithdrawChargedAmountZkp < 2**96);
     assert(0 <= kytInternalChargedAmountZkp < 2**96);
 
+    var ACTIVE = Active();
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [1] - Deposit ///////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [1.0] - scale ( a / b = c )
     signal depositScaledAmountTmp <-- depositAmount \ zAssetScale;
 
-    depositScaledAmount <== depositScaledAmountTmp;
-
     // Audit Bug - 4.1.1 V-PANC-VUL-001: depositScaledAmount is under-constrained
-    component rc_depositScaledAmount = LessThanBits(64);
-    rc_depositScaledAmount.in <== depositScaledAmount;
+    depositScaledAmount <== Uint64Tag(ACTIVE)(depositScaledAmountTmp);
 
     // [1.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a )
     // Since depositScaledAmountTmp is RCed via depositScaledAmount, and the range of zAssetScale is
     // fixed (as the signal is anchored), so, the right expression can't overflow.
-    depositAmount === ( depositScaledAmountTmp * zAssetScale );
+    depositAmount === ( depositScaledAmount * zAssetScale );
 
     // [1.2] - weighted amount
-    depositWeightedScaledAmount <== depositScaledAmountTmp * zAssetWeight;
+    signal depositWeightedScaledAmountTmp <== depositScaledAmount * zAssetWeight;
 
-    component rc_depositWeightedScaledAmount = LessThanBits(96);
-    rc_depositWeightedScaledAmount.in <== depositWeightedScaledAmount;
+    depositWeightedScaledAmount <== Uint96Tag(ACTIVE)(depositWeightedScaledAmountTmp);
 
     // [1.3] - scaled zZKP donation
     signal addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
 
     // Audit Bug - 4.1.4 V-PANC-VUL-004: donatedScaledAmountZkp is under-constrained
-    component rc_addedScaledAmountZkp = LessThanBits(64);
-    rc_addedScaledAmountZkp.in <== addedScaledAmountZkp;
+    signal addedScaledAmountZkpTmp <== Uint64Tag(ACTIVE)(addedScaledAmountZkp);
 
-    addedAmountZkp === addedScaledAmountZkp * zAssetScaleZkp;
+    addedAmountZkp === addedScaledAmountZkpTmp * zAssetScaleZkp;
 
     // [1.4] - scaled zZKP deposit KYT amount
-    component rc_kytDepositChargedAmountZkp = LessThanBits(96);
-    rc_kytDepositChargedAmountZkp.in <== kytDepositChargedAmountZkp;
+    signal kytDepositScaledChargedAmountZkpTmp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
 
-    signal kytDepositScaledChargedAmountZkp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
-
-    component rc_kytDepositScaledChargedAmountZkp = LessThanBits(96);
-    rc_kytDepositScaledChargedAmountZkp.in <== kytDepositScaledChargedAmountZkp;
+    signal kytDepositScaledChargedAmountZkp <==  Uint96Tag(ACTIVE)(kytDepositScaledChargedAmountZkpTmp);
 
     kytDepositChargedAmountZkp === kytDepositScaledChargedAmountZkp * zAssetScaleZkp;
 
@@ -114,40 +106,31 @@ template BalanceChecker() {
     // [2.0] - scale ( a / b = c )
     signal withdrawScaledAmountTmp <-- withdrawAmount \ zAssetScale;
 
-    withdrawScaledAmount <== withdrawScaledAmountTmp;
-
     // Audit Bug - 4.1.3 V-PANC-VUL-003: withdrawScaledAmount is under-constrained
-    component rc_withdrawScaledAmount = LessThanBits(64);
-    rc_withdrawScaledAmount.in <== withdrawScaledAmount;
+    withdrawScaledAmount <== Uint64Tag(ACTIVE)(withdrawScaledAmountTmp);
 
     // [2.1] - restore ( a / b = c --> c * b = a ) & constrain ( c * b === a )
     // withdrawScaledAmountTmp is RCed via withdrawScaledAmount, zAssetScale is anchored so its range is known,
     // so, the right expression can't overflow.
-    withdrawAmount === ( withdrawScaledAmountTmp * zAssetScale );
+    withdrawAmount === ( withdrawScaledAmount * zAssetScale );
 
     // [2.2] - weighted amount
-    withdrawWeightedScaledAmount <== withdrawScaledAmountTmp * zAssetWeight;
+    signal withdrawWeightedScaledAmountTmp <== withdrawScaledAmount * zAssetWeight;
 
-    component rc_withdrawWeightedScaledAmount = LessThanBits(96);
-    rc_withdrawWeightedScaledAmount.in <== withdrawWeightedScaledAmount;
+    withdrawWeightedScaledAmount <== Uint96Tag(ACTIVE)(withdrawWeightedScaledAmountTmp);
 
     // [2.3] - scaled zZKP charge
-    signal chargedScaledAmountZkp <-- chargedAmountZkp \ zAssetScaleZkp;
+    signal chargedScaledAmountZkpTmp <-- chargedAmountZkp \ zAssetScaleZkp;
 
     // Audit Bug - 4.1.6 V-PANC-VUL-006: chargedScaledAmountZkp is under-constrained
-    component rc_chargedScaledAmountZkp = LessThanBits(96);
-    rc_chargedScaledAmountZkp.in <== chargedScaledAmountZkp;
+    signal chargedScaledAmountZkp <== Uint96Tag(ACTIVE)(chargedScaledAmountZkpTmp);
 
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
 
     // [2.4] - scaled zZKP deposit KYT amount
-    component rc_kytWithdrawChargedAmountZkp = LessThanBits(96);
-    rc_kytWithdrawChargedAmountZkp.in <== kytWithdrawChargedAmountZkp;
+    signal kytWithdrawScaledChargedAmountZkpTmp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
 
-    signal kytWithdrawScaledChargedAmountZkp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
-
-    component rc_kytWithdrawScaledChargedAmountZkp = LessThanBits(96);
-    rc_kytWithdrawScaledChargedAmountZkp.in <== kytWithdrawScaledChargedAmountZkp;
+    signal kytWithdrawScaledChargedAmountZkp <== Uint96Tag(ACTIVE)(kytWithdrawScaledChargedAmountZkpTmp);
 
     kytWithdrawChargedAmountZkp === kytWithdrawScaledChargedAmountZkp * zAssetScaleZkp;
 
@@ -158,41 +141,21 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [3] - scaled zZKP internal KYT amount ///////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    component rc_kytInternalChargedAmountZkp = LessThanBits(96);
-    rc_kytInternalChargedAmountZkp.in <== kytInternalChargedAmountZkp;
+    signal kytInternalScaledChargedAmountZkpTmp <-- kytInternalChargedAmountZkp \ zAssetScaleZkp;
 
-    signal kytInternalScaledChargedAmountZkp <-- kytInternalChargedAmountZkp \ zAssetScaleZkp;
-
-    component rc_kytInternalScaledChargedAmountZkp = LessThanBits(96);
-    rc_kytInternalScaledChargedAmountZkp.in <== kytInternalScaledChargedAmountZkp;
+    signal kytInternalScaledChargedAmountZkp <== Uint96Tag(ACTIVE)(kytInternalScaledChargedAmountZkpTmp);
 
     kytInternalChargedAmountZkp === kytInternalScaledChargedAmountZkp * zAssetScaleZkp;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [4] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    signal kytChargedScaledAmountZkp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
+    signal kytChargedScaledAmountZkpTmp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
 
-    component rc_kytChargedScaledAmountZkpCheck = LessThanBits(99); // 96 + 3
-    rc_kytChargedScaledAmountZkpCheck.in <== kytChargedScaledAmountZkp;
-
-    component rc_isZkpToken = BinaryRangeCheck();
-    rc_isZkpToken.in <== isZkpToken;
-
-    component rc_totalUtxoInAmount = LessThanBits(70);
-    rc_totalUtxoInAmount.in <== totalUtxoInAmount;
-
-    component rc_zAccountUtxoInZkpAmount = LessThanBits(64);
-    rc_zAccountUtxoInZkpAmount.in <== zAccountUtxoInZkpAmount;
+    signal kytChargedScaledAmountZkp <== UintTag(ACTIVE,99)(kytChargedScaledAmountZkpTmp); // 96 + 3
 
     // depositScaledAmount is RCed, together with zAccountUtxoInZkpAmount & addedScaledAmountZkp, 64 + 64 + 96
     signal totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
-
-    component rc_totalUtxoOutAmount = LessThanBits(70);
-    rc_totalUtxoOutAmount.in <== totalUtxoOutAmount;
-
-    component rc_zAccountUtxoOutZkpAmount = LessThanBits(64);
-    rc_zAccountUtxoOutZkpAmount.in <== zAccountUtxoOutZkpAmount;
 
     signal totalBalanceOut <== withdrawScaledAmount + totalUtxoOutAmount + isZkpToken * ( zAccountUtxoOutZkpAmount + chargedScaledAmountZkp + kytChargedScaledAmountZkp );
 
@@ -225,15 +188,13 @@ template BalanceChecker() {
     // no need to RCed since zAccountUtxo_{In,Out}_ZkpAmounts' are already RCed
     signal zAccountUtxoResidualZkpAmount <== mux_input[0] + mux_input[1];
     // [6.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
-    totalScaled <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
+    signal totalScaledTmp <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
 
     // Audit Bug - 4.1.2 V-PANC-VUL-002: zkpScaledAmount is under-constrained
-    component rc_totalScaled = LessThanBits(96);
-    rc_totalScaled.in <== totalScaled;
+    totalScaled <== Uint96Tag(ACTIVE)(totalScaledTmp);
 
     // [6.3] - compute total-weighted
-    totalWeighted <== totalScaled * zAssetWeight;
+    signal totalWeightedTmp <== totalScaled * zAssetWeight;
 
-    component rc_totalWeighted = LessThanBits(96);
-    rc_totalWeighted.in <== totalWeighted;
+    totalWeighted <== Uint96Tag(ACTIVE)(totalWeightedTmp);
 }

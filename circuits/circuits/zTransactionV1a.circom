@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./zSwapV1.circom";
+include "./zSwapV1Top.circom";
 
 template ZTransactionV1a( nUtxoIn,
                           nUtxoOut,
@@ -286,16 +286,16 @@ template ZTransactionV1a( nUtxoIn,
     var notZSwap = 0;
     var transactedToken = TransactedTokenIndex();
     var zkpToken = ZkpTokenIndex( notZSwap );
-    component zTransactionV1 = ZSwapV1( nUtxoIn,
-                                        nUtxoOut,
-                                        UtxoLeftMerkleTreeDepth,
-                                        UtxoMiddleMerkleTreeDepth,
-                                        ZNetworkMerkleTreeDepth,
-                                        ZAssetMerkleTreeDepth,
-                                        ZAccountBlackListMerkleTreeDepth,
-                                        ZZoneMerkleTreeDepth,
-                                        TrustProvidersMerkleTreeDepth,
-                                        notZSwap );
+    component zTransactionV1 = ZSwapV1Top( nUtxoIn,
+                                           nUtxoOut,
+                                           UtxoLeftMerkleTreeDepth,
+                                           UtxoMiddleMerkleTreeDepth,
+                                           ZNetworkMerkleTreeDepth,
+                                           ZAssetMerkleTreeDepth,
+                                           ZAccountBlackListMerkleTreeDepth,
+                                           ZZoneMerkleTreeDepth,
+                                           TrustProvidersMerkleTreeDepth,
+                                           notZSwap );
 
     zTransactionV1.extraInputsHash <== extraInputsHash;
     zTransactionV1.depositAmount <== depositAmount;
