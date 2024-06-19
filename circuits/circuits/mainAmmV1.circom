@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./ammV1.circom";
+include "./ammV1Top.circom";
 
 component main {
     public [
@@ -21,9 +21,9 @@ component main {
         saltHash,                              // [14]
         magicalConstraint                      // [15]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 15
-    ]} = AmmV1 ( 8,     // UtxoLeftMerkleTreeDepth
-                 26,    // UtxoMiddleMerkleTreeDepth
-                 6,     // ZNetworkMerkleTreeDepth
-                 16,    // ZAssetMerkleTreeDepth
-                 16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
-                 16 );  // ZZoneMerkleTreeDepth - depends on zoneID size
+    ]} = AmmV1Top ( 8,     // UtxoLeftMerkleTreeDepth
+                    26,    // UtxoMiddleMerkleTreeDepth
+                    6,     // ZNetworkMerkleTreeDepth
+                    16,    // ZAssetMerkleTreeDepth
+                    16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
+                    16 );  // ZZoneMerkleTreeDepth - depends on zoneID size

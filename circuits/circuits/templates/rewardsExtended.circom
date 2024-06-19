@@ -6,29 +6,28 @@ include "./utils.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
+///*
+// * R = forTxReward
+// *   + [ forUtxoReward * sum[over i] ( UTXO_period_i * UTXO_amount_i )
+//         + forDepositReward * deposit_amount ] * asset_weight
+// * S1 = forTxReward
+// * S2 = forDepositReward * deposit_amount
+// * S3 = sum[over i](UTXO_period_i * UTXO_amount_i)
+// * S4 = forUtxoReward * S3
+// * S5 = (S4 + S2)*assetWeight
+// * R = S1 + S5
+// */
 template RewardsExtended(nUtxoIn) {
-    signal input {uint64}          depositAmount;             // public-tag, assumed to be: 0 - 2^64
-    signal input {uint40}          forTxReward;               // anchored-tag, assumed to be: 0 - 2^40
-    signal input {uint40}          forUtxoReward;             // anchored-tag, assumed to be: 0 - 2^40
-    signal input {uint40}          forDepositReward;          // anchored-tag, assumed to be: 0 - 2^40
-    signal input {uint32}          spendTime;                 // public-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
-    signal input {non_zero_uint32} assetWeight;               // anchored-tag, assumed to be: 0 - 2^32
-    signal input {uint64}          utxoInAmount[nUtxoIn];     // assumed-tag, assumed to be: 0 - 2^64
-    signal input {uint32}          utxoInCreateTime[nUtxoIn]; // assumed-tag, assumed to be: 0 - 2^32 (de-facto range-checked via LessThan(32))
+    signal input {uint96}          depositAmount;
+    signal input {uint40}          forTxReward;
+    signal input {uint40}          forUtxoReward;
+    signal input {uint40}          forDepositReward;
+    signal input {uint32}          spendTime;
+    signal input {non_zero_uint32} assetWeight;
+    signal input {uint64}          utxoInAmount[nUtxoIn];
+    signal input {uint32}          utxoInCreateTime[nUtxoIn];
 
-    signal output amountPrp;                // range-check-tag, assumed to be: 0 - 2^(253-60) < 2^193
-
-    /*
-     * R = forTxReward
-     *   + [ forUtxoReward * sum[over i] ( UTXO_period_i * UTXO_amount_i )
-             + forDepositReward * deposit_amount ] * asset_weight
-     * S1 = forTxReward
-     * S2 = forDepositReward * deposit_amount
-     * S3 = sum[over i](UTXO_period_i * UTXO_amount_i)
-     * S4 = forUtxoReward * S3
-     * S5 = (S4 + S2)*assetWeight
-     * R = S1 + S5
-     */
+    signal output {uint196}        amountPrp;
 
     signal S1;
     signal S2;
@@ -42,7 +41,7 @@ template RewardsExtended(nUtxoIn) {
 
     var prpScaleFactor = 60;
     S1 <== forTxReward * (2 ** prpScaleFactor); // 2^40 x 2^60 = 2^100
-    S2 <== forDepositReward * depositAmount;    // 2^40 x 2^64 = 2^104
+    S2 <== forDepositReward * depositAmount;    // 2^40 x 2^96 = 2^136
     signal sum[nUtxoIn];
     component lessThen[nUtxoIn];
     lessThen[0] = LessThan(32);

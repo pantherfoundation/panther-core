@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
-include "./zAccountRegistrationV1.circom";
+include "./zAccountRegistrationV1Top.circom";
 
 component main {
     public [
@@ -22,8 +22,8 @@ component main {
         saltHash,                              // [15]
         magicalConstraint                      // [16]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 16 + 3 = 19
-    ]} = ZAccountRegistrationV1( 6,     // ZNetworkMerkleTreeDepth
-                                 16,    // ZAssetMerkleTreeDepth
-                                 16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
-                                 16,    // ZZoneMerkleTreeDepth - depends on zoneID size
-                                 16 );  // TrustProvidersMerkleTreeDepth
+    ]} = ZAccountRegistrationV1Top( 6,     // ZNetworkMerkleTreeDepth
+                                    16,    // ZAssetMerkleTreeDepth
+                                    16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
+                                    16,    // ZZoneMerkleTreeDepth - depends on zoneID size
+                                    16 );  // TrustProvidersMerkleTreeDepth

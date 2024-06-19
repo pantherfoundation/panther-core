@@ -82,7 +82,7 @@ template ZAccountRenewalRangeCheck( UtxoLeftMerkleTreeDepth,
     signal input zZoneKycExpiryTime;
     signal input zZoneKytExpiryTime;
     signal input zZoneDepositMaxAmount;
-    signal input zZoneWithrawMaxAmount;
+    signal input zZoneWithdrawMaxAmount;
     signal input zZoneInternalMaxAmount;
     signal input zZoneMerkleRoot;
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
@@ -442,10 +442,10 @@ template ZAccountRenewalRangeCheck( UtxoLeftMerkleTreeDepth,
     component customRangeCheckZZoneDepositMaxAmount = RangeCheckSingleSignal(64,(2**64 - 1),0);
     customRangeCheckZZoneDepositMaxAmount.in <== zZoneDepositMaxAmount;
 
-    // zZoneWithrawMaxAmount - 64 bits
+    // zZoneWithdrawMaxAmount - 64 bits
     // Supported range - [0 - (2**64 - 1)]
     component customRangeCheckZZoneWithrawMaxAmount = RangeCheckSingleSignal(64,(2**64 - 1),0);
-    customRangeCheckZZoneWithrawMaxAmount.in <== zZoneWithrawMaxAmount;
+    customRangeCheckZZoneWithrawMaxAmount.in <== zZoneWithdrawMaxAmount;
 
     // zZoneInternalMaxAmount - 64 bits
     // Supported range - [0 - (2**64 - 1)]

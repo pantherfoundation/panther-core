@@ -130,7 +130,7 @@ template ZSwapV1Top( nUtxoIn,
     signal input zZoneKycExpiryTime;
     signal input zZoneKytExpiryTime;
     signal input zZoneDepositMaxAmount;
-    signal input zZoneWithrawMaxAmount;
+    signal input zZoneWithdrawMaxAmount;
     signal input zZoneInternalMaxAmount;
     signal input zZoneMerkleRoot;
     signal input zZonePathElements[ZZoneMerkleTreeDepth];
@@ -286,6 +286,7 @@ template ZSwapV1Top( nUtxoIn,
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     var IGNORE_PUBLIC = NonActive();
     var IGNORE_ANCHORED = NonActive();
+    var IGNORE_CHECKED_IN_CIRCOMLIB = NonActive();
     var ACTIVE = Active();
 
     signal rc_extraInputsHash <== ExternalTag()(extraInputsHash);
@@ -303,17 +304,17 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_zAssetOffset[zAssetArraySize] <== Uint6TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetOffset);
     signal rc_zAssetWeight[zAssetArraySize] <== NonZeroUint32TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetWeight);
     signal rc_zAssetScale[zAssetArraySize] <== NonZeroUint64TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetScale);
-    signal rc_zAssetMerkleRoot <== IgnoreTag()(zAssetMerkleRoot);
+    signal rc_zAssetMerkleRoot <== SnarkFieldTag()(zAssetMerkleRoot);
     signal rc_zAssetPathIndices[zAssetArraySize][ZAssetMerkleTreeDepth] <== BinaryTag2DimArray(ACTIVE, zAssetArraySize,ZAssetMerkleTreeDepth)(zAssetPathIndices);
-    signal rc_zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth] <== IgnoreTag2DimArray(zAssetArraySize,ZAssetMerkleTreeDepth)(zAssetPathElements);
+    signal rc_zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth] <== SnarkFieldTag2DimArray(zAssetArraySize,ZAssetMerkleTreeDepth)(zAssetPathElements);
 
     signal rc_forTxReward <== Uint40Tag(IGNORE_ANCHORED)(forTxReward);
     signal rc_forUtxoReward <== Uint40Tag(IGNORE_ANCHORED)(forUtxoReward);
     signal rc_forDepositReward <== Uint40Tag(IGNORE_ANCHORED)(forDepositReward);
     signal rc_spendTime <== Uint32Tag(IGNORE_PUBLIC)(spendTime);
 
-    signal rc_utxoInSpendPrivKey[nUtxoIn] <== IgnoreTagArray(nUtxoIn)(utxoInSpendPrivKey);
-    signal rc_utxoInSpendKeyRandom[nUtxoIn] <== IgnoreTagArray(nUtxoIn)(utxoInSpendKeyRandom);
+    signal rc_utxoInSpendPrivKey[nUtxoIn] <== BabyJubJubSubOrderTagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInSpendPrivKey);
+    signal rc_utxoInSpendKeyRandom[nUtxoIn] <== BabyJubJubSubOrderTagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInSpendKeyRandom);
     signal rc_utxoInAmount[nUtxoIn] <== Uint64TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInAmount);
     signal rc_utxoInOriginZoneId[nUtxoIn] <== Uint16TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInOriginZoneId);
     signal rc_utxoInOriginZoneIdOffset[nUtxoIn] <== Uint4TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInOriginZoneIdOffset);
@@ -323,34 +324,34 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_utxoInZAccountId[nUtxoIn] <== Uint24TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInZAccountId);
     signal rc_utxoInMerkleTreeSelector[nUtxoIn][2] <== BinaryTag2DimArray(ACTIVE,nUtxoIn,2)(utxoInMerkleTreeSelector);
     signal rc_utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth] <== BinaryTag2DimArray(ACTIVE,nUtxoIn,UtxoMerkleTreeDepth)(utxoInPathIndices);
-    signal rc_utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth] <== IgnoreTag2DimArray(nUtxoIn,UtxoMerkleTreeDepth)(utxoInPathElements);
+    signal rc_utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth] <== SnarkFieldTag2DimArray(nUtxoIn,UtxoMerkleTreeDepth)(utxoInPathElements);
     signal rc_utxoInNullifier[nUtxoIn] <== ExternalTagArray(nUtxoIn)(utxoInNullifier);
-    signal rc_utxoInDataEscrowPubKey[nUtxoIn][2] <== IgnoreTag2DimArray(nUtxoIn,2)(utxoInDataEscrowPubKey);
+    signal rc_utxoInDataEscrowPubKey[nUtxoIn][2] <== BabyJubJubSubGroupPointTagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInDataEscrowPubKey);
 
     signal rc_zAccountUtxoInId <== Uint24Tag(ACTIVE)(zAccountUtxoInId);
     signal rc_zAccountUtxoInZkpAmount <== Uint64Tag(ACTIVE)(zAccountUtxoInZkpAmount);
-    signal rc_zAccountUtxoInPrpAmount <== Uint64Tag(ACTIVE)(zAccountUtxoInPrpAmount);
+    signal rc_zAccountUtxoInPrpAmount <== Uint196Tag(ACTIVE)(zAccountUtxoInPrpAmount);
     signal rc_zAccountUtxoInZoneId <== Uint16Tag(ACTIVE)(zAccountUtxoInZoneId);
     signal rc_zAccountUtxoInNetworkId <== Uint6Tag(ACTIVE)(zAccountUtxoInNetworkId);
     signal rc_zAccountUtxoInExpiryTime <== Uint32Tag(ACTIVE)(zAccountUtxoInExpiryTime);
-    signal rc_zAccountUtxoInNonce <== Uint16Tag(ACTIVE)(zAccountUtxoInNonce);
-    signal rc_zAccountUtxoInTotalAmountPerTimePeriod <== IgnoreTag()(zAccountUtxoInTotalAmountPerTimePeriod);
+    signal rc_zAccountUtxoInNonce <== Uint32Tag(ACTIVE)(zAccountUtxoInNonce);
+    signal rc_zAccountUtxoInTotalAmountPerTimePeriod <== Uint96Tag(ACTIVE)(zAccountUtxoInTotalAmountPerTimePeriod);
     signal rc_zAccountUtxoInCreateTime <== Uint32Tag(ACTIVE)(zAccountUtxoInCreateTime);
-    signal rc_zAccountUtxoInRootSpendPubKey[2] <== IgnoreTagArray(2)(zAccountUtxoInRootSpendPubKey);
-    signal rc_zAccountUtxoInReadPubKey[2] <== IgnoreTagArray(2)(zAccountUtxoInReadPubKey);
-    signal rc_zAccountUtxoInNullifierPubKey[2] <== IgnoreTagArray(2)(zAccountUtxoInNullifierPubKey);
-    signal rc_zAccountUtxoInMasterEOA <== Uint160Tag(ACTIVE)(zAccountUtxoInMasterEOA);
+    signal rc_zAccountUtxoInRootSpendPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(zAccountUtxoInRootSpendPubKey);
+    signal rc_zAccountUtxoInReadPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(zAccountUtxoInReadPubKey);
+    signal rc_zAccountUtxoInNullifierPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(zAccountUtxoInNullifierPubKey);
+    signal rc_zAccountUtxoInMasterEOA <== Uint160Tag(IGNORE_ANCHORED)(zAccountUtxoInMasterEOA);
     signal rc_zAccountUtxoInSpendPrivKey <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoInSpendPrivKey);
     signal rc_zAccountUtxoInReadPrivKey <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoInReadPrivKey);
     signal rc_zAccountUtxoInNullifierPrivKey <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoInNullifierPrivKey);
     signal rc_zAccountUtxoInMerkleTreeSelector[2] <== BinaryTagArray(ACTIVE,2)(zAccountUtxoInMerkleTreeSelector);
     signal rc_zAccountUtxoInPathIndices[UtxoMerkleTreeDepth] <== BinaryTagArray(ACTIVE,UtxoMerkleTreeDepth)(zAccountUtxoInPathIndices);
-    signal rc_zAccountUtxoInPathElements[UtxoMerkleTreeDepth] <== IgnoreTagArray(UtxoMerkleTreeDepth)(zAccountUtxoInPathElements);
+    signal rc_zAccountUtxoInPathElements[UtxoMerkleTreeDepth] <== SnarkFieldTagArray(UtxoMerkleTreeDepth)(zAccountUtxoInPathElements);
     signal rc_zAccountUtxoInNullifier <== ExternalTag()(zAccountUtxoInNullifier);
 
-    signal rc_zAccountBlackListLeaf <== IgnoreTag()(zAccountBlackListLeaf);
-    signal rc_zAccountBlackListMerkleRoot <== IgnoreTag()(zAccountBlackListMerkleRoot);
-    signal rc_zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth] <== IgnoreTagArray(ZAccountBlackListMerkleTreeDepth)(zAccountBlackListPathElements);
+    signal rc_zAccountBlackListLeaf <== SnarkFieldTag()(zAccountBlackListLeaf);
+    signal rc_zAccountBlackListMerkleRoot <== SnarkFieldTag()(zAccountBlackListMerkleRoot);
+    signal rc_zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth] <== SnarkFieldTagArray(ZAccountBlackListMerkleTreeDepth)(zAccountBlackListPathElements);
 
     signal rc_zZoneOriginZoneIDs <== Uint16Tag(IGNORE_ANCHORED)(zZoneOriginZoneIDs);
     signal rc_zZoneTargetZoneIDs <== Uint16Tag(IGNORE_ANCHORED)(zZoneTargetZoneIDs);
@@ -358,79 +359,84 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== Uint240Tag(ACTIVE)(zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList);
     signal rc_zZoneKycExpiryTime <== Uint32Tag(IGNORE_ANCHORED)(zZoneKycExpiryTime);
     signal rc_zZoneKytExpiryTime <== Uint32Tag(IGNORE_ANCHORED)(zZoneKytExpiryTime);
-    signal rc_zZoneDepositMaxAmount <== IgnoreTag()(zZoneDepositMaxAmount);
-    signal rc_zZoneWithrawMaxAmount <== IgnoreTag()(zZoneWithrawMaxAmount);
-    signal rc_zZoneInternalMaxAmount <== IgnoreTag()(zZoneInternalMaxAmount);
-    signal rc_zZoneMerkleRoot <== IgnoreTag()(zZoneMerkleRoot);
-    signal rc_zZonePathElements[ZZoneMerkleTreeDepth] <== IgnoreTagArray(ZZoneMerkleTreeDepth)(zZonePathElements);
-    signal rc_zZonePathIndices[ZZoneMerkleTreeDepth] <== BinaryTagArray(IGNORE_ANCHORED,ZZoneMerkleTreeDepth)(zZonePathIndices);
-    signal rc_zZoneEdDsaPubKey[2] <== IgnoreTagArray(2)(zZoneEdDsaPubKey);
+    signal rc_zZoneDepositMaxAmount <== Uint96Tag(IGNORE_ANCHORED)(zZoneDepositMaxAmount);
+    signal rc_zZoneWithdrawMaxAmount <== Uint96Tag(IGNORE_ANCHORED)(zZoneWithdrawMaxAmount);
+    signal rc_zZoneInternalMaxAmount <== Uint96Tag(IGNORE_ANCHORED)(zZoneInternalMaxAmount);
+    signal rc_zZoneMerkleRoot <== SnarkFieldTag()(zZoneMerkleRoot);
+    signal rc_zZonePathElements[ZZoneMerkleTreeDepth] <== SnarkFieldTagArray(ZZoneMerkleTreeDepth)(zZonePathElements);
+    signal rc_zZonePathIndices[ZZoneMerkleTreeDepth] <== BinaryTagArray(ACTIVE,ZZoneMerkleTreeDepth)(zZonePathIndices);
+    signal rc_zZoneEdDsaPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(zZoneEdDsaPubKey);
     signal rc_zZoneDataEscrowEphemeralRandom <== BabyJubJubSubOrderTag(ACTIVE)(zZoneDataEscrowEphemeralRandom);
-    signal rc_zZoneDataEscrowEphemeralPubKeyAx <== IgnoreTag()(zZoneDataEscrowEphemeralPubKeyAx);
-    signal rc_zZoneDataEscrowEphemeralPubKeyAy <== IgnoreTag()(zZoneDataEscrowEphemeralPubKeyAy);
+
+    component rc_zZoneDataEscrowEphemeralPubKey = BabyJubJubSubGroupPointTag(IGNORE_ANCHORED);
+    rc_zZoneDataEscrowEphemeralPubKey.in[0] <== zZoneDataEscrowEphemeralPubKeyAx;
+    rc_zZoneDataEscrowEphemeralPubKey.in[1] <== zZoneDataEscrowEphemeralPubKeyAy;
+    signal rc_zZoneDataEscrowEphemeralPubKeyAx <== rc_zZoneDataEscrowEphemeralPubKey.out[0];
+    signal rc_zZoneDataEscrowEphemeralPubKeyAy <==  rc_zZoneDataEscrowEphemeralPubKey.out[1];
+
     signal rc_zZoneZAccountIDsBlackList <== Uint240Tag(IGNORE_ANCHORED)(zZoneZAccountIDsBlackList);
-    signal rc_zZoneMaximumAmountPerTimePeriod <== IgnoreTag()(zZoneMaximumAmountPerTimePeriod);
+    signal rc_zZoneMaximumAmountPerTimePeriod <== Uint96Tag(IGNORE_ANCHORED)(zZoneMaximumAmountPerTimePeriod);
     signal rc_zZoneTimePeriodPerMaximumAmount <== Uint32Tag(IGNORE_ANCHORED)(zZoneTimePeriodPerMaximumAmount);
     signal rc_zZoneSealing <== BinaryTag(IGNORE_ANCHORED)(zZoneSealing);
-    signal rc_zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints] <== IgnoreTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAx);
-    signal rc_zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints] <== IgnoreTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAy);
+    signal rc_zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints] <== SnarkFieldTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAx);
+    signal rc_zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints] <== SnarkFieldTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAy);
 
-    signal rc_kytEdDsaPubKey[2] <== IgnoreTagArray(2)(kytEdDsaPubKey);
+    signal rc_kytEdDsaPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(kytEdDsaPubKey);
     signal rc_kytEdDsaPubKeyExpiryTime <== Uint32Tag(ACTIVE)(kytEdDsaPubKeyExpiryTime);
-    signal rc_trustProvidersMerkleRoot <== IgnoreTag()(trustProvidersMerkleRoot);
+    signal rc_trustProvidersMerkleRoot <== SnarkFieldTag()(trustProvidersMerkleRoot);
 
-    signal rc_kytPathElements[TrustProvidersMerkleTreeDepth] <== IgnoreTagArray(TrustProvidersMerkleTreeDepth)(kytPathElements);
+    signal rc_kytPathElements[TrustProvidersMerkleTreeDepth] <== SnarkFieldTagArray(TrustProvidersMerkleTreeDepth)(kytPathElements);
     signal rc_kytPathIndices[TrustProvidersMerkleTreeDepth] <== BinaryTagArray(ACTIVE,TrustProvidersMerkleTreeDepth)(kytPathIndices);
     signal rc_kytMerkleTreeLeafIDsAndRulesOffset <== Uint4Tag(ACTIVE)(kytMerkleTreeLeafIDsAndRulesOffset);
     signal rc_kytDepositSignedMessagePackageType <== IgnoreTag()(kytDepositSignedMessagePackageType);
     signal rc_kytDepositSignedMessageTimestamp <== IgnoreTag()(kytDepositSignedMessageTimestamp);
     signal rc_kytDepositSignedMessageSender <== ExternalTag()(kytDepositSignedMessageSender);
     signal rc_kytDepositSignedMessageReceiver <== ExternalTag()(kytDepositSignedMessageReceiver);
-    signal rc_kytDepositSignedMessageToken <== IgnoreTag()(kytDepositSignedMessageToken);
+    signal rc_kytDepositSignedMessageToken <== Uint160Tag(ACTIVE)(kytDepositSignedMessageToken);
     signal rc_kytDepositSignedMessageSessionId <== IgnoreTag()(kytDepositSignedMessageSessionId);
     signal rc_kytDepositSignedMessageRuleId <== Uint8Tag(ACTIVE)(kytDepositSignedMessageRuleId);
-    signal rc_kytDepositSignedMessageAmount <== IgnoreTag()(kytDepositSignedMessageAmount);
+    signal rc_kytDepositSignedMessageAmount <== Uint96Tag(ACTIVE)(kytDepositSignedMessageAmount);
     signal rc_kytDepositSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kytDepositSignedMessageChargedAmountZkp);
-    signal rc_kytDepositSignedMessageSigner <== IgnoreTag()(kytDepositSignedMessageSigner);
+    signal rc_kytDepositSignedMessageSigner <== Uint160Tag(ACTIVE)(kytDepositSignedMessageSigner);
     signal rc_kytDepositSignedMessageHash <== ExternalTag()(kytDepositSignedMessageHash);
-    signal rc_kytDepositSignature[3] <== IgnoreTagArray(3)(kytDepositSignature);
+    signal rc_kytDepositSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytDepositSignature);
     signal rc_kytWithdrawSignedMessagePackageType <== IgnoreTag()(kytWithdrawSignedMessagePackageType);
     signal rc_kytWithdrawSignedMessageTimestamp <== IgnoreTag()(kytWithdrawSignedMessageTimestamp);
     signal rc_kytWithdrawSignedMessageSender <== ExternalTag()(kytWithdrawSignedMessageSender);
     signal rc_kytWithdrawSignedMessageReceiver <== ExternalTag()(kytWithdrawSignedMessageReceiver);
-    signal rc_kytWithdrawSignedMessageToken <== IgnoreTag()(kytWithdrawSignedMessageToken);
+    signal rc_kytWithdrawSignedMessageToken <== Uint160Tag(ACTIVE)(kytWithdrawSignedMessageToken);
     signal rc_kytWithdrawSignedMessageSessionId <== IgnoreTag()(kytWithdrawSignedMessageSessionId);
     signal rc_kytWithdrawSignedMessageRuleId <== Uint8Tag(ACTIVE)(kytWithdrawSignedMessageRuleId);
-    signal rc_kytWithdrawSignedMessageAmount <== IgnoreTag()(kytWithdrawSignedMessageAmount);
+    signal rc_kytWithdrawSignedMessageAmount <== Uint96Tag(ACTIVE)(kytWithdrawSignedMessageAmount);
     signal rc_kytWithdrawSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kytWithdrawSignedMessageChargedAmountZkp);
-    signal rc_kytWithdrawSignedMessageSigner <== IgnoreTag()(kytWithdrawSignedMessageSigner);
+    signal rc_kytWithdrawSignedMessageSigner <== Uint160Tag(ACTIVE)(kytWithdrawSignedMessageSigner);
     signal rc_kytWithdrawSignedMessageHash <== ExternalTag()(kytWithdrawSignedMessageHash);
-    signal rc_kytWithdrawSignature[3] <== IgnoreTagArray(3)(kytWithdrawSignature);
+    signal rc_kytWithdrawSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytWithdrawSignature);
     signal rc_kytSignedMessagePackageType <== IgnoreTag()(kytSignedMessagePackageType);
     signal rc_kytSignedMessageTimestamp <== IgnoreTag()(kytSignedMessageTimestamp);
     signal rc_kytSignedMessageSessionId <== IgnoreTag()(kytSignedMessageSessionId);
     signal rc_kytSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kytSignedMessageChargedAmountZkp);
-    signal rc_kytSignedMessageSigner <== IgnoreTag()(kytSignedMessageSigner);
-    signal rc_kytSignedMessageDataEscrowHash <== IgnoreTag()(kytSignedMessageDataEscrowHash);
+    signal rc_kytSignedMessageSigner <== Uint160Tag(ACTIVE)(kytSignedMessageSigner);
+    signal rc_kytSignedMessageDataEscrowHash <== SnarkFieldTag()(kytSignedMessageDataEscrowHash);
     signal rc_kytSignedMessageHash <== ExternalTag()(kytSignedMessageHash);
-    signal rc_kytSignature[3] <== IgnoreTagArray(3)(kytSignature);
+    signal rc_kytSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytSignature);
 
-    signal rc_dataEscrowPubKey[2] <== IgnoreTagArray(2)(dataEscrowPubKey);
+    signal rc_dataEscrowPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(dataEscrowPubKey);
     signal rc_dataEscrowPubKeyExpiryTime <== Uint32Tag(IGNORE_ANCHORED)(dataEscrowPubKeyExpiryTime);
     signal rc_dataEscrowEphemeralRandom <== BabyJubJubSubOrderTag(ACTIVE)(dataEscrowEphemeralRandom);
-    signal rc_dataEscrowEphemeralPubKeyAx <== IgnoreTag()(dataEscrowEphemeralPubKeyAx);
-    signal rc_dataEscrowEphemeralPubKeyAy <== IgnoreTag()(dataEscrowEphemeralPubKeyAy);
-    signal rc_dataEscrowPathElements[TrustProvidersMerkleTreeDepth] <== IgnoreTagArray(TrustProvidersMerkleTreeDepth)(dataEscrowPathElements);
+    signal rc_dataEscrowEphemeralPubKeyAx <== SnarkFieldTag()(dataEscrowEphemeralPubKeyAx);
+    signal rc_dataEscrowEphemeralPubKeyAy <== SnarkFieldTag()(dataEscrowEphemeralPubKeyAy);
+    signal rc_dataEscrowPathElements[TrustProvidersMerkleTreeDepth] <== SnarkFieldTagArray(TrustProvidersMerkleTreeDepth)(dataEscrowPathElements);
     signal rc_dataEscrowPathIndices[TrustProvidersMerkleTreeDepth] <== BinaryTagArray(ACTIVE,TrustProvidersMerkleTreeDepth)(dataEscrowPathIndices);
     signal rc_dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints] <== ExternalTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessageAx);
-    signal rc_dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints] <== IgnoreTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessageAy);
+    signal rc_dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints] <== SnarkFieldTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessageAy);
 
-    signal rc_daoDataEscrowPubKey[2] <== IgnoreTagArray(2)(daoDataEscrowPubKey);
+    signal rc_daoDataEscrowPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(daoDataEscrowPubKey);
     signal rc_daoDataEscrowEphemeralRandom <== BabyJubJubSubOrderTag(ACTIVE)(daoDataEscrowEphemeralRandom);
     signal rc_daoDataEscrowEphemeralPubKeyAx <== ExternalTag()(daoDataEscrowEphemeralPubKeyAx);
-    signal rc_daoDataEscrowEphemeralPubKeyAy <== IgnoreTag()(daoDataEscrowEphemeralPubKeyAy);
+    signal rc_daoDataEscrowEphemeralPubKeyAy <== SnarkFieldTag()(daoDataEscrowEphemeralPubKeyAy);
     signal rc_daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints] <== ExternalTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessageAx);
-    signal rc_daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints] <== IgnoreTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessageAy);
+    signal rc_daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints] <== SnarkFieldTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessageAy);
 
     signal rc_utxoOutCreateTime <== Uint32Tag(IGNORE_PUBLIC)(utxoOutCreateTime);
     signal rc_utxoOutAmount[nUtxoOut] <== Uint64TagArray(ACTIVE,nUtxoOut)(utxoOutAmount);
@@ -438,28 +444,28 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_utxoOutTargetNetworkId[nUtxoOut] <== Uint6TagArray(ACTIVE,nUtxoOut)(utxoOutTargetNetworkId);
     signal rc_utxoOutTargetZoneId[nUtxoOut] <== Uint16TagArray(ACTIVE,nUtxoOut)(utxoOutTargetZoneId);
     signal rc_utxoOutTargetZoneIdOffset[nUtxoOut] <== Uint4TagArray(ACTIVE,nUtxoOut)(utxoOutTargetZoneIdOffset);
-    signal rc_utxoOutSpendPubKeyRandom[nUtxoOut] <== IgnoreTagArray(nUtxoOut)(utxoOutSpendPubKeyRandom);
-    signal rc_utxoOutRootSpendPubKey[nUtxoOut][2] <== IgnoreTag2DimArray(nUtxoOut,2)(utxoOutRootSpendPubKey);
+    signal rc_utxoOutSpendPubKeyRandom[nUtxoOut] <== BabyJubJubSubOrderTagArray(ACTIVE,nUtxoOut)(utxoOutSpendPubKeyRandom);
+    signal rc_utxoOutRootSpendPubKey[nUtxoOut][2] <== BabyJubJubSubGroupPointTagArray(ACTIVE,nUtxoOut)(utxoOutRootSpendPubKey);
     signal rc_utxoOutCommitment[nUtxoOut] <== ExternalTagArray(nUtxoOut)(utxoOutCommitment);
 
     signal rc_zAccountUtxoOutZkpAmount <== Uint64Tag(ACTIVE)(zAccountUtxoOutZkpAmount);
-    signal rc_zAccountUtxoOutSpendKeyRandom <== IgnoreTag()(zAccountUtxoOutSpendKeyRandom);
-    signal rc_zAccountUtxoOutCommitment <== IgnoreTag()(zAccountUtxoOutCommitment);
+    signal rc_zAccountUtxoOutSpendKeyRandom <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoOutSpendKeyRandom);
+    signal rc_zAccountUtxoOutCommitment <== SnarkFieldTag()(zAccountUtxoOutCommitment);
     signal rc_chargedAmountZkp <== Uint96Tag(IGNORE_PUBLIC)(chargedAmountZkp);
 
     signal rc_zNetworkId <== Uint6Tag(ACTIVE)(zNetworkId);
     signal rc_zNetworkChainId <== ExternalTag()(zNetworkChainId);
     signal rc_zNetworkIDsBitMap <== Uint64Tag(ACTIVE)(zNetworkIDsBitMap);
-    signal rc_zNetworkTreeMerkleRoot <== IgnoreTag()(zNetworkTreeMerkleRoot);
-    signal rc_zNetworkTreePathElements[ZNetworkMerkleTreeDepth] <== IgnoreTagArray(ZNetworkMerkleTreeDepth)(zNetworkTreePathElements);
+    signal rc_zNetworkTreeMerkleRoot <== SnarkFieldTag()(zNetworkTreeMerkleRoot);
+    signal rc_zNetworkTreePathElements[ZNetworkMerkleTreeDepth] <== SnarkFieldTagArray(ZNetworkMerkleTreeDepth)(zNetworkTreePathElements);
     signal rc_zNetworkTreePathIndices[ZNetworkMerkleTreeDepth] <== BinaryTagArray(ACTIVE,ZNetworkMerkleTreeDepth)(zNetworkTreePathIndices);
 
     signal rc_staticTreeMerkleRoot <== ExternalTag()(staticTreeMerkleRoot);
     signal rc_forestMerkleRoot <== ExternalTag()(forestMerkleRoot);
-    signal rc_taxiMerkleRoot <== IgnoreTag()(taxiMerkleRoot);
-    signal rc_busMerkleRoot <== IgnoreTag()(busMerkleRoot);
-    signal rc_ferryMerkleRoot <== IgnoreTag()(ferryMerkleRoot);
-    signal rc_salt <== IgnoreTag()(salt);
+    signal rc_taxiMerkleRoot <== SnarkFieldTag()(taxiMerkleRoot);
+    signal rc_busMerkleRoot <== SnarkFieldTag()(busMerkleRoot);
+    signal rc_ferryMerkleRoot <== SnarkFieldTag()(ferryMerkleRoot);
+    signal rc_salt <== SnarkFieldTag()(salt);
     signal rc_saltHash <== ExternalTag()(saltHash);
     signal rc_magicalConstraint <== ExternalTag()(magicalConstraint);
 
@@ -542,7 +548,7 @@ template ZSwapV1Top( nUtxoIn,
     zSwapV1.zZoneKycExpiryTime <== rc_zZoneKycExpiryTime;
     zSwapV1.zZoneKytExpiryTime <== rc_zZoneKytExpiryTime;
     zSwapV1.zZoneDepositMaxAmount <== rc_zZoneDepositMaxAmount;
-    zSwapV1.zZoneWithrawMaxAmount <== rc_zZoneWithrawMaxAmount;
+    zSwapV1.zZoneWithdrawMaxAmount <== rc_zZoneWithdrawMaxAmount;
     zSwapV1.zZoneInternalMaxAmount <== rc_zZoneInternalMaxAmount;
     zSwapV1.zZoneMerkleRoot <== rc_zZoneMerkleRoot;
     zSwapV1.zZonePathElements <== rc_zZonePathElements;

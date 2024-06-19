@@ -2,15 +2,18 @@
 pragma circom 2.1.6;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/babyjub.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Range-Check signals tags //////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// [1] - `public-tag` - public signal, checked by smart-contracts
-// [2] - `anchored-tag` - signal is part of preimage that is publicly known and checked by smart-contracts (maybe not directly)
-// [3] - `range-check-tag` - signal needs to be range-checked
-// [4] - `assumed-tag` - signal needs to be constraint somewhere in the code
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ZKP Token
+function ZkpToken() {
+    return 0;
+}
+
+function ZkpTokenId() {
+    return 0;
+}
 
 // this index exists for zSwap & zTransaction
 function TransactedTokenIndex() {
@@ -161,6 +164,47 @@ template LessThanBits(nBits) {
     // force
     lessThan.out === 1;
 }
+
+template IsNotZero(){
+    signal input in;
+    signal output out;
+    component isZero = IsZero();
+    isZero.in <== in;
+    out <== 1 - isZero.out;
+}
+
+// Checks if the first input signal is lesser than or equal to the second input signal when input signal enabled is true.
+template LessEqThanWhenEnabled(n){
+    signal input enabled;
+    signal input in[2];
+
+    // 0 - when 2 <= 3, 1 - when 1 <= 1 or 2
+    component lt = LessEqThan(n);
+
+    lt.in[0] <== in[0];
+    lt.in[1] <== in[1];
+
+    // 1 - when `enabled > 0`, 0 - when `enabled == 0`
+    component isNotZero = IsNotZero();
+    isNotZero.in <== enabled;
+
+    // when `enabled != 0` it will require `in[0] <= in[1]`
+    // when `enabled == 0` it will nullify equation from both sides
+    lt.out * isNotZero.out === 1 * isNotZero.out;
+}
+
+template ForceLessEqThan(n){
+    signal input in[2];
+
+    component lt = LessEqThan(n);
+
+    lt.in[0] <== in[0];
+    lt.in[1] <== in[1];
+
+    // always require `in[0] <= in[1]`
+    lt.out === 1;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // IGNORED TAGS ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -776,33 +820,92 @@ function NonActive() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FFs /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template FieldTag() {
+template SnarkFieldTag() {
     signal input in;
-    signal output {ff} out;
+    signal output {snark_ff} out;
 
     out <== in;
 }
 
-template FieldTagArray(N) {
+template SnarkFieldTagArray(N) {
     signal input in[N];
-    signal output {sub_order_ff} out[N];
+    signal output {snark_ff} out[N];
 
     out <== in;
 }
 
-template FieldTag2DimArray(N,M) {
+template SnarkFieldTag2DimArray(N,M) {
     signal input in[N][M];
-    signal output {sub_order_ff} out[N][M];
+    signal output {snark_ff} out[N][M];
 
     out <== in;
 }
+
+template BabyJubJubPointTag(isActive) {
+    signal input in[2];
+    signal output {bj_point} out;
+    component p;
+    if( isActive ) {
+        p = BabyCheck();
+        p.x <== in[0];
+        p.y <== in[1];
+    }
+    out <== in;
+}
+
+template BabyJubJubSubGroupPointTag(isActive) {
+    signal input in[2];
+    signal output {sub_order_bj_p} out[2];
+
+    var suborder = 2736030358979909402780800718157159386076813972158567259200215660948447373041;
+
+    if( isActive ) {
+        // Ensure the point [x,y] is in the Baby Jubjub curve
+        component babyCheck = BabyCheck();
+        babyCheck.x <== in[0];
+        babyCheck.y <== in[1];
+
+        // Scalar multiplication of a point from the subgroup by the
+        // subgroup's order results in the identity point ([0,1]).
+        component pvkBits = Num2Bits(253);
+        pvkBits.in <== suborder;
+
+        component eMul = EscalarMulAny(253);
+        for (var i=0; i<253; i++) {
+            eMul.e[i] <== pvkBits.out[i];
+        }
+        eMul.p[0] <== in[0];
+        eMul.p[1] <== in[1];
+
+        eMul.out[0] === 0;
+        eMul.out[1] === 1;
+
+    }
+    out <== in;
+}
+
+template BabyJubJubSubGroupPointTagArray(isActive,N) {
+    signal input in[N][2];
+    signal output {sub_order_bj_p} out[N][2];
+
+    component p[N];
+    for(var i = 0; i < N; i++) {
+        p[i] = BabyJubJubSubGroupPointTag(isActive);
+        p[i].in[0] <== in[i][0];
+        p[i].in[1] <== in[i][1];
+    }
+    out <== in;
+}
+
 template BabyJubJubSubOrderTag(isActive) {
     signal input in;
     signal output {sub_order_bj_sf} out;
+    var suborder = 2736030358979909402780800718157159386076813972158567259200215660948447373041;
     component n2b;
     if ( isActive ) {
-        n2b = Num2Bits(252);
-        n2b.in <== in;
+        n2b = LessThan(251);
+        n2b.in[0] <== in;
+        n2b.in[1] <== suborder;
     }
     out <== in;
 }
@@ -832,9 +935,28 @@ template BabyJubJubSubOrderTag2DimArray(isActive,N,M) {
 
     out <== in;
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MATH ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//template SafeAdderUint(nBits) {
-//
-//}
+template ExtractLSBits(M, N) { // extract M out of N LSB bits
+    signal input in;
+    signal output out;
+    assert(N < 254);
+    assert(M < N);
+    component n = Num2Bits(N);
+    n.in <== in;
+    component b = Bits2Num(M);
+    for(var i = 0; i < M; i++) {
+        b.in[i] <== n.out[i];
+    }
+    out <== b.out;
+}
+
+template ExtractToken() {
+    signal input {uint168}  in;
+    signal output {uint160} out;
+
+    out <== ExtractLSBits(160,168)(in);
+}
+

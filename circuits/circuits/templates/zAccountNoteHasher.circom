@@ -5,20 +5,20 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 
 template ZAccountNoteHasher(){
-    signal input           spendPubKey[2];            // 2 x 256 bit
-    signal input           rootSpendPubKey[2];        // 2 x 256 bit
-    signal input           readPubKey[2];             // 2 x 256 bit
-    signal input           nullifierPubKey[2];        // 2 x 256 bit
-    signal input {uint160} masterEOA;                 // 160 bit
-    signal input {uint24}  id;                        // 24 bit
-    signal input {uint64}  amountZkp;                 // 252 bit
-    signal input           amountPrp;                 // 64 bit TODO:FIXME - should be tag uint64
-    signal input {uint16}  zoneId;                    // 16 bit
-    signal input {uint32}  expiryTime;                 // 32 bit
-    signal input           nonce;                      // 16 bit TODO: FIXME - why 16 bit ?
-    signal input           totalAmountPerTimePeriod;   // 256 bit
-    signal input {uint32}  createTime;                 // 32 bit
-    signal input {uint6}   networkId;                  // 6 bit
+    signal input {sub_order_bj_p}  spendPubKey[2];             // 2 x 254 bit
+    signal input {sub_order_bj_p}  rootSpendPubKey[2];         // 2 x 254 bit
+    signal input {sub_order_bj_p}  readPubKey[2];              // 2 x 254 bit
+    signal input {sub_order_bj_p}  nullifierPubKey[2];         // 2 x 254 bit
+    signal input {uint160}         masterEOA;                  // 160 bit
+    signal input {uint24}          id;                         // 24 bit
+    signal input {uint64}          amountZkp;                  // 252 bit
+    signal input {uint196}         amountPrp;                  // 196 bit
+    signal input {uint16}          zoneId;                     // 16 bit
+    signal input {uint32}          expiryTime;                 // 32 bit
+    signal input {uint32}          nonce;                      // 32 bit
+    signal input {uint96}          totalAmountPerTimePeriod;   // 96 bit
+    signal input {uint32}          createTime;                 // 32 bit
+    signal input {uint6}           networkId;                  // 6 bit
 
     signal output out;
 

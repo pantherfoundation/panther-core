@@ -36,12 +36,12 @@ component main {
         saltHash,                              // [29]
         magicalConstraint                      // [30]
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + ... = 41
-    ]} = ZTransactionV1( 2,     // nUtxoIn
-                         2,     // nUtxoOut
-                         8,     // UtxoLeftMerkleTreeDepth
-                         26,    // UtxoMiddleMerkleTreeDepth
-                         6,     // ZNetworkMerkleTreeDepth
-                         16,    // ZAssetMerkleTreeDepth
-                         16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
-                         16,    // ZZoneMerkleTreeDepth - depends on zoneID size
-                         16 );  // TrustProvidersMerkleTreeDepth
+    ]} = ZTransactionV1 ( 2,     // nUtxoIn
+                          2,     // nUtxoOut
+                          8,     // UtxoLeftMerkleTreeDepth
+                          26,    // UtxoMiddleMerkleTreeDepth
+                          6,     // ZNetworkMerkleTreeDepth
+                          16,    // ZAssetMerkleTreeDepth
+                          16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
+                          16,    // ZZoneMerkleTreeDepth - depends on zoneID size
+                          16 );  // TrustProvidersMerkleTreeDepth

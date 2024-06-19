@@ -19,8 +19,8 @@ template NullifierHasher(){
 }
 
 template NullifierHasherExtended() {
-    signal input privKey;
-    signal input pubKey[2];
+    signal input {sub_order_bj_sf} privKey;
+    signal input {sub_order_bj_p}  pubKey[2];
     signal input leaf;
 
     signal output out;
