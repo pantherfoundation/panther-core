@@ -18,7 +18,13 @@ contract UniswapV3RouterPlugin {
     address public immutable UNISWAP_QUOTERV2;
     address public immutable VAULT;
 
-    uint24[4] public feeTiers = [100, 500, 3000, 10000];
+    struct Quote {
+        uint24 fee;
+        uint256 amountOut;
+        uint160 sqrtPriceX96After;
+        uint32 initializedTicksCrossed;
+        uint256 gasEstimate;
+    }
 
     constructor(address uniswapRouter, address uniswapQuoterV2, address vault) {
         require(
@@ -33,6 +39,13 @@ contract UniswapV3RouterPlugin {
         VAULT = vault;
     }
 
+    function getFeeTiers() public pure returns (uint24[4] memory feeTiers) {
+        feeTiers[0] = 100;
+        feeTiers[1] = 500;
+        feeTiers[2] = 3000;
+        feeTiers[3] = 10000;
+    }
+
     function getSqrtPriceX96(
         address pool
     ) external view returns (uint160 sqrtPriceX96) {
@@ -41,22 +54,49 @@ contract UniswapV3RouterPlugin {
 
     /// @dev  quoteExactInputSingle is not gas efficient and should be called offchain using staticCall
     function quoteExactInputSingle(
-        QuoteExactInputSingleParams memory params
-    )
-        external
-        returns (
-            uint256 amountOut,
-            uint160 sqrtPriceX96After,
-            uint32 initializedTicksCrossed,
-            uint256 gasEstimate
-        )
-    {
-        (
-            amountOut,
-            sqrtPriceX96After,
-            initializedTicksCrossed,
-            gasEstimate
-        ) = IQuoterV2(UNISWAP_QUOTERV2).quoteExactInputSingle(params);
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    ) external returns (Quote[4] memory quotes) {
+        uint24[4] memory feeTiers = getFeeTiers();
+
+        for (uint256 i = 0; i < feeTiers.length; i++) {
+            QuoteExactInputSingleParams
+                memory params = QuoteExactInputSingleParams({
+                    tokenIn: tokenIn,
+                    tokenOut: tokenOut,
+                    amountIn: amountIn,
+                    fee: feeTiers[i],
+                    // Pass 0 since we only want to send static call to router
+                    // to receive amountOut in anycase regardless of the sqrtPriceLimitX96.
+                    sqrtPriceLimitX96: 0
+                });
+
+            try
+                IQuoterV2(UNISWAP_QUOTERV2).quoteExactInputSingle(params)
+            returns (
+                uint256 amountOut,
+                uint160 sqrtPriceX96After,
+                uint32 initializedTicksCrossed,
+                uint256 gasEstimate
+            ) {
+                quotes[i] = Quote({
+                    fee: feeTiers[i],
+                    amountOut: amountOut,
+                    sqrtPriceX96After: sqrtPriceX96After,
+                    initializedTicksCrossed: initializedTicksCrossed,
+                    gasEstimate: gasEstimate
+                });
+            } catch {
+                quotes[i] = Quote({
+                    fee: feeTiers[i],
+                    amountOut: 0,
+                    sqrtPriceX96After: 0,
+                    initializedTicksCrossed: 0,
+                    gasEstimate: 0
+                });
+            }
+        }
     }
 
     function execute(
