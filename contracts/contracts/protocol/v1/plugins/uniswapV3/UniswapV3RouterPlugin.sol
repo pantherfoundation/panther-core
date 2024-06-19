@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import "../DeFi/uniswap/interfaces/IQuoterV2.sol";
-import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
-import "../DeFi/uniswap/interfaces/ISwapRouter.sol";
-import "../interfaces/IPlugin.sol";
+import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
+import "../../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
+import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
+import "../../interfaces/IPlugin.sol";
 
-import { ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
-import "../../../common/TransferHelper.sol";
-import "./PluginLib.sol";
+import { ERC20_TOKEN_TYPE } from "../../../../common/Constants.sol";
+import "../../../../common/TransferHelper.sol";
+import "../PluginLib.sol";
 
 contract UniswapV3RouterPlugin {
     using TransferHelper for address;
