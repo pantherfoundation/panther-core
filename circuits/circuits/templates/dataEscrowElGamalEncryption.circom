@@ -67,8 +67,8 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     signal input {sub_order_bj_sf} ephemeralRandom;                               // randomness
     signal input {uint64}          scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
     signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
-    signal input                   pubKey[2];                                     // public key (assumed to be priv-key * B8)
-    signal output                  ephemeralPubKey[2];                            // ephemeral public-key
+    signal input {sub_order_bj_p}  pubKey[2];                                     // public key (assumed to be priv-key * B8)
+    signal output {sub_order_bj_p} ephemeralPubKey[2];                            // ephemeral public-key
     signal output                  encryptedMessage[ScalarsSize+PointsSize][2];   // encrypted data
     signal output                  encryptedMessageHash;                          // multi-poseidon hash
 
@@ -443,8 +443,8 @@ template DataEscrowElGamalEncryptionPoint(PointsSize) {
     signal input {sub_order_bj_sf} ephemeralRandom;                               // randomness
     signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
     signal input                   pubKey[2];                                     // public key
-    signal output                  ephemeralPubKey[2];                           // ephemeral public-key
-    signal output                  encryptedMessage[PointsSize][2];              // encrypted data
+    signal output                  ephemeralPubKey[2];                            // ephemeral public-key
+    signal output                  encryptedMessage[PointsSize][2];               // encrypted data
 
     assert(PointsSize > 0);
 

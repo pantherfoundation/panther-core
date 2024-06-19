@@ -21,27 +21,27 @@ include "./utils.circom";
 //     ---> AND totalAmountIn === totalAmountOut
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template BalanceChecker() {
-    signal input {binary} isZkpToken;                        // range-check-tag, assumed to be: 0 - 1
-    signal input {uint96} depositAmount;                     // public-tag, assumed to be: 0 - 2^96
-    signal input {uint96} withdrawAmount;                    // public-tag, assumed to be: 0 - 2^96
-    signal input {uint96} chargedAmountZkp;                  // public-tag, assumed to be: 0 - 2^96
-    signal input {uint96} addedAmountZkp;                    // public-tag, assumed to be: 0 - 2^96
-    signal input {uint64} zAccountUtxoInZkpAmount;           // anchored-tag, assumed to be: 0 - 2^64
-    signal input {uint64} zAccountUtxoOutZkpAmount;          // anchored-tag, assumed to be: 0 - 2^64
-    signal input {uint70} totalUtxoInAmount;                 // anchored-tag, assumed to be: 0 - nUtxoIn x 2^64 < 2^70
-    signal input {uint70} totalUtxoOutAmount;                // anchored-tag, assumed to be: 0 - nUtxoOut x 2^64 < 2^70
-    signal input {non_zero_uint32} zAssetWeight;             // anchored-tag, assumed to be: 1 - 2^32
-    signal input {non_zero_uint64} zAssetScale;              // anchored-tag, assumed to be: 1 - 2^64
-    signal input {non_zero_uint64} zAssetScaleZkp;           // anchored-tag, assumed to be: 1 - 2^64
-    signal input {uint96} kytDepositChargedAmountZkp;        // range-check-tag, assumed to be: 0 - 2^96
-    signal input {uint96} kytWithdrawChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
-    signal input {uint96} kytInternalChargedAmountZkp;       // range-check-tag, assumed to be: 0 - 2^96
-    signal output {uint64} depositScaledAmount;              // range-check-tag, assumed to be: 0 - 2^64
-    signal output {uint96} depositWeightedScaledAmount;      // range-check-tag, assumed to be: 0 - 2^96
-    signal output {uint64} withdrawScaledAmount;             // range-check-tag, assumed to be: 0 - 2^64
-    signal output {uint96} withdrawWeightedScaledAmount;     // range-check-tag, assumed to be: 0 - 2^96
-    signal output {uint96} totalScaled;                      // range-check-tag, assumed to be: 0 - 2^96
-    signal output {uint96} totalWeighted;                    // range-check-tag, assumed to be: 0 - 2^96
+    signal input {binary}          isZkpToken;
+    signal input {uint96}          depositAmount;
+    signal input {uint96}          withdrawAmount;
+    signal input {uint96}          chargedAmountZkp;
+    signal input {uint96}          addedAmountZkp;
+    signal input {uint64}          zAccountUtxoInZkpAmount;
+    signal input {uint64}          zAccountUtxoOutZkpAmount;
+    signal input {uint70}          totalUtxoInAmount;
+    signal input {uint70}          totalUtxoOutAmount;
+    signal input {non_zero_uint32} zAssetWeight;
+    signal input {non_zero_uint64} zAssetScale;
+    signal input {non_zero_uint64} zAssetScaleZkp;
+    signal input {uint96}          kytDepositChargedAmountZkp;
+    signal input {uint96}          kytWithdrawChargedAmountZkp;
+    signal input {uint96}          kytInternalChargedAmountZkp;
+    signal output {uint64}         depositScaledAmount;
+    signal output {uint96}         depositWeightedScaledAmount;
+    signal output {uint64}         withdrawScaledAmount;
+    signal output {uint96}         withdrawWeightedScaledAmount;
+    signal output {uint96}         totalScaled;
+    signal output {uint96}         totalWeighted;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [0] - Asserts ///////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,9 +77,7 @@ template BalanceChecker() {
     depositAmount === ( depositScaledAmount * zAssetScale );
 
     // [1.2] - weighted amount
-    signal depositWeightedScaledAmountTmp <== depositScaledAmount * zAssetWeight;
-
-    depositWeightedScaledAmount <== Uint96Tag(ACTIVE)(depositWeightedScaledAmountTmp);
+    depositWeightedScaledAmount <== Uint96Tag(ACTIVE)( depositScaledAmount * zAssetWeight );
 
     // [1.3] - scaled zZKP donation
     signal addedScaledAmountZkp <-- addedAmountZkp \ zAssetScaleZkp;
@@ -92,7 +90,7 @@ template BalanceChecker() {
     // [1.4] - scaled zZKP deposit KYT amount
     signal kytDepositScaledChargedAmountZkpTmp <-- kytDepositChargedAmountZkp \ zAssetScaleZkp;
 
-    signal kytDepositScaledChargedAmountZkp <==  Uint96Tag(ACTIVE)(kytDepositScaledChargedAmountZkpTmp);
+    signal kytDepositScaledChargedAmountZkp <== Uint96Tag(ACTIVE)(kytDepositScaledChargedAmountZkpTmp);
 
     kytDepositChargedAmountZkp === kytDepositScaledChargedAmountZkp * zAssetScaleZkp;
 
@@ -115,9 +113,7 @@ template BalanceChecker() {
     withdrawAmount === ( withdrawScaledAmount * zAssetScale );
 
     // [2.2] - weighted amount
-    signal withdrawWeightedScaledAmountTmp <== withdrawScaledAmount * zAssetWeight;
-
-    withdrawWeightedScaledAmount <== Uint96Tag(ACTIVE)(withdrawWeightedScaledAmountTmp);
+    withdrawWeightedScaledAmount <== Uint96Tag(ACTIVE)(withdrawScaledAmount * zAssetWeight);
 
     // [2.3] - scaled zZKP charge
     signal chargedScaledAmountZkpTmp <-- chargedAmountZkp \ zAssetScaleZkp;
@@ -150,9 +146,7 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [4] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    signal kytChargedScaledAmountZkpTmp <== kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp;
-
-    signal kytChargedScaledAmountZkp <== UintTag(ACTIVE,99)(kytChargedScaledAmountZkpTmp); // 96 + 3
+    signal kytChargedScaledAmountZkp <== UintTag(ACTIVE,99)(kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp); // 96 + 3
 
     // depositScaledAmount is RCed, together with zAccountUtxoInZkpAmount & addedScaledAmountZkp, 64 + 64 + 96
     signal totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );
@@ -188,13 +182,9 @@ template BalanceChecker() {
     // no need to RCed since zAccountUtxo_{In,Out}_ZkpAmounts' are already RCed
     signal zAccountUtxoResidualZkpAmount <== mux_input[0] + mux_input[1];
     // [6.2] - compute total-scaled with respect to zAccount balance in case of zZKP token
-    signal totalScaledTmp <== totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount );
-
     // Audit Bug - 4.1.2 V-PANC-VUL-002: zkpScaledAmount is under-constrained
-    totalScaled <== Uint96Tag(ACTIVE)(totalScaledTmp);
+    totalScaled <== Uint96Tag(ACTIVE)(totalBalanceIn - ( isZkpToken * zAccountUtxoResidualZkpAmount ));
 
     // [6.3] - compute total-weighted
-    signal totalWeightedTmp <== totalScaled * zAssetWeight;
-
-    totalWeighted <== Uint96Tag(ACTIVE)(totalWeightedTmp);
+    totalWeighted <== Uint96Tag(ACTIVE)(totalScaled * zAssetWeight);
 }

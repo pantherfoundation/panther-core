@@ -7,16 +7,16 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // 2 Level hash, first level is private parameters, second level is quasi-private,
 // since in generare-deposits api, spendPk, zAsset and amount are publicly know parameters
 template UtxoNoteHasher(isHiddenHash){
-    signal input spendPk[2];            // 256
-    signal input {uint64} zAsset;                // 64
-    signal input {uint64} amount;                // 64
-    signal input {uint6}  originNetworkId;       // 6
-    signal input {uint6}  targetNetworkId;       // 6
-    signal input {uint32} createTime;            // 32
-    signal input {uint16} originZoneId;          // 16
-    signal input {uint16} targetZoneId;          // 16
-    signal input {uint24} zAccountId;            // 24
-    signal input dataEscrowPubKey[2];   // 256
+    signal input {sub_order_bj_p} spendPk[2];            // 256
+    signal input {uint64}         zAsset;                // 64
+    signal input {uint64}         amount;                // 64
+    signal input {uint6}          originNetworkId;       // 6
+    signal input {uint6}          targetNetworkId;       // 6
+    signal input {uint32}         createTime;            // 32
+    signal input {uint16}         originZoneId;          // 16
+    signal input {uint16}         targetZoneId;          // 16
+    signal input {uint24}         zAccountId;            // 24
+    signal input {sub_order_bj_p} dataEscrowPubKey[2];   // 256
 
     signal output out;
 

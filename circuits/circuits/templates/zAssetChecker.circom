@@ -1,36 +1,38 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.6;
 
+include "./utils.circom";
+
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
-/*
-This template checks for the pre-requisite equalities for all types of transactions.
-
-@input signals -
-1. token - external token address
-2. tokenId - tokenId associated with the token
-3. zAssetId - ID generated for adding a ZAsset to ZAsset Registry
-4. zAssetToken - tokenId associated with the ZAsset
-5. zAssetOffset - specific number of bits
-6. depositAmount - external amount for deposit
-7. withdrawAmount - external amount for withdrawal
-8. utxoZAssetId - zAssetId associated with the UTXO
-
-@output signal -
-1. isZkpToken - 1 if ZAsset is ZKP, 0 otherwise
-*/
+///*
+// This template checks for the pre-requisite equalities for all types of transactions.
+//
+// @input signals -
+// 1. token - external token address
+// 2. tokenId - tokenId associated with the token
+// 3. zAssetId - ID generated for adding a ZAsset to ZAsset Registry
+// 4. zAssetToken - tokenId associated with the ZAsset
+// 5. zAssetOffset - specific number of bits
+// 6. depositAmount - external amount for deposit
+// 7. withdrawAmount - external amount for withdrawal
+// 8. utxoZAssetId - zAssetId associated with the UTXO
+//
+// @output signal -
+// 1. isZkpToken - 1 if ZAsset is ZKP, 0 otherwise
+// */
 template ZAssetChecker() {
-    signal input {uint168} token;               // 168 bit - public value
-    signal input {uint252} tokenId;             // 252 bit - public value
-    signal input {uint64}  zAssetId;            // 64 bit  - zAsset-Leaf
-    signal input {uint168} zAssetToken;         // 168 bit - zAsset-Leaf
-    signal input {uint252} zAssetTokenId;       // 252 bit - zAsset-Leaf
-    signal input {uint6}   zAssetOffset;        // 6 bit   - zAsset-Leaf
-    signal input {uint96}  depositAmount;       // 96 bit - public value
-    signal input {uint96}  withdrawAmount;      // 96 bit - public value
-    signal input {uint64}  utxoZAssetId;        // 64 bit  - UTXO in & out preimage value
-    signal output {binary} isZkpToken;          // 1 bit -- 0-FALSE, 1-TRUE
+    signal input {uint168} token;
+    signal input {uint252} tokenId;
+    signal input {uint64}  zAssetId;
+    signal input {uint168} zAssetToken;
+    signal input {uint252} zAssetTokenId;
+    signal input {uint6}   zAssetOffset;
+    signal input {uint96}  depositAmount;
+    signal input {uint96}  withdrawAmount;
+    signal input {uint64}  utxoZAssetId;
+    signal output {binary} isZkpToken;
 
     assert(depositAmount < 2**250);
     assert(withdrawAmount < 2**250);
@@ -83,8 +85,8 @@ template ZAssetChecker() {
     isTokenIdEqualToZeroForInternalTx.in[1] <== tokenId;
     isTokenIdEqualToZeroForInternalTx.enabled <== enable_If_ExternalAmountsAre_Zero;
 
-    // NOTE: zZKP zAssetID is alwase zero
-    var zZKP = 0;
+    // NOTE: zZKP zAssetID is always zero
+    var zZKP = ZkpToken();
 
     component isZkpTokenEqual = IsEqual();
     isZkpTokenEqual.in[0] <== zAssetId;

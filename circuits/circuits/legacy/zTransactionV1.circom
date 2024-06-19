@@ -4,6 +4,8 @@ pragma circom 2.1.6;
 // project deps
 include "./templates/balanceChecker.circom";
 include "./templates/dataEscrowElgamalEncryption.circom";
+include "./templates/isNotZero.circom";
+include "./templates/lessEqThanWhenEnabled.circom";
 include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/networkIdInclusionProver.circom";
@@ -27,6 +29,7 @@ include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
 include "./templates/utils.circom";
+include "./zTransactionV1RangeCheck.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -36,16 +39,16 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
-template ZSwapV1( nUtxoIn,
-                  nUtxoOut,
-                  UtxoLeftMerkleTreeDepth,
-                  UtxoMiddleMerkleTreeDepth,
-                  ZNetworkMerkleTreeDepth,
-                  ZAssetMerkleTreeDepth,
-                  ZAccountBlackListMerkleTreeDepth,
-                  ZZoneMerkleTreeDepth,
-                  TrustProvidersMerkleTreeDepth,
-                  isSwap ) {
+
+template ZTransactionV1( nUtxoIn,
+                         nUtxoOut,
+                         UtxoLeftMerkleTreeDepth,
+                         UtxoMiddleMerkleTreeDepth,
+                         ZNetworkMerkleTreeDepth,
+                         ZAssetMerkleTreeDepth,
+                         ZAccountBlackListMerkleTreeDepth,
+                         ZZoneMerkleTreeDepth,
+                         TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
@@ -55,14 +58,6 @@ template ZSwapV1( nUtxoIn,
     var UtxoMiddleExtraLevels = UtxoMiddleExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, UtxoLeftMerkleTreeDepth);
     // Ferry MT extra levels
     var UtxoRightExtraLevels = UtxoRightExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
-
-    // zSwap vs zTransaction variables
-    var arraySizeInCaseOfSwap = TokenArraySize( isSwap );
-    var transactedToken = TransactedTokenIndex();
-    var swapToken = SwapTokenIndex();
-    var zkpToken = ZkpTokenIndex( isSwap );
-    var zAssetArraySize = ZAssetArraySize( isSwap ); // zkp token in last position
-
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
     // main data-escrow
@@ -71,39 +66,46 @@ template ZSwapV1( nUtxoIn,
     var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
     // dao data-escrow
     var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
-    // misc
-    var ACTIVE = Active();
-    var NON_ACTIVE = NonActive();
     //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
 
     // tx api
-    signal input {uint96} depositAmount;    // public
-    signal input {uint96} withdrawAmount;   // public
-    signal input {uint96} addedAmountZkp;   // public
+    signal input depositAmount;    // public
+    signal input withdrawAmount;   // public
+    signal input addedAmountZkp;   // public
+    signal input token;            // public - 160 bit ERC20 address - in case of internal tx will be zero
+    signal input tokenId;          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
+    signal input utxoZAsset;       // used both for in & out utxo
 
-    signal input {uint168} token[arraySizeInCaseOfSwap];            // public - 168 bit ERC20 address - in case of internal tx will be zero
-    signal input {uint252} tokenId[arraySizeInCaseOfSwap];          // public - 256 bit - in case of internal tx will be zero, in case of NTF it is NFT-ID
-    signal input {uint64}  utxoZAsset[arraySizeInCaseOfSwap];       // used both for in & out utxo
+    // zAsset
+    signal input zAssetId;
+    signal input zAssetToken;
+    signal input zAssetTokenId;
+    signal input zAssetNetwork;
+    signal input zAssetOffset;
+    signal input zAssetWeight;
+    signal input zAssetScale;
+    signal input zAssetMerkleRoot;
+    signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
+    signal input zAssetPathElements[ZAssetMerkleTreeDepth];
 
-    signal input {uint64}          zAssetId[zAssetArraySize];
-    signal input {uint168}         zAssetToken[zAssetArraySize];
-    signal input {uint252}         zAssetTokenId[zAssetArraySize];
-    signal input {uint6}           zAssetNetwork[zAssetArraySize];
-    signal input {uint6}           zAssetOffset[zAssetArraySize];
-    signal input {non_zero_uint32} zAssetWeight[zAssetArraySize];
-    signal input {non_zero_uint64} zAssetScale[zAssetArraySize];    // public - only in zSwap case
-    signal input                   zAssetMerkleRoot;
-    signal input {binary}          zAssetPathIndices[zAssetArraySize][ZAssetMerkleTreeDepth];
-    signal input                   zAssetPathElements[zAssetArraySize][ZAssetMerkleTreeDepth];
+    signal input zAssetIdZkp;
+    signal input zAssetTokenZkp;
+    signal input zAssetTokenIdZkp;
+    signal input zAssetNetworkZkp;
+    signal input zAssetOffsetZkp;
+    signal input zAssetWeightZkp;
+    signal input zAssetScaleZkp;
+    signal input zAssetPathIndicesZkp[ZAssetMerkleTreeDepth];
+    signal input zAssetPathElementsZkp[ZAssetMerkleTreeDepth];
 
     // reward computation params
-    signal input {uint40} forTxReward;
-    signal input {uint40} forUtxoReward;
-    signal input {uint40} forDepositReward;
+    signal input forTxReward;
+    signal input forUtxoReward;
+    signal input forDepositReward;
 
-    signal input {uint32} spendTime; // public
+    signal input spendTime; // public
 
     // input 'zAsset UTXOs'
     // to switch-off:
@@ -114,43 +116,43 @@ template ZSwapV1( nUtxoIn,
     //      1) deposit only tx
     //      2) deposit & zAccount::zkpAmount
     //      3) deposit & zAccount::zkpAmount & withdraw
-    //      4) deposit & withdraw
-    signal input {sub_order_bj_sf} utxoInSpendPrivKey[nUtxoIn];
-    signal input {sub_order_bj_sf} utxoInSpendKeyRandom[nUtxoIn];
-    signal input {uint64}   utxoInAmount[nUtxoIn];
-    signal input {uint16}   utxoInOriginZoneId[nUtxoIn];
-    signal input {uint4}    utxoInOriginZoneIdOffset[nUtxoIn];
-    signal input {uint6}    utxoInOriginNetworkId[nUtxoIn];
-    signal input {uint6}    utxoInTargetNetworkId[nUtxoIn];
-    signal input {uint32}   utxoInCreateTime[nUtxoIn];
-    signal input {uint24}   utxoInZAccountId[nUtxoIn];
-    signal input {binary}   utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
-    signal input {binary}   utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
-    signal input            utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
-    signal input {external} utxoInNullifier[nUtxoIn]; // public
-    signal input {sub_order_bj_p} utxoInDataEscrowPubKey[nUtxoIn][2];
+    //      4) deposit & withrdaw
+    signal input utxoInSpendPrivKey[nUtxoIn];
+    signal input utxoInSpendKeyRandom[nUtxoIn];
+    signal input utxoInAmount[nUtxoIn];
+    signal input utxoInOriginZoneId[nUtxoIn];
+    signal input utxoInOriginZoneIdOffset[nUtxoIn];
+    signal input utxoInOriginNetworkId[nUtxoIn];
+    signal input utxoInTargetNetworkId[nUtxoIn];
+    signal input utxoInCreateTime[nUtxoIn];
+    signal input utxoInZAccountId[nUtxoIn];
+    signal input utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
+    signal input utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
+    signal input utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
+    signal input utxoInNullifier[nUtxoIn]; // public
+    signal input utxoInDataEscrowPubKey[nUtxoIn][2];
 
     // input 'zAccount UTXO'
-    signal input {uint24}          zAccountUtxoInId;
-    signal input {uint64}          zAccountUtxoInZkpAmount;
-    signal input {uint196}         zAccountUtxoInPrpAmount;
-    signal input {uint16}          zAccountUtxoInZoneId;
-    signal input {uint6}           zAccountUtxoInNetworkId;
-    signal input {uint32}          zAccountUtxoInExpiryTime;
-    signal input {uint32}          zAccountUtxoInNonce;
-    signal input {uint96}          zAccountUtxoInTotalAmountPerTimePeriod;
-    signal input {uint32}          zAccountUtxoInCreateTime;
-    signal input {sub_order_bj_p}  zAccountUtxoInRootSpendPubKey[2];
-    signal input {sub_order_bj_p}  zAccountUtxoInReadPubKey[2];
-    signal input {sub_order_bj_p}  zAccountUtxoInNullifierPubKey[2];
-    signal input {uint160}         zAccountUtxoInMasterEOA;
-    signal input {sub_order_bj_sf} zAccountUtxoInSpendPrivKey;
-    signal input {sub_order_bj_sf} zAccountUtxoInReadPrivKey;
-    signal input {sub_order_bj_sf} zAccountUtxoInNullifierPrivKey;
-    signal input {binary}          zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
-    signal input {binary}          zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
-    signal input                   zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
-    signal input {external}        zAccountUtxoInNullifier; // public
+    signal input zAccountUtxoInId;
+    signal input zAccountUtxoInZkpAmount;
+    signal input zAccountUtxoInPrpAmount;
+    signal input zAccountUtxoInZoneId;
+    signal input zAccountUtxoInNetworkId;
+    signal input zAccountUtxoInExpiryTime;
+    signal input zAccountUtxoInNonce;
+    signal input zAccountUtxoInTotalAmountPerTimePeriod;
+    signal input zAccountUtxoInCreateTime;
+    signal input zAccountUtxoInRootSpendPubKey[2];
+    signal input zAccountUtxoInReadPubKey[2];
+    signal input zAccountUtxoInNullifierPubKey[2];
+    signal input zAccountUtxoInMasterEOA;
+    signal input zAccountUtxoInSpendPrivKey;
+    signal input zAccountUtxoInReadPrivKey;
+    signal input zAccountUtxoInNullifierPrivKey;
+    signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
+    signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
+    signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
+    signal input zAccountUtxoInNullifier; // public
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
@@ -158,26 +160,26 @@ template ZSwapV1( nUtxoIn,
     signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
 
     // zZone
-    signal input {uint16}          zZoneOriginZoneIDs;
-    signal input {uint16}          zZoneTargetZoneIDs;
-    signal input {uint64}          zZoneNetworkIDsBitMap;
-    signal input {uint240}         zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
-    signal input {uint32}          zZoneKycExpiryTime;
-    signal input {uint32}          zZoneKytExpiryTime;
-    signal input {uint96}          zZoneDepositMaxAmount;
-    signal input {uint96}          zZoneWithdrawMaxAmount;
-    signal input {uint96}          zZoneInternalMaxAmount;
-    signal input                   zZoneMerkleRoot;
-    signal input                   zZonePathElements[ZZoneMerkleTreeDepth];
-    signal input {binary}          zZonePathIndices[ZZoneMerkleTreeDepth];
-    signal input {sub_order_bj_p}  zZoneEdDsaPubKey[2];
-    signal input {sub_order_bj_sf} zZoneDataEscrowEphemeralRandom;
-    signal input                   zZoneDataEscrowEphemeralPubKeyAx; // public
-    signal input                   zZoneDataEscrowEphemeralPubKeyAy;
-    signal input {uint240}         zZoneZAccountIDsBlackList;
-    signal input {uint96}          zZoneMaximumAmountPerTimePeriod;
-    signal input {uint32}          zZoneTimePeriodPerMaximumAmount;
-    signal input {binary}          zZoneSealing;
+    signal input zZoneOriginZoneIDs;
+    signal input zZoneTargetZoneIDs;
+    signal input zZoneNetworkIDsBitMap;
+    signal input zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    signal input zZoneKycExpiryTime;
+    signal input zZoneKytExpiryTime;
+    signal input zZoneDepositMaxAmount;
+    signal input zZoneWithdrawMaxAmount;
+    signal input zZoneInternalMaxAmount;
+    signal input zZoneMerkleRoot;
+    signal input zZonePathElements[ZZoneMerkleTreeDepth];
+    signal input zZonePathIndices[ZZoneMerkleTreeDepth];
+    signal input zZoneEdDsaPubKey[2];
+    signal input zZoneDataEscrowEphemeralRandom;
+    signal input zZoneDataEscrowEphemeralPubKeyAx; // public
+    signal input zZoneDataEscrowEphemeralPubKeyAy;
+    signal input zZoneZAccountIDsBlackList;
+    signal input zZoneMaximumAmountPerTimePeriod;
+    signal input zZoneTimePeriodPerMaximumAmount;
+    signal input zZoneSealing;
 
     signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
     signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
@@ -186,67 +188,66 @@ template ZSwapV1( nUtxoIn,
     // to switch-off:
     //      1) depositAmount = 0
     //      2) withdrawAmount = 0
-    // Note: for swap case, kyt-hash = zero also can switch-off the KYT verification check
     // switch-off control is used for internal tx
-    signal input {sub_order_bj_p} kytEdDsaPubKey[2];
-    signal input {uint32}         kytEdDsaPubKeyExpiryTime;
-    signal input                  trustProvidersMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
-    signal input                  kytPathElements[TrustProvidersMerkleTreeDepth];
-    signal input {binary}         kytPathIndices[TrustProvidersMerkleTreeDepth];
-    signal input {uint4}          kytMerkleTreeLeafIDsAndRulesOffset;     // used for both cases of deposit & withdraw
+    signal input kytEdDsaPubKey[2];
+    signal input kytEdDsaPubKeyExpiryTime;
+    signal input trustProvidersMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
+    signal input kytPathElements[TrustProvidersMerkleTreeDepth];
+    signal input kytPathIndices[TrustProvidersMerkleTreeDepth];
+    signal input kytMerkleTreeLeafIDsAndRulesOffset;     // used for both cases of deposit & withdraw
     // deposit case
-    signal input            kytDepositSignedMessagePackageType;
-    signal input            kytDepositSignedMessageTimestamp;
-    signal input            kytDepositSignedMessageSender;         // public
-    signal input            kytDepositSignedMessageReceiver;       // public
-    signal input {uint160}  kytDepositSignedMessageToken;
-    signal input            kytDepositSignedMessageSessionId;
-    signal input {uint8}    kytDepositSignedMessageRuleId;
-    signal input {uint96}   kytDepositSignedMessageAmount;
-    signal input {uint96}   kytDepositSignedMessageChargedAmountZkp;
-    signal input {uint160}  kytDepositSignedMessageSigner;
-    signal input            kytDepositSignedMessageHash;                // public
-    signal input            kytDepositSignature[3];                     // S,R8x,R8y
+    signal input kytDepositSignedMessagePackageType;
+    signal input kytDepositSignedMessageTimestamp;
+    signal input kytDepositSignedMessageSender;         // public
+    signal input kytDepositSignedMessageReceiver;       // public
+    signal input kytDepositSignedMessageToken;
+    signal input kytDepositSignedMessageSessionId;
+    signal input kytDepositSignedMessageRuleId;
+    signal input kytDepositSignedMessageAmount;
+    signal input kytDepositSignedMessageChargedAmountZkp;
+    signal input kytDepositSignedMessageSigner;
+    signal input kytDepositSignedMessageHash;                // public
+    signal input kytDepositSignature[3];                     // S,R8x,R8y
     // withdraw case
-    signal input            kytWithdrawSignedMessagePackageType;
-    signal input            kytWithdrawSignedMessageTimestamp;
-    signal input            kytWithdrawSignedMessageSender;            // public
-    signal input            kytWithdrawSignedMessageReceiver;          // public
-    signal input {uint160}  kytWithdrawSignedMessageToken;
-    signal input            kytWithdrawSignedMessageSessionId;
-    signal input {uint8}    kytWithdrawSignedMessageRuleId;
-    signal input {uint96}   kytWithdrawSignedMessageAmount;
-    signal input {uint96}   kytWithdrawSignedMessageChargedAmountZkp;
-    signal input {uint160}  kytWithdrawSignedMessageSigner;
-    signal input            kytWithdrawSignedMessageHash;                // public
-    signal input            kytWithdrawSignature[3];                     // S,R8x,R8y
+    signal input kytWithdrawSignedMessagePackageType;
+    signal input kytWithdrawSignedMessageTimestamp;
+    signal input kytWithdrawSignedMessageSender;            // public
+    signal input kytWithdrawSignedMessageReceiver;          // public
+    signal input kytWithdrawSignedMessageToken;
+    signal input kytWithdrawSignedMessageSessionId;
+    signal input kytWithdrawSignedMessageRuleId;
+    signal input kytWithdrawSignedMessageAmount;
+    signal input kytWithdrawSignedMessageChargedAmountZkp;
+    signal input kytWithdrawSignedMessageSigner;
+    signal input kytWithdrawSignedMessageHash;                // public
+    signal input kytWithdrawSignature[3];                     // S,R8x,R8y
     // internal case
-    signal input            kytSignedMessagePackageType;
-    signal input            kytSignedMessageTimestamp;
-    signal input            kytSignedMessageSessionId;
-    signal input {uint96}   kytSignedMessageChargedAmountZkp;
-    signal input {uint160}  kytSignedMessageSigner;
-    signal input            kytSignedMessageDataEscrowHash;      // of data-escrow encrypted points
-    signal input            kytSignedMessageHash;                // public - Hash( 6-signed-message-params )
-    signal input            kytSignature[3];                     // S,R8x,R8y
+    signal input kytSignedMessagePackageType;
+    signal input kytSignedMessageTimestamp;
+    signal input kytSignedMessageSessionId;
+    signal input kytSignedMessageChargedAmountZkp;
+    signal input kytSignedMessageSigner;
+    signal input kytSignedMessageDataEscrowHash;      // of data-escrow encrypted points
+    signal input kytSignedMessageHash;                // public - Hash( 6-signed-message-params )
+    signal input kytSignature[3];                     // S,R8x,R8y
 
     // data escrow
-    signal input {sub_order_bj_p}  dataEscrowPubKey[2];
-    signal input {uint32}          dataEscrowPubKeyExpiryTime;
-    signal input {sub_order_bj_sf} dataEscrowEphemeralRandom;
-    signal input                   dataEscrowEphemeralPubKeyAx;
-    signal input                   dataEscrowEphemeralPubKeyAy;
-    signal input                   dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
-    signal input {binary}          dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
+    signal input dataEscrowPubKey[2];
+    signal input dataEscrowPubKeyExpiryTime;
+    signal input dataEscrowEphemeralRandom;
+    signal input dataEscrowEphemeralPubKeyAx;
+    signal input dataEscrowEphemeralPubKeyAy;
+    signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
+    signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
     signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
 
     // dao data escrow
-    signal input                   daoDataEscrowPubKey[2];
-    signal input {sub_order_bj_sf} daoDataEscrowEphemeralRandom;
-    signal input                   daoDataEscrowEphemeralPubKeyAx; // public
-    signal input                   daoDataEscrowEphemeralPubKeyAy;
+    signal input daoDataEscrowPubKey[2];
+    signal input daoDataEscrowEphemeralRandom;
+    signal input daoDataEscrowEphemeralPubKeyAx; // public
+    signal input daoDataEscrowEphemeralPubKeyAy;
 
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
     signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
@@ -259,23 +260,23 @@ template ZSwapV1( nUtxoIn,
     //      2) zAccount::zkpAmount & withdraw
     //      3) deposit & zAccount::zkpAmount & withdraw
     //      4) deposit & withdraw
-    signal input {uint32}          utxoOutCreateTime;                // public
-    signal input {uint64}          utxoOutAmount[nUtxoOut];          // in zAsset units
-    signal input {uint6}           utxoOutOriginNetworkId[nUtxoOut];
-    signal input {uint6}           utxoOutTargetNetworkId[nUtxoOut];
-    signal input {uint16}          utxoOutTargetZoneId[nUtxoOut];
-    signal input {uint4}           utxoOutTargetZoneIdOffset[nUtxoOut];
-    signal input {sub_order_bj_sf} utxoOutSpendPubKeyRandom[nUtxoOut];
-    signal input {sub_order_bj_p}  utxoOutRootSpendPubKey[nUtxoOut][2];
-    signal input                   utxoOutCommitment[nUtxoOut]; // public
+    signal input utxoOutCreateTime;                // public
+    signal input utxoOutAmount[nUtxoOut];          // in zAsset units
+    signal input utxoOutOriginNetworkId[nUtxoOut];
+    signal input utxoOutTargetNetworkId[nUtxoOut];
+    signal input utxoOutTargetZoneId[nUtxoOut];
+    signal input utxoOutTargetZoneIdOffset[nUtxoOut];
+    signal input utxoOutSpendPubKeyRandom[nUtxoOut];
+    signal input utxoOutRootSpendPubKey[nUtxoOut][2];
+    signal input utxoOutCommitment[nUtxoOut]; // public
 
     // output 'zAccount UTXO'
-    signal input {uint64}          zAccountUtxoOutZkpAmount;
-    signal input {sub_order_bj_sf} zAccountUtxoOutSpendKeyRandom;
-    signal input                   zAccountUtxoOutCommitment; // public
+    signal input zAccountUtxoOutZkpAmount;
+    signal input zAccountUtxoOutSpendKeyRandom;
+    signal input zAccountUtxoOutCommitment; // public
 
     // output 'protocol + relayer fee in ZKP'
-    signal input {uint96} chargedAmountZkp; // public
+    signal input chargedAmountZkp; // public
 
     // zNetworks tree
     // network parameters:
@@ -283,12 +284,12 @@ template ZSwapV1( nUtxoIn,
     // 2) network-id - 6 bit
     // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
     // 4) daoDataEscrowPubKey[2]
-    signal input {uint6}    zNetworkId;
-    signal input {external} zNetworkChainId; // public
-    signal input {uint64}   zNetworkIDsBitMap;
-    signal input            zNetworkTreeMerkleRoot;
-    signal input            zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
-    signal input {binary}   zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
+    signal input zNetworkId;
+    signal input zNetworkChainId; // public
+    signal input zNetworkIDsBitMap;
+    signal input zNetworkTreeMerkleRoot;
+    signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
+    signal input zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
 
     // static tree merkle root
     // Poseidon of:
@@ -327,40 +328,36 @@ template ZSwapV1( nUtxoIn,
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [1] - Check zAsset
-    component zAssetChecker[arraySizeInCaseOfSwap];
-    for (var i = 0; i < arraySizeInCaseOfSwap; i++) {
-        zAssetChecker[i] = ZAssetChecker();
-        zAssetChecker[i].token <== token[i];
-        zAssetChecker[i].tokenId <== tokenId[i];
-        zAssetChecker[i].zAssetId <== zAssetId[i];
-        zAssetChecker[i].zAssetToken <== zAssetToken[i];
-        zAssetChecker[i].zAssetTokenId <== zAssetTokenId[i];
-        zAssetChecker[i].zAssetOffset <== zAssetOffset[i];
-        zAssetChecker[i].depositAmount <== depositAmount;
-        zAssetChecker[i].withdrawAmount <== withdrawAmount;
-        zAssetChecker[i].utxoZAssetId <== utxoZAsset[i];
-    }
+    component zAssetChecker = ZAssetChecker();
+    zAssetChecker.token <== token;
+    zAssetChecker.tokenId <== tokenId;
+    zAssetChecker.zAssetId <== zAssetId;
+    zAssetChecker.zAssetToken <== zAssetToken;
+    zAssetChecker.zAssetTokenId <== zAssetTokenId;
+    zAssetChecker.zAssetOffset <== zAssetOffset;
+    zAssetChecker.depositAmount <== depositAmount;
+    zAssetChecker.withdrawAmount <== withdrawAmount;
+    zAssetChecker.utxoZAssetId <== utxoZAsset;
+
     // [1.1] - Check zAsset-ZKP - verify it is zkp-token
-    zAssetId[zkpToken] === 0;
+    zAssetIdZkp === 0;
 
     // [2] - Check the overall balance of all inputs & outputs amounts
-    var totalUtxoInAmountVar = 0; // in zAsset units
+    var totalUtxoInAmount = 0; // in zAsset units
     for (var i = 0 ; i < nUtxoIn; i++){
         // accumulate total
-        totalUtxoInAmountVar += utxoInAmount[i];
+        totalUtxoInAmount += utxoInAmount[i];
     }
-    signal totalUtxoInAmount <== Uint70Tag(ACTIVE)(totalUtxoInAmountVar);
 
-    var totalUtxoOutAmountVar = 0; // in zAsset units
+    var totalUtxoOutAmount = 0; // in zAsset units
     for (var i = 0; i < nUtxoOut; i++){
         // accumulate total
-        totalUtxoOutAmountVar += utxoOutAmount[i];
+        totalUtxoOutAmount += utxoOutAmount[i];
     }
-    signal totalUtxoOutAmount <== Uint70Tag(ACTIVE)(totalUtxoOutAmountVar);
 
     // verify deposit & withdraw change
     component totalBalanceChecker = BalanceChecker();
-    totalBalanceChecker.isZkpToken <== zAssetChecker[transactedToken].isZkpToken;
+    totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
     totalBalanceChecker.depositAmount <== depositAmount;
     totalBalanceChecker.withdrawAmount <== withdrawAmount;
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
@@ -369,43 +366,59 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
     totalBalanceChecker.totalUtxoInAmount <== totalUtxoInAmount;
     totalBalanceChecker.totalUtxoOutAmount <== totalUtxoOutAmount;
-    totalBalanceChecker.zAssetWeight <== zAssetWeight[transactedToken];
-    totalBalanceChecker.zAssetScale <== zAssetScale[transactedToken];
-    totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
+    totalBalanceChecker.zAssetWeight <== zAssetWeight;
+    totalBalanceChecker.zAssetScale <== zAssetScale;
+    totalBalanceChecker.zAssetScaleZkp <== zAssetScaleZkp;
     totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
 
     // [3] - Verify zAsset's membership and decode its weight
-    component zAssetNoteInclusionProver[arraySizeInCaseOfSwap];
+    component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
+    zAssetNoteInclusionProver.zAsset <== zAssetId;
+    zAssetNoteInclusionProver.token <== zAssetToken;
+    zAssetNoteInclusionProver.tokenId <== zAssetTokenId;
+    zAssetNoteInclusionProver.network <== zAssetNetwork;
+    zAssetNoteInclusionProver.offset <== zAssetOffset;
+    zAssetNoteInclusionProver.weight <== zAssetWeight;
+    zAssetNoteInclusionProver.scale <== zAssetScale;
+    zAssetNoteInclusionProver.merkleRoot <== zAssetMerkleRoot;
 
-    for (var i = 0; i < arraySizeInCaseOfSwap; i++) {
-        zAssetNoteInclusionProver[i] = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
-        zAssetNoteInclusionProver[i].zAsset <== zAssetId[i];
-        zAssetNoteInclusionProver[i].token <== zAssetToken[i];
-        zAssetNoteInclusionProver[i].tokenId <== zAssetTokenId[i];
-        zAssetNoteInclusionProver[i].network <== zAssetNetwork[i];
-        zAssetNoteInclusionProver[i].offset <== zAssetOffset[i];
-        zAssetNoteInclusionProver[i].weight <== zAssetWeight[i];
-        zAssetNoteInclusionProver[i].scale <== zAssetScale[i];
-        zAssetNoteInclusionProver[i].merkleRoot <== zAssetMerkleRoot;
-
-        for (var j = 0; j < ZAssetMerkleTreeDepth; j++) {
-            zAssetNoteInclusionProver[i].pathIndices[j] <== zAssetPathIndices[i][j];
-            zAssetNoteInclusionProver[i].pathElements[j] <== zAssetPathElements[i][j];
-        }
-        // verify zAsset::network is equal to the current networkId
-        zAssetNetwork[i] === zNetworkId;
+    for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
+        zAssetNoteInclusionProver.pathIndices[i] <== zAssetPathIndices[i];
+        zAssetNoteInclusionProver.pathElements[i] <== zAssetPathElements[i];
     }
+
+    // verify zAsset::network is equal to the current networkId
+    zAssetNetwork === zNetworkId;
+
+    // [3.1] - Verify ZKP zAsset's membership and decode its weight
+    component zAssetNoteInclusionProverZkp = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
+    zAssetNoteInclusionProverZkp.zAsset <== zAssetIdZkp;
+    zAssetNoteInclusionProverZkp.token <== zAssetTokenZkp;
+    zAssetNoteInclusionProverZkp.tokenId <== zAssetTokenIdZkp;
+    zAssetNoteInclusionProverZkp.network <== zAssetNetworkZkp;
+    zAssetNoteInclusionProverZkp.offset <== zAssetOffsetZkp;
+    zAssetNoteInclusionProverZkp.weight <== zAssetWeightZkp;
+    zAssetNoteInclusionProverZkp.scale <== zAssetScaleZkp;
+    zAssetNoteInclusionProverZkp.merkleRoot <== zAssetMerkleRoot;
+
+    for (var i = 0; i < ZAssetMerkleTreeDepth; i++) {
+        zAssetNoteInclusionProverZkp.pathIndices[i] <== zAssetPathIndicesZkp[i];
+        zAssetNoteInclusionProverZkp.pathElements[i] <== zAssetPathElementsZkp[i];
+    }
+
+    // verify zAsset::network is equal to the current networkId
+    zAssetNetworkZkp === zNetworkId;
 
     // [4] - Pass values for computing rewards
     component rewards = RewardsExtended(nUtxoIn);
-    rewards.depositAmount <== totalBalanceChecker.depositWeightedScaledAmount;
+    rewards.depositAmount <== totalBalanceChecker.depositScaledAmount;
     rewards.forTxReward <== forTxReward;
     rewards.forUtxoReward <== forUtxoReward;
     rewards.forDepositReward <== forDepositReward;
     rewards.spendTime <== spendTime;
-    rewards.assetWeight <== zAssetWeight[transactedToken];
+    rewards.assetWeight <== zAssetWeight;
     // compute rewards
     for (var i = 0 ; i < nUtxoIn; i++){
         // pass value for computing rewards
@@ -417,7 +430,6 @@ template ZSwapV1( nUtxoIn,
     component utxoInNullifierHasher[nUtxoIn];
     component utxoInNullifierProver[nUtxoIn];
     component utxoInSpendPubKey[nUtxoIn];
-    component utxoInSpendPubKeyVerifier[nUtxoIn];
     component utxoInSpendPubKeyDeriver[nUtxoIn];
     component utxoInNoteHashers[nUtxoIn];
     component utxoInInclusionProver[nUtxoIn];
@@ -440,10 +452,6 @@ template ZSwapV1( nUtxoIn,
         // derive spending pubkey
         utxoInSpendPubKey[i] = BabyPbk();
         utxoInSpendPubKey[i].in <== utxoInSpendPrivKey[i]; // rootPrivKey * random
-        // verify sub-order - disabled since it was checked during utxo-creation
-        utxoInSpendPubKeyVerifier[i] = BabyJubJubSubGroupPointTag(NON_ACTIVE);
-        utxoInSpendPubKeyVerifier[i].in[0] <== utxoInSpendPubKey[i].Ax;
-        utxoInSpendPubKeyVerifier[i].in[1] <== utxoInSpendPubKey[i].Ay;
 
         // verify equality - can be switched-off by zero value of utxoInSpendKeyRandom & utxoInSpendPrivKey
         utxoInSpendPubKey[i].Ax === utxoInSpendPubKeyDeriver[i].derivedPubKey[0];
@@ -451,9 +459,9 @@ template ZSwapV1( nUtxoIn,
 
         // compute commitment
         utxoInNoteHashers[i] = UtxoNoteHasher(0);
-        utxoInNoteHashers[i].spendPk[0] <== utxoInSpendPubKeyVerifier[i].out[0];
-        utxoInNoteHashers[i].spendPk[1] <== utxoInSpendPubKeyVerifier[i].out[1];
-        utxoInNoteHashers[i].zAsset <== utxoZAsset[transactedToken];
+        utxoInNoteHashers[i].spendPk[0] <== utxoInSpendPubKey[i].Ax;
+        utxoInNoteHashers[i].spendPk[1] <== utxoInSpendPubKey[i].Ay;
+        utxoInNoteHashers[i].zAsset <== utxoZAsset;
         utxoInNoteHashers[i].amount <== utxoInAmount[i];
         utxoInNoteHashers[i].originNetworkId <== utxoInOriginNetworkId[i];
         utxoInNoteHashers[i].targetNetworkId <== utxoInTargetNetworkId[i];
@@ -535,9 +543,9 @@ template ZSwapV1( nUtxoIn,
         // verify zone max internal limits, no need to RC amount since its checked via utxo-out
         assert(0 <= utxoInAmount[i] < 2**64);
         // utxoInAmount[i] * zAssetWeight[transactedToken] - no need to RC since `zAssetWeight` anchored via MT & `amount`
-        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[transactedToken]));
+        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight));
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight[transactedToken];
+        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight;
         isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
     }
 
@@ -545,7 +553,6 @@ template ZSwapV1( nUtxoIn,
     component utxoOutNoteHasher[nUtxoOut];
     component utxoOutCommitmentProver[nUtxoIn];
     component utxoOutSpendPubKeyDeriver[nUtxoOut];
-    component utxoOutSpendPubKeySubOrderVerifier[nUtxoOut];
     component utxoOutOriginNetworkIdInclusionProver[nUtxoOut];
     component utxoOutTargetNetworkIdInclusionProver[nUtxoOut];
     component utxoOutOriginNetworkIdZNetworkInclusionProver[nUtxoOut];
@@ -561,24 +568,12 @@ template ZSwapV1( nUtxoIn,
         utxoOutSpendPubKeyDeriver[i].rootPubKey[0] <== utxoOutRootSpendPubKey[i][0];
         utxoOutSpendPubKeyDeriver[i].rootPubKey[1] <== utxoOutRootSpendPubKey[i][1];
         utxoOutSpendPubKeyDeriver[i].random <== utxoOutSpendPubKeyRandom[i]; // random generated by sender
-        // verify
-        utxoOutSpendPubKeySubOrderVerifier[i] = BabyJubJubSubGroupPointTag(ACTIVE);
-        utxoOutSpendPubKeySubOrderVerifier[i].in[0] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[0];
-        utxoOutSpendPubKeySubOrderVerifier[i].in[1] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[1];
-
-        var isSwapUtxo = isSwap && (i == nUtxoOut - 1);
 
         // verify commitment
-        utxoOutNoteHasher[i] = UtxoNoteHasher(isSwapUtxo);
-        utxoOutNoteHasher[i].spendPk[0] <== utxoOutSpendPubKeySubOrderVerifier[i].out[0];
-        utxoOutNoteHasher[i].spendPk[1] <== utxoOutSpendPubKeySubOrderVerifier[i].out[1];
-        if  ( isSwapUtxo ) {
-            utxoOutNoteHasher[i].zAsset <== utxoZAsset[swapToken];
-            // require zero utxo-out amounts in case of swap
-            utxoOutAmount[i] === 0;
-        } else {
-            utxoOutNoteHasher[i].zAsset <== utxoZAsset[transactedToken];
-        }
+        utxoOutNoteHasher[i] = UtxoNoteHasher(0);
+        utxoOutNoteHasher[i].spendPk[0] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[0];
+        utxoOutNoteHasher[i].spendPk[1] <== utxoOutSpendPubKeyDeriver[i].derivedPubKey[1];
+        utxoOutNoteHasher[i].zAsset <== utxoZAsset;
         utxoOutNoteHasher[i].amount <== utxoOutAmount[i];
         utxoOutNoteHasher[i].originNetworkId <== utxoOutOriginNetworkId[i];
         utxoOutNoteHasher[i].targetNetworkId <== utxoOutTargetNetworkId[i];
@@ -626,15 +621,9 @@ template ZSwapV1( nUtxoIn,
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
 
         // verify zone max internal limits
+        assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight));
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(252);
-        if ( isSwapUtxo ) {
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[swapToken];
-        }
-        else {
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
-        }
+        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight;
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
 
         // ensure output amounts ranges
@@ -654,7 +643,8 @@ template ZSwapV1( nUtxoIn,
     component isDeltaTimeLessEqThen = LessEqThan(252); // 1 if deltaTime <= zZoneTimePeriodPerMaximumAmount
     isDeltaTimeLessEqThen.in[0] <== deltaTime;
     isDeltaTimeLessEqThen.in[1] <== zZoneTimePeriodPerMaximumAmount;
-    signal zAccountUtxoOutTotalAmountPerTimePeriod <== Uint96Tag(ACTIVE)(isDeltaTimeLessEqThen.out * (totalBalanceChecker.totalWeighted + zAccountUtxoInTotalAmountPerTimePeriod ));
+
+    signal zAccountUtxoOutTotalAmountPerTimePeriod <== isDeltaTimeLessEqThen.out * (totalBalanceChecker.totalWeighted + zAccountUtxoInTotalAmountPerTimePeriod);
 
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
@@ -665,14 +655,10 @@ template ZSwapV1( nUtxoIn,
     // [8] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInSpendPubKey = BabyPbk();
     zAccountUtxoInSpendPubKey.in <== zAccountUtxoInSpendPrivKey;
-    // verify sub-order, non-active since priv-key verified
-    component zAccountUtxoInSpendPubKeyVerify = BabyJubJubSubGroupPointTag(NON_ACTIVE);
-    zAccountUtxoInSpendPubKeyVerify.in[0] <== zAccountUtxoInSpendPubKey.Ax;
-    zAccountUtxoInSpendPubKeyVerify.in[1] <== zAccountUtxoInSpendPubKey.Ay;
 
     component zAccountUtxoInHasher = ZAccountNoteHasher();
-    zAccountUtxoInHasher.spendPubKey[0] <== zAccountUtxoInSpendPubKeyVerify.out[0];
-    zAccountUtxoInHasher.spendPubKey[1] <== zAccountUtxoInSpendPubKeyVerify.out[1];
+    zAccountUtxoInHasher.spendPubKey[0] <== zAccountUtxoInSpendPubKey.Ax;
+    zAccountUtxoInHasher.spendPubKey[1] <== zAccountUtxoInSpendPubKey.Ay;
     zAccountUtxoInHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoInHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
     zAccountUtxoInHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
@@ -746,15 +732,11 @@ template ZSwapV1( nUtxoIn,
     zAccountUtxoOutPubKeyDeriver.rootPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoOutPubKeyDeriver.rootPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
     zAccountUtxoOutPubKeyDeriver.random <== zAccountUtxoOutSpendKeyRandom;
-    // verify sub-order, non-active since priv-key verified
-    component zAccountUtxoOutPubKeyDeriverSubOrderVerify = BabyJubJubSubGroupPointTag(NON_ACTIVE);
-    zAccountUtxoOutPubKeyDeriverSubOrderVerify.in[0] <== zAccountUtxoOutPubKeyDeriver.derivedPubKey[0];
-    zAccountUtxoOutPubKeyDeriverSubOrderVerify.in[1] <== zAccountUtxoOutPubKeyDeriver.derivedPubKey[1];
 
     // [12] - Verify zAccountUtxoOut commitment
     component zAccountUtxoOutHasher = ZAccountNoteHasher();
-    zAccountUtxoOutHasher.spendPubKey[0] <== zAccountUtxoOutPubKeyDeriverSubOrderVerify.out[0];
-    zAccountUtxoOutHasher.spendPubKey[1] <== zAccountUtxoOutPubKeyDeriverSubOrderVerify.out[1];
+    zAccountUtxoOutHasher.spendPubKey[0] <== zAccountUtxoOutPubKeyDeriver.derivedPubKey[0];
+    zAccountUtxoOutHasher.spendPubKey[1] <== zAccountUtxoOutPubKeyDeriver.derivedPubKey[1];
     zAccountUtxoOutHasher.rootSpendPubKey[0] <== zAccountUtxoInRootSpendPubKey[0];
     zAccountUtxoOutHasher.rootSpendPubKey[1] <== zAccountUtxoInRootSpendPubKey[1];
     zAccountUtxoOutHasher.readPubKey[0] <== zAccountUtxoInReadPubKey[0];
@@ -764,10 +746,10 @@ template ZSwapV1( nUtxoIn,
     zAccountUtxoOutHasher.masterEOA <== zAccountUtxoInMasterEOA;
     zAccountUtxoOutHasher.id <== zAccountUtxoInId;
     zAccountUtxoOutHasher.amountZkp <== zAccountUtxoOutZkpAmount;
-    zAccountUtxoOutHasher.amountPrp <== Uint196Tag(ACTIVE)(zAccountUtxoInPrpAmount + rewards.amountPrp);
+    zAccountUtxoOutHasher.amountPrp <== zAccountUtxoInPrpAmount + rewards.amountPrp;
     zAccountUtxoOutHasher.zoneId <== zAccountUtxoInZoneId;
     zAccountUtxoOutHasher.expiryTime <== zAccountUtxoInExpiryTime;
-    zAccountUtxoOutHasher.nonce <== Uint32Tag(ACTIVE)(zAccountUtxoInNonce + 1);
+    zAccountUtxoOutHasher.nonce <== zAccountUtxoInNonce + 1;
     zAccountUtxoOutHasher.totalAmountPerTimePeriod <== zAccountUtxoOutTotalAmountPerTimePeriod;
     zAccountUtxoOutHasher.createTime <== utxoOutCreateTime;
     zAccountUtxoOutHasher.networkId <== zAccountUtxoInNetworkId;
@@ -777,7 +759,7 @@ template ZSwapV1( nUtxoIn,
     zAccountUtxoOutHasherProver.in[1] <== zAccountUtxoOutHasher.out;
     zAccountUtxoOutHasherProver.enabled <== zAccountUtxoOutCommitment;
 
-    // [13] - Verify zAccountId exclusion proof
+    // [13] - Verify zAccoutId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
@@ -804,8 +786,7 @@ template ZSwapV1( nUtxoIn,
     isKytCheckEnabled.a <== 1 - isZeroInternal.out;
     isKytCheckEnabled.b <== isKytCheckEnabled_deposit_withdraw.out;
 
-    // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
-    signal isKytDepositCheckEnabled <== isSwap ?  kytDepositSignedMessageHash * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out);
+    signal isKytDepositCheckEnabled <== 1 - isZeroDeposit.out;
 
     component kytDepositSignedMessageHashInternal = Poseidon(10);
 
@@ -845,7 +826,7 @@ template ZSwapV1( nUtxoIn,
     // deposit token
     component kytDepositSignedMessageTokenIsEqual = ForceEqualIfEnabled();
     kytDepositSignedMessageTokenIsEqual.enabled <== isKytDepositCheckEnabled;
-    kytDepositSignedMessageTokenIsEqual.in[0] <== ExtractToken()(token[transactedToken]);
+    kytDepositSignedMessageTokenIsEqual.in[0] <== token;
     kytDepositSignedMessageTokenIsEqual.in[1] <== kytDepositSignedMessageToken;
 
     // deposit amount
@@ -857,8 +838,7 @@ template ZSwapV1( nUtxoIn,
     // deposit package type
     kytDepositSignedMessagePackageType === 2;
 
-    // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
-    signal isKytWithdrawCheckEnabled <== isSwap ? kytWithdrawSignedMessageHash * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out);
+    signal isKytWithdrawCheckEnabled <== 1 - isZeroWithdraw.out;
 
     component kytWithdrawSignedMessageHashInternal = Poseidon(10);
 
@@ -898,7 +878,7 @@ template ZSwapV1( nUtxoIn,
     // withdraw token
     component kytWithdrawSignedMessageTokenIsEqual = ForceEqualIfEnabled();
     kytWithdrawSignedMessageTokenIsEqual.enabled <== isKytWithdrawCheckEnabled;
-    kytWithdrawSignedMessageTokenIsEqual.in[0] <== ExtractToken()(token[transactedToken]);
+    kytWithdrawSignedMessageTokenIsEqual.in[0] <== token;
     kytWithdrawSignedMessageTokenIsEqual.in[1] <== kytWithdrawSignedMessageToken;
 
     // withdraw amount
@@ -930,14 +910,14 @@ template ZSwapV1( nUtxoIn,
     // deposit part
     component kytDepositLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kytDepositLeafIdAndRuleInclusionProver.enabled <== isKytDepositCheckEnabled;
-    kytDepositLeafIdAndRuleInclusionProver.leafId <== Uint16Tag(ACTIVE)(b2nLeafId.out);
+    kytDepositLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
     kytDepositLeafIdAndRuleInclusionProver.rule <== kytDepositSignedMessageRuleId;
     kytDepositLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kytDepositLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
     // withdraw part
     component kytWithdrawLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kytWithdrawLeafIdAndRuleInclusionProver.enabled <== isKytWithdrawCheckEnabled;
-    kytWithdrawLeafIdAndRuleInclusionProver.leafId <==  Uint16Tag(ACTIVE)(b2nLeafId.out);
+    kytWithdrawLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
     kytWithdrawLeafIdAndRuleInclusionProver.rule <== kytWithdrawSignedMessageRuleId;
     kytWithdrawLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kytWithdrawLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
@@ -975,7 +955,7 @@ template ZSwapV1( nUtxoIn,
 
     // --------------- scalars -----------------
     component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth);
-    dataEscrowScalarsSerializer.zAsset <== utxoZAsset[transactedToken];
+    dataEscrowScalarsSerializer.zAsset <== utxoZAsset;
     dataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
     dataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
 
@@ -1038,18 +1018,16 @@ template ZSwapV1( nUtxoIn,
     }
 
     // [20] - internal KYT
-    signal isKytInternalCheckEnabled <== isSwap ?  kytSignedMessageHash * (1 - isZeroInternal.out) : (1 - isZeroInternal.out);
+    signal isKytInternalCheckEnabled <== 1 - isZeroInternal.out;
 
-    component kytSignedMessageHashInternal = Poseidon(8);
+    component kytSignedMessageHashInternal = Poseidon(6);
 
     kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
     kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
     kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
     kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
     kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
-    kytSignedMessageHashInternal.inputs[5] <== kytDepositSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[7] <== dataEscrow.encryptedMessageHash;
+    kytSignedMessageHashInternal.inputs[5] <== dataEscrow.encryptedMessageHash;
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== isKytInternalCheckEnabled;
@@ -1074,7 +1052,7 @@ template ZSwapV1( nUtxoIn,
     kytSignedMessageHashIsEqual.in[1] <== kytSignedMessageHashInternal.out;
 
     // internal package type
-    kytSignedMessagePackageType === 253;
+    kytSignedMessagePackageType === 3;
 
     // [21] - Verify zZone membership
     component zZoneNoteHasher = ZZoneNoteHasher();
@@ -1144,7 +1122,7 @@ template ZSwapV1( nUtxoIn,
 
     // [25] - Verify zNetwork's membership and decode its weight
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
-    zNetworkNoteInclusionProver.active <== BinaryOne()(); // ALWAYS ACTIVE
+    zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
     zNetworkNoteInclusionProver.chainId <== zNetworkChainId;
     zNetworkNoteInclusionProver.networkIDsBitMap <== zNetworkIDsBitMap;
@@ -1242,4 +1220,204 @@ template ZSwapV1( nUtxoIn,
     // [30] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // [31] - Range check ////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    component zTransactionV1RC = ZTransactionV1RangeCheck ( nUtxoIn,
+                                                            nUtxoOut,
+                                                            UtxoLeftMerkleTreeDepth,
+                                                            UtxoMiddleMerkleTreeDepth,
+                                                            ZNetworkMerkleTreeDepth,
+                                                            ZAssetMerkleTreeDepth,
+                                                            ZAccountBlackListMerkleTreeDepth,
+                                                            ZZoneMerkleTreeDepth,
+                                                            TrustProvidersMerkleTreeDepth );
+
+    zTransactionV1RC.extraInputsHash <== extraInputsHash;
+    zTransactionV1RC.depositAmount <== depositAmount;
+    zTransactionV1RC.withdrawAmount <== withdrawAmount;
+    zTransactionV1RC.addedAmountZkp <== addedAmountZkp;
+    zTransactionV1RC.token <== token;
+    zTransactionV1RC.tokenId <== tokenId;
+    zTransactionV1RC.utxoZAsset <== utxoZAsset;
+
+    zTransactionV1RC.zAssetId <== zAssetId;
+    zTransactionV1RC.zAssetToken <== zAssetToken;
+    zTransactionV1RC.zAssetTokenId <== zAssetTokenId;
+    zTransactionV1RC.zAssetNetwork <== zAssetNetwork;
+    zTransactionV1RC.zAssetOffset <== zAssetOffset;
+    zTransactionV1RC.zAssetWeight <== zAssetWeight;
+    zTransactionV1RC.zAssetScale <== zAssetScale;
+    zTransactionV1RC.zAssetMerkleRoot <== zAssetMerkleRoot;
+    zTransactionV1RC.zAssetPathIndices <== zAssetPathIndices;
+    zTransactionV1RC.zAssetPathElements <== zAssetPathElements;
+
+    zTransactionV1RC.zAssetIdZkp <== zAssetIdZkp;
+    zTransactionV1RC.zAssetTokenZkp <== zAssetTokenZkp;
+    zTransactionV1RC.zAssetTokenIdZkp <== zAssetTokenIdZkp;
+    zTransactionV1RC.zAssetNetworkZkp <== zAssetNetworkZkp;
+    zTransactionV1RC.zAssetOffsetZkp <== zAssetOffsetZkp;
+    zTransactionV1RC.zAssetWeightZkp <== zAssetWeightZkp;
+    zTransactionV1RC.zAssetScaleZkp <== zAssetScaleZkp;
+    zTransactionV1RC.zAssetPathIndicesZkp <== zAssetPathIndicesZkp;
+    zTransactionV1RC.zAssetPathElementsZkp <== zAssetPathElementsZkp;
+
+    zTransactionV1RC.forTxReward <== forTxReward;
+    zTransactionV1RC.forUtxoReward <== forUtxoReward;
+    zTransactionV1RC.forDepositReward <== forDepositReward;
+    zTransactionV1RC.spendTime <== spendTime;
+
+    zTransactionV1RC.utxoInSpendPrivKey <== utxoInSpendPrivKey;
+    zTransactionV1RC.utxoInSpendKeyRandom <== utxoInSpendKeyRandom;
+    zTransactionV1RC.utxoInAmount <== utxoInAmount;
+    zTransactionV1RC.utxoInOriginZoneId <== utxoInOriginZoneId;
+    zTransactionV1RC.utxoInOriginZoneIdOffset <== utxoInOriginZoneIdOffset;
+    zTransactionV1RC.utxoInOriginNetworkId <== utxoInOriginNetworkId;
+    zTransactionV1RC.utxoInTargetNetworkId <== utxoInTargetNetworkId;
+    zTransactionV1RC.utxoInCreateTime <== utxoInCreateTime;
+    zTransactionV1RC.utxoInZAccountId <== utxoInZAccountId;
+    zTransactionV1RC.utxoInMerkleTreeSelector <== utxoInMerkleTreeSelector;
+    zTransactionV1RC.utxoInPathIndices <== utxoInPathIndices;
+    zTransactionV1RC.utxoInPathElements <== utxoInPathElements;
+    zTransactionV1RC.utxoInNullifier <== utxoInNullifier;
+    zTransactionV1RC.utxoInDataEscrowPubKey <== utxoInDataEscrowPubKey;
+
+    zTransactionV1RC.zAccountUtxoInId <== zAccountUtxoInId;
+    zTransactionV1RC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
+    zTransactionV1RC.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
+    zTransactionV1RC.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
+    zTransactionV1RC.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
+    zTransactionV1RC.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
+    zTransactionV1RC.zAccountUtxoInNonce <== zAccountUtxoInNonce;
+    zTransactionV1RC.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
+    zTransactionV1RC.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
+    zTransactionV1RC.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
+    zTransactionV1RC.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
+    zTransactionV1RC.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
+    zTransactionV1RC.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
+    zTransactionV1RC.zAccountUtxoInSpendPrivKey <== zAccountUtxoInSpendPrivKey;
+    zTransactionV1RC.zAccountUtxoInReadPrivKey <== zAccountUtxoInReadPrivKey;
+    zTransactionV1RC.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
+    zTransactionV1RC.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
+    zTransactionV1RC.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
+    zTransactionV1RC.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
+    zTransactionV1RC.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
+
+    zTransactionV1RC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
+    zTransactionV1RC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
+    zTransactionV1RC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
+    zTransactionV1RC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
+    zTransactionV1RC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
+    zTransactionV1RC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
+    zTransactionV1RC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    zTransactionV1RC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
+    zTransactionV1RC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
+    zTransactionV1RC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
+    zTransactionV1RC.zZoneWithdrawMaxAmount <== zZoneWithdrawMaxAmount;
+    zTransactionV1RC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
+    zTransactionV1RC.zZoneMerkleRoot <== zZoneMerkleRoot;
+    zTransactionV1RC.zZonePathElements <== zZonePathElements;
+    zTransactionV1RC.zZonePathIndices <== zZonePathIndices;
+    zTransactionV1RC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
+    zTransactionV1RC.zZoneDataEscrowEphemeralRandom <== zZoneDataEscrowEphemeralRandom;
+    zTransactionV1RC.zZoneDataEscrowEphemeralPubKeyAx <== zZoneDataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.zZoneDataEscrowEphemeralPubKeyAy <== zZoneDataEscrowEphemeralPubKeyAy;
+    zTransactionV1RC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
+    zTransactionV1RC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
+    zTransactionV1RC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zTransactionV1RC.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
+    zTransactionV1RC.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+    zTransactionV1RC.zZoneSealing <== zZoneSealing;
+
+    zTransactionV1RC.kytEdDsaPubKey <== kytEdDsaPubKey;
+    zTransactionV1RC.kytEdDsaPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
+    zTransactionV1RC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
+    zTransactionV1RC.kytPathElements <== kytPathElements;
+    zTransactionV1RC.kytPathIndices <== kytPathIndices;
+    zTransactionV1RC.kytMerkleTreeLeafIDsAndRulesOffset <== kytMerkleTreeLeafIDsAndRulesOffset;
+    zTransactionV1RC.kytDepositSignedMessagePackageType <== kytDepositSignedMessagePackageType;
+    zTransactionV1RC.kytDepositSignedMessageTimestamp <== kytDepositSignedMessageTimestamp;
+    zTransactionV1RC.kytDepositSignedMessageSender <== kytDepositSignedMessageSender;
+    zTransactionV1RC.kytDepositSignedMessageReceiver <== kytDepositSignedMessageReceiver;
+    zTransactionV1RC.kytDepositSignedMessageToken <== kytDepositSignedMessageToken;
+    zTransactionV1RC.kytDepositSignedMessageSessionId <== kytDepositSignedMessageSessionId;
+    zTransactionV1RC.kytDepositSignedMessageRuleId <== kytDepositSignedMessageRuleId;
+    zTransactionV1RC.kytDepositSignedMessageAmount <== kytDepositSignedMessageAmount;
+    zTransactionV1RC.kytDepositSignedMessageChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
+    zTransactionV1RC.kytDepositSignedMessageSigner <== kytDepositSignedMessageSigner;
+    zTransactionV1RC.kytDepositSignedMessageHash <== kytDepositSignedMessageHash;
+    zTransactionV1RC.kytDepositSignature <== kytDepositSignature;
+
+    zTransactionV1RC.kytWithdrawSignedMessagePackageType <== kytWithdrawSignedMessagePackageType;
+    zTransactionV1RC.kytWithdrawSignedMessageTimestamp <== kytWithdrawSignedMessageTimestamp;
+    zTransactionV1RC.kytWithdrawSignedMessageSender <== kytWithdrawSignedMessageSender;
+    zTransactionV1RC.kytWithdrawSignedMessageReceiver <== kytWithdrawSignedMessageReceiver;
+    zTransactionV1RC.kytWithdrawSignedMessageToken <== kytWithdrawSignedMessageToken;
+    zTransactionV1RC.kytWithdrawSignedMessageSessionId <== kytWithdrawSignedMessageSessionId;
+    zTransactionV1RC.kytWithdrawSignedMessageRuleId <== kytWithdrawSignedMessageRuleId;
+    zTransactionV1RC.kytWithdrawSignedMessageAmount <== kytWithdrawSignedMessageAmount;
+    zTransactionV1RC.kytWithdrawSignedMessageChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
+    zTransactionV1RC.kytWithdrawSignedMessageSigner <== kytWithdrawSignedMessageSigner;
+    zTransactionV1RC.kytWithdrawSignedMessageHash <== kytWithdrawSignedMessageHash;
+    zTransactionV1RC.kytWithdrawSignature <== kytWithdrawSignature;
+
+    zTransactionV1RC.kytSignedMessagePackageType <== kytSignedMessagePackageType;
+    zTransactionV1RC.kytSignedMessageTimestamp <== kytSignedMessageTimestamp;
+    zTransactionV1RC.kytSignedMessageSessionId <== kytSignedMessageSessionId;
+    zTransactionV1RC.kytSignedMessageChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
+    zTransactionV1RC.kytSignedMessageSigner <== kytSignedMessageSigner;
+    zTransactionV1RC.kytSignedMessageDataEscrowHash <== kytSignedMessageDataEscrowHash;
+    zTransactionV1RC.kytSignedMessageHash <== kytSignedMessageHash;
+    zTransactionV1RC.kytSignature <== kytSignature;
+
+    zTransactionV1RC.dataEscrowPubKey <== dataEscrowPubKey;
+    zTransactionV1RC.dataEscrowPubKeyExpiryTime <== dataEscrowPubKeyExpiryTime;
+    zTransactionV1RC.dataEscrowEphemeralRandom <== dataEscrowEphemeralRandom;
+    zTransactionV1RC.dataEscrowEphemeralPubKeyAx <== dataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.dataEscrowEphemeralPubKeyAy <== dataEscrowEphemeralPubKeyAy;
+    zTransactionV1RC.dataEscrowPathElements <== dataEscrowPathElements;
+    zTransactionV1RC.dataEscrowPathIndices <== dataEscrowPathIndices;
+
+    zTransactionV1RC.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
+    zTransactionV1RC.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+
+    zTransactionV1RC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    zTransactionV1RC.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
+    zTransactionV1RC.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
+    zTransactionV1RC.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
+
+    zTransactionV1RC.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
+    zTransactionV1RC.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+
+    zTransactionV1RC.utxoOutCreateTime <== utxoOutCreateTime;
+    zTransactionV1RC.utxoOutAmount <== utxoOutAmount;
+    zTransactionV1RC.utxoOutOriginNetworkId <== utxoOutOriginNetworkId;
+    zTransactionV1RC.utxoOutTargetNetworkId <== utxoOutTargetNetworkId;
+    zTransactionV1RC.utxoOutTargetZoneId <== utxoOutTargetZoneId;
+    zTransactionV1RC.utxoOutTargetZoneIdOffset <== utxoOutTargetZoneIdOffset;
+    zTransactionV1RC.utxoOutSpendPubKeyRandom <== utxoOutSpendPubKeyRandom;
+    zTransactionV1RC.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
+    zTransactionV1RC.utxoOutCommitment <== utxoOutCommitment;
+    zTransactionV1RC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
+    zTransactionV1RC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
+    zTransactionV1RC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
+    zTransactionV1RC.chargedAmountZkp <== chargedAmountZkp;
+
+    zTransactionV1RC.zNetworkId <== zNetworkId;
+    zTransactionV1RC.zNetworkChainId <== zNetworkChainId;
+    zTransactionV1RC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
+    zTransactionV1RC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
+    zTransactionV1RC.zNetworkTreePathElements <== zNetworkTreePathElements;
+    zTransactionV1RC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
+
+    zTransactionV1RC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
+
+    zTransactionV1RC.forestMerkleRoot <== forestMerkleRoot;
+    zTransactionV1RC.taxiMerkleRoot <== taxiMerkleRoot;
+    zTransactionV1RC.busMerkleRoot <== busMerkleRoot;
+    zTransactionV1RC.ferryMerkleRoot <== ferryMerkleRoot;
+    zTransactionV1RC.salt <== salt;
+    zTransactionV1RC.saltHash <== saltHash;
+    zTransactionV1RC.magicalConstraint <== magicalConstraint;
 }
