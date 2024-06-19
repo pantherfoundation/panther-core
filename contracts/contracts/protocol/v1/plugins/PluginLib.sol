@@ -4,6 +4,7 @@
 pragma solidity ^0.8.19;
 
 library PluginLib {
+    // getting the plugin address that is always the first 160 bits
     function extractPluginAddress(
         bytes memory data
     ) internal pure returns (address plugin) {
@@ -59,6 +60,32 @@ library PluginLib {
                 0xffffffffffffffffffffffffffffffffffffffff,
                 shr(96, pluginData_2)
             )
+        }
+    }
+
+    /**
+     * The data should be encoded like this:
+     * abi.encodePacked(
+     *  address pluginAddress,
+     *  address poolAddress,
+     *  uint160 sqrtPriceLimitX96)
+     */
+    function decodeUniswapPoolData(
+        bytes memory data
+    ) internal pure returns (address poolAddress, uint160 sqrtPriceLimitX96) {
+        require(data.length == 60, "invalid Length");
+
+        assembly {
+            let location := data
+
+            // skip the 160 bits for plugin address
+            let pluginData_1 := mload(add(location, add(0x20, 0x14)))
+
+            poolAddress := shr(96, pluginData_1)
+
+            // skip 320 bits ( 160 (plugin) + 160(pool) )
+            let pluginData_2 := mload(add(location, add(0x20, 0x28)))
+            sqrtPriceLimitX96 := shr(96, pluginData_2)
         }
     }
 }

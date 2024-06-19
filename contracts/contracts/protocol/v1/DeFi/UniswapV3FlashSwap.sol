@@ -3,6 +3,8 @@
 pragma solidity ^0.8.19;
 
 import "./uniswap/interfaces/IUniswapV3Pool.sol";
+import "../../../common/interfaces/IWETH.sol";
+
 import "./uniswap/libraries/FixedPoint96.sol";
 import "./uniswap/libraries/FullMath.sol";
 import "./uniswap/libraries/TickMath.sol";
@@ -11,6 +13,22 @@ import "../feeMaster/PoolKey.sol";
 import "../../../common/TransferHelper.sol";
 
 library UniswapV3FlashSwap {
+    using TransferHelper for address;
+
+    function convertNativeToWNative(
+        address wNative,
+        uint256 nativeAmount
+    ) internal {
+        wNative.safeTransferETH(nativeAmount);
+    }
+
+    function convertWNativeToNative(
+        address wNative,
+        uint256 wNativeAmount
+    ) internal {
+        IWETH(wNative).withdraw(wNativeAmount);
+    }
+
     function swapExactInput(
         address pool,
         address inputToken,
