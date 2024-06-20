@@ -21,4 +21,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['main-vk', 'vk-list', 'forest', 'protocol'];
+func.tags = ['zswap-vk', 'vk-list', 'forest', 'protocol'];
