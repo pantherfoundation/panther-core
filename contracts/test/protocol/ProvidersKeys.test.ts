@@ -6,10 +6,13 @@ import {BigNumberish} from '@ethersproject/bignumber/src.ts';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
-import hre, {ethers} from 'hardhat';
+import {ethers} from 'hardhat';
 
 import {
     genSignatureForRegisterProviderKey,
+    genSignatureForExtendKeyRing,
+    genSignatureForupdateKeyRingOperator,
+    genSignatureForRevokeProviderKey,
     generateProof,
     getKeyCommitment,
     calcNewRoot,
@@ -27,14 +30,14 @@ import {
     getBlockTimestamp,
 } from './helpers/hardhat';
 
-describe.only('ProvidersKeys contract', function () {
+describe('ProvidersKeys contract', function () {
     this.timeout('100000000000');
     let providersKeys: ProvidersKeys;
     let pantherStaticTree: FakeContract<PantherStaticTree>;
     let owner: SignerWithAddress;
     let signer: SignerWithAddress;
     let operator: SignerWithAddress;
-    let expiryDate: string;
+    let expiryDate: number;
     let newExpiryDate: number;
     let invalidExpiry: number;
     let pubKey: G1PointStruct;
@@ -49,7 +52,7 @@ describe.only('ProvidersKeys contract', function () {
         };
         pubKeyPacked =
             '0x2cf8bc5fc9c122f6cc883988fd57e45ad086ec2785d2dfbfa85032373f90aca2';
-        expiryDate = '1735689600';
+        expiryDate = 1735689600;
         newExpiryDate = 1935689800;
         invalidExpiry = 1708006666;
 
@@ -157,11 +160,10 @@ describe.only('ProvidersKeys contract', function () {
 
         it('should register Key with signature', async () => {
             const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
                 providersKeys,
                 keyRingId.toString(),
                 pubKey,
-                expiryDate,
+                expiryDate.toString(),
                 generateProof(0),
                 owner,
             );
@@ -222,13 +224,13 @@ describe.only('ProvidersKeys contract', function () {
             await revertSnapshot(snapshot);
         });
 
-        it.skip('should extend key expiry with signature', async () => {
-            const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
+        it('should extend key expiry with signature', async () => {
+            const {v, r, s} = await genSignatureForExtendKeyRing(
                 providersKeys,
-                keyRingId.toString(),
+                '0',
                 pubKey,
-                expiryDate,
+                expiryDate.toString(),
+                newExpiryDate.toString(),
                 generateProof(0),
                 owner,
             );
@@ -286,9 +288,12 @@ describe.only('ProvidersKeys contract', function () {
                 expiryDate.toString(),
                 10,
             );
-            const commitment = getKeyCommitment(pubKey, parsedOldExpiryDate);
+            const commitment = getKeyCommitment(
+                pubKey,
+                BigInt(parsedOldExpiryDate),
+            );
 
-            const newCommitment = getKeyCommitment(pubKey, 0);
+            const newCommitment = getKeyCommitment(pubKey, BigInt(0));
 
             const newRoot = calcNewRoot(
                 root1,
@@ -319,12 +324,12 @@ describe.only('ProvidersKeys contract', function () {
         });
 
         it('should revoke a key with signature', async () => {
-            const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
+            const {v, r, s} = await genSignatureForRevokeProviderKey(
                 providersKeys,
+                '0',
                 keyRingId.toString(),
                 pubKey,
-                expiryDate,
+                expiryDate.toString(),
                 generateProof(0),
                 owner,
             );
@@ -408,16 +413,14 @@ describe.only('ProvidersKeys contract', function () {
             const keyRing = await providersKeys.keyrings(keyRingId.toString());
 
             expect(keyRing.operator).deep.equals(operator.address);
+            await revertSnapshot(snapshot);
         });
 
-        it.skip('should update keyring operator with signature', async () => {
-            const {v, r, s} = await genSignatureForRegisterProviderKey(
-                hre,
+        it('should update keyring operator with signature', async () => {
+            const {v, r, s} = await genSignatureForupdateKeyRingOperator(
                 providersKeys,
                 keyRingId.toString(),
-                pubKey,
-                expiryDate,
-                generateProof(0),
+                operator.address,
                 owner,
             );
 

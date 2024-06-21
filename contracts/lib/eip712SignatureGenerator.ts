@@ -11,12 +11,28 @@ import {MerkleTree} from '@zk-kit/merkle-tree';
 import {poseidon} from 'circomlibjs';
 import {fromRpcSig} from 'ethereumjs-util';
 import {ethers} from 'hardhat';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
 import {ProvidersKeys, G1PointStruct} from '../types/contracts/ProvidersKeys';
 
+const getDomain = async (
+    providersKeys: ProvidersKeys,
+): Promise<TypedDataDomain> => {
+    const name = await providersKeys.EIP712_NAME();
+    const version = await providersKeys.EIP712_VERSION();
+    const chainId = (await ethers.provider.getNetwork()).chainId;
+    const salt = await providersKeys.EIP712_SALT();
+    const verifyingContract = providersKeys.address;
+
+    return {
+        name,
+        version,
+        chainId,
+        verifyingContract,
+        salt,
+    };
+};
+
 export async function genSignatureForRegisterProviderKey(
-    hre: HardhatRuntimeEnvironment,
     providersKeys: ProvidersKeys,
     keyringId: string,
     pubRootSpendingKey: G1PointStruct,
@@ -28,12 +44,6 @@ export async function genSignatureForRegisterProviderKey(
     r: Buffer;
     s: Buffer;
 }> {
-    const name = await providersKeys.EIP712_NAME();
-    const version = await providersKeys.EIP712_VERSION();
-    const chainId = (await hre.ethers.provider.getNetwork()).chainId;
-
-    const salt = await providersKeys.EIP712_SALT();
-    const verifyingContract = providersKeys.address;
     const providersKeysVersion = await providersKeys.KEYRING_VERSION();
 
     const types = {
@@ -58,13 +68,129 @@ export async function genSignatureForRegisterProviderKey(
         version: providersKeysVersion,
     };
 
-    const domain: TypedDataDomain = {
-        name,
-        version,
-        chainId,
-        verifyingContract,
-        salt,
+    const domain = await getDomain(providersKeys);
+
+    const signature = await signer._signTypedData(domain, types, value);
+    return fromRpcSig(signature); // does nothing other that splitting the signature string
+}
+
+export async function genSignatureForRevokeProviderKey(
+    providersKeys: ProvidersKeys,
+    keyIndex: string,
+    keyringId: string,
+    pubRootSpendingKey: G1PointStruct,
+    expiryDate: string,
+    proofSiblings: string[],
+    signer: SignerWithAddress,
+): Promise<{
+    v: number;
+    r: Buffer;
+    s: Buffer;
+}> {
+    const providersKeysVersion = await providersKeys.KEYRING_VERSION();
+
+    const types = {
+        RevokeKey: [
+            {name: 'keyringId', type: 'uint16'},
+            {name: 'keyIndex', type: 'uint16'},
+            {name: 'pubRootSpendingKey', type: 'G1Point'},
+            {name: 'expiryDate', type: 'uint32'},
+            {name: 'proofSiblings', type: 'bytes32[]'},
+            {name: 'version', type: 'uint256'},
+        ],
+        G1Point: [
+            {name: 'x', type: 'uint256'},
+            {name: 'y', type: 'uint256'},
+        ],
     };
+
+    const value = {
+        keyringId,
+        keyIndex,
+        pubRootSpendingKey,
+        expiryDate,
+        proofSiblings,
+        version: providersKeysVersion,
+    };
+
+    const domain = await getDomain(providersKeys);
+
+    const signature = await signer._signTypedData(domain, types, value);
+    return fromRpcSig(signature); // does nothing other that splitting the signature string
+}
+
+export async function genSignatureForExtendKeyRing(
+    providersKeys: ProvidersKeys,
+    keyIndex: string,
+    pubRootSpendingKey: G1PointStruct,
+    expiryDate: string,
+    newExpiryDate: string,
+    proofSiblings: string[],
+    signer: SignerWithAddress,
+): Promise<{
+    v: number;
+    r: Buffer;
+    s: Buffer;
+}> {
+    const providersKeysVersion = await providersKeys.KEYRING_VERSION();
+
+    const types = {
+        ExtendKeyExpiry: [
+            {name: 'keyIndex', type: 'uint16'},
+            {name: 'pubRootSpendingKey', type: 'G1Point'},
+            {name: 'expiryDate', type: 'uint32'},
+            {name: 'newExpiryDate', type: 'uint32'},
+            {name: 'proofSiblings', type: 'bytes32[]'},
+            {name: 'version', type: 'uint256'},
+        ],
+        G1Point: [
+            {name: 'x', type: 'uint256'},
+            {name: 'y', type: 'uint256'},
+        ],
+    };
+
+    const value = {
+        keyIndex,
+        pubRootSpendingKey,
+        expiryDate,
+        newExpiryDate,
+        proofSiblings,
+        version: providersKeysVersion,
+    };
+
+    const domain = await getDomain(providersKeys);
+
+    const signature = await signer._signTypedData(domain, types, value);
+    return fromRpcSig(signature); // does nothing other that splitting the signature string
+}
+
+export async function genSignatureForupdateKeyRingOperator(
+    providersKeys: ProvidersKeys,
+    keyringId: string,
+    newOperator: string,
+    signer: SignerWithAddress,
+): Promise<{
+    v: number;
+    r: Buffer;
+    s: Buffer;
+}> {
+    const providersKeysVersion = await providersKeys.KEYRING_VERSION();
+
+    const types = {
+        UpdateKeyOperator: [
+            {name: 'keyringId', type: 'uint32'},
+            {name: 'newOperator', type: 'address'},
+            {name: 'version', type: 'uint256'},
+        ],
+    };
+
+    const value = {
+        keyringId,
+        newOperator,
+        version: providersKeysVersion,
+    };
+
+    const domain = await getDomain(providersKeys);
 
     const signature = await signer._signTypedData(domain, types, value);
     return fromRpcSig(signature); // does nothing other that splitting the signature string
