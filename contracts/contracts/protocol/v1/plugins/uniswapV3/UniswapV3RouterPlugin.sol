@@ -6,7 +6,7 @@ import "../../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../../interfaces/IPlugin.sol";
 
-import { ERC20_TOKEN_TYPE } from "../../../../common/Constants.sol";
+import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../../../common/Constants.sol";
 import "../../../../common/TransferHelper.sol";
 import "../PluginLib.sol";
 
@@ -39,17 +39,10 @@ contract UniswapV3RouterPlugin {
         VAULT = vault;
     }
 
-    function getFeeTiers() public pure returns (uint24[4] memory feeTiers) {
-        feeTiers[0] = 100;
-        feeTiers[1] = 500;
-        feeTiers[2] = 3000;
-        feeTiers[3] = 10000;
-    }
-
-    function getSqrtPriceX96(
-        address pool
-    ) external view returns (uint160 sqrtPriceX96) {
-        (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
+    function getFeeTiers() public pure returns (uint24[3] memory feeTiers) {
+        feeTiers[0] = 500;
+        feeTiers[1] = 3000;
+        feeTiers[2] = 10000;
     }
 
     /// @dev  quoteExactInputSingle is not gas efficient and should be called offchain using staticCall
@@ -58,7 +51,7 @@ contract UniswapV3RouterPlugin {
         address tokenOut,
         uint256 amountIn
     ) external returns (Quote[4] memory quotes) {
-        uint24[4] memory feeTiers = getFeeTiers();
+        uint24[3] memory feeTiers = getFeeTiers();
 
         for (uint256 i = 0; i < feeTiers.length; i++) {
             QuoteExactInputSingleParams
@@ -68,7 +61,7 @@ contract UniswapV3RouterPlugin {
                     amountIn: amountIn,
                     fee: feeTiers[i],
                     // Pass 0 since we only want to send static call to router
-                    // to receive amountOut in anycase regardless of the sqrtPriceLimitX96.
+                    // to receive data regardless of the sqrtPriceLimitX96.
                     sqrtPriceLimitX96: 0
                 });
 
@@ -109,8 +102,13 @@ contract UniswapV3RouterPlugin {
             uint160 sqrtPriceLimitX96
         ) = pluginData.data.decodeUniswapRouterData();
 
+        uint256 amountInNative;
+
         if (pluginData.tokenType == ERC20_TOKEN_TYPE) {
             pluginData.tokenIn.safeApprove(UNISWAP_ROUTER, pluginData.amountIn);
+        }
+        if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
+            amountInNative = pluginData.amountIn;
         }
 
         ISwapRouter.ExactInputSingleParams
@@ -127,7 +125,7 @@ contract UniswapV3RouterPlugin {
 
         try
             ISwapRouter(UNISWAP_ROUTER).exactInputSingle{
-                value: pluginData.amountIn
+                value: amountInNative
             }(pluginParamsParams)
         returns (uint256 amount) {
             amountOut = amount;
@@ -137,72 +135,4 @@ contract UniswapV3RouterPlugin {
     }
 
     receive() external payable {}
-
-    // /// @dev  getTokenInputSwapInfos  should be called offchain using staticCall
-    // function getTokenInputSwapInfos(
-    //     address tokenIn,
-    //     address tokenOut,
-    //     uint256 amountToSwap,
-    //     uint160 minimumSqrtPrice
-    // ) external returns (SwapInfo[] memory swapInfos) {
-    //     swapInfos = new SwapInfo[](feeTiers.length);
-
-    //     for (uint256 i = 0; i < feeTiers.length; i++) {
-    //         address pool = IUniswapV3Factory(FACTORY).getPool(
-    //             tokenIn,
-    //             tokenOut,
-    //             feeTiers[i]
-    //         );
-    //         uint128 liquidity = 0;
-    //         bool sufficientLiquidity = false;
-
-    //         if (pool != address(0)) {
-    //             liquidity = IUniswapV3Pool(pool).liquidity();
-    //             (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool)
-    //                 .slot0();
-
-    //             address token0 = IUniswapV3Pool(pool).token0();
-
-    //             if (tokenIn == token0) {
-    //                 uint256 reserve0 = (liquidity * uint256(sqrtPriceX96)) >>
-    //                     96;
-    //                 sufficientLiquidity = reserve0 >= amountToSwap;
-    //             } else {
-    //                 uint256 reserve1 = liquidity <<
-    //                     (96 / uint256(sqrtPriceX96));
-    //                 sufficientLiquidity = reserve1 >= amountToSwap;
-    //             }
-
-    //             try
-    //                 IQuoterV2(QUOTER).quoteExactInputSingle(
-    //                     IQuoterV2.QuoteExactInputSingleParams({
-    //                         tokenIn: tokenIn,
-    //                         tokenOut: tokenOut,
-    //                         amountIn: amountToSwap,
-    //                         fee: feeTiers[i],
-    //                         sqrtPriceLimitX96: minimumSqrtPrice
-    //                     })
-    //                 )
-    //             returns (
-    //                 uint256 amountOut,
-    //                 uint160 sqrtRatioX96,
-    //                 uint32 initializedTicksCrossed,
-    //                 uint256 gasEstimate
-    //             ) {
-    //                 swapInfos[i] = SwapInfo({
-    //                     pool: pool,
-    //                     feeTier: feeTiers[i],
-    //                     amountOut: amountOut,
-    //                     sqrtRatioX96: sqrtRatioX96,
-    //                     initializedTicksCrossed: initializedTicksCrossed,
-    //                     gasEstimate: gasEstimate,
-    //                     liquidity: IUniswapV3Pool(pool).liquidity(),
-    //                     sufficientLiquidity: sufficientLiquidity
-    //                 });
-    //             } catch {
-    //                 continue;
-    //             }
-    //         }
-    //     }
-    // }
 }
