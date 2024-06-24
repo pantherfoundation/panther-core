@@ -5,7 +5,7 @@ pragma solidity 0.8.4;
 
 import "./actions/RewardAdvisersList.sol";
 import "./interfaces/IActionMsgReceiver.sol";
-import "./interfaces/IErc20Min.sol";
+import "../common/interfaces/IErc20Min.sol";
 import "./interfaces/IRewardAdviser.sol";
 import "./interfaces/IRewardPool.sol";
 import "../common/ImmutableOwnable.sol";

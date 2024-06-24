@@ -18,4 +18,15 @@ interface IErc20Min {
         address recipient,
         uint256 amount
     ) external returns (bool);
+
+    /// @dev EIP-2612 `permit`
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 }
