@@ -13,6 +13,7 @@ import {
 } from '@panther-core/crypto/lib/base/field-operations';
 import {Scalar} from 'ffjavascript';
 import {mulPointEscalar} from 'circomlibjs/src/babyjub';
+import poseidon from 'circomlibjs/src/poseidon';
 const {shiftLeft} = Scalar;
 const {bor} = Scalar;
 
@@ -31,51 +32,7 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
         dataEscrowElGamalEncryption = await wasm_tester(input, opts);
     });
 
-    // Recheck comment during Stage8 - @sushma
-    /*******************************************************************************************************************
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////// component main = DataEscrowElGamalEncryption(8-scalars,2-Points); ///////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        1) 8 - scalar size, 2 point size (Please refer to DataEscrowSerializer code)
-            ----- 2 for 2 x Point(x,y) ------
-            1 - utxoOut-1-RootPubKey[x,y]
-            2 - utxoOut-2-RootPubKey[x,y]
-            -----------------------------------
-            ----- 8 for 8 x 64 bit values -----
-            signal input zAsset;                          // 64 bit
-            signal input zAccountId;                      // 24 bit
-            signal input zAccountZoneId;                  // 16 bit
-
-            signal input utxoInAmount[nUtxoIn=2];         // 64 bit
-            signal input utxoOutAmount[nUtxoOut=2];       // 64 bit
-
-            signal input utxoInOriginZoneId[nUtxoIn=2];   // 16 bit
-            signal input utxoOutTargetZoneId[nUtxoOut=2]; // 16 bit
-
-            1 - zAsset (32 bit)
-            2 - zAccountID (24 bit) << 16 | zAccountZoneId (16 bit)
-            3 - utxoInAmount-1 (64 bit)
-            4 - utxoInAmount-2 (64 bit)
-            5 - utxoOutAmount-1 (64 bit)
-            6 - utxoOutAmount-2 (64 bit)
-            7 - utxoInOriginZoneId-1 (16 bit) << 16 | utxoOutTargetZoneId-1 (16 bit)
-            8 - utxoInOriginZoneId-2 (16 bit) << 16 | utxoOutTargetZoneId-2 (16 bit)
-            -----------------------------------
-        2) ephemeralRandom, ephemeralPubKey[x,y], pubKey[x,y]
-           2.1) ephemeralPubKey[x,y] == ephemeralRandom * G
-           2.2) pubKey[x,y] - pubKey that its inclusion is proven
-        3) encryptedMessage[8(scalars)+2(points)][x,y] - encrypted points
-            3.1) ephemeralRandomPubKey[x,y] = pubKey[x,y] * ephemeralRandom
-            3.2) Encrypt scalars:
-                3.2.1) scalar mapping: M_scalar_points = m_scalar * G for each scalar out of 8
-                    --> M_scalar_points[8][x,y]
-                3.2.2) elgamal: encryptedscalars[8][x,y] = M_scalar_points[8][x,y] + ephemeralRandomPubKey[x,y]
-            3.3) Encrypt Points:
-                3.3.1) elgamal: encyptedPoints[2][x,y] = M_points[2][x,y] + ephemeralRandomPubKey[x,y]
-        4) Encrypted Output
-            4.1) encyptedMessage[0-to-7][x,y] = encryptedscalars[8][x,y]
-            4.2) encyptedMessage[8-to-9][x,y] = encryptedPoints[8][x,y]
-     ******************************************************************************************************************/
+    // Add comment during Stage8 - @sushma
     const input = {
         ephemeralRandom:
             2508770261742365048726528579942226801565607871885423400214068953869627805520n,
@@ -94,127 +51,127 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
         ],
     };
 
-    const ephemeralRandomPubKey = [
+    const sharedPubKey = [
         [
             12871439135712262058001002684440962908819002983015508623206745248194094676428n,
             17114886397516225242214463605558970802516242403903915116207133292790211059315n,
         ],
         [
-            14715282785645531699299359324879767610524506554829132351240969655805786153311n,
-            16298106068662121661386726371313267600592270658346075539160130615717895345005n,
+            21758777979755803182538129900028133174295707744114450068664463558509866946614n,
+            3383300988664032323093307926408339105249322517803146002338186492453973025540n,
         ],
         [
-            5076630596576156879056817266673921939822187766485023884697508842383654864701n,
-            18537582780122882427504865698450965640562756141929860651411897814057616549835n,
+            14293550905890812241513963746533083266680267788344787504362222884247937583948n,
+            7099857930707147205874694078600665048800447862993029468367125942432785529865n,
         ],
         [
-            20523581000037863852326059229764216089225350671364692666825542079348693914995n,
-            5781176486616316053750229455982357786563481303510351065692534349340256489076n,
+            21048703529413494861678330491982795372081697410581009038694545528467383891023n,
+            12937632546172759800376361787425669329273322717353043445508290209715276281180n,
         ],
         [
-            10378265944428119107711332533449804910732315585881693008237106152055045103347n,
-            21029920917937143156010888140502192636742393695727430950191808014440353201325n,
+            7297019676557908962042586301228473229974050274733665238000356125776043229580n,
+            18563600283174270791878032698229089257216528163421448747381920368937416047481n,
         ],
         [
-            15957016481248729440226604571571896292382014480898746772647102174542471117023n,
-            20908710057951135449348158838741423296989266876751621333915428201200659885936n,
+            12307689630899618246480794955690692804352458820002011150464688179243001334182n,
+            19309498603063743211985059488051285201203283655164493866609326895417469311159n,
         ],
         [
-            16414818090013652009115609217866261951817223138597235575004168391221688060610n,
-            20059661808734730259039633106635683938416748943430928650775690601990727667285n,
+            13140356701232512173966320933649774106760292720114501831619703835914424987113n,
+            9291699154248073182843366647947932971830086229525261214579447602535534688695n,
         ],
         [
-            18224078447721468913448619229779986050619236635302325031880878071400013184997n,
-            12229800567381579225866236980070374176299043182345544547937919767427587709148n,
+            2182025380965896497460628247978912543037090228604943640959096322498395514459n,
+            19509051699743263324659030264421893806792853663902545359902021332792072507588n,
         ],
         [
-            3462515991558629614614530863822019927194326138941210737711776530604922106525n,
-            18171187893064681019827124267070423101397852328497300082251783410349806754356n,
+            9393771215338765851039916609890999297841092873615191318045611850804053530293n,
+            10518333461259151968323670901221007528436216543066704767006882719625619977509n,
         ],
         [
-            8440660080386163641088243662813324731029409616187751210324775028349462183564n,
-            8433802572435888741254663080553586984999830087708251743134449562704293198957n,
+            19422562726954330262366342847200985885831954851878368123062828465738895330962n,
+            12463481783339713254340340992496598380770245140406136963354707869635762047176n,
         ],
     ];
 
     // encryptedMessage[ScalarsSize+PointsSize][2] computation
-    const ephemeralPubKey0 = babyjub.mulPointEscalar(
+    const scalarMessagePoints0 = babyjub.mulPointEscalar(
         babyjub.Base8,
         0, //scalarMessage[0]
     );
     const encryptedMessage0 = babyjub.addPoint(
-        ephemeralPubKey0,
-        ephemeralRandomPubKey[0],
+        scalarMessagePoints0,
+        sharedPubKey[0],
     );
     // console.log('encryptedMessage0=>', encryptedMessage0);
 
-    const ephemeralPubKey1 = babyjub.mulPointEscalar(
+    const scalarMessagePoints1 = babyjub.mulPointEscalar(
         babyjub.Base8,
         2162689, //scalarMessage[1]
     );
     const encryptedMessage1 = babyjub.addPoint(
-        ephemeralPubKey1,
-        ephemeralRandomPubKey[1],
+        scalarMessagePoints1,
+        sharedPubKey[1],
     );
     // console.log('encryptedMessage1=>', encryptedMessage1);
 
-    const ephemeralPubKey2 = babyjub.mulPointEscalar(
+    const scalarMessagePoints2 = babyjub.mulPointEscalar(
         babyjub.Base8,
         0, //scalarMessage[1]
     );
     const encryptedMessage2 = babyjub.addPoint(
-        ephemeralPubKey2,
-        ephemeralRandomPubKey[2],
+        scalarMessagePoints2,
+        sharedPubKey[2],
     );
     // console.log('encryptedMessage2=>', encryptedMessage2);
 
-    const ephemeralPubKey3 = babyjub.mulPointEscalar(
+    const scalarMessagePoints3 = babyjub.mulPointEscalar(
         babyjub.Base8,
         0, //scalarMessage[3]
     );
     const encryptedMessage3 = babyjub.addPoint(
-        ephemeralPubKey3,
-        ephemeralRandomPubKey[3],
+        scalarMessagePoints3,
+        sharedPubKey[3],
     );
     // console.log('encryptedMessage3=>', encryptedMessage3);
 
-    const ephemeralPubKey4 = babyjub.mulPointEscalar(
+    const scalarMessagePoints4 = babyjub.mulPointEscalar(
         babyjub.Base8,
         10, //scalarMessage[4]
     );
     const encryptedMessage4 = babyjub.addPoint(
-        ephemeralPubKey4,
-        ephemeralRandomPubKey[4],
+        scalarMessagePoints4,
+        sharedPubKey[4],
     );
     // console.log('encryptedMessage4=>', encryptedMessage4);
 
-    const ephemeralPubKey5 = babyjub.mulPointEscalar(
+    const scalarMessagePoints5 = babyjub.mulPointEscalar(
         babyjub.Base8,
         0, //scalarMessage[5]
     );
     const encryptedMessage5 = babyjub.addPoint(
-        ephemeralPubKey5,
-        ephemeralRandomPubKey[5],
+        scalarMessagePoints5,
+        sharedPubKey[5],
     );
     // console.log('encryptedMessage5=>', encryptedMessage5);
 
-    const ephemeralPubKey6 = babyjub.mulPointEscalar(
+    const scalarMessagePoints6 = babyjub.mulPointEscalar(
         babyjub.Base8,
         1, //scalarMessage[6]
     );
     const encryptedMessage6 = babyjub.addPoint(
-        ephemeralPubKey6,
-        ephemeralRandomPubKey[6],
+        scalarMessagePoints6,
+        sharedPubKey[6],
     );
     // console.log('encryptedMessage6=>', encryptedMessage6);
 
-    const ephemeralPubKey7 = babyjub.mulPointEscalar(
+    const scalarMessagePoints7 = babyjub.mulPointEscalar(
         babyjub.Base8,
         0, //scalarMessage[7]
     );
     const encryptedMessage7 = babyjub.addPoint(
-        ephemeralPubKey7,
-        ephemeralRandomPubKey[7],
+        scalarMessagePoints7,
+        sharedPubKey[7],
     );
     // console.log('encryptedMessage7=>', encryptedMessage7);
 
@@ -223,15 +180,47 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             9665449196631685092819410614052131494364846416353502155560380686439149087040n,
             13931233598534410991314026888239110837992015348186918500560502831191846288865n,
         ],
-        ephemeralRandomPubKey[8],
+        sharedPubKey[8],
     );
     // console.log('encryptedMessage8=>', encryptedMessage8);
 
-    const encryptedMessage9 = babyjub.addPoint(
-        [0n, 0n],
-        ephemeralRandomPubKey[9],
-    );
+    const encryptedMessage9 = babyjub.addPoint([0n, 0n], sharedPubKey[9]);
     // console.log('encryptedMessage9=>', encryptedMessage9);
+
+    // encryptedMessageHash computation - MultiPoseidon
+    const encryptedMessageHash0 = poseidon([
+        encryptedMessage0[0],
+        encryptedMessage0[1],
+        encryptedMessage1[0],
+        encryptedMessage1[1],
+        encryptedMessage2[0],
+        encryptedMessage2[1],
+        encryptedMessage3[0],
+        encryptedMessage3[1],
+        encryptedMessage4[0],
+        encryptedMessage4[1],
+    ]);
+    // console.log('encryptedMessageHash0=>', encryptedMessageHash0);
+
+    const encryptedMessageHash1 = poseidon([
+        encryptedMessage5[0],
+        encryptedMessage5[1],
+        encryptedMessage6[0],
+        encryptedMessage6[1],
+        encryptedMessage7[0],
+        encryptedMessage7[1],
+        encryptedMessage8[0],
+        encryptedMessage8[1],
+        encryptedMessage9[0],
+        encryptedMessage9[1],
+    ]);
+    // console.log('encryptedMessageHash1=>', encryptedMessageHash1);
+
+    const encryptedMessageHash = poseidon([
+        encryptedMessageHash0,
+        encryptedMessageHash1,
+    ]);
+    // console.log('encryptedMessageHash=>', encryptedMessageHash);
 
     const output = {
         ephemeralPubKey: [
@@ -250,6 +239,7 @@ describe('DataEscrowElGamalEncryption circuit', function (this: any) {
             [encryptedMessage8[0], encryptedMessage8[1]],
             [encryptedMessage9[0], encryptedMessage9[1]],
         ],
+        encryptedMessageHash: encryptedMessageHash,
     };
 
     describe('Valid input signals', function () {
