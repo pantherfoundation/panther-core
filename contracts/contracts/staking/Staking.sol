@@ -5,7 +5,7 @@ pragma solidity 0.8.4;
 
 import "./actions/StakingMsgProcessor.sol";
 import "./interfaces/IActionMsgReceiver.sol";
-import "./interfaces/IErc20Min.sol";
+import "../common/interfaces/IErc20Min.sol";
 import "./interfaces/IStakingTypes.sol";
 import "./interfaces/IVotingPower.sol";
 import "../common/ImmutableOwnable.sol";
