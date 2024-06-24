@@ -4,19 +4,7 @@ import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
 import {getOptions} from './helpers/circomTester';
-import {babyjub} from 'circomlibjs';
-import {generateRandomKeypair} from '@panther-core/crypto/lib/base/keypairs';
-import {getRandomInt} from './helpers/utility';
-import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
-import {Scalar} from 'ffjavascript';
-const {shiftLeft} = Scalar;
-const {bor} = Scalar;
-
-import {
-    generateRandom256Bits,
-    moduloBabyJubSubFieldPrime,
-} from '@panther-core/crypto/lib/base/field-operations';
-import poseidon from 'circomlibjs/src/poseidon';
+import {babyjub, poseidon} from 'circomlibjs';
 
 describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     let ephemeralPubKeysBuilder: any;
@@ -32,238 +20,247 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
         ephemeralPubKeysBuilder = await wasm_tester(input, opts);
     });
 
-    let ephemeralRandom0, pubKey;
-    /* START - EpheremalRandom-0 and  ephemeralPubKey-0 */
-    // console.log('===== START - EpheremalRandom-0 and  ephemeralPubKey-0 =====');
-    // Taking this value to be in sync with the integration tests
-    ephemeralRandom0 =
+    // Taking this value ephemeralRandom and pubKey to be in sync with the integration tests
+    const ephemeralRandom =
         2508770261742365048726528579942226801565607871885423400214068953869627805520n;
-    const ephemeralRandoms: bigint[] = [ephemeralRandom0];
-    // console.log('ephemeralRandoms=>', ephemeralRandoms);
 
-    // derive the first set of ephemeralPubKeys from first ephemeralRandom
+    const pubKey = [
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+    ];
+
+    // sharedPubKey0 and ephemeralRandom1 computation
+    const sharedPubKey0 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom.toString(),
+    );
+    // console.log('sharedPubKey0=>', sharedPubKey0);
+
     const ephemeralPubKey0 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        ephemeralRandom0,
+        ephemeralRandom,
     );
-    const ephemeralPubKey: bigint[][] = [
-        [ephemeralPubKey0[0], ephemeralPubKey0[1]],
-    ];
     // console.log('ephemeralPubKey0=>', ephemeralPubKey0);
-    // console.log('===== END - EpheremalRandom-0 and  ephemeralPubKey-0 =====');
-    /* END - EpheremalRandom-0 and  ephemeralPubKey-0 */
 
-    /* START - EpheremalRandom-1 and  ephemeralPubKey-1 */
-    // console.log('===== START - EpheremalRandom-1 and  ephemeralPubKey-1 =====');
-    // Generate ephemeralRandoms[1]
-    const ephemeralRandoms1 = poseidon([
-        ephemeralPubKey0[0],
-        ephemeralPubKey0[1],
+    const ephemeralRandom1Poseidon = poseidon([
+        sharedPubKey0[0],
+        sharedPubKey0[1],
     ]);
-    // console.log("Actual poseidon hash=>",ephemeralRandoms1);
+    let ephemeralRandom1 = BigInt(
+        '0b' +
+            ephemeralRandom1Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom1=>', ephemeralRandom1);
 
-    const finalEphemeralRandoms1 = ephemeralRandoms1 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms1=>', finalEphemeralRandoms1);
-    ephemeralRandoms.push(finalEphemeralRandoms1);
+    // sharedPubKey1 and ephemeralRandom2 computation
+    const sharedPubKey1 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom1.toString(),
+    );
+    // console.log('sharedPubKey1=>', sharedPubKey1);
 
     const ephemeralPubKey1 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms1,
+        ephemeralRandom1,
     );
     // console.log('ephemeralPubKey1=>', ephemeralPubKey1);
-    ephemeralPubKey.push([ephemeralPubKey1[0], ephemeralPubKey1[1]]);
 
-    // console.log('ephemeralPubKey=>', ephemeralPubKey, ephemeralPubKey.length);
-    // console.log('===== END - EpheremalRandom-1 and  ephemeralPubKey-1 =====');
-    /* END - EpheremalRandom-1 and  ephemeralPubKey-1 */
-
-    /* START - EpheremalRandom-2 and  ephemeralPubKey-2 */
-    // console.log('===== START - EpheremalRandom-2 and  ephemeralPubKey-2 =====');
-    // Generate ephemeralRandoms[2]
-    const ephemeralRandoms2 = poseidon([
-        ephemeralPubKey1[0],
-        ephemeralPubKey1[1],
+    const ephemeralRandom2Poseidon = poseidon([
+        sharedPubKey1[0],
+        sharedPubKey1[1],
     ]);
+    let ephemeralRandom2 = BigInt(
+        '0b' +
+            ephemeralRandom2Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom2=>', ephemeralRandom2);
 
-    const finalEphemeralRandoms2 = ephemeralRandoms2 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms2=>', finalEphemeralRandoms2);
-    ephemeralRandoms.push(finalEphemeralRandoms2);
+    // sharedPubKey2 and ephemeralRandom3 computation
+    const sharedPubKey2 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom2.toString(),
+    );
+    // console.log('sharedPubKey2=>', sharedPubKey2);
 
     const ephemeralPubKey2 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms2,
+        ephemeralRandom2,
     );
     // console.log('ephemeralPubKey2=>', ephemeralPubKey2);
-    ephemeralPubKey.push([ephemeralPubKey2[0], ephemeralPubKey2[1]]);
 
-    // console.log('===== END - EpheremalRandom-2 and  ephemeralPubKey-2 =====');
-    /* END - EpheremalRandom-2 and  ephemeralPubKey-2 */
-
-    /* START - EpheremalRandom-3 and  ephemeralPubKey-3 */
-    // console.log('===== START - EpheremalRandom-3 and  ephemeralPubKey-3 =====');
-    // Generate ephemeralRandoms[3]
-    const ephemeralRandoms3 = poseidon([
-        ephemeralPubKey2[0],
-        ephemeralPubKey2[1],
+    const ephemeralRandom3Poseidon = poseidon([
+        sharedPubKey2[0],
+        sharedPubKey2[1],
     ]);
+    let ephemeralRandom3 = BigInt(
+        '0b' +
+            ephemeralRandom3Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom3=>', ephemeralRandom3);
 
-    const finalEphemeralRandoms3 = ephemeralRandoms3 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms3=>', finalEphemeralRandoms3);
-    ephemeralRandoms.push(finalEphemeralRandoms3);
+    // sharedPubKey3 and ephemeralRandom4 computation
+    const sharedPubKey3 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom3.toString(),
+    );
+    // console.log('sharedPubKey3=>', sharedPubKey3);
 
     const ephemeralPubKey3 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms3,
+        ephemeralRandom3,
     );
     // console.log('ephemeralPubKey3=>', ephemeralPubKey3);
-    ephemeralPubKey.push([ephemeralPubKey3[0], ephemeralPubKey3[1]]);
 
-    // console.log('===== END - EpheremalRandom-3 and  ephemeralPubKey-3 =====');
-    /* END - EpheremalRandom-3 and  ephemeralPubKey-3 */
-
-    /* START - EpheremalRandom-4 and  ephemeralPubKey-4 */
-    // console.log('===== START - EpheremalRandom-4 and  ephemeralPubKey-4 =====');
-    // Generate ephemeralRandoms[4]
-    const ephemeralRandoms4 = poseidon([
-        ephemeralPubKey3[0],
-        ephemeralPubKey3[1],
+    const ephemeralRandom4Poseidon = poseidon([
+        sharedPubKey3[0],
+        sharedPubKey3[1],
     ]);
+    let ephemeralRandom4 = BigInt(
+        '0b' +
+            ephemeralRandom4Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom4=>', ephemeralRandom4);
 
-    const finalEphemeralRandoms4 = ephemeralRandoms4 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms4=>', finalEphemeralRandoms4);
-    ephemeralRandoms.push(finalEphemeralRandoms4);
+    // sharedPubKey4 and ephemeralRandom5 computation
+    const sharedPubKey4 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom4.toString(),
+    );
+    // console.log('sharedPubKey4=>', sharedPubKey4);
 
     const ephemeralPubKey4 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms4,
+        ephemeralRandom4,
     );
     // console.log('ephemeralPubKey4=>', ephemeralPubKey4);
-    ephemeralPubKey.push([ephemeralPubKey4[0], ephemeralPubKey4[1]]);
 
-    // console.log('===== END - EpheremalRandom-4 and  ephemeralPubKey-4 =====');
-    /* END - EpheremalRandom-4 and  ephemeralPubKey-4 */
-
-    /* START - EpheremalRandom-5 and  ephemeralPubKey-5 */
-    // console.log('===== START - EpheremalRandom-5 and  ephemeralPubKey-5 =====');
-    // Generate ephemeralRandoms[5]
-    const ephemeralRandoms5 = poseidon([
-        ephemeralPubKey4[0],
-        ephemeralPubKey4[1],
+    const ephemeralRandom5Poseidon = poseidon([
+        sharedPubKey4[0],
+        sharedPubKey4[1],
     ]);
+    let ephemeralRandom5 = BigInt(
+        '0b' +
+            ephemeralRandom5Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom5=>', ephemeralRandom5);
 
-    const finalEphemeralRandoms5 = ephemeralRandoms5 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms5=>', finalEphemeralRandoms5);
-    ephemeralRandoms.push(finalEphemeralRandoms5);
+    // sharedPubKey5 and ephemeralRandom6 computation
+    const sharedPubKey5 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom5.toString(),
+    );
+    // console.log('sharedPubKey5=>', sharedPubKey5);
 
     const ephemeralPubKey5 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms5,
+        ephemeralRandom5,
     );
     // console.log('ephemeralPubKey5=>', ephemeralPubKey5);
-    ephemeralPubKey.push([ephemeralPubKey5[0], ephemeralPubKey5[1]]);
 
-    // console.log('===== END - EpheremalRandom-4 and  ephemeralPubKey-4 =====');
-    /* END - EpheremalRandom-5 and  ephemeralPubKey-5 */
-
-    /* START - EpheremalRandom-6 and  ephemeralPubKey-6 */
-    // console.log('===== START - EpheremalRandom-6 and  ephemeralPubKey-6 =====');
-    // Generate ephemeralRandoms[6]
-    const ephemeralRandoms6 = poseidon([
-        ephemeralPubKey5[0],
-        ephemeralPubKey5[1],
+    const ephemeralRandom6Poseidon = poseidon([
+        sharedPubKey5[0],
+        sharedPubKey5[1],
     ]);
+    let ephemeralRandom6 = BigInt(
+        '0b' +
+            ephemeralRandom6Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom6=>', ephemeralRandom6);
 
-    const finalEphemeralRandoms6 = ephemeralRandoms6 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms6=>', finalEphemeralRandoms6);
-    ephemeralRandoms.push(finalEphemeralRandoms6);
+    // sharedPubKey6 and ephemeralRandom7 computation
+    const sharedPubKey6 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom6.toString(),
+    );
+    // console.log('sharedPubKey6=>', sharedPubKey6);
 
     const ephemeralPubKey6 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms6,
+        ephemeralRandom6,
     );
     // console.log('ephemeralPubKey6=>', ephemeralPubKey6);
-    ephemeralPubKey.push([ephemeralPubKey6[0], ephemeralPubKey6[1]]);
 
-    // console.log('===== END - EpheremalRandom-6 and  ephemeralPubKey-6 =====');
-    /* END - EpheremalRandom-6 and  ephemeralPubKey-6 */
-
-    /* START - EpheremalRandom-7 and  ephemeralPubKey-7 */
-    // console.log('===== START - EpheremalRandom-7 and  ephemeralPubKey-7 =====');
-    // Generate ephemeralRandoms[7]
-    const ephemeralRandoms7 = poseidon([
-        ephemeralPubKey6[0],
-        ephemeralPubKey6[1],
+    const ephemeralRandom7Poseidon = poseidon([
+        sharedPubKey6[0],
+        sharedPubKey6[1],
     ]);
+    let ephemeralRandom7 = BigInt(
+        '0b' +
+            ephemeralRandom7Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom7=>', ephemeralRandom7);
 
-    const finalEphemeralRandoms7 = ephemeralRandoms7 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms7=>', finalEphemeralRandoms7);
-    ephemeralRandoms.push(finalEphemeralRandoms7);
+    // sharedPubKey7 and ephemeralRandom8 computation
+    const sharedPubKey7 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom7.toString(),
+    );
+    // console.log('sharedPubKey7=>', sharedPubKey7);
 
     const ephemeralPubKey7 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms7,
+        ephemeralRandom7,
     );
     // console.log('ephemeralPubKey7=>', ephemeralPubKey7);
-    ephemeralPubKey.push([ephemeralPubKey7[0], ephemeralPubKey7[1]]);
-    // console.log('===== END - EpheremalRandom-7 and  ephemeralPubKey-7 =====');
-    /* END - EpheremalRandom-7 and  ephemeralPubKey-7 */
 
-    /* START - EpheremalRandom-8 and  ephemeralPubKey-8 */
-    // console.log('===== START - EpheremalRandom-8 and  ephemeralPubKey-8 =====');
-    // Generate ephemeralRandoms[8]
-    const ephemeralRandoms8 = poseidon([
-        ephemeralPubKey7[0],
-        ephemeralPubKey7[1],
+    const ephemeralRandom8Poseidon = poseidon([
+        sharedPubKey7[0],
+        sharedPubKey7[1],
     ]);
+    let ephemeralRandom8 = BigInt(
+        '0b' +
+            ephemeralRandom8Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom8=>', ephemeralRandom8);
 
-    const finalEphemeralRandoms8 = ephemeralRandoms8 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms8=>', finalEphemeralRandoms8);
-    ephemeralRandoms.push(finalEphemeralRandoms8);
+    // sharedPubKey8 and ephemeralRandom9 computation
+    const sharedPubKey8 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom8.toString(),
+    );
+    // console.log('sharedPubKey8=>', sharedPubKey8);
 
     const ephemeralPubKey8 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms8,
+        ephemeralRandom8,
     );
     // console.log('ephemeralPubKey8=>', ephemeralPubKey8);
-    ephemeralPubKey.push([ephemeralPubKey8[0], ephemeralPubKey8[1]]);
-    // console.log('===== END - EpheremalRandom-8 and  ephemeralPubKey-8 =====');
-    /* END - EpheremalRandom-8 and  ephemeralPubKey-8 */
 
-    /* START - EpheremalRandom-9 and  ephemeralPubKey-9 */
-    // console.log('===== START - EpheremalRandom-9 and  ephemeralPubKey-9 =====');
-    // Generate ephemeralRandoms[9]
-    const ephemeralRandoms9 = poseidon([
-        ephemeralPubKey8[0],
-        ephemeralPubKey8[1],
+    const ephemeralRandom9Poseidon = poseidon([
+        sharedPubKey8[0],
+        sharedPubKey8[1],
     ]);
+    let ephemeralRandom9 = BigInt(
+        '0b' +
+            ephemeralRandom9Poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    // console.log('ephemeralRandom9=>', ephemeralRandom9);
 
-    const finalEphemeralRandoms9 = ephemeralRandoms9 & ((1n << 252n) - 1n);
-    // console.log('finalEphemeralRandoms9=>', finalEphemeralRandoms9);
-    ephemeralRandoms.push(finalEphemeralRandoms9);
+    // sharedPubKey9 and ephemeralRandom10 computation
+    const sharedPubKey9 = babyjub.mulPointEscalar(
+        pubKey,
+        ephemeralRandom9.toString(),
+    );
+    // console.log('sharedPubKey9=>', sharedPubKey9);
 
     const ephemeralPubKey9 = babyjub.mulPointEscalar(
         babyjub.Base8,
-        finalEphemeralRandoms9,
+        ephemeralRandom9,
     );
     // console.log('ephemeralPubKey9=>', ephemeralPubKey9);
-    ephemeralPubKey.push([ephemeralPubKey9[0], ephemeralPubKey9[1]]);
-    // console.log('===== END - EpheremalRandom-9 and  ephemeralPubKey-9 =====');
-    /* END - EpheremalRandom-9 and  ephemeralPubKey-9 */
 
-    /* ephemeralRandom * pubKey - work in progress */
-    const ephemeralRandomPubKey: bigint[][] = [];
-
-    for (let i = 0; i < 10; i++) {
-        const ephemeralRandomPubKeyGen = babyjub.mulPointEscalar(
-            [
-                6461944716578528228684977568060282675957977975225218900939908264185798821478n,
-                6315516704806822012759516718356378665240592543978605015143731597167737293922n,
-            ],
-            ephemeralRandoms[i],
-        );
-        ephemeralRandomPubKey.push(ephemeralRandomPubKeyGen);
-    }
-    // console.log('ephemeralRandomPubKey=>', ephemeralRandomPubKey);
+    const ephemeralRandom10Poseidon = poseidon([
+        sharedPubKey9[0],
+        sharedPubKey9[1],
+    ]);
+    let ephemeralRandom10 = BigInt(
+        '0b' +
+            ephemeralRandom10Poseidon
+                .toString(2)
+                .padStart(252, '0')
+                .slice(-252),
+    );
+    // console.log('ephemeralRandom10=>', ephemeralRandom10);
 
     const input = {
         pubKey: [
@@ -275,9 +272,90 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     };
 
     const output = {
-        ephemeralRandoms: ephemeralRandoms,
-        ephemeralPubKey: ephemeralPubKey,
-        ephemeralRandomPubKey: ephemeralRandomPubKey,
+        ephemeralPubKey: [
+            [
+                4301916310975298895721162797900971043392040643140207582177965168853046592976n,
+                815388028464849479935447593762613752978886104243152067307597626016673798528n,
+            ],
+            [
+                14045942521266055571916590111449484418253039788630914712810367405156451594287n,
+                9678685104652269963265200538573612091847371556964665669451023565147453237383n,
+            ],
+            [
+                18591602555818245059410790393174638367301612360404703730359666913909280640866n,
+                8691211032423283247187435646553508392761491888895479191173669777559474501012n,
+            ],
+            [
+                10310657327696077950410852339660841183282648508492921428435816309266447528623n,
+                4955313689604114651209739799972145686039343843388925957618940764736620625126n,
+            ],
+            [
+                2023013743583669024582501570531200574238078005422996367972090108618071615177n,
+                12992455675847417071453654006365260236660494639869702658578914449760570773413n,
+            ],
+            [
+                7764748396296801466418360511393171015314152671685214328549868806181132558650n,
+                8340101192968391294960711777133513639801288069228419377447593852767341071026n,
+            ],
+            [
+                15823240360096733079161599597386854649693051253231139792195227220009503914188n,
+                9894071729925266345963002954719525974126832669397508145525541589032482243994n,
+            ],
+            [
+                16385640502558012539872120678445830575784217992192168487564958330433274968779n,
+                12950685446469144231168738409437007619463731911270180178521564823777086401110n,
+            ],
+            [
+                12885722321397670381498295547157414406696883574058278581530745927647401037922n,
+                13028134080686099853800247331357224963774416245072134606341171603418894445878n,
+            ],
+            [
+                7199903909075988357358243084402367162009278159850550718945324356639738668426n,
+                7577412086959893072342057579116887385280813589739427103433580293145793641479n,
+            ],
+        ],
+        sharedPubKey: [
+            [
+                12871439135712262058001002684440962908819002983015508623206745248194094676428n,
+                17114886397516225242214463605558970802516242403903915116207133292790211059315n,
+            ],
+            [
+                21758777979755803182538129900028133174295707744114450068664463558509866946614n,
+                3383300988664032323093307926408339105249322517803146002338186492453973025540n,
+            ],
+            [
+                14293550905890812241513963746533083266680267788344787504362222884247937583948n,
+                7099857930707147205874694078600665048800447862993029468367125942432785529865n,
+            ],
+            [
+                21048703529413494861678330491982795372081697410581009038694545528467383891023n,
+                12937632546172759800376361787425669329273322717353043445508290209715276281180n,
+            ],
+            [
+                7297019676557908962042586301228473229974050274733665238000356125776043229580n,
+                18563600283174270791878032698229089257216528163421448747381920368937416047481n,
+            ],
+            [
+                12307689630899618246480794955690692804352458820002011150464688179243001334182n,
+                19309498603063743211985059488051285201203283655164493866609326895417469311159n,
+            ],
+            [
+                13140356701232512173966320933649774106760292720114501831619703835914424987113n,
+                9291699154248073182843366647947932971830086229525261214579447602535534688695n,
+            ],
+            [
+                2182025380965896497460628247978912543037090228604943640959096322498395514459n,
+                19509051699743263324659030264421893806792853663902545359902021332792072507588n,
+            ],
+            [
+                9393771215338765851039916609890999297841092873615191318045611850804053530293n,
+                10518333461259151968323670901221007528436216543066704767006882719625619977509n,
+            ],
+            [
+                19422562726954330262366342847200985885831954851878368123062828465738895330962n,
+                12463481783339713254340340992496598380770245140406136963354707869635762047176n,
+            ],
+        ],
     };
 
     describe('Valid input signals', function () {
