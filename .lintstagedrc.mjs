@@ -41,9 +41,6 @@ export default {
     '*': files => {
         return run('prettier --write', files);
     },
-    'dapp/**/*.scss': files => {
-        return run('yarn stylelint "**/*.scss', files);
-    },
     'contracts/**/*.sol': files => {
         return run(
             'yarn workspace @panther-core/contracts lint:solhint',
@@ -63,16 +60,6 @@ export default {
             'yarn workspace @panther-core/contracts lint:eslint',
             toLint,
         );
-    },
-    'dapp/**/*.scss': async files => {
-        const prefix = process.cwd() + '/dapp/';
-        const toLint = await removeIgnoredFiles(
-            prefix,
-            'dapp/.eslintrc.json',
-            'dapp/.eslintignore',
-            files,
-        );
-        return run('yarn stylelint "dapp/**/*.scss"', toLint);
     },
     'dapp/**/*.{js,jsx,ts,tsx}': async files => {
         const prefix = process.cwd() + '/dapp/';
