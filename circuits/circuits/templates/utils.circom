@@ -859,18 +859,21 @@ template BabyJubJubSubGroupPointTag(isActive) {
 
     var suborder = 2736030358979909402780800718157159386076813972158567259200215660948447373041;
 
+    component babyCheck;
+    component pvkBits;
+    component eMul;
     if( isActive ) {
         // Ensure the point [x,y] is in the Baby Jubjub curve
-        component babyCheck = BabyCheck();
+        babyCheck = BabyCheck();
         babyCheck.x <== in[0];
         babyCheck.y <== in[1];
 
         // Scalar multiplication of a point from the subgroup by the
         // subgroup's order results in the identity point ([0,1]).
-        component pvkBits = Num2Bits(253);
+        pvkBits = Num2Bits(253);
         pvkBits.in <== suborder;
 
-        component eMul = EscalarMulAny(253);
+        eMul = EscalarMulAny(253);
         for (var i=0; i<253; i++) {
             eMul.e[i] <== pvkBits.out[i];
         }
