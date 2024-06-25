@@ -243,7 +243,7 @@ template ZSwapV1( nUtxoIn,
     signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
 
     // dao data escrow
-    signal input                   daoDataEscrowPubKey[2];
+    signal input {sub_order_bj_p}  daoDataEscrowPubKey[2];
     signal input {sub_order_bj_sf} daoDataEscrowEphemeralRandom;
     signal input                   daoDataEscrowEphemeralPubKeyAx; // public
     signal input                   daoDataEscrowEphemeralPubKeyAy;
@@ -786,7 +786,59 @@ template ZSwapV1( nUtxoIn,
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
-    // [14] - Verify KYT signature
+    // [14] - Verify DataEscrow public key membership
+    component isDataEscrowInclusionProverEnabled = IsNotZero();
+    isDataEscrowInclusionProverEnabled.in <== trustProvidersMerkleRoot;
+
+    component dataEscrowInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
+    dataEscrowInclusionProver.enabled <== isDataEscrowInclusionProverEnabled.out;
+    dataEscrowInclusionProver.root <== trustProvidersMerkleRoot;
+    dataEscrowInclusionProver.key[0] <== dataEscrowPubKey[0];
+    dataEscrowInclusionProver.key[1] <== dataEscrowPubKey[1];
+    dataEscrowInclusionProver.expiryTime <== dataEscrowPubKeyExpiryTime;
+
+    for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
+        dataEscrowInclusionProver.pathIndices[j] <== dataEscrowPathIndices[j];
+        dataEscrowInclusionProver.pathElements[j] <== dataEscrowPathElements[j];
+    }
+
+    // [15] - Data Escrow encryption
+    component dataEscrow = DataEscrow(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth);
+    // data
+    dataEscrow.zAssetId <== utxoZAsset[transactedToken];
+    dataEscrow.zAccountId <== zAccountUtxoInId;
+    dataEscrow.zAccountZoneId <== zAccountUtxoInZoneId;
+    dataEscrow.utxoInMerkleTreeSelector <== utxoInMerkleTreeSelector;
+    dataEscrow.utxoInPathIndices <== utxoInPathIndices;
+    dataEscrow.utxoInAmount <== utxoInAmount;
+    dataEscrow.utxoOutAmount <== utxoOutAmount;
+    dataEscrow.utxoInOriginZoneId <== utxoInOriginZoneId;
+    dataEscrow.utxoOutTargetZoneId <== utxoOutTargetZoneId;
+    dataEscrow.utxoOutRootSpendPubKey <== utxoOutRootSpendPubKey;
+    // main data escrow
+    dataEscrow.dataEscrowEphemeralRandom <== dataEscrowEphemeralRandom;
+    dataEscrow.dataEscrowPubKey <== dataEscrowPubKey;
+    dataEscrow.dataEscrowEphemeralPubKeyAx <== dataEscrowEphemeralPubKeyAx;
+    dataEscrow.dataEscrowEphemeralPubKeyAy <== dataEscrowEphemeralPubKeyAy;
+    dataEscrow.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
+    dataEscrow.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+    // dao data escrow
+    dataEscrow.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
+    dataEscrow.daoDataEscrowPubKey <== daoDataEscrowPubKey;
+    dataEscrow.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
+    dataEscrow.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
+    dataEscrow.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
+    dataEscrow.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+    // zZone data escrow
+    dataEscrow.zZoneDataEscrowEphemeralRandom <== zZoneDataEscrowEphemeralRandom;
+    dataEscrow.zZoneDataEscrowPubKey <== zZoneEdDsaPubKey;
+    dataEscrow.zZoneDataEscrowEphemeralPubKeyAx <== zZoneDataEscrowEphemeralPubKeyAx;
+    dataEscrow.zZoneDataEscrowEphemeralPubKeyAy <== zZoneDataEscrowEphemeralPubKeyAy;
+    dataEscrow.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
+    dataEscrow.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+
+
+    // [16] - Verify KYT signature
     component isZeroDeposit = IsZero();
     isZeroDeposit.in <== depositAmount;
 
@@ -910,7 +962,7 @@ template ZSwapV1( nUtxoIn,
     // withdraw package type
     kytWithdrawSignedMessagePackageType === 2;
 
-    // [15] - Verify kytEdDSA public key membership
+    // [17] - Verify kytEdDSA public key membership
     component kytKycNoteInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
     kytKycNoteInclusionProver.enabled <== isKytCheckEnabled.out;
     kytKycNoteInclusionProver.root <== trustProvidersMerkleRoot;
@@ -922,7 +974,7 @@ template ZSwapV1( nUtxoIn,
         kytKycNoteInclusionProver.pathElements[j] <== kytPathElements[j];
     }
 
-    // [16] - Verify kyt leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
+    // [18] - Verify kyt leaf-id & rule allowed in zZone - required if deposit or withdraw != 0
     component b2nLeafId = Bits2Num(TrustProvidersMerkleTreeDepth);
     for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
         b2nLeafId.in[j] <== kytPathIndices[j];
@@ -942,102 +994,7 @@ template ZSwapV1( nUtxoIn,
     kytWithdrawLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kytWithdrawLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
 
-    // [17] - Verify DataEscrow public key membership
-    component isDataEscrowInclusionProverEnabled = IsNotZero();
-    isDataEscrowInclusionProverEnabled.in <== trustProvidersMerkleRoot;
-
-    component dataEscrowInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
-    dataEscrowInclusionProver.enabled <== isDataEscrowInclusionProverEnabled.out;
-    dataEscrowInclusionProver.root <== trustProvidersMerkleRoot;
-    dataEscrowInclusionProver.key[0] <== dataEscrowPubKey[0];
-    dataEscrowInclusionProver.key[1] <== dataEscrowPubKey[1];
-    dataEscrowInclusionProver.expiryTime <== dataEscrowPubKeyExpiryTime;
-
-    for (var j = 0; j < TrustProvidersMerkleTreeDepth; j++) {
-        dataEscrowInclusionProver.pathIndices[j] <== dataEscrowPathIndices[j];
-        dataEscrowInclusionProver.pathElements[j] <== dataEscrowPathElements[j];
-    }
-
-    // [18] - Data Escrow encryption
-    // ------------- scalars-size --------------
-    // 1) 1 x 64 (zAsset)
-    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-    // 3) nUtxoIn x 64 amount
-    // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
-    // ------------- ec-points-size -------------
-    // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    component dataEscrow = DataEscrowElGamalEncryption(dataEscrowScalarSize,dataEscrowPointSize);
-
-    dataEscrow.ephemeralRandom <== dataEscrowEphemeralRandom;
-    dataEscrow.pubKey[0] <== dataEscrowPubKey[0];
-    dataEscrow.pubKey[1] <== dataEscrowPubKey[1];
-
-    // --------------- scalars -----------------
-    component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth);
-    dataEscrowScalarsSerializer.zAsset <== utxoZAsset[transactedToken];
-    dataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
-    dataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
-
-    for (var j = 0; j < nUtxoIn; j++) {
-        for(var i = 0; i < 2; i++) {
-            dataEscrowScalarsSerializer.utxoInMerkleTreeSelector[j][i] <== utxoInMerkleTreeSelector[j][i];
-        }
-        for(var i = 0; i < UtxoMerkleTreeDepth; i++) {
-            dataEscrowScalarsSerializer.utxoInPathIndices[j][i] <== utxoInPathIndices[j][i];
-        }
-        dataEscrowScalarsSerializer.utxoInAmount[j] <== utxoInAmount[j];
-        dataEscrowScalarsSerializer.utxoInOriginZoneId[j] <== utxoInOriginZoneId[j];
-    }
-
-    for (var j = 0; j < nUtxoOut; j++) {
-        dataEscrowScalarsSerializer.utxoOutAmount[j] <== utxoOutAmount[j];
-        dataEscrowScalarsSerializer.utxoOutTargetZoneId[j] <== utxoOutTargetZoneId[j];
-    }
-
-    for (var j = 0; j < dataEscrowScalarSize; j++) {
-        dataEscrow.scalarMessage[j] <== dataEscrowScalarsSerializer.out[j];
-    }
-
-    // ------------------ EC-Points ------------------
-    // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    for (var j = 0; j < nUtxoOut; j++) {
-        dataEscrow.pointMessage[j][0] <== utxoOutRootSpendPubKey[j][0];
-        dataEscrow.pointMessage[j][1] <== utxoOutRootSpendPubKey[j][1];
-    }
-
-    // verify EphemeralPubKey
-    dataEscrowEphemeralPubKeyAx === dataEscrow.ephemeralPubKey[0];
-    dataEscrowEphemeralPubKeyAy === dataEscrow.ephemeralPubKey[1];
-
-    // verify Encryption
-    for (var i = 0; i < dataEscrowEncryptedPoints; i++) {
-        dataEscrowEncryptedMessageAx[i] === dataEscrow.encryptedMessage[i][0];
-        dataEscrowEncryptedMessageAy[i] === dataEscrow.encryptedMessage[i][1];
-    }
-
-    // [19] - DAO Data Escrow encryption
-    component daoDataEscrow = DataEscrowElGamalEncryptionPoint(daoDataEscrowEncryptedPoints);
-
-    daoDataEscrow.ephemeralRandom <== daoDataEscrowEphemeralRandom;
-    daoDataEscrow.pubKey[0] <== daoDataEscrowPubKey[0];
-    daoDataEscrow.pubKey[1] <== daoDataEscrowPubKey[1];
-
-    // push the only single point - the ephemeralPubKey
-    daoDataEscrow.pointMessage[0][0] <== dataEscrow.ephemeralPubKey[0];
-    daoDataEscrow.pointMessage[0][1] <== dataEscrow.ephemeralPubKey[1];
-
-    // verify EphemeralPubKey
-    daoDataEscrowEphemeralPubKeyAx === daoDataEscrow.ephemeralPubKey[0];
-    daoDataEscrowEphemeralPubKeyAy === daoDataEscrow.ephemeralPubKey[1];
-
-    // verify Encryption
-    for (var i = 0; i < daoDataEscrowEncryptedPoints; i++) {
-       daoDataEscrowEncryptedMessageAx[i] === daoDataEscrow.encryptedMessage[i][0];
-       daoDataEscrowEncryptedMessageAy[i] === daoDataEscrow.encryptedMessage[i][1];
-    }
-
-    // [20] - internal KYT
+    // [19] - internal KYT
     signal isKytInternalCheckEnabled <== isSwap ?  kytSignedMessageHash * (1 - isZeroInternal.out) : (1 - isZeroInternal.out);
 
     component kytSignedMessageHashInternal = Poseidon(8);
@@ -1049,7 +1006,7 @@ template ZSwapV1( nUtxoIn,
     kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
     kytSignedMessageHashInternal.inputs[5] <== kytDepositSignedMessageHash;
     kytSignedMessageHashInternal.inputs[6] <== kytWithdrawSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[7] <== dataEscrow.encryptedMessageHash;
+    kytSignedMessageHashInternal.inputs[7] <== dataEscrow.dataEscrowEncryptedMessageHash;
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== isKytInternalCheckEnabled;
@@ -1076,7 +1033,7 @@ template ZSwapV1( nUtxoIn,
     // internal package type
     kytSignedMessagePackageType === 253;
 
-    // [21] - Verify zZone membership
+    // [20] - Verify zZone membership
     component zZoneNoteHasher = ZZoneNoteHasher();
     zZoneNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zZoneNoteHasher.edDsaPubKey[0] <== zZoneEdDsaPubKey[0];
@@ -1105,7 +1062,7 @@ template ZSwapV1( nUtxoIn,
         zZoneInclusionProver.pathElements[j] <== zZonePathElements[j];
     }
 
-    // [22] - Verify zZone max external limits
+    // [21] - Verify zZone max external limits
     assert(zZoneDepositMaxAmount >= totalBalanceChecker.depositWeightedScaledAmount);
     component isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount = ForceLessEqThan(252);
     isLessThanEq_depositWeightedScaledAmount_zZoneDepositMaxAmount.in[0] <== totalBalanceChecker.depositWeightedScaledAmount;
@@ -1116,33 +1073,12 @@ template ZSwapV1( nUtxoIn,
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithdrawMaxAmount.in[0] <== totalBalanceChecker.withdrawWeightedScaledAmount;
     isLessThanEq_withdrawWeightedScaledAmount_zZoneWithdrawMaxAmount.in[1] <== zZoneWithdrawMaxAmount;
 
-    // [23] - Verify zAccountId exclusion
+    // [22] - Verify zAccountId exclusion
     component zZoneZAccountBlackListExclusionProver = ZZoneZAccountBlackListExclusionProver();
     zZoneZAccountBlackListExclusionProver.zAccountId <== zAccountUtxoInId;
     zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
 
-    // [24] - zAccountId data escrow for zone operator
-    component zZoneDataEscrow = DataEscrowElGamalEncryptionPoint(zZoneDataEscrowEncryptedPoints);
-
-    zZoneDataEscrow.ephemeralRandom <== zZoneDataEscrowEphemeralRandom;
-    zZoneDataEscrow.pubKey[0] <== zZoneEdDsaPubKey[0];
-    zZoneDataEscrow.pubKey[1] <== zZoneEdDsaPubKey[1];
-
-    // push the only single point - the ephemeralPubKey
-    zZoneDataEscrow.pointMessage[0][0] <== dataEscrow.ephemeralPubKey[0];
-    zZoneDataEscrow.pointMessage[0][1] <== dataEscrow.ephemeralPubKey[1];
-
-    // verify EphemeralPubKey
-    zZoneDataEscrowEphemeralPubKeyAx === zZoneDataEscrow.ephemeralPubKey[0];
-    zZoneDataEscrowEphemeralPubKeyAy === zZoneDataEscrow.ephemeralPubKey[1];
-
-    // verify Encryption
-    for (var i = 0; i < zZoneDataEscrowEncryptedPoints; i++) {
-        zZoneDataEscrowEncryptedMessageAx[i] === zZoneDataEscrow.encryptedMessage[i][0];
-        zZoneDataEscrowEncryptedMessageAy[i] === zZoneDataEscrow.encryptedMessage[i][1];
-    }
-
-    // [25] - Verify zNetwork's membership and decode its weight
+    // [23] - Verify zNetwork's membership and decode its weight
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
     zNetworkNoteInclusionProver.active <== BinaryOne()(); // ALWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
@@ -1160,7 +1096,7 @@ template ZSwapV1( nUtxoIn,
         zNetworkNoteInclusionProver.pathElements[i] <== zNetworkTreePathElements[i];
     }
 
-    // [26] - verify expiryTimes
+    // [24] - verify expiryTimes
     assert(zAccountUtxoInExpiryTime >= utxoOutCreateTime);
     component isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime = ForceLessEqThan(252);
     isLessThanEq_utxoOutCreateTime_zAccountUtxoInExpiryTime.in[0] <== utxoOutCreateTime;
@@ -1189,21 +1125,21 @@ template ZSwapV1( nUtxoIn,
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_dataEscrowPubKeyExpiryTime.in[1] <== dataEscrowPubKeyExpiryTime;
 
-    // [26.1] - deposit
+    // [25.1] - deposit
     // assert(kytDepositSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component isLessThanEq_utxoOutCreateTime_depositTimestamp = LessEqThanWhenEnabled(252);
     isLessThanEq_utxoOutCreateTime_depositTimestamp.enabled <== isKytDepositCheckEnabled;
     isLessThanEq_utxoOutCreateTime_depositTimestamp.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_depositTimestamp.in[1] <== kytDepositSignedMessageTimestamp + zZoneKytExpiryTime;
 
-    // [26.2] - withdraw
+    // [25.2] - withdraw
     // assert(kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime >= utxoOutCreateTime);
     component isLessThanEq_utxoOutCreateTime_withdrawTimestamp = LessEqThanWhenEnabled(252);
     isLessThanEq_utxoOutCreateTime_withdrawTimestamp.enabled <== isKytWithdrawCheckEnabled;
     isLessThanEq_utxoOutCreateTime_withdrawTimestamp.in[0] <== utxoOutCreateTime;
     isLessThanEq_utxoOutCreateTime_withdrawTimestamp.in[1] <== kytWithdrawSignedMessageTimestamp + zZoneKytExpiryTime;
 
-    // [27] - Verify static-merkle-root
+    // [26] - Verify static-merkle-root
     component staticTreeMerkleRootVerifier = Poseidon(5);
     staticTreeMerkleRootVerifier.inputs[0] <== zAssetMerkleRoot;
     staticTreeMerkleRootVerifier.inputs[1] <== zAccountBlackListMerkleRoot;
@@ -1217,7 +1153,7 @@ template ZSwapV1( nUtxoIn,
     isEqualStaticTreeMerkleRoot.in[1] <== staticTreeMerkleRoot;
     isEqualStaticTreeMerkleRoot.enabled <== staticTreeMerkleRoot;
 
-    // [28] - Verify forest-merkle-roots
+    // [27] - Verify forest-merkle-roots
     component forestTreeMerkleRootVerifier = Poseidon(3);
     forestTreeMerkleRootVerifier.inputs[0] <== taxiMerkleRoot;
     forestTreeMerkleRootVerifier.inputs[1] <== busMerkleRoot;
@@ -1229,7 +1165,7 @@ template ZSwapV1( nUtxoIn,
     isEqualForestTreeMerkleRoot.in[1] <== forestMerkleRoot;
     isEqualForestTreeMerkleRoot.enabled <== forestMerkleRoot;
 
-    // [29] - Verify salt
+    // [28] - Verify salt
     component saltVerify = Poseidon(1);
     saltVerify.inputs[0] <== salt;
 
@@ -1239,7 +1175,7 @@ template ZSwapV1( nUtxoIn,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [30] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
+    // [29] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
 }
