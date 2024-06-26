@@ -27,7 +27,7 @@ library PluginLib {
      *  uint24 fee,
      *  uint160 sqrtPriceLimitX96)
      */
-    function decodeUniswapRouterData(
+    function decodeUniswapV3RouterData(
         bytes memory data
     )
         internal
@@ -70,7 +70,7 @@ library PluginLib {
      *  address poolAddress,
      *  uint160 sqrtPriceLimitX96)
      */
-    function decodeUniswapPoolData(
+    function decodeUniswapV3PoolData(
         bytes memory data
     ) internal pure returns (address poolAddress, uint160 sqrtPriceLimitX96) {
         require(data.length == 60, "invalid Length");
@@ -86,6 +86,32 @@ library PluginLib {
             // skip 320 bits ( 160 (plugin) + 160(pool) )
             let pluginData_2 := mload(add(location, add(0x20, 0x28)))
             sqrtPriceLimitX96 := shr(96, pluginData_2)
+        }
+    }
+
+    /**
+     * The data should be encoded like this:
+     * abi.encodePacked(
+     *  address pluginAddress
+     *  uint96 amountOutMin,
+     *  uint32 deadline)
+     */
+    function decodeQuickswapRouterData(
+        bytes memory data
+    ) internal pure returns (uint96 amountOutMin, uint32 deadline) {
+        require(data.length == 36, "invalid Length");
+
+        assembly {
+            let location := data
+
+            // skip the 160 bits for plugin address
+            let pluginData_1 := mload(add(location, add(0x20, 0x14)))
+
+            amountOutMin := shr(160, pluginData_1)
+
+            // skip 256 bits ( 160 (plugin) + 96(amountOutMin) )
+            let pluginData_2 := mload(add(location, add(0x20, 0x20)))
+            deadline := shr(224, pluginData_2)
         }
     }
 }

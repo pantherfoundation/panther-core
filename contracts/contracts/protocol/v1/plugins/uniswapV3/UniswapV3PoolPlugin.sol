@@ -43,7 +43,7 @@ contract UniswapV3PoolPlugin {
     ) external payable returns (uint256 amountOut) {
         (address pool, uint160 sqrtPriceLimitX96) = pluginData
             .data
-            .decodeUniswapPoolData();
+            .decodeUniswapV3PoolData();
 
         if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
             WETH.convertNativeToWNative(pluginData.amountIn);
