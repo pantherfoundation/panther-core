@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
-import "../../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../../interfaces/IPlugin.sol";
 
@@ -100,7 +99,7 @@ contract UniswapV3RouterPlugin {
             uint96 amountOutMinimum,
             uint24 fee,
             uint160 sqrtPriceLimitX96
-        ) = pluginData.data.decodeUniswapRouterData();
+        ) = pluginData.data.decodeUniswapV3RouterData();
 
         uint256 amountInNative;
 
