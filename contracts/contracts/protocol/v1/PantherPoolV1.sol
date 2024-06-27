@@ -12,7 +12,6 @@ import "./interfaces/IVaultV1.sol";
 import "./interfaces/IPlugin.sol";
 import "../../common/NonReentrant.sol";
 import "../../common/ImmutableOwnable.sol";
-import "../../common/ScaleHandler.sol";
 import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
 import { LockData } from "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
@@ -59,7 +58,6 @@ contract PantherPoolV1 is
     using TransactionOptions for uint32;
     using TransactionTypes for uint16;
     using PluginLib for bytes;
-    using ScaleHandler for uint256;
 
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state

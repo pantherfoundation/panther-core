@@ -35,7 +35,7 @@ import "./Types.sol";
  * It supports a "history" of recent roots, so that users may refer not only to
  * the latest root, but on former roots cached in the history.
  */
-abstract contract PantherForest is
+contract PantherForest is
     CachedRoots,
     ImmutableOwnable,
     ITreeRootGetter,
