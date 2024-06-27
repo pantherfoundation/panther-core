@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const pantherPoolV1ProxyAddress = getContractEnvAddress(hre, 'POOL_V1');
 
-    const zAssetsRegistryV1Address = getContractEnvAddress(
+    const zAccountRegistryAddress = getContractEnvAddress(
         hre,
         'Z_ACCOUNTS_REGISTRY',
     );
@@ -68,7 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         args: [
             [
                 pantherPoolV1ProxyAddress,
-                zAssetsRegistryV1Address,
+                zAccountRegistryAddress,
                 prpVoucherGrantorAddress,
                 prpConverterAddress,
                 pantherPoolV1ProxyAddress,
