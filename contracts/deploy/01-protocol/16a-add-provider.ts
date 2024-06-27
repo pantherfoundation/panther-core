@@ -9,8 +9,8 @@ import {getContractAddress, getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
-    const deployer = await getNamedAccount(hre, 'deployer');
 
+    const deployer = await getNamedAccount(hre, 'deployer');
     const {artifacts, ethers} = hre;
 
     const providersKeyAddress = await getContractAddress(
@@ -18,15 +18,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         'ProvidersKeys',
         '',
     );
-
     const {abi} = await artifacts.readArtifact('ProvidersKeys');
     const providersKeys = await ethers.getContractAt(abi, providersKeyAddress);
 
-    const tx = await providersKeys.addKeyring(deployer, 20);
-    const res = await tx.wait();
+    const numAllocKeys = [20, 50];
+    const transactions = await Promise.all(
+        numAllocKeys.map(async numAllocKeys => {
+            const tx = await providersKeys.addKeyring(deployer, numAllocKeys);
+            return tx.wait();
+        }),
+    );
 
-    console.log('Provider is added to ProvidersKeys', res.transactionHash);
+    transactions.forEach((tx, index) => {
+        const allocKeys = numAllocKeys[index];
+        console.log(
+            `Keyring added for operator ${deployer} with ${allocKeys} allocated keys. Transaction hash: ${tx.transactionHash}`,
+        );
+    });
 };
+
 export default func;
 
 func.tags = ['add-provider', 'forest', 'protocol'];
