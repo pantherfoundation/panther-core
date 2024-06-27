@@ -57,6 +57,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         )
         .slice(0, 10);
 
+    const swapZAssetSelector = ethers.utils
+        .id(
+            'swapZAsset(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes,bytes)',
+        )
+        .slice(0, 10);
+
     await deploy('Account', {
         from: deployer,
         args: [
@@ -65,7 +71,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 zAssetsRegistryV1Address,
                 prpVoucherGrantorAddress,
                 prpConverterAddress,
-                ADDRESS_ONE,
+                pantherPoolV1ProxyAddress,
                 ADDRESS_ONE,
                 ADDRESS_ONE,
                 ADDRESS_ONE,
@@ -75,12 +81,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 activateZAccountSelector,
                 claimRewardsSelector,
                 convertSelector,
-                BYTES_ONE,
+                swapZAssetSelector,
                 BYTES_ONE,
                 BYTES_ONE,
                 BYTES_ONE,
             ],
-            [356, 324, 324, 356, 0, 0, 0, 0],
+            [356, 324, 324, 356, 324, 0, 0, 0],
         ],
         log: true,
         autoMine: true,
