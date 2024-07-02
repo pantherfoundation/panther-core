@@ -1,23 +1,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {encryptDataForEscrow} from '../../src/panther/escrow';
-import {EscrowType} from '../../src/types/escrow';
+import {
+    convertDataEscrowToScalars,
+    encryptDataForEscrow,
+} from '../../src/panther/escrow';
+import {
+    CommonEscrowData,
+    DataEscrowData,
+    EscrowType,
+} from '../../src/types/escrow';
 import {PublicKey} from '../../src/types/keypair';
 
-// Define a constant data object to avoid repetition
-const data = {
-    zAssetID: 1n,
-    zAccountID: 2n,
-    zAccountZoneId: 3n,
-    utxoInAmounts: [4n, 5n],
-    utxoOutAmounts: [6n, 7n],
-    utxoInOriginZoneIds: [8n, 9n],
-    utxoOutTargetZoneIds: [10n, 11n],
+const data: CommonEscrowData = {
+    zAssetID: 0n,
+    zAccountID: 33n,
+    zAccountZoneId: 1n,
+    utxoInMerkleTreeSelector: Array(2).fill(Array(32).fill(0n)),
+    utxoInPathIndices: Array(2).fill(Array(32).fill(0n)),
+    utxoInAmounts: [0, 0].map(BigInt),
+    utxoOutAmounts: [10, 0].map(BigInt),
+    utxoInOriginZoneIds: [0, 0].map(BigInt),
+    utxoOutTargetZoneIds: [1, 0].map(BigInt),
     utxoOutSpendingPublicKeys: [
-        [12n, 13n],
-        [14n, 15n],
-    ] as PublicKey[],
+        [16n, 17n],
+        [18n, 19n],
+    ],
+    ephemeralPubKey: [20n, 21n],
 };
 
 // Define a constant public key to avoid repetition
@@ -38,15 +47,24 @@ function testEncryptDataForEscrow(
 }
 
 describe('Encrypt Points for Data Escrow', () => {
-    it('EscrowType.Data', () => {
-        testEncryptDataForEscrow(EscrowType.Data, 10);
+    describe('data length check', () => {
+        it('EscrowType.Data', () => {
+            testEncryptDataForEscrow(EscrowType.Data, 10);
+        });
+
+        it('EscrowType.DAO', () => {
+            testEncryptDataForEscrow(EscrowType.DAO, 1);
+        });
+
+        it('EscrowType.Zone', () => {
+            testEncryptDataForEscrow(EscrowType.Zone, 1);
+        });
     });
 
-    it('EscrowType.DAO', () => {
-        testEncryptDataForEscrow(EscrowType.DAO, 3);
-    });
-
-    it('EscrowType.Zone', () => {
-        testEncryptDataForEscrow(EscrowType.Zone, 1);
+    describe('Convert scalars', () => {
+        it('EscrowType.Data', () => {
+            const output = convertDataEscrowToScalars(data as DataEscrowData);
+            expect(output).toEqual([0n, 2162689n, 0n, 0n, 10n, 0n, 1n, 0n]);
+        });
     });
 });
