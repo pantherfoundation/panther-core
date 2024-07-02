@@ -6,6 +6,7 @@ import crypto from 'crypto';
 
 import {babyjub} from 'circomlibjs';
 import {mulPointEscalar} from 'circomlibjs/src/babyjub';
+import poseidon from 'circomlibjs/src/poseidon';
 
 import {
     PrivateKey,
@@ -15,10 +16,8 @@ import {
     Keypair,
 } from '../types/keypair';
 import {ICiphertext} from '../types/message';
-import {assertInBabyJubJubSubOrder} from '../utils/assertions';
 
 import {generateRandomInBabyJubSubField} from './field-operations';
-import {deriveKeypairFromPrivKey} from './keypairs';
 
 export function generateEcdhSharedKey(
     privateKey: PrivateKey,
@@ -82,49 +81,13 @@ export function decryptCipherText(
 
 */
 
-/**
- * This function encrypts a point using an El Gamal algorithm.
- *
- * @param {Point} originalPoint - The original point to encrypt.
- * @param {PublicKey} publicKey - The public key used for encryption.
- * @param {bigint} sessionKey - The session key used for encryption.
- * @returns {Point} - The encrypted point resulting from the El Gamal
- * encryption.
- *
- * @throws {Error} Will throw an error if the sessionKey is not in the Baby
- * JubJub sub-order.
- */
-export function encryptPointElGamal(
-    originalPoint: Point,
-    publicKey: PublicKey,
-    sessionKey: bigint,
-): Point {
-    assertInBabyJubJubSubOrder(sessionKey, 'sessionKey');
-    const maskingPoint = mulPointEscalar(publicKey, sessionKey);
+export function maskPoint(originalPoint: Point, maskingPoint: Point): Point {
     return babyjub.addPoint(originalPoint, maskingPoint) as Point;
 }
 
-/**
- * This function decrypts a point using the El Gamal algorithm.
- *
- * @param {Point} encryptedPoint - The encrypted point to be decrypted.
- * @param {PrivateKey} privateKey - The private key used for decryption.
- * @param {PublicKey} ephemeralPublicKey - The ephemeral public key used for
- * decryption.
- * @returns {Point} - The decrypted point resulting from the El Gamal
- * decryption.
- */
-export function decryptPointElGamal(
-    encryptedPoint: Point,
-    privateKey: PrivateKey,
-    ephemeralPublicKey: PublicKey,
-): Point {
-    const unmaskingPoint = mulPointEscalar(ephemeralPublicKey, privateKey);
-    const negatedUnmaskingPoint = [
-        babyjub.p - unmaskingPoint[0],
-        unmaskingPoint[1],
-    ];
-    return babyjub.addPoint(encryptedPoint, negatedUnmaskingPoint) as Point;
+export function unmaskPoint(encryptedPoint: Point, maskingPoint: Point): Point {
+    const negatedMaskingPoint = [babyjub.p - maskingPoint[0], maskingPoint[1]];
+    return babyjub.addPoint(encryptedPoint, negatedMaskingPoint) as Point;
 }
 
 /**
@@ -143,14 +106,76 @@ export function encryptPointsElGamal(
     encryptedPoints: Point[];
     ephemeralKeypair: Keypair;
 } {
-    const sessionKey = generateRandomInBabyJubSubField();
-    const ephemeralKeypair = deriveKeypairFromPrivKey(sessionKey);
-    const encryptedPoints = originalPoints.map(point =>
-        encryptPointElGamal(point, publicKey, sessionKey),
+    // Generate a ephemeral random - session key
+    const ephemeralRandom = generateRandomInBabyJubSubField();
+    // Derive the ephemeral keypair from the session key
+    const ephemeralKeys = ephemeralPublicKeyBuilder(
+        ephemeralRandom,
+        publicKey,
+        originalPoints.length,
+    );
+
+    const encryptedPoints = originalPoints.map((point, idx) =>
+        maskPoint(point, ephemeralKeys.sharedPubKeys[idx] as Point),
     );
 
     return {
         encryptedPoints,
-        ephemeralKeypair,
+        ephemeralKeypair: {
+            privateKey: ephemeralRandom,
+            publicKey: ephemeralKeys.ephemeralPubKeys[0],
+        },
     };
+}
+
+/**
+ * Generates arrays of ephemeral and shared public keys.
+ * @param ephemeralRandom - The initial random value for generating ephemeral keys.
+ * @param publicKey - The public key used for generating shared keys.
+ * @param length - The number of keys to generate.
+ * @returns An object containing arrays of ephemeral and shared public keys.
+ */
+export function ephemeralPublicKeyBuilder(
+    ephemeralRandom: bigint,
+    publicKey: PublicKey,
+    length: number,
+): {
+    ephemeralPubKeys: PublicKey[];
+    sharedPubKeys: PublicKey[];
+} {
+    const ephemeralPubKeys: PublicKey[] = [];
+    const sharedPubKeys: PublicKey[] = [];
+
+    // Helper function to generate a new ephemeral random value
+    const generateNewEphemeralRandom = (sharedPubKey: PublicKey): bigint => {
+        return BigInt(
+            '0b' +
+                poseidon([sharedPubKey[0], sharedPubKey[1]])
+                    .toString(2)
+                    .padStart(252, '0')
+                    .slice(-252),
+        );
+    };
+
+    // Iterate to generate the required number of keys
+    for (let i = 0; i < length; i++) {
+        // Generate ephemeral public key
+        const ephemeralPubKey = mulPointEscalar(
+            babyjub.Base8,
+            ephemeralRandom,
+        ) as PublicKey;
+        ephemeralPubKeys.push(ephemeralPubKey);
+
+        // Generate shared public key
+        const sharedPubKey = mulPointEscalar(
+            publicKey,
+            ephemeralRandom,
+        ) as PublicKey;
+        sharedPubKeys.push(sharedPubKey);
+
+        // Update ephemeralRandom for the next iteration
+        ephemeralRandom = generateNewEphemeralRandom(sharedPubKey);
+    }
+
+    return {ephemeralPubKeys, sharedPubKeys};
 }

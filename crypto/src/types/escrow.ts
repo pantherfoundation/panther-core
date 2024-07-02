@@ -14,26 +14,35 @@ export type CommonEscrowData = {
     zAccountZoneId?: bigint;
     utxoInOriginZoneIds?: bigint[];
     utxoOutTargetZoneIds?: bigint[];
-    utxoOutSpendingPublicKeys?: PublicKey[];
     zAssetID?: bigint;
     utxoInAmounts?: bigint[];
     utxoOutAmounts?: bigint[];
+    utxoInMerkleTreeSelector?: bigint[][];
+    utxoInPathIndices?: bigint[][];
+    ephemeralPubKey?: PublicKey;
+
+    utxoOutSpendingPublicKeys?: PublicKey[];
 };
 
-export type ZoneEscrowData = {
+export type DAOEscrowData = {
+    ephemeralPubKey: PublicKey;
+};
+
+export type ZoneEscrowData = DAOEscrowData;
+
+export type DataEscrowData = {
+    // scalar values
     zAccountID: bigint;
-};
-
-export type DAOEscrowData = ZoneEscrowData & {
     zAccountZoneId: bigint;
     utxoInOriginZoneIds: bigint[];
     utxoOutTargetZoneIds: bigint[];
-};
-
-export type DataEscrowData = DAOEscrowData & {
     zAssetID: bigint;
     utxoInAmounts: bigint[];
     utxoOutAmounts: bigint[];
+    utxoInMerkleTreeSelector: bigint[][];
+    utxoInPathIndices: bigint[][];
+
+    // point values
     utxoOutSpendingPublicKeys: PublicKey[];
 };
 
