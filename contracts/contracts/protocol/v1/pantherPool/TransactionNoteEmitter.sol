@@ -488,6 +488,7 @@ abstract contract TransactionNoteEmitter {
         uint256[] calldata inputs,
         uint32 zAccountUtxoQueueId,
         uint8 zAccountUtxoIndexInQueue,
+        uint256 zAssetAmountScaled,
         bytes calldata privateMessages
     ) internal {
         bytes memory transactionNoteContent = abi.encodePacked(
@@ -499,6 +500,32 @@ abstract contract TransactionNoteEmitter {
             inputs[ZSWAP_ZACCOUNT_UTXO_OUT_COMMITMENT_IND],
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
+            MT_UTXO_ZASSET_PUB,
+            UtilsLib.safe64(zAssetAmountScaled),
+            privateMessages
+        );
+
+        emit TransactionNote(TT_ZSWAP, transactionNoteContent);
+    }
+
+    function _tempEmitZSwapNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        uint256 zAssetAmountScaled,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[38]),
+            MT_UTXO_SPEND_TIME,
+            UtilsLib.safe32(inputs[ZSWAP_SPEND_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[41],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            MT_UTXO_ZASSET_PUB,
+            UtilsLib.safe64(zAssetAmountScaled),
             privateMessages
         );
 

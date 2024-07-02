@@ -179,6 +179,38 @@ abstract contract UtxosInserter {
         }
     }
 
+    function _tempInsertZSwapUtxos(
+        uint256[] calldata inputs,
+        bytes32[2] memory zAssetUtxos,
+        uint32 transactionOptions,
+        uint96 miningRewards
+    )
+        internal
+        returns (
+            uint32 zAccountUtxoQueueId,
+            uint8 zAccountUtxoIndexInQueue,
+            uint256 zAccountUtxoBusQueuePos
+        )
+    {
+        bytes32[] memory utxos = new bytes32[](5);
+
+        utxos[0] = bytes32(inputs[41]); // zAccount index
+        utxos[1] = zAssetUtxos[0];
+        utxos[2] = zAssetUtxos[1];
+        utxos[3] = bytes32(inputs[ZSWAP_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
+        utxos[4] = bytes32(inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
+
+        (
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            zAccountUtxoBusQueuePos
+        ) = _addUtxosToBusQueue(utxos, miningRewards);
+
+        if (transactionOptions.isTaxiApplicable()) {
+            _addThreeUtxosToTaxiTree(utxos[0], utxos[1], utxos[2]);
+        }
+    }
+
     function _addUtxoToBusQueue(
         bytes32 utxo,
         uint96 /*rewards*/
