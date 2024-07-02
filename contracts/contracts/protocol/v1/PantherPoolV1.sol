@@ -651,35 +651,41 @@ contract PantherPoolV1 is
 
         _verifyProof(zSwapCircuitId, inputs, proof);
 
+        // solhint-disable-next-line no-empty-blocks
         {
-            uint32 zAccountUtxoQueueId;
-            uint8 zAccountUtxoIndexInQueue;
-            bytes32[2] memory zAssetUtxos = _handleSwap(inputs, pluginData);
-
-            (
-                zAccountUtxoQueueId,
-                zAccountUtxoIndexInQueue,
-                zAccountUtxoBusQueuePos
-            ) = _insertZSwapUtxos(
-                inputs,
-                zAssetUtxos,
-                transactionOptions,
-                miningReward
-            );
-
-            _emitZSwapNote(
-                inputs,
-                zAccountUtxoQueueId,
-                zAccountUtxoIndexInQueue,
-                privateMessages
-            );
+            // uint32 zAccountUtxoQueueId;
+            // uint8 zAccountUtxoIndexInQueue;
+            // (
+            //     bytes32[2] memory zAssetUtxos,
+            //     uint256 zAssetAmountScaled
+            // ) = _handleSwap(inputs, pluginData);
+            // (
+            //     zAccountUtxoQueueId,
+            //     zAccountUtxoIndexInQueue,
+            //     zAccountUtxoBusQueuePos
+            // ) = _insertZSwapUtxos(
+            //     inputs,
+            //     zAssetUtxos,
+            //     transactionOptions,
+            //     miningReward
+            // );
+            // _emitZSwapNote(
+            //     inputs,
+            //     zAccountUtxoQueueId,
+            //     zAccountUtxoIndexInQueue,
+            //     zAssetAmountScaled,
+            //     privateMessages
+            // );
         }
     }
 
     function _handleSwap(
         uint256[] calldata inputs,
         bytes memory pluginData
-    ) private returns (bytes32[2] memory zAssetUtxos) {
+    )
+        private
+        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
+    {
         address plugin = pluginData.extractPluginAddress();
         require(zSwapPlugins[plugin], "Invalid plugin");
 
@@ -721,20 +727,22 @@ contract PantherPoolV1 is
             inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
 
-        uint256 amount = vaultUpdatedBalance - vaultInitialBalance;
+        uint256 receivedAmount = vaultUpdatedBalance - vaultInitialBalance;
 
-        _validateNonZero(amount, "Zero output");
+        _validateNonZero(receivedAmount, "Zero output");
 
         uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
 
-        uint256 amountRounded = UtilsLib.safe96((amount / scale) * scale);
-        uint256 scaledAmount = amountRounded / scale;
+        uint256 zAssetAmountRounded = UtilsLib.safe96(
+            (receivedAmount / scale) * scale
+        );
+        zAssetAmountScaled = zAssetAmountRounded / scale;
 
         zAssetUtxos[0] = bytes32(
             inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
         );
         zAssetUtxos[1] = generateZAssetUtxoCommitment(
-            scaledAmount,
+            zAssetAmountScaled,
             inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_PRIVATE_PART_IND]
         );
     }
@@ -997,13 +1005,42 @@ contract PantherPoolV1 is
             _verifyProof(zSwapCircuitId, inputs, proof);
         }
 
-        tempHandleSwap(inputs, pluginData);
+        {
+            uint32 zAccountUtxoQueueId;
+            uint8 zAccountUtxoIndexInQueue;
+            (
+                bytes32[2] memory zAssetUtxos,
+                uint256 zAssetAmountScaled
+            ) = tempHandleSwap(inputs, pluginData);
+
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _tempInsertZSwapUtxos(
+                inputs,
+                zAssetUtxos,
+                transactionOptions,
+                5e17
+            );
+
+            _tempEmitZSwapNote(
+                inputs,
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAssetAmountScaled,
+                privateMessages
+            );
+        }
     }
 
     function tempHandleSwap(
         uint256[] calldata inputs,
         bytes memory pluginData
-    ) private {
+    )
+        private
+        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
+    {
         {
             address plugin = pluginData.extractPluginAddress();
             require(zSwapPlugins[plugin], "Invalid plugin");
@@ -1053,6 +1090,17 @@ contract PantherPoolV1 is
             uint256 amount = vaultUpdatedBalance - vaultInitialBalance;
 
             _validateNonZero(amount, "Zero output");
+
+            uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
+
+            uint256 amountRounded = UtilsLib.safe96((amount / scale) * scale);
+            zAssetAmountScaled = amountRounded / scale;
+
+            zAssetUtxos[0] = bytes32(inputs[39]);
+            zAssetUtxos[1] = generateZAssetUtxoCommitment(
+                zAssetAmountScaled,
+                inputs[40]
+            );
         }
     }
 }
