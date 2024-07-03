@@ -7,59 +7,88 @@ import {poseidon} from 'circomlibjs';
 import type {BigNumberish} from 'ethers';
 import {BigNumber} from 'ethers';
 
+import {pantherCoreZeroLeaf} from '../utilities';
+
+const publicKey = [
+    13277427435165878497778222415993513565335242147425444199013288855685581939618n,
+    13622229784656158136036771217484571176836296686641868549125388198837476602820n,
+] as PublicKey;
+
+function packPublicKey(publicKey: PublicKey): bigint[] {
+    return [BigInt(publicKey[0]), BigInt(publicKey[1])];
+}
+
 type RegisterKeyData = {
     keyringId: string;
     publicKey: PublicKey;
     expiryDate: BigNumberish;
-    proofSiblings: string[];
 };
 
-export const ProvidersKeys = (): RegisterKeyData[] => {
-    const publicKey = [
-        13277427435165878497778222415993513565335242147425444199013288855685581939618n,
-        13622229784656158136036771217484571176836296686641868549125388198837476602820n,
-    ] as PublicKey;
+export const leafs: RegisterKeyData[] = [
+    {
+        keyringId: '1',
+        publicKey: publicKey,
+        expiryDate: 1735689600n,
+    },
+    {
+        keyringId: '2',
+        publicKey: publicKey,
+        expiryDate: 1735689600n + 1n,
+    },
+];
 
-    const expiryDate = 1735689600n; // 2025-01-01T00:00:00Z
+export class ProvidersKeys {
+    leafs: RegisterKeyData[];
+    commitments: string[] = [];
+    root: string | null = null;
+    providersKeyInsertionInputs: any[] = [];
 
-    const zeroValue =
-        '0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d';
-    const kycKytMerkleTree = new MerkleTree(poseidon, 16, zeroValue);
+    levels = 16;
 
-    const kycKytMerkleTreeLeaf1 = poseidon([
-        publicKey[0], // x
-        publicKey[1], // y
-        expiryDate,
-    ]);
+    constructor(leafs: RegisterKeyData[]) {
+        this.leafs = leafs;
+    }
 
-    const kycKytMerkleTreeLeaf2 = poseidon([
-        publicKey[0], // x
-        publicKey[1], // y
-        expiryDate + 1n, // Slightly different expiry to ensure different proof
-    ]);
+    _getZeroTree() {
+        return new MerkleTree(
+            poseidon,
+            this.levels,
+            BigInt(pantherCoreZeroLeaf),
+        );
+    }
 
-    kycKytMerkleTree.insert(kycKytMerkleTreeLeaf1);
-    const proof1 = kycKytMerkleTree.createProof(0);
+    computeCommitments(): ProvidersKeys {
+        this.commitments = this.leafs.map(leaf => {
+            const {publicKey, expiryDate} = leaf;
+            const packedKey = packPublicKey(publicKey);
+            const inputs = [...packedKey, BigInt(expiryDate)];
+            return poseidon(inputs).toString();
+        });
+        return this;
+    }
 
-    kycKytMerkleTree.insert(kycKytMerkleTreeLeaf2);
-    const proof2 = kycKytMerkleTree.createProof(1);
+    getInsertionInputs(): ProvidersKeys {
+        const merkleTree = this._getZeroTree();
+        this.computeCommitments();
 
-    return [
-        {
-            keyringId: '1',
-            publicKey,
-            expiryDate,
-            proofSiblings: proof1.siblingNodes.map(x =>
-                BigNumber.from(x).toHexString(),
-            ),
-        },
-        {
-            keyringId: '2',
-            publicKey,
-            expiryDate: expiryDate + 1n,
-            proofSiblings: proof2.siblingNodes.map(x =>
-                BigNumber.from(x).toHexString(),
-            ),
-        },
-    ];
-};
+        this.commitments.forEach((commitment: string, index: number) => {
+            merkleTree.insert(BigInt(commitment));
+            const proofSiblings = merkleTree
+                .createProof(index)
+                .siblingNodes.map(x => BigNumber.from(x).toHexString());
+
+            const {keyringId, publicKey, expiryDate} = this.leafs[index];
+
+            this.providersKeyInsertionInputs.push({
+                keyringId,
+                publicKey,
+                expiryDate,
+                proofSiblings,
+            });
+        });
+
+        this.root = BigNumber.from(merkleTree.root).toHexString();
+
+        return this;
+    }
+}
