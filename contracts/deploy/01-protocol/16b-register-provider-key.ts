@@ -7,7 +7,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {isProd} from '../../lib/checkNetwork';
 import {getContractAddress} from '../../lib/deploymentHelpers';
-import {ProvidersKeys} from '../../lib/staticTree/providerskeys';
+import {ProvidersKeys, leafs} from '../../lib/staticTree/providersKeys';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isProd(hre)) return;
@@ -23,7 +23,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {abi} = await artifacts.readArtifact('ProvidersKeys');
     const providersKeys = await ethers.getContractAt(abi, providersKeyAddress);
 
-    const inputs = ProvidersKeys();
+    const providersKeyLeafs = Object.values(leafs);
+    const providersKeyTree = new ProvidersKeys(providersKeyLeafs);
+    const inputs = providersKeyTree
+        .computeCommitments()
+        .getInsertionInputs().providersKeyInsertionInputs;
 
     for (const input of inputs) {
         const {keyringId, publicKey, expiryDate, proofSiblings} = input;
