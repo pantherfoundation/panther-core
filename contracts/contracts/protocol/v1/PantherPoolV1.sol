@@ -500,10 +500,7 @@ contract PantherPoolV1 is
             inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
-        _validateNonZero(
-            inputs[MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
-            ERR_ZERO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
-        );
+
         _validateNonZero(
             inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
