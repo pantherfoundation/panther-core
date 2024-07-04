@@ -11,3 +11,4 @@ string constant ERR_BATCH_FORBIDDEN_ATTEMPT = "OW:E6";
 string constant ERR_WRONG_SIG_LENTGH = "OW:E7";
 string constant ERR_NOT_SELF = "OW:E10";
 string constant ERR_CALl_FORBIDDEN = "OW:E11";
+string constant ERR_NO_CONTRACT = "OW:E12";

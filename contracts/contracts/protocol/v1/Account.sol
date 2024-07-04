@@ -51,6 +51,7 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
     }
 
     function execute(address to, bytes calldata callData) external {
+        require(to.code.length > 0, ERR_NO_CONTRACT);
         require(getOffset(to, bytes4(callData)) > 0, ERR_CALl_FORBIDDEN);
         (bool success, bytes memory result) = to.call{ value: 0 }(callData);
         if (!success) {
@@ -72,7 +73,8 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
         for (uint256 i = 0; i < targets.length; i++) {
             /// check if the array contains allowed calls at the execution stage
             if (!hasAllowedCall)
-                hasAllowedCall = getOffset(targets[i], bytes4(calls[i])) > 0;
+                require(targets[i].code.length > 0, ERR_NO_CONTRACT);
+            hasAllowedCall = getOffset(targets[i], bytes4(calls[i])) > 0;
             (bool success, bytes memory result) = targets[i].call{ value: 0 }(
                 calls[i]
             );
