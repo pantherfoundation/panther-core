@@ -2,27 +2,34 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {decodeTxNote} from '../../src/panther/notes';
-import {TxNoteType1, TxNoteType3, TxNoteType4} from '../../src/types/note';
+import {
+    ZAccountActivationNote,
+    PrpConversionNote,
+    ZTransactionNote,
+    ZSwapNote,
+} from '../../src/types/note';
 import {TxType} from '../../src/types/transaction';
 
 import {testData} from './data/notes';
 
 describe('Transaction notes', () => {
     describe('#decodeTxNote', () => {
-        describe('Type 0x01', () => {
-            let decodedNote: TxNoteType1;
+        describe('ZAccountActivationNote', () => {
+            let decodedNote: ZAccountActivationNote;
 
             beforeAll(async () => {
                 decodedNote = decodeTxNote(
                     testData.type01.content,
                     TxType.ZAccountActivation,
-                ) as TxNoteType1;
+                ) as ZAccountActivationNote;
             });
 
             testData.type01.testCases.forEach(testCase => {
                 it(`decodes ${testCase.field}`, () => {
                     expect(
-                        decodedNote[testCase.field as keyof TxNoteType1],
+                        decodedNote[
+                            testCase.field as keyof ZAccountActivationNote
+                        ],
                     ).toEqual(testCase.expected);
                 });
             });
@@ -34,20 +41,20 @@ describe('Transaction notes', () => {
             });
         });
 
-        describe('Type 0x03', () => {
-            let decodedNote3: TxNoteType3;
+        describe('PrpConversionNote', () => {
+            let decodedNote3: PrpConversionNote;
 
             beforeAll(async () => {
                 decodedNote3 = decodeTxNote(
                     testData.type03.content,
                     TxType.PrpConversion,
-                ) as TxNoteType3;
+                ) as PrpConversionNote;
             });
 
             testData.type03.testCases.forEach(testCase => {
                 it(`decodes ${testCase.field}`, () => {
                     expect(
-                        decodedNote3[testCase.field as keyof TxNoteType3],
+                        decodedNote3[testCase.field as keyof PrpConversionNote],
                     ).toEqual(testCase.expected);
                 });
             });
@@ -59,27 +66,52 @@ describe('Transaction notes', () => {
             });
         });
 
-        describe('Type 0x04', () => {
-            let decodedNote4: TxNoteType4;
+        describe('ZTransactionNote', () => {
+            let decodedNote4: ZTransactionNote;
 
             beforeAll(async () => {
                 decodedNote4 = decodeTxNote(
                     testData.type04.content,
                     TxType.ZTransaction,
-                ) as TxNoteType4;
+                ) as ZTransactionNote;
             });
 
             testData.type04.testCases.forEach(testCase => {
                 it(`decodes ${testCase.field}`, () => {
                     expect(
-                        decodedNote4[testCase.field as keyof TxNoteType4],
+                        decodedNote4[testCase.field as keyof ZTransactionNote],
                     ).toEqual(testCase.expected);
                 });
             });
 
             it('throws an error when input is invalid', () => {
                 expect(() =>
-                    decodeTxNote('wrong-string', TxType.PrpConversion),
+                    decodeTxNote('wrong-string', TxType.ZTransaction),
+                ).toThrowError('Invalid input');
+            });
+        });
+
+        describe('ZSwapNote', () => {
+            let decodedNote5: ZSwapNote;
+
+            beforeAll(async () => {
+                decodedNote5 = decodeTxNote(
+                    testData.type05.content,
+                    TxType.ZSwap,
+                ) as ZSwapNote;
+            });
+
+            testData.type05.testCases.forEach(testCase => {
+                it(`decodes ${testCase.field}`, () => {
+                    expect(
+                        decodedNote5[testCase.field as keyof ZSwapNote],
+                    ).toEqual(testCase.expected);
+                });
+            });
+
+            it('throws an error when input is invalid', () => {
+                expect(() =>
+                    decodeTxNote('wrong-string', TxType.ZSwap),
                 ).toThrowError('Invalid input');
             });
         });
