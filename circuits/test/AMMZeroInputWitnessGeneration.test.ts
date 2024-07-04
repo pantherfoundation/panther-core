@@ -11,7 +11,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
     let ammWasm: any;
     let ammWitness: any;
 
-    this.timeout(10000000);
+    this.timeout(10_000_000);
 
     before(async () => {
         const opts = getOptions();
@@ -27,7 +27,6 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
     });
 
     const zeroInput = {
-        // external data anchoring
         extraInputsHash: 0,
 
         addedAmountZkp: 0,
@@ -40,7 +39,6 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         utxoSpendPubKey: [0, 1],
         utxoSpendKeyRandom: 0,
 
-        // zAsset
         zAssetId: 0,
         zAssetToken: 0,
         zAssetTokenId: 0,
@@ -85,14 +83,12 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zAccountUtxoOutSpendKeyRandom: 0,
         zAccountUtxoOutCommitment: 0,
 
-        // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
         zAccountBlackListLeaf: 0,
         zAccountBlackListMerkleRoot: 0,
         zAccountBlackListPathElements: [
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
 
-        // zZone
         zZoneOriginZoneIDs: 0,
         zZoneTargetZoneIDs: 0,
         zZoneNetworkIDsBitMap: 0,
@@ -100,7 +96,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zZoneKycExpiryTime: 0,
         zZoneKytExpiryTime: 0,
         zZoneDepositMaxAmount: 0,
-        zZoneWithrawMaxAmount: 0,
+        zZoneWithdrawMaxAmount: 0,
         zZoneInternalMaxAmount: 0,
         zZoneMerkleRoot: 0,
         zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -108,9 +104,10 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zZoneEdDsaPubKey: [0, 0],
         zZoneZAccountIDsBlackList:
             '1766847064778384329583297500742918515827483896875618958121606201292619775',
-
         zZoneMaximumAmountPerTimePeriod: 0,
         zZoneTimePeriodPerMaximumAmount: 0,
+        zZoneDataEscrowPubKey: [0, 1],
+        zZoneSealing: 0,
 
         zNetworkId: 0,
         zNetworkChainId: 0,
@@ -118,6 +115,7 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
         zNetworkTreeMerkleRoot: 0,
         zNetworkTreePathElements: [0, 0, 0, 0, 0, 0],
         zNetworkTreePathIndices: [0, 0, 0, 0, 0, 0],
+
         daoDataEscrowPubKey: [0, 0],
         forTxReward: 0,
         forUtxoReward: 0,
@@ -125,16 +123,15 @@ describe('Automated Market Maker - ZeroInput - Witness computation', async funct
 
         trustProvidersMerkleRoot: 0,
         staticTreeMerkleRoot: 0,
+
         forestMerkleRoot: 0,
         taxiMerkleRoot: 0,
         busMerkleRoot: 0,
         ferryMerkleRoot: 0,
 
-        // salt
         salt: 0,
         saltHash: 0,
 
-        // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
         magicalConstraint: 0,
     };
 

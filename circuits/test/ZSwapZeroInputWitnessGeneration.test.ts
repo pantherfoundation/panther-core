@@ -6,30 +6,21 @@ const wasm_tester = circom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {wtns} from 'snarkjs';
 
-describe('Main z-transaction - ZeroInput - Witness computation', async function (this: any) {
+describe('ZSwap - ZeroInput - Witness computation', async function (this: any) {
     let circuit: any;
-    let mainTxWasm: any;
-    let mainTxWitness: any;
+    let ammWasm: any;
+    let ammWitness: any;
 
     this.timeout(10_000_000);
 
     before(async () => {
         const opts = getOptions();
-        const input = path.join(
-            opts.basedir,
-            './circuits/mainZTransactionV1.circom',
-        );
+        const input = path.join(opts.basedir, './circuits/mainZSwapV1.circom');
         circuit = await wasm_tester(input, opts);
 
-        mainTxWasm = path.join(
-            opts.basedir,
-            './compiled/zTransaction/circuits.wasm',
-        );
+        ammWasm = path.join(opts.basedir, './compiled/zSwap/circuits.wasm');
 
-        mainTxWitness = path.join(
-            opts.basedir,
-            './compiled/generate_witness.js',
-        );
+        ammWitness = path.join(opts.basedir, './compiled/generateWitness.js');
     });
 
     const zeroInput = {
@@ -38,30 +29,29 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         depositAmount: 0,
         withdrawAmount: 0,
         addedAmountZkp: 0,
-        token: 0,
-        tokenId: 0,
-        utxoZAsset: 0,
 
-        zAssetId: 0,
-        zAssetToken: 0,
-        zAssetTokenId: 0,
-        zAssetNetwork: 0,
-        zAssetOffset: 0,
-        zAssetWeight: 0,
-        zAssetScale: 1,
+        token: [0, 0],
+        tokenId: [0, 0],
+        utxoZAsset: [0, 0],
+
+        zAssetId: [0, 0, 0],
+        zAssetToken: [0, 0, 0],
+        zAssetTokenId: [0, 0, 0],
+        zAssetNetwork: [0, 0, 0],
+        zAssetOffset: [0, 0, 0],
+        zAssetWeight: [0, 0, 0],
+        zAssetScale: [1, 1, 1],
         zAssetMerkleRoot: 0,
-        zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        zAssetPathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-
-        zAssetIdZkp: 0,
-        zAssetTokenZkp: 0,
-        zAssetTokenIdZkp: 0,
-        zAssetNetworkZkp: 0,
-        zAssetOffsetZkp: 0,
-        zAssetWeightZkp: 0,
-        zAssetScaleZkp: 1,
-        zAssetPathIndicesZkp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        zAssetPathElementsZkp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        zAssetPathIndices: [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+        zAssetPathElements: [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
 
         forTxReward: 0,
         forUtxoReward: 0,
@@ -269,8 +259,8 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         magicalConstraint: 0,
     };
 
-    it('should compute valid witness for zero input deposit only z-tx', async () => {
-        await wtns.calculate(zeroInput, mainTxWasm, mainTxWitness, null);
+    it('should compute valid witness for zero input tx', async () => {
+        await wtns.calculate(zeroInput, ammWasm, ammWitness, null);
         console.log('Witness calculation successful!');
     });
 });
