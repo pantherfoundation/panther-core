@@ -156,13 +156,11 @@ export class PluginFixture {
     public prpConverter!: PrpConverter;
     public feeMaster: MockFeeMaster;
 
-    public uniswapV3Plugin: UniswapV3Plugin;
+    public uniswapV3RouterPlugin: UniswapV3RouterPlugin;
     public mockUniSwapV3Router: MockUniSwapV3Router;
     public feeMasterDebtUpdater: FeeMasterDebtUpdater;
 
     public pantherStaticTree: FakeContract<PantherStaticTree>;
-    public pluginRegistry: PluginRegistry;
-
     public factory: MockUniswapV3Factory;
 
     async initFixture() {
@@ -350,12 +348,9 @@ export class PluginFixture {
         // represents 42 to 1 ZKP/MATIC rate
         this.feeMaster.cachedNativeRateInZkp.returns('42000000000000000000');
 
-        const UniswapV3Plugin =
-            await ethers.getContractFactory('UniswapV3Plugin');
-
-        this.pluginRegistry = await (
-            await ethers.getContractFactory('PluginRegistry')
-        ).deploy(deployerAddress);
+        const UniswapV3RouterPlugin = await ethers.getContractFactory(
+            'UniswapV3RouterPlugin',
+        );
 
         this.weth = await (await ethers.getContractFactory('WETH9')).deploy();
         await this.weth.deposit({value: parseEther('1000')});
@@ -368,15 +363,15 @@ export class PluginFixture {
             await ethers.getContractFactory('MockUniSwapV3Router')
         ).deploy(this.factory.address, this.weth.address);
 
-        this.uniswapV3Plugin = await UniswapV3Plugin.deploy(
+        this.uniswapV3RouterPlugin = await UniswapV3RouterPlugin.deploy(
             this.mockUniSwapV3Router.address,
+            ADDRESS_ONE,
+            vaultProxy.address,
         );
 
         await this.mockUniSwapV3Router.deposit({
             value: ethers.utils.parseEther('100'),
         });
-
-        await this.pluginRegistry.registerPlugin(this.uniswapV3Plugin.address);
 
         export type ForestTreesStruct = {
             taxiTree: string;
@@ -399,8 +394,8 @@ export class PluginFixture {
             ADDRESS_ONE,
             this.feeMaster.address,
             this.pantherVerifier.address,
-            this.pluginRegistry.address,
         );
+
         await this.pantherPoolV1Impl.deployed();
 
         const runtimeBytecode = await ethers.provider.getCode(
@@ -527,7 +522,7 @@ export class PluginFixture {
         await tx.wait();
 
         tx = await this.pantherPool.updatePluginStatus(
-            this.uniswapV3Plugin.address,
+            this.uniswapV3RouterPlugin.address,
             true,
         );
 
