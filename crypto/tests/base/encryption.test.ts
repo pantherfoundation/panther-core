@@ -9,18 +9,20 @@ import {
     generateEcdhSharedKey,
     encryptPlainText,
     decryptCipherText,
-    decryptPointElGamal,
-    encryptPointElGamal,
-    encryptPointsElGamal,
+    unmaskPoint,
+    maskPoint,
+    ephemeralPublicKeyBuilder,
 } from '../../src/base/encryption';
 import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {generateRandomKeypair, packPublicKey} from '../../src/base/keypairs';
 import {extractCipherKeyAndIvFromPackedPoint} from '../../src/panther/messages';
-import {Keypair, Point} from '../../src/types/keypair';
+import {Keypair, Point, PublicKey} from '../../src/types/keypair';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
 } from '../../src/utils/bigint-conversions';
+
+import ephemeralPublicKeyBuilderData from './data/ephemeralPublicKeyBuilder';
 
 function generateKeysAndEncryptedText(
     keypair1: Keypair,
@@ -69,10 +71,6 @@ function generateSecretPoint(): Point {
     return mulPointEscalar(babyjub.Base8, secret) as Point;
 }
 
-function generateEphemeralPublicKey(sessionKey: bigint): Point {
-    return mulPointEscalar(babyjub.Base8, sessionKey) as Point;
-}
-
 describe('Encryption Test Suite', () => {
     describe('AES-128-CBC', () => {
         let keypair1: Keypair;
@@ -115,47 +113,37 @@ describe('Encryption Test Suite', () => {
     describe('El Gamal', () => {
         let secretPoint: Point;
         let keypair: Keypair;
-        let sessionKey: bigint;
-        let secretPoints: Point[];
 
         beforeEach(() => {
             secretPoint = generateSecretPoint();
-            sessionKey = generateRandomInBabyJubSubField();
             keypair = generateRandomKeypair();
-            secretPoints = Array.from({length: 10}, generateSecretPoint);
         });
 
-        it('encrypts and decrypts single point', () => {
-            const encryptedPoint = encryptPointElGamal(
-                secretPoint,
-                keypair.publicKey,
-                sessionKey,
-            );
-            const ephemeralPublicKey = generateEphemeralPublicKey(sessionKey);
-            const decryptedPoint = decryptPointElGamal(
+        it('masks and unmasks single point', () => {
+            const encryptedPoint = maskPoint(secretPoint, keypair.publicKey);
+            const decryptedPoint = unmaskPoint(
                 encryptedPoint,
-                keypair.privateKey,
-                ephemeralPublicKey,
+                keypair.publicKey,
             );
 
             expect(secretPoint).toEqual(decryptedPoint);
         });
 
-        it('encrypts and decrypts multiple points', () => {
-            const {encryptedPoints, ephemeralKeypair} = encryptPointsElGamal(
-                secretPoints,
-                keypair.publicKey,
+        it('#ephemeralPublicKeyBuilder', () => {
+            const keys = ephemeralPublicKeyBuilder(
+                ephemeralPublicKeyBuilderData.ephemeralRandom,
+                ephemeralPublicKeyBuilderData.pubKey as PublicKey,
+                10,
             );
+            expect(keys.ephemeralPubKeys.length).toEqual(10);
+            expect(keys.sharedPubKeys.length).toEqual(10);
 
-            const decryptedPoints = encryptedPoints.map(encryptedPoint =>
-                decryptPointElGamal(
-                    encryptedPoint,
-                    keypair.privateKey,
-                    ephemeralKeypair.publicKey,
-                ),
+            expect(keys.ephemeralPubKeys).toEqual(
+                ephemeralPublicKeyBuilderData.ephemeralPubKey,
             );
-
-            expect(secretPoints).toEqual(decryptedPoints);
+            expect(keys.sharedPubKeys).toEqual(
+                ephemeralPublicKeyBuilderData.sharedPubKey,
+            );
         });
     });
 });

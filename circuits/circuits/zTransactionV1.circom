@@ -172,8 +172,10 @@ template ZTransactionV1( nUtxoIn,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
 
-    var zZoneDataEscrowScalarSize = 1;
-    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowScalarSize;
+    // ------------- ec-points-size -------------
+    // 1) The only point is the data-escrow ephemeral pub-key
+    var zZoneDataEscrowPointSize = 1;
+    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowPointSize;
     signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
     signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
 
@@ -244,13 +246,10 @@ template ZTransactionV1( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx;
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    // ------------- scalars-size --------------
-    // 1) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-    // 2) MAX(nUtxoIn,nUtxoOut) x 64 ( utxoInOriginZoneId << 16 | utxoOutTargetZoneId)
     // ------------- ec-points-size -------------
-    // 1) 0
-    var daoDataEscrowScalarSize = 1 + max_nUtxoIn_nUtxoOut;
-    var daoDataEscrowEncryptedPoints = daoDataEscrowScalarSize;
+    // 1) The only point is the data-escrow ephemeral pub-key
+    var daoDataEscrowPointSize = 1;
+    var daoDataEscrowEncryptedPoints = daoDataEscrowPointSize;
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
     signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
 
@@ -921,12 +920,18 @@ template ZTransactionV1( nUtxoIn,
     dataEscrow.pubKey[1] <== dataEscrowPubKey[1];
 
     // --------------- scalars -----------------
-    component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut);
+    component dataEscrowScalarsSerializer = DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth);
     dataEscrowScalarsSerializer.zAsset <== utxoZAsset;
     dataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
     dataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
 
     for (var j = 0; j < nUtxoIn; j++) {
+        for(var i = 0; i < 2; i++) {
+            dataEscrowScalarsSerializer.utxoInMerkleTreeSelector[j][i] <== utxoInMerkleTreeSelector[j][i];
+        }
+        for(var i = 0; i < UtxoMerkleTreeDepth; i++) {
+            dataEscrowScalarsSerializer.utxoInPathIndices[j][i] <== utxoInPathIndices[j][i];
+        }
         dataEscrowScalarsSerializer.utxoInAmount[j] <== utxoInAmount[j];
         dataEscrowScalarsSerializer.utxoInOriginZoneId[j] <== utxoInOriginZoneId[j];
     }
@@ -958,28 +963,15 @@ template ZTransactionV1( nUtxoIn,
     }
 
     // [19] - DAO Data Escrow encryption
-    component daoDataEscrow = DataEscrowElGamalEncryptionScalar(daoDataEscrowScalarSize);
+    component daoDataEscrow = DataEscrowElGamalEncryptionPoint(daoDataEscrowEncryptedPoints);
 
     daoDataEscrow.ephemeralRandom <== daoDataEscrowEphemeralRandom;
     daoDataEscrow.pubKey[0] <== daoDataEscrowPubKey[0];
     daoDataEscrow.pubKey[1] <== daoDataEscrowPubKey[1];
 
-    component daoDataEscrowScalarsSerializer = DaoDataEscrowSerializer(nUtxoIn,nUtxoOut);
-
-    daoDataEscrowScalarsSerializer.zAccountId <== zAccountUtxoInId;
-    daoDataEscrowScalarsSerializer.zAccountZoneId <== zAccountUtxoInZoneId;
-
-    for (var j = 0; j < nUtxoIn; j++) {
-        daoDataEscrowScalarsSerializer.utxoInOriginZoneId[j] <== utxoInOriginZoneId[j];
-    }
-
-    for (var j = 0; j < nUtxoOut; j++) {
-        daoDataEscrowScalarsSerializer.utxoOutTargetZoneId[j] <== utxoOutTargetZoneId[j];
-    }
-
-    for (var j = 0; j < daoDataEscrowScalarSize; j++) {
-        daoDataEscrow.scalarMessage[j] <== daoDataEscrowScalarsSerializer.out[j];
-    }
+    // push the only single point - the ephemeralPubKey
+    daoDataEscrow.pointMessage[0][0] <== dataEscrow.ephemeralPubKey[0];
+    daoDataEscrow.pointMessage[0][1] <== dataEscrow.ephemeralPubKey[1];
 
     // verify EphemeralPubKey
     daoDataEscrowEphemeralPubKeyAx === daoDataEscrow.ephemeralPubKey[0];
@@ -1027,12 +1019,15 @@ template ZTransactionV1( nUtxoIn,
     zZoneZAccountBlackListExclusionProver.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
 
     // [23] - zAccountId data escrow for zone operator
-    component zZoneDataEscrow = DataEscrowElGamalEncryptionScalar(zZoneDataEscrowScalarSize);
+    component zZoneDataEscrow = DataEscrowElGamalEncryptionPoint(zZoneDataEscrowEncryptedPoints);
 
     zZoneDataEscrow.ephemeralRandom <== zZoneDataEscrowEphemeralRandom;
     zZoneDataEscrow.pubKey[0] <== zZoneEdDsaPubKey[0];
     zZoneDataEscrow.pubKey[1] <== zZoneEdDsaPubKey[1];
-    zZoneDataEscrow.scalarMessage[0] <== zAccountUtxoInId;
+
+    // push the only single point - the ephemeralPubKey
+    zZoneDataEscrow.pointMessage[0][0] <== dataEscrow.ephemeralPubKey[0];
+    zZoneDataEscrow.pointMessage[0][1] <== dataEscrow.ephemeralPubKey[1];
 
     // verify EphemeralPubKey
     zZoneDataEscrowEphemeralPubKeyAx === zZoneDataEscrow.ephemeralPubKey[0];
