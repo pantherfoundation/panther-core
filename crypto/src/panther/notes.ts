@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {TxNoteType1, TxNoteType3, TxNoteType4} from 'types/note';
+import {
+    ZAccountActivationNote,
+    PrpConversionNote,
+    ZTransactionNote,
+    ZSwapNote,
+    TxNote,
+} from 'types/note';
 
 import {TxType} from '../types/transaction';
 import {bigintToBytes} from '../utils/bigint-conversions';
@@ -79,6 +85,16 @@ const SegmentConfigs: {[key in TxType]: Segment[]} = {
         {type: MT.ZAsset, length: LMT.ZAsset},
         {type: MT.SpentUTXO, length: LMT.SpentUTXO},
     ],
+    [TxType.ZSwap]: [
+        {type: MT.CreateTime, length: LMT.CreateTime},
+        {type: MT.SpendTime, length: LMT.SpendTime},
+        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
+        {type: MT.ZAssetPub, length: LMT.ZAssetPub},
+        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MT.ZAsset, length: LMT.ZAsset},
+        {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
+        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+    ],
 };
 
 const BYTES_TO_STRING_LENGTH_FACTOR = 2;
@@ -87,82 +103,122 @@ const BYTES_TO_STRING_LENGTH_FACTOR = 2;
  * Function to decode transaction note
  * @param {string} encodedNoteContentHex - The encoded Note Content Hex
  * @param {TxType} txType - The Note Type
- * @returns {TxNoteType1 | TxNoteType3 | TxNoteType4} - returns either a TxNoteType1,
- * TxNoteType3 or TxNoteType4 depending on noteType
+ * @returns {ZAccountActivationNote | PrpConversionNote | ZTransactionNote} - returns either a ZAccountActivationNote,
+ * PrpConversionNote or ZTransactionNote depending on noteType
+ */
+/**
+ * Decodes a transaction note based on the provided encoded content and transaction type.
+ * @param encodedNoteContentHex - The hexadecimal encoded note content.
+ * @param txType - The type of the transaction.
+ * @returns The decoded note object.
  */
 export function decodeTxNote(
     encodedNoteContentHex: string,
     txType: TxType,
-): TxNoteType1 | TxNoteType3 | TxNoteType4 {
+): TxNote {
     const config = SegmentConfigs[txType];
     validateInput(encodedNoteContentHex, 1 + getRequiredLength(config));
     const segments = parseSegments(encodedNoteContentHex, config);
 
-    const createTime = parseInt(segments[0], 16);
-    let busTreeIds = decodeBusTreeIds(segments[1]);
-
-    // Use switch for future extensibility
     switch (txType) {
         case TxType.ZAccountActivation:
         case TxType.PrpClaiming:
-            return {
-                createTime,
-                ...busTreeIds,
-                zAccountUTXOMessage: prependMessageType(
-                    MT.ZAccount,
-                    segments[2],
-                ),
-                txType,
-            } as TxNoteType1;
-
+            return decodeZAccountActivationNote(segments, txType);
         case TxType.PrpConversion:
-            return {
-                createTime,
-                ...busTreeIds,
-                zkpAmountScaled: BigInt(`0x${segments[2]}`),
-                zAccountUTXOMessage: prependMessageType(
-                    MT.ZAccount,
-                    segments[3],
-                ),
-                zAssetUTXOMessage: prependMessageType(
-                    MT.ZAssetPriv,
-                    segments[4],
-                ),
-                txType,
-            } as TxNoteType3;
-
+            return decodePrpConversionNote(segments, txType);
         case TxType.ZTransaction:
         case TxType.Deposit:
         case TxType.Withdrawal:
-            const [
-                ,
-                spendTime,
-                busTreeIdsSegment,
-                zAccount,
-                zAsset1,
-                zAsset2,
-                spentUTXO,
-            ] = segments;
-            busTreeIds = decodeBusTreeIds(busTreeIdsSegment);
-
-            return {
-                createTime,
-                ...busTreeIds,
-                spendTime: parseInt(spendTime, 16),
-                zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
-                zAssetUTXOMessages: [
-                    prependMessageType(MT.ZAsset, zAsset1),
-                    prependMessageType(MT.ZAsset, zAsset2),
-                ],
-                spentUTXOCommitmentMessage: prependMessageType(
-                    MT.SpentUTXO,
-                    spentUTXO,
-                ),
-                txType,
-            } as TxNoteType4; // Main transaction
+            return decodeZTransactionNote(segments, txType);
+        case TxType.ZSwap:
+            return decodeZSwapNote(segments, txType);
         default:
             throw new Error(`Unsupported note type: ${txType}`);
     }
+}
+
+function decodeZAccountActivationNote(
+    segments: string[],
+    txType: TxType,
+): ZAccountActivationNote {
+    const [createTime, busTreeIds, zAccountMsg] = segments;
+    return {
+        createTime: parseInt(createTime, 16),
+        ...decodeBusTreeIds(busTreeIds),
+        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccountMsg),
+        txType,
+    };
+}
+
+function decodePrpConversionNote(
+    segments: string[],
+    txType: TxType,
+): PrpConversionNote {
+    const [createTime, busTreeIds, zAssetPub, zAccountMsg, zAssetPriv] =
+        segments;
+
+    return {
+        createTime: parseInt(createTime, 16),
+        ...decodeBusTreeIds(busTreeIds),
+        zkpAmountScaled: BigInt(`0x${zAssetPub}`),
+        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccountMsg),
+        zAssetUTXOMessage: prependMessageType(MT.ZAssetPriv, zAssetPriv),
+        txType,
+    };
+}
+
+function decodeZTransactionNote(
+    segments: string[],
+    txType: TxType,
+): ZTransactionNote {
+    const [
+        createTime,
+        spendTime,
+        busTreeIds,
+        zAccount,
+        zAsset1,
+        zAsset2,
+        spentUTXO,
+    ] = segments;
+    return {
+        createTime: parseInt(createTime, 16),
+        spendTime: parseInt(spendTime, 16),
+        ...decodeBusTreeIds(busTreeIds),
+        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
+        zAssetUTXOMessages: [
+            prependMessageType(MT.ZAsset, zAsset1),
+            prependMessageType(MT.ZAsset, zAsset2),
+        ],
+        spentUTXOCommitmentMessage: prependMessageType(MT.SpentUTXO, spentUTXO),
+        txType,
+    };
+}
+
+function decodeZSwapNote(segments: string[], txType: TxType): ZSwapNote {
+    const [
+        createTime,
+        spendTime,
+        busTreeIds,
+        amountScaled,
+        zAccount,
+        zAsset,
+        zAssetPriv,
+        spentUTXO,
+    ] = segments;
+    return {
+        createTime: parseInt(createTime, 16),
+        spendTime: parseInt(spendTime, 16),
+        ...decodeBusTreeIds(busTreeIds),
+        amountScaled: BigInt(`0x${amountScaled}`),
+        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
+        zAssetUTXOMessages: [
+            prependMessageType(MT.ZAsset, zAsset),
+            prependMessageType(MT.ZAssetPriv, zAssetPriv),
+        ],
+
+        spentUTXOCommitmentMessage: prependMessageType(MT.SpentUTXO, spentUTXO),
+        txType,
+    };
 }
 
 /**
@@ -197,6 +253,7 @@ function parseSegments(
     segments: Segment[],
 ): string[] {
     let startStrIndex = 1 * BYTES_TO_STRING_LENGTH_FACTOR;
+    console.log(segments);
 
     return segments.map(({type, length}, index) => {
         const lengthInStr = length * BYTES_TO_STRING_LENGTH_FACTOR;
