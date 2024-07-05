@@ -120,8 +120,8 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input zZoneMaximumAmountPerTimePeriod;
     signal input zZoneTimePeriodPerMaximumAmount;
 
-    var zZoneDataEscrowScalarSize = 1;
-    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowScalarSize;
+    var zZoneDataEscrowPointSize = 1;
+    var zZoneDataEscrowEncryptedPoints = zZoneDataEscrowPointSize;
     signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints];
     signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
 
@@ -177,8 +177,8 @@ template ZTransactionV1RangeCheck( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx;
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    var daoDataEscrowScalarSize = 1 + max_nUtxoIn_nUtxoOut;
-    var daoDataEscrowEncryptedPoints = daoDataEscrowScalarSize;
+    var daoDataEscrowPointSize = 1;
+    var daoDataEscrowEncryptedPoints = daoDataEscrowPointSize;
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints];
     signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
 
