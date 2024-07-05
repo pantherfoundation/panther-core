@@ -3,7 +3,7 @@
 
 import {TxType} from 'types/transaction';
 
-export type TxNoteType1 = {
+export type BaseTxNote = {
     createTime: number;
     commitment: string;
     queueId: number;
@@ -12,14 +12,29 @@ export type TxNoteType1 = {
     txType: TxType;
 };
 
-export type TxNoteType3 = TxNoteType1 & {
+export type ZAccountActivationNote = BaseTxNote;
+export type PrpClaimingNote = BaseTxNote;
+
+export type PrpConversionNote = BaseTxNote & {
     zkpAmountScaled: bigint;
     zAssetUTXOMessage: string;
-    zAssetCommitmentMessage: string;
 };
 
-export type TxNoteType4 = TxNoteType1 & {
+export type ZTransactionNote = BaseTxNote & {
     spendTime: number;
     zAssetUTXOMessages: [string, string];
     spentUTXOCommitmentMessage: string;
 };
+
+export type ZSwapNote = BaseTxNote & {
+    spendTime: number;
+    amountScaled: bigint;
+    zAssetUTXOMessages: [string, string];
+    spentUTXOCommitmentMessage: string;
+};
+
+export type TxNote =
+    | ZAccountActivationNote
+    | PrpConversionNote
+    | ZTransactionNote
+    | ZSwapNote;
