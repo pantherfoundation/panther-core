@@ -11,6 +11,7 @@ import "./publicSignals/PrpClaimPublicSignals.sol";
 import "./publicSignals/PrpConversionPublicSignals.sol";
 import "./publicSignals/MainPublicSignals.sol";
 import "./publicSignals/ZSwapPublicSignals.sol";
+import { ERR_ZERO_COMITMENT } from "../errMsgs/PantherPoolV1ErrMsgs.sol";
 
 import "../../../common/crypto/PoseidonHashers.sol";
 
@@ -41,11 +42,20 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](2);
-        utxos[0] = bytes32(inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND]);
-        utxos[1] = bytes32(
+        bytes32 zAccountUtxoOutCommitment = bytes32(
+            inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_COMMITMENT_IND]
+        );
+        bytes32 kycSignedMessageHash = bytes32(
             inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND]
         );
+        require(
+            zAccountUtxoOutCommitment != 0 && kycSignedMessageHash != 0,
+            ERR_ZERO_COMITMENT
+        );
+
+        bytes32[] memory utxos = new bytes32[](2);
+        utxos[0] = zAccountUtxoOutCommitment;
+        utxos[1] = kycSignedMessageHash;
 
         (
             zAccountUtxoQueueId,
@@ -73,6 +83,7 @@ abstract contract UtxosInserter {
         bytes32 zAccountUtxoOutCommitment = bytes32(
             inputs[PRP_CLAIM_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
         );
+        require(zAccountUtxoOutCommitment != 0, ERR_ZERO_COMITMENT);
 
         (
             zAccountUtxoQueueId,
@@ -98,10 +109,16 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](2);
-        utxos[0] = bytes32(
+        bytes32 zAccountUtxoOutCommitment = bytes32(
             inputs[PRP_CONVERSION_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
         );
+        require(
+            zAccountUtxoOutCommitment != 0 && zAssetUtxoOutCommitment != 0,
+            ERR_ZERO_COMITMENT
+        );
+
+        bytes32[] memory utxos = new bytes32[](2);
+        utxos[0] = zAccountUtxoOutCommitment;
         utxos[1] = zAssetUtxoOutCommitment;
 
         (
@@ -128,13 +145,37 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](5);
+        bytes32 zAccountUtxoOutCommitment = bytes32(
+            inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
+        );
+        bytes32 zAssetUtxoOutCommitment1 = bytes32(
+            inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
+        );
+        bytes32 zAssetUtxoOutCommitment2 = bytes32(
+            inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_2_IND]
+        );
+        bytes32 kytDepositSignedMessageHash = bytes32(
+            inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]
+        );
+        bytes32 kytWithdrawSignedMessageHash = bytes32(
+            inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]
+        );
 
-        utxos[0] = bytes32(inputs[MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]);
-        utxos[1] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_1_IND]);
-        utxos[2] = bytes32(inputs[MAIN_ZASSET_UTXO_OUT_COMMITMENT_2_IND]);
-        utxos[3] = bytes32(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
-        utxos[4] = bytes32(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
+        require(
+            zAccountUtxoOutCommitment != 0 &&
+                zAssetUtxoOutCommitment1 != 0 &&
+                zAssetUtxoOutCommitment2 != 0 &&
+                kytDepositSignedMessageHash != 0 &&
+                kytWithdrawSignedMessageHash != 0,
+            ERR_ZERO_COMITMENT
+        );
+
+        bytes32[] memory utxos = new bytes32[](5);
+        utxos[0] = zAccountUtxoOutCommitment;
+        utxos[1] = zAssetUtxoOutCommitment1;
+        utxos[2] = zAssetUtxoOutCommitment2;
+        utxos[3] = kytDepositSignedMessageHash;
+        utxos[4] = kytWithdrawSignedMessageHash;
 
         (
             zAccountUtxoQueueId,
@@ -160,13 +201,20 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](5);
+        bytes32 zAccountUtxoOutCommitment = bytes32(
+            inputs[ZSWAP_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]
+        );
+        require(
+            zAccountUtxoOutCommitment != 0 &&
+                zAssetUtxos[0] != 0 &&
+                zAssetUtxos[1] != 0,
+            ERR_ZERO_COMITMENT
+        );
 
-        utxos[0] = bytes32(inputs[ZSWAP_ZACCOUNT_UTXO_OUT_COMMITMENT_IND]);
+        bytes32[] memory utxos = new bytes32[](3);
+        utxos[0] = zAccountUtxoOutCommitment;
         utxos[1] = zAssetUtxos[0];
         utxos[2] = zAssetUtxos[1];
-        utxos[3] = bytes32(inputs[ZSWAP_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
-        utxos[4] = bytes32(inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
 
         (
             zAccountUtxoQueueId,
@@ -192,13 +240,19 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](5);
+        bytes32 zAccountUtxoOutCommitment = bytes32(inputs[41]); // zAccount index
+        require(
+            zAccountUtxoOutCommitment != 0 &&
+                zAssetUtxos[0] != 0 &&
+                zAssetUtxos[1] != 0,
+            ERR_ZERO_COMITMENT
+        );
 
-        utxos[0] = bytes32(inputs[41]); // zAccount index
+        bytes32[] memory utxos = new bytes32[](3);
+
+        utxos[0] = zAccountUtxoOutCommitment; // zAccount index
         utxos[1] = zAssetUtxos[0];
         utxos[2] = zAssetUtxos[1];
-        utxos[3] = bytes32(inputs[ZSWAP_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]);
-        utxos[4] = bytes32(inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]);
 
         (
             zAccountUtxoQueueId,
