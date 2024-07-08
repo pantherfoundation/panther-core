@@ -17,7 +17,7 @@ import {getPoseidonT3Contract} from '../../lib/poseidonBuilder';
 import {
     MockZAccountsRegistry,
     IPantherPoolV1,
-    IOnboardingController,
+    PrpVoucherGrantor,
     PantherStaticTree,
     PoseidonT3,
 } from '../../types/contracts';
@@ -29,16 +29,15 @@ import {
     takeSnapshot,
 } from './helpers/hardhat';
 
-describe('ZAccountsRegistry', function () {
+describe.only('ZAccountsRegistry', function () {
     let zAccountsRegistry: MockZAccountsRegistry;
     let poseidonT3: PoseidonT3;
     let pantherPool: FakeContract<IPantherPoolV1>;
     let pantherStaticTree: FakeContract<PantherStaticTree>;
-    let onboardingRewardController: FakeContract<IOnboardingController>;
+    let prpVoucherGrantor: FakeContract<PrpVoucherGrantor>;
     let owner: SignerWithAddress,
         notOwner: SignerWithAddress,
         user: SignerWithAddress;
-    // accounts: SignerWithAddress[];
     let provider: Provider;
     let snapshot: number;
     let zAccountVersion: number;
@@ -54,7 +53,7 @@ describe('ZAccountsRegistry', function () {
 
         pantherPool = await smock.fake('IPantherPoolV1');
         pantherStaticTree = await smock.fake('PantherStaticTree');
-        onboardingRewardController = await smock.fake('IOnboardingController');
+        prpVoucherGrantor = await smock.fake('PrpVoucherGrantor');
 
         const PoseidonT3 = await getPoseidonT3Contract();
         poseidonT3 = (await PoseidonT3.deploy()) as PoseidonT3;
@@ -68,7 +67,7 @@ describe('ZAccountsRegistry', function () {
             'MockZAccountsRegistry',
             {
                 libraries: {
-                    'contracts/protocol/crypto/Poseidon.sol:PoseidonT3':
+                    'contracts/common/crypto/Poseidon.sol:PoseidonT3':
                         poseidonT3.address,
                 },
             },
@@ -78,7 +77,7 @@ describe('ZAccountsRegistry', function () {
             1,
             pantherPool.address,
             pantherStaticTree.address,
-            onboardingRewardController.address,
+            prpVoucherGrantor.address,
         )) as MockZAccountsRegistry;
 
         zAccountVersion = await zAccountsRegistry.ZACCOUNT_VERSION();
@@ -96,22 +95,24 @@ describe('ZAccountsRegistry', function () {
 
     interface ActivateZAccountOptions {
         extraInputsHash?: string;
-        zkpAmount?: number;
-        zkpChange?: number;
+        addedAmountZkp?: number;
+        chargedAmountZkp?: number;
         zAccountId?: number;
-        zAccountPrpAmount?: number;
         zAccountCreateTime?: BigNumber;
         zAccountRootSpendPubKeyX?: string;
         zAccountRootSpendPubKeyY?: string;
+        zAccountPubReadKeyX?: string;
+        zAccountPubReadKeyY?: string;
+        zAccountNullifierPubKeyX?: string;
+        zAccountNullifierPubKeyY?: string;
         zAccountMasterEOA?: string;
-        nullifier?: string;
+        zAccountNullifierZone?: string;
         commitment?: string;
         kycSignedMessageHash?: string;
+        staticTreeMerkleRoot?: string;
         forestMerkleRoot?: string;
         saltHash?: string;
         magicalConstraint?: string;
-        placeholder?: string;
-        privateMessages?: string;
     }
 
     async function genSignature(
@@ -194,26 +195,36 @@ describe('ZAccountsRegistry', function () {
             },
             c: {x: placeholder, y: placeholder},
         } as SnarkProofStruct;
-        const cachedForestRootIndex = 0;
 
-        const zkpAmount = options.zkpAmount || 0;
-        const zkpChange = options.zkpChange || 0;
+        const addedAmountZkp = options.addedAmountZkp || 0;
+        const chargedAmountZkp = options.chargedAmountZkp || 0;
         const zAccountId = options.zAccountId || 0;
         const privateMessages =
             ethers.utils.formatBytes32String('privateMessages');
-        const zAccountPrpAmount = options.zAccountPrpAmount || 0;
         const zAccountCreateTime =
             options.zAccountCreateTime || BigNumber.from(0);
         const zAccountRootSpendPubKeyX =
             options.zAccountRootSpendPubKeyX || examplePubKeys.x;
         const zAccountRootSpendPubKeyY =
             options.zAccountRootSpendPubKeyY || examplePubKeys.y;
+        const zAccountPubReadKeyX =
+            options.zAccountPubReadKeyX || examplePubKeys.x;
+        const zAccountPubReadKeyY =
+            options.zAccountPubReadKeyY || examplePubKeys.y;
         const zAccountMasterEOA = options.zAccountMasterEOA || user.address;
-        const nullifier = options.nullifier || ethers.utils.id('nullifier');
+        const zAccountNullifierZone =
+            options.zAccountNullifierZone || BigNumber.from(0);
+        const zAccountNullifierPubKeyX =
+            options.zAccountNullifierPubKeyX || ethers.utils.id('nullifier');
+        const zAccountNullifierPubKeyY =
+            options.zAccountNullifierPubKeyY || ethers.utils.id('nullifier');
         const commitment = options.commitment || ethers.utils.id('commitment');
         const kycSignedMessageHash =
             options.kycSignedMessageHash ||
             ethers.utils.id('kycSignedMessageHash');
+        const staticTreeMerkleRoot =
+            options.staticTreeMerkleRoot ||
+            ethers.utils.id('staticTreeMerkleRoot');
         const forestMerkleRoot =
             options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
         const saltHash =
@@ -223,10 +234,11 @@ describe('ZAccountsRegistry', function () {
             );
         const magicalConstraint =
             options.magicalConstraint || ethers.utils.id('magicalConstraint');
-
+        const transactionOptions = 0b100000000;
+        const paymasterCompensation = ethers.BigNumber.from('10');
         const extraInput = ethers.utils.solidityPack(
-            ['bytes', 'uint256'],
-            [privateMessages, cachedForestRootIndex],
+            ['uint32', 'uint96', 'bytes'],
+            [transactionOptions, paymasterCompensation, privateMessages],
         );
         const calculatedExtraInputHash = BigNumber.from(
             ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
@@ -238,24 +250,29 @@ describe('ZAccountsRegistry', function () {
             zAccountsRegistry.activateZAccount(
                 [
                     extraInputsHash,
-                    zkpAmount,
-                    zkpChange,
+                    addedAmountZkp,
+                    chargedAmountZkp,
                     zAccountId,
-                    zAccountPrpAmount,
                     zAccountCreateTime,
                     zAccountRootSpendPubKeyX,
                     zAccountRootSpendPubKeyY,
+                    zAccountPubReadKeyX,
+                    zAccountPubReadKeyY,
+                    zAccountNullifierPubKeyX,
+                    zAccountNullifierPubKeyY,
                     zAccountMasterEOA,
-                    nullifier,
+                    zAccountNullifierZone,
                     commitment,
                     kycSignedMessageHash,
+                    staticTreeMerkleRoot,
                     forestMerkleRoot,
                     saltHash,
                     magicalConstraint,
                 ],
-                privateMessages,
                 proof,
-                cachedForestRootIndex,
+                transactionOptions,
+                paymasterCompensation,
+                privateMessages,
             ),
         ).to.emit(zAccountsRegistry, 'ZAccountActivated');
     }
@@ -315,6 +332,54 @@ describe('ZAccountsRegistry', function () {
         await zAccountsRegistry.internalGetNextZAccountId();
         return await zAccountsRegistry.nextId();
     }
+
+    function mockGenerateRewards() {
+        prpVoucherGrantor.generateRewards.returns(100);
+    }
+
+    describe('#deployment', () => {
+        it('should set the correct owner,pool,static tree and prp voucher contract address', async () => {
+            expect(await zAccountsRegistry.OWNER()).to.equal(owner.address);
+            expect(await zAccountsRegistry.PANTHER_POOL()).to.equal(
+                pantherPool.address,
+            );
+            expect(await zAccountsRegistry.PANTHER_STATIC_TREE()).to.equal(
+                pantherStaticTree.address,
+            );
+            expect(await zAccountsRegistry.PRP_VOUCHER_GRANTOR()).to.equal(
+                prpVoucherGrantor.address,
+            );
+        });
+        it('should not deploy if zero address is passed', async () => {
+            const ZAccountsRegistry = await ethers.getContractFactory(
+                'MockZAccountsRegistry',
+                {
+                    libraries: {
+                        'contracts/common/crypto/Poseidon.sol:PoseidonT3':
+                            poseidonT3.address,
+                    },
+                },
+            );
+
+            await expect(
+                ZAccountsRegistry.connect(owner).deploy(
+                    1,
+                    ethers.constants.AddressZero,
+                    pantherStaticTree.address,
+                    prpVoucherGrantor.address,
+                ),
+            ).to.be.revertedWith('ZAR:init');
+
+            await expect(
+                ZAccountsRegistry.connect(owner).deploy(
+                    1,
+                    pantherPool.address,
+                    ethers.constants.AddressZero,
+                    prpVoucherGrantor.address,
+                ),
+            ).to.be.revertedWith('ZAR:init');
+        });
+    });
 
     describe('#registerZAccount', () => {
         describe('Success', () => {
@@ -513,6 +578,9 @@ describe('ZAccountsRegistry', function () {
                     zAccountsRegistry,
                     'ZAccountRegistered',
                 );
+
+                mockGenerateRewards();
+
                 expect(
                     await activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.emit(zAccountsRegistry, 'ZAccountActivated');
@@ -535,18 +603,6 @@ describe('ZAccountsRegistry', function () {
                     activateZAccount({extraInputsHash: invalidInputsHash}),
                 ).to.be.revertedWith('ZAR:E11');
             });
-            it('should revert if non-zero zkpChange is supplied with tx', async () => {
-                await registerZAccount({});
-                await expect(
-                    activateZAccount({zkpChange: 1}),
-                ).to.be.revertedWith('ZAR:E16');
-            });
-            it('should revert if PRP is supplied with tx', async () => {
-                await registerZAccount({});
-                await expect(
-                    activateZAccount({zAccountPrpAmount: 1}),
-                ).to.be.revertedWith('ZAR:E13');
-            });
             it('should revert if a nullifier is already registered', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -559,13 +615,59 @@ describe('ZAccountsRegistry', function () {
                     activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.be.revertedWith('ZAR:E5');
             });
-            it('should revert is zkpAmount is not available for this user', async () => {
-                expect(await registerZAccount({}))
-                    .to.emit(onboardingRewardController, 'ZzkpAndPrpAllocated')
-                    .withArgs(user.address, 1, 0);
+            it('should revert if public read key is not matching', async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
                 await expect(
-                    activateZAccount({zkpAmount: 2}),
-                ).to.be.revertedWith('ZAR:E12');
+                    activateZAccount({
+                        zAccountPubReadKeyX: examplePubKeys.x,
+                        zAccountPubReadKeyY: examplePubKeys.x,
+                    }),
+                ).to.be.revertedWith('ZAR:E19');
+            });
+            it('should revert if public root spending key is not matching', async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+                await expect(
+                    activateZAccount({
+                        zAccountRootSpendPubKeyX: examplePubKeys.x,
+                        zAccountRootSpendPubKeyY: examplePubKeys.x,
+                    }),
+                ).to.be.revertedWith('ZAR:E18');
+            });
+            it('should revert if Master EOA address is blacklisted', async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+                await zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
+                    [user.address],
+                    [true],
+                );
+                await expect(
+                    activateZAccount({
+                        zAccountMasterEOA: user.address,
+                    }),
+                ).to.be.revertedWith('ZAR:E2');
+            });
+            it('should revert if public root spending key is blacklisted', async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+                await zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
+                    [await pointPack(examplePubKeys)],
+                    [true],
+                );
+                await expect(
+                    activateZAccount({
+                        zAccountMasterEOA: user.address,
+                    }),
+                ).to.be.revertedWith('ZAR:E3');
             });
         });
     });
@@ -614,7 +716,7 @@ describe('ZAccountsRegistry', function () {
                     [user.address],
                     [true],
                 );
-                expect(() =>
+                await expect(
                     activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.be.revertedWith('ZAR:E2');
             });
@@ -629,6 +731,29 @@ describe('ZAccountsRegistry', function () {
                             isBlacklisted,
                         ),
                 ).to.be.revertedWith('ImmOwn: unauthorized');
+            });
+            it('should revert if the array length does not match', async () => {
+                const [blacklistedEoas, isBlacklisted] =
+                    await generateRandomMasterEoas();
+                blacklistedEoas.push(user.address);
+                await expect(
+                    zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
+                        blacklistedEoas,
+                        isBlacklisted,
+                    ),
+                ).to.be.revertedWith('ZAR:E7');
+            });
+            it('should revert when setting the same blacklist status', async () => {
+                await zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
+                    [user.address],
+                    [true],
+                );
+                await expect(
+                    zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
+                        [user.address],
+                        [true],
+                    ),
+                ).to.be.revertedWith('ZAR:E8');
             });
         });
     });
@@ -651,19 +776,13 @@ describe('ZAccountsRegistry', function () {
         });
         describe('Failure', () => {
             it(`should revert if a blacklisted pubRootSpendingKey attempts to register a zAccount`, async () => {
-                const [
-                    blacklistedPubRootSpendingKeys,
-                    blacklistedUnpackedKeys,
-                    isBlacklisted,
-                ] = await generateRandomPubRootSpendingKeys();
                 await zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
-                    blacklistedPubRootSpendingKeys,
-                    isBlacklisted,
+                    [await pointPack(examplePubKeys)],
+                    [true],
                 );
-                const randomPubRootSpendingKey = blacklistedUnpackedKeys[2];
                 await expect(
                     registerZAccount({
-                        pubRootSpendingKey: randomPubRootSpendingKey,
+                        pubRootSpendingKey: examplePubKeys,
                     }),
                 ).to.be.revertedWith('ZAR:E3');
             });
@@ -692,6 +811,55 @@ describe('ZAccountsRegistry', function () {
                         ),
                 ).to.revertedWith('ImmOwn: unauthorized');
             });
+            it('should revert if the array length does not match', async () => {
+                const [blacklistedPubRootSpendingKeys, , isBlacklisted] =
+                    await generateRandomPubRootSpendingKeys();
+                blacklistedPubRootSpendingKeys.push(
+                    await pointPack(examplePubKeys),
+                );
+                await expect(
+                    zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
+                        blacklistedPubRootSpendingKeys,
+                        isBlacklisted,
+                    ),
+                ).to.be.revertedWith('ZAR:E7');
+            });
+            it('should revert when setting the same blacklist status', async () => {
+                await zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
+                    [await pointPack(examplePubKeys)],
+                    [true],
+                );
+                await expect(
+                    zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
+                        [await pointPack(examplePubKeys)],
+                        [true],
+                    ),
+                ).to.be.revertedWith('ZAR:E8');
+            });
+        });
+    });
+
+    describe('#View Functions', () => {
+        it(`should return true if zAccount is not blacklisted`, async () => {
+            await registerZAccount({});
+            expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
+                .to.be.true;
+        });
+        it(`should return false if zAccount is blacklisted`, async () => {
+            zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
+                [user.address],
+                [true],
+            );
+            expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
+                .to.be.false;
+        });
+        it(`should return false if zAccount does not exist`, async () => {
+            expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
+                .to.be.false;
+        });
+        it(`should check if the public key is acceptable`, async () => {
+            expect(await zAccountsRegistry.isAcceptablePubKey(examplePubKeys))
+                .to.be.true;
         });
     });
 });
