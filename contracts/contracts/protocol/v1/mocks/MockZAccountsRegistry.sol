@@ -11,14 +11,14 @@ contract MockZAccountsRegistry is ZAccountsRegistry {
         uint8 _zAccountVersion,
         address pantherPool,
         address pantherStaticTree,
-        address onboardingRewardController
+        address prpVoucherGrantor
     )
         ZAccountsRegistry(
             msg.sender,
             _zAccountVersion,
             pantherPool,
             pantherStaticTree,
-            onboardingRewardController
+            prpVoucherGrantor
         )
     {} // solhint-disable-line no-empty-blocks
 
