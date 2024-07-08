@@ -3,14 +3,13 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IPantherPoolV1.sol";
-
 import "./pantherForest/busTree/BusTree.sol";
-import { FIELD_SIZE } from "../../common/crypto/SnarkConstants.sol";
+import "./errMsgs/PantherBusTreeErrMsgs.sol";
+
+import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+import { BUS_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constants.sol";
 import { ERC20_TOKEN_TYPE } from "../../common/Constants.sol";
 import { LockData } from "../../common/Types.sol";
-import "../../common/ImmutableOwnable.sol";
-import "../../common/crypto/PoseidonHashers.sol";
-import "./errMsgs/PantherBusTreeErrMsgs.sol";
 
 /**
  * @title PantherBusTree
@@ -25,112 +24,100 @@ import "./errMsgs/PantherBusTreeErrMsgs.sol";
  * Through its inherent knowledge of the Verification key's whereabouts, this contract undertakes
  * the verification process, subsequently updating the corresponding Panther forest leaf.
  */
-contract PantherBusTree is BusTree, ImmutableOwnable {
+abstract contract PantherBusTree is BusTree {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
     uint256[50] private __gap;
 
+    bytes32 internal constant EMPTY_BUS_TREE_ROOT =
+        TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
+
     // address of reward token
     address public immutable REWARD_TOKEN;
 
-    // TODO: Remove perMinuteUtxosLimit after Testnet (required for Stage #0..2 only)
-    // avg number of utxos which can be added per minute
-    uint16 public perMinuteUtxosLimit;
-
-    // base reward per each utxo
-    uint96 public basePerUtxoReward;
-
-    // keeps track of number of the added utxos
-    uint32 public utxoCounter;
-
-    // TODO: Remove lastUtxoSimulationTimestamp after Testnet (required for Stage #0..2 only)
-    // keeps track of the timestamp of the latest added utxos
-    // lastUtxoUpdateBlockNum
-    uint32 public lastUtxoSimulationTimestamp;
+    // address of feeMaster contract
+    address public immutable FEE_MASTER;
 
     // timestamp to start adding utxo
-    uint32 public startTime;
+    uint32 public busTreeStartTime;
+
+    bytes32[50] private _endGap;
 
     event MinerRewarded(address miner, uint256 reward);
 
     constructor(
         address owner,
-        address rewardToken,
-        address _pantherPool,
-        address _verifier,
-        uint160 _circuitId
-    ) ImmutableOwnable(owner) BusTree(_verifier, _circuitId, _pantherPool) {
-        require(rewardToken != address(0), ERR_PBT_INIT);
-
+        address pantherPool,
+        address pantherVerifier,
+        address feeMaster,
+        address rewardToken
+    ) BusTree(owner, pantherPool, pantherVerifier) {
         REWARD_TOKEN = rewardToken;
+        FEE_MASTER = feeMaster;
     }
 
-    modifier onlyPantherPool() {
-        require(msg.sender == PANTHER_POOL, ERR_UNAUTHORIZED);
-        _;
+    function _initializeBusTree(
+        uint16 reservationRate,
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge,
+        uint160 circuitId
+    ) private {
+        busTreeStartTime = uint32(block.timestamp);
+
+        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
+        _updateCircuitId(circuitId);
     }
 
-    function updateParams(
-        uint16 _perMinuteUtxosLimit,
-        uint96 _basePerUtxoReward,
+    // Code of `function getBusTreeRoot` let avoid explicit initialization:
+    // `busTreeRoot = EMPTY_BUS_TREE_ROOT`.
+    // Initial value of storage variables is 0 (which is implicitly set in
+    // new storage slots). There is no need for explicit initialization.
+    function getBusTreeRoot() public view returns (bytes32) {
+        return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
+    }
+
+    function updateCircuitId(uint160 circuitId) external onlyOwner {
+        _updateCircuitId(circuitId);
+    }
+
+    function updateBusTreeParams(
         uint16 reservationRate,
         uint16 premiumRate,
         uint16 minEmptyQueueAge
     ) external onlyOwner {
         BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
+    }
 
-        require(
-            _perMinuteUtxosLimit > 0 && _basePerUtxoReward > 0,
-            ERR_ZERO_REWARD_PARAMS
+    /// @dev ZK-circuit public signals:
+    /// @param inputs[0] - oldRoot (BusTree root before insertion)
+    /// @param inputs[1] - newRoot (BusTree root after insertion)
+    /// @param inputs[2] - replacedNodeIndex
+    /// @param inputs[3] - newLeafsCommitment (commitment to leafs in batch)
+    /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
+    /// @param inputs[5] - batchRoot (Root of the batch to insert)
+    /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
+    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
+    /// @param inputs[8] - magicalConstraint (non-zero random number)
+    function onboardQueue(
+        address miner,
+        uint32 queueId,
+        uint256[] memory inputs,
+        SnarkProof memory proof
+    ) external {
+        (bytes32 busTreeNewRoot, uint96 reward) = _onboardQueue(
+            miner,
+            queueId,
+            inputs,
+            proof
         );
-
-        if (startTime == 0) startTime = uint32(block.timestamp);
-
-        perMinuteUtxosLimit = _perMinuteUtxosLimit;
-        basePerUtxoReward = _basePerUtxoReward;
-    }
-
-    function rewardMiner(address miner, uint256 reward) internal override {
-        LockData memory data = LockData({
-            tokenType: ERC20_TOKEN_TYPE,
-            token: REWARD_TOKEN,
-            tokenId: 0,
-            extAccount: miner,
-            extAmount: uint96(reward)
-        });
-
+        _busTreeRoot = busTreeNewRoot;
+        // Synchronize the sate of `PantherForest` contract
         // Trusted contract - no reentrancy guard needed
-        IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
-
-        emit MinerRewarded(miner, reward);
-    }
-
-    function hash(
-        bytes32 left,
-        bytes32 right
-    ) internal pure override returns (bytes32) {
-        return PoseidonHashers.poseidonT3([left, right]);
-    }
-
-    // TODO: Remove getAllowedUtxosAt after Testnet (required for Stage #0..2 only)
-    function getAllowedUtxosAt(
-        uint256 _timestamp
-    ) public view returns (uint256 allowedUtxos) {
-        if (_timestamp <= lastUtxoSimulationTimestamp) return 0;
-
-        uint256 secs = _timestamp - lastUtxoSimulationTimestamp;
-        // divide before multiply, since fake utxos are allowed to be created per minute (not second)
-        return (secs / 60 seconds) * perMinuteUtxosLimit;
-    }
-
-    // TODO: add `reward` as a param of `function addUtxoToBusQueue`
-    function addUtxoToBusQueue(
-        bytes32 utxo
-    ) external onlyPantherPool returns (uint32 queueId, uint8 indexInQueue) {
-        bytes32[] memory utxos = new bytes32[](1);
-        utxos[0] = utxo;
-        (queueId, indexInQueue) = addUtxos(utxos, basePerUtxoReward);
+        _updateForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
+        // TODO: Account fees
+        _rewardMiner(miner, reward);
+        // _accountMinerRewards();
     }
 
     /// @return firstUtxoQueueId ID of the queue which `utxos[0]` was added to
@@ -147,58 +134,40 @@ contract PantherBusTree is BusTree, ImmutableOwnable {
     function addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint96 reward
-    )
-        external
-        onlyPantherPool
-        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
-    {
+    ) public returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
+        require(msg.sender == PANTHER_POOL, "");
         require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
 
-        _checkReward(reward, utxos.length);
-
-        (firstUtxoQueueId, firstUtxoIndexInQueue) = addUtxos(utxos, reward);
+        (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
+            utxos,
+            reward
+        );
     }
 
-    // TODO: Remove simulateAddUtxosToBusQueue after Testnet (required for Stage #0..2 only)
-    function simulateAddUtxosToBusQueue() external {
-        uint256 _counter = uint256(utxoCounter);
+    // TODO
+    // solhint-disable-next-line no-empty-blocks
+    function claimReward() external {}
 
-        // generating the first utxo
-        uint256 utxo = uint256(keccak256(abi.encode(_counter))) % FIELD_SIZE;
+    // TODO
+    // solhint-disable-next-line no-empty-blocks
+    function _accountMinerRewards() private {}
 
-        // Generating the utxos length between 1 - 4
-        uint256 length = (utxo & 3) + 1;
-
-        if (length > getAllowedUtxosAt(block.timestamp)) return;
-
-        bytes32[] memory utxos = new bytes32[](length);
-
-        // adding the first commitment
-        utxos[0] = bytes32(utxo);
-        _counter++;
-
-        // adding the rest of commitment
-        for (uint256 i = 1; i < length; ) {
-            utxos[i] = bytes32(
-                uint256(keccak256(abi.encode(_counter))) % FIELD_SIZE
-            );
-
-            unchecked {
-                i++;
-                _counter++;
-            }
-        }
-
-        // overflow risk ignored
-        utxoCounter = uint32(_counter);
-        lastUtxoSimulationTimestamp = uint32(block.timestamp);
-        uint256 reward = uint256(basePerUtxoReward) * length;
-
-        addUtxos(utxos, uint96(reward));
+    // TODO: account reward miner
+    function _rewardMiner(address miner, uint256 reward) private {
+        LockData memory data = LockData({
+            tokenType: ERC20_TOKEN_TYPE,
+            token: REWARD_TOKEN,
+            tokenId: 0,
+            extAccount: miner,
+            extAmount: uint96(reward)
+        });
+        // Trusted contract - no reentrancy guard needed
+        IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
+        emit MinerRewarded(miner, reward);
     }
 
-    function _checkReward(uint96 reward, uint256 nUtxos) private view {
-        uint96 minReward = basePerUtxoReward * uint96(nUtxos);
-        require(reward >= minReward, ERR_TOO_SMALL_REWARD);
-    }
+    function _updateForestRoot(
+        bytes32 updatedLeaf,
+        uint256 leafIndex
+    ) internal virtual;
 }

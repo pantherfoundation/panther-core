@@ -18,16 +18,12 @@ import "../../../common/crypto/PoseidonHashers.sol";
 abstract contract UtxosInserter {
     using TransactionOptions for uint32;
 
-    address public immutable PANTHER_BUS_TREE;
-    address public immutable PANTHER_TAXI_TREE;
+    address public immutable PANTHER_TREES;
 
-    constructor(address pantherBusTree, address pantherTaxiTree) {
-        require(
-            pantherBusTree != address(0) && pantherTaxiTree != address(0),
-            "init:zero address"
-        );
-        PANTHER_BUS_TREE = pantherBusTree;
-        PANTHER_TAXI_TREE = pantherTaxiTree;
+    constructor(address pantherTrees) {
+        require(pantherTrees != address(0), "init:zero address");
+
+        PANTHER_TREES = pantherTrees;
     }
 
     function _insertZAccountActivationUtxos(
@@ -85,11 +81,14 @@ abstract contract UtxosInserter {
         );
         require(zAccountUtxoOutCommitment != 0, ERR_ZERO_COMITMENT);
 
+        bytes32[] memory utxos = new bytes32[](1);
+        utxos[0] = zAccountUtxoOutCommitment;
+
         (
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             zAccountUtxoBusQueuePos
-        ) = _addUtxoToBusQueue(zAccountUtxoOutCommitment, miningRewards);
+        ) = _addUtxosToBusQueue(utxos, miningRewards);
 
         if (transactionOptions.isTaxiApplicable()) {
             _addUtxoToTaxiTree(zAccountUtxoOutCommitment);
@@ -231,33 +230,6 @@ abstract contract UtxosInserter {
         }
     }
 
-    function _addUtxoToBusQueue(
-        bytes32 utxo,
-        uint96 /*rewards*/
-    )
-        private
-        returns (
-            uint32 zAccountUtxoQueueId,
-            uint8 zAccountUtxoIndexInQueue,
-            uint256 zAccountUtxoBusQueuePos
-        )
-    {
-        // TODO: Add reward
-        try IBusTree(PANTHER_BUS_TREE).addUtxoToBusQueue(utxo) returns (
-            uint32 queueId,
-            uint8 indexInQueue
-        ) {
-            zAccountUtxoQueueId = queueId;
-            zAccountUtxoIndexInQueue = indexInQueue;
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
-
-        zAccountUtxoBusQueuePos =
-            (uint256(zAccountUtxoQueueId) << 8) |
-            uint256(zAccountUtxoIndexInQueue);
-    }
-
     function _addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint96 rewards
@@ -269,9 +241,10 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        try
-            IBusTree(PANTHER_BUS_TREE).addUtxosToBusQueue(utxos, rewards)
-        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
+        try IBusTree(PANTHER_TREES).addUtxosToBusQueue(utxos, rewards) returns (
+            uint32 firstUtxoQueueId,
+            uint8 firstUtxoIndexInQueue
+        ) {
             zAccountUtxoQueueId = firstUtxoQueueId;
             zAccountUtxoIndexInQueue = firstUtxoIndexInQueue;
         } catch Error(string memory reason) {
@@ -285,7 +258,7 @@ abstract contract UtxosInserter {
 
     function _addUtxoToTaxiTree(bytes32 utxo) private {
         try
-            IPantherTaxiTree(PANTHER_TAXI_TREE).addUtxo(utxo)
+            IPantherTaxiTree(PANTHER_TREES).addUtxoToTaxiTree(utxo)
         // solhint-disable-next-line no-empty-blocks
         {
 
@@ -296,7 +269,7 @@ abstract contract UtxosInserter {
 
     function _addUtxosToTaxiTree(bytes32[] memory utxos) private {
         try
-            IPantherTaxiTree(PANTHER_TAXI_TREE).addUtxos(utxos)
+            IPantherTaxiTree(PANTHER_TREES).addUtxos(utxos)
         // solhint-disable-next-line no-empty-blocks
         {
 

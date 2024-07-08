@@ -4,12 +4,14 @@
 // solhint-disable no-inline-assembly
 pragma solidity ^0.8.19;
 
-import "./interfaces/IVerifier.sol";
+import "./pantherForest/interfaces/IPantherTreesRootVerifier.sol";
+import "./interfaces/IPantherVerifier.sol";
+import "./interfaces/IPantherTaxiTree.sol";
+import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
-import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
 import "./pantherPool/DepositAndWithdrawalHandler.sol";
@@ -42,12 +44,11 @@ import "../../common/NonReentrant.sol";
  * the Merkle Tree by miners.
  */
 contract PantherPoolV1 is
-    PantherForest,
     TransactionNoteEmitter,
     UtxosInserter,
     NonReentrant,
     TransactionChargesHandler,
-    DepositAndWithdrawalHandler,
+    ImmutableOwnable,
     IPantherPoolV1
 {
     using ZAssetUtxoGeneratorLib for uint256;
@@ -66,8 +67,6 @@ contract PantherPoolV1 is
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable PRP_CONVERTER;
-    address public immutable STATIC_TREE;
-    address public immutable VAULT;
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -103,8 +102,7 @@ contract PantherPoolV1 is
     constructor(
         address _owner,
         address zkpToken,
-        ForestTrees memory forestTrees,
-        address staticTree,
+        address pantherTrees,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
@@ -112,21 +110,19 @@ contract PantherPoolV1 is
         address feeMaster,
         address verifier
     )
-        PantherForest(_owner, forestTrees)
-        UtxosInserter(forestTrees.busTree, forestTrees.taxiTree)
-        TransactionChargesHandler(zkpToken, feeMaster)
+        ImmutableOwnable(_owner)
+        UtxosInserter(pantherTrees)
+        TransactionChargesHandler(zkpToken, feeMaster, vault)
     {
         require(
-            staticTree != address(0) &&
-                verifier != address(0) &&
+            verifier != address(0) &&
                 zAccountRegistry != address(0) &&
                 prpVoucherGrantor != address(0) &&
                 prpConverter != address(0),
             ERR_INIT
         );
 
-        STATIC_TREE = staticTree;
-        VERIFIER = verifier;
+        VERIFIER = IPantherVerifier(verifier);
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
         PRP_CONVERTER = prpConverter;
@@ -218,17 +214,16 @@ contract PantherPoolV1 is
             ERR_ZERO_KYC_MSG_HASH
         );
 
-        _validateStaticRoot(inputs[ZACCOUNT_ACTIVATION_STATIC_MERKLE_ROOT_IND]);
-
         _validateCreationTime(
             inputs[ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND]
         );
 
         _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
 
-        _validateCachedForestRoot(
+        _validatePantherTreesRoots(
+            transactionOptions.cachedForestRootIndex(),
             inputs[ZACCOUNT_ACTIVATION_FOREST_MERKLE_ROOT_IND],
-            transactionOptions.cachedForestRootIndex()
+            inputs[ZACCOUNT_ACTIVATION_STATIC_MERKLE_ROOT_IND]
         );
 
         _verifyProof(zAccountRegistrationCircuitId, inputs, proof);
@@ -291,8 +286,6 @@ contract PantherPoolV1 is
 
         _validateCreationTime(inputs[PRP_CLAIM_UTXO_OUT_CREATE_TIME_IND]);
 
-        _validateStaticRoot(inputs[PRP_CLAIM_STATIC_MERKLE_ROOT_IND]);
-
         _sanitizePrivateMessage(privateMessages, TT_PRP_CLAIM);
 
         _validateNonZero(
@@ -306,9 +299,10 @@ contract PantherPoolV1 is
 
         _validateZNetworkChainId(inputs[PRP_CLAIM_ZNETWORK_CHAIN_ID_IND]);
 
-        _validateCachedForestRoot(
+        _validatePantherTreesRoots(
+            transactionOptions.cachedForestRootIndex(),
             inputs[PRP_CLAIM_FOREST_MERKLE_ROOT_IND],
-            transactionOptions.cachedForestRootIndex()
+            inputs[PRP_CLAIM_STATIC_MERKLE_ROOT_IND]
         );
 
         _verifyProof(prpAccountingCircuitId, inputs, proof);
@@ -374,7 +368,10 @@ contract PantherPoolV1 is
             ERR_ZERO_MAGIC_CONSTR
         );
 
-        _validateStaticRoot(inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT_IND]);
+        _validateNonZero(
+            inputs[PRP_CONVERSION_ZASSET_SCALE_IND],
+            ERR_ZERO_ZASSET_SCALE
+        );
 
         _validateZNetworkChainId(inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID_IND]);
 
@@ -382,9 +379,10 @@ contract PantherPoolV1 is
 
         _sanitizePrivateMessage(privateMessages, TT_PRP_CONVERSION);
 
-        _validateCachedForestRoot(
+        _validatePantherTreesRoots(
+            transactionOptions.cachedForestRootIndex(),
             inputs[PRP_CONVERSION_FOREST_MERKLE_ROOT_IND],
-            transactionOptions.cachedForestRootIndex()
+            inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT_IND]
         );
 
         require(
@@ -481,8 +479,6 @@ contract PantherPoolV1 is
             );
         }
 
-        _validateStaticRoot(inputs[MAIN_STATIC_MERKLE_ROOT_IND]);
-
         _validateNonZero(
             inputs[MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND],
             ERR_ZERO_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
@@ -494,6 +490,12 @@ contract PantherPoolV1 is
         );
 
         _sanitizePrivateMessage(privateMessages, TT_MAIN_TRANSACTION);
+
+        _validatePantherTreesRoots(
+            transactionOptions.cachedForestRootIndex(),
+            inputs[MAIN_FOREST_MERKLE_ROOT_IND],
+            inputs[MAIN_STATIC_MERKLE_ROOT_IND]
+        );
 
         _validateCreationTime(inputs[MAIN_UTXO_OUT_CREATE_TIME_IND]);
 
@@ -527,11 +529,6 @@ contract PantherPoolV1 is
                 protocolFee
             );
         }
-
-        _validateCachedForestRoot(
-            inputs[MAIN_FOREST_MERKLE_ROOT_IND],
-            transactionOptions.cachedForestRootIndex()
-        );
 
         _verifyProof(mainCircuitId, inputs, proof);
 
@@ -611,9 +608,10 @@ contract PantherPoolV1 is
             inputs[ZSWAP_ZACCOUNT_UTXO_IN_NULLIFIER_IND]
         );
 
-        _validateCachedForestRoot(
+        _validatePantherTreesRoots(
+            transactionOptions.cachedForestRootIndex(),
             inputs[ZSWAP_FOREST_MERKLE_ROOT_IND],
-            transactionOptions.cachedForestRootIndex()
+            inputs[ZSWAP_STATIC_MERKLE_ROOT_IND]
         );
 
         _validateVaultAddress(
@@ -743,20 +741,18 @@ contract PantherPoolV1 is
         );
     }
 
-    function _validateCachedForestRoot(
+    function _validatePantherTreesRoots(
+        uint256 cachedForestRootIndex,
         uint256 forestMerkleRoot,
-        uint256 cachedForestRootIndex
+        uint256 staticMerkleRoot
     ) private view {
         require(
-            isCachedRoot(bytes32(forestMerkleRoot), cachedForestRootIndex),
-            ERR_INVALID_FOREST_ROOT
-        );
-    }
-
-    function _validateStaticRoot(uint256 staticMerkleRoot) private view {
-        require(
-            bytes32(staticMerkleRoot) == ITreeRootGetter(STATIC_TREE).getRoot(),
-            ERR_INVALID_STATIC_ROOT
+            IPantherTreesRootVerifier(PANTHER_TREES).verifyPantherTreesRoots(
+                cachedForestRootIndex,
+                bytes32(forestMerkleRoot),
+                bytes32(staticMerkleRoot)
+            ),
+            ERR_INVALID_PANTHER_TREES_ROOT
         );
     }
 

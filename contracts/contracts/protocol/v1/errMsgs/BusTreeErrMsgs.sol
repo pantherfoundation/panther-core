@@ -11,3 +11,4 @@ string constant ERR_INVALID_REPLACE_INDEX = "BT:E6";
 string constant ERR_INVALID_LEAFS_COMMIT = "BT:E7";
 string constant ERR_INVALID_LEAFS_NUM = "BT:E8";
 string constant ERR_FAILED_ZK_PROOF = "BT:E9";
+string constant ERR_UNDEFINED_CIRCUIT = "BT:E10";
