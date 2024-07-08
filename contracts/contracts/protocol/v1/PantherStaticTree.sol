@@ -20,11 +20,7 @@ import "../../common/crypto/PoseidonHashers.sol";
 //
 // It's supposed to run on the mainnet only.
 // Bridges keepers are expected to propagate its root to other networks
-contract PantherStaticTree is
-    ImmutableOwnable,
-    ITreeRootGetter,
-    ITreeRootUpdater
-{
+contract PantherStaticTree is ImmutableOwnable, ITreeRootUpdater {
     bytes32[50] private _gap;
 
     uint256 private constant NUM_LEAFS = 5;
@@ -85,18 +81,18 @@ contract PantherStaticTree is
         _staticTreeRoot = hash(leafs);
     }
 
-    // TODO: to be removed in production
-    function setDebugRoot() external onlyOwner {
-        for (uint8 i; i < NUM_LEAFS; ) {
-            leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
+    // // TODO: to be removed in production
+    // function setDebugRoot() external onlyOwner {
+    //     for (uint8 i; i < NUM_LEAFS; ) {
+    //         leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
 
-            unchecked {
-                ++i;
-            }
-        }
+    //         unchecked {
+    //             ++i;
+    //         }
+    //     }
 
-        _staticTreeRoot = hash(leafs);
-    }
+    //     _staticTreeRoot = hash(leafs);
+    // }
 
     function getRoot() external view returns (bytes32) {
         return _staticTreeRoot;

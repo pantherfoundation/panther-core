@@ -2,15 +2,14 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./interfaces/ITreeRootGetter.sol";
-import "./interfaces/ITreeRootUpdater.sol";
-
-import "./cachedRoots/CachedRoots.sol";
-
-import "../../../common/ImmutableOwnable.sol";
-import "../../../common/crypto/PoseidonHashers.sol";
 import "./Constants.sol";
-import "./Types.sol";
+import "./cachedRoots/CachedRoots.sol";
+import "../../../common/crypto/PoseidonHashers.sol";
+
+// import "../../../common/ImmutableOwnable.sol";
+
+// import "./Constants.sol";
+// import "./Types.sol";
 
 /**
  * @title PantherForest
@@ -35,95 +34,54 @@ import "./Types.sol";
  * It supports a "history" of recent roots, so that users may refer not only to
  * the latest root, but on former roots cached in the history.
  */
-contract PantherForest is
-    CachedRoots,
-    ImmutableOwnable,
-    ITreeRootGetter,
-    ITreeRootUpdater
-{
-    bytes32[10] private _startGap;
+abstract contract PantherForest is CachedRoots {
+    bytes32[50] private _startGap;
 
-    uint256 private constant NUM_LEAFS = 3;
+    uint256 private constant NUM_FOREST_LEAFS = 3;
+    bytes32[NUM_FOREST_LEAFS] public forestLeafs;
 
-    address public immutable TAXI_TREE_CONTROLLER;
-    address public immutable BUS_TREE_CONTROLLER;
-    address public immutable FERRY_TREE_CONTROLLER;
+    bytes32 public pantherForestRoot;
 
-    bytes32 private _forestRoot;
+    bytes32[50] private _endGap;
 
-    bytes32[NUM_LEAFS] public leafs;
-
-    event RootUpdated(
+    event ForestRootUpdated(
         uint256 indexed leafIndex,
         bytes32 updatedLeaf,
         bytes32 updatedRoot,
         uint256 cacheIndex
     );
 
-    bytes32[11] private _endGap;
+    function _initializeForest(
+        bytes32 taxiTreeRoot,
+        bytes32 busTreeRoot,
+        bytes32 ferryTreeRoot
+    ) internal returns (bytes32 _pantherForestRoot) {
+        _pantherForestRoot = pantherForestRoot;
+        require(_pantherForestRoot == bytes32(0), "PF: Already initialized");
 
-    constructor(
-        address _owner,
-        ForestTrees memory forestTrees
-    ) ImmutableOwnable(_owner) {
-        require(
-            forestTrees.taxiTree != address(0) &&
-                forestTrees.busTree != address(0) &&
-                forestTrees.ferryTree != address(0),
-            "init: zero address"
+        forestLeafs[TAXI_TREE_FOREST_LEAF_INDEX] = taxiTreeRoot;
+        forestLeafs[BUS_TREE_FOREST_LEAF_INDEX] = busTreeRoot;
+        forestLeafs[FERRY_TREE_FOREST_LEAF_INDEX] = ferryTreeRoot;
+
+        _pantherForestRoot = PoseidonHashers.poseidonT4(forestLeafs);
+        cacheNewRoot(_pantherForestRoot);
+
+        pantherForestRoot = _pantherForestRoot;
+    }
+
+    function updateForestRoot(bytes32 updatedLeaf, uint256 leafIndex) internal {
+        forestLeafs[leafIndex] = updatedLeaf;
+
+        bytes32 _pantherForestRoot = PoseidonHashers.poseidonT4(forestLeafs);
+        uint256 cacheIndex = cacheNewRoot(_pantherForestRoot);
+
+        pantherForestRoot = _pantherForestRoot;
+
+        emit ForestRootUpdated(
+            leafIndex,
+            updatedLeaf,
+            _pantherForestRoot,
+            cacheIndex
         );
-
-        TAXI_TREE_CONTROLLER = forestTrees.taxiTree;
-        BUS_TREE_CONTROLLER = forestTrees.busTree;
-        FERRY_TREE_CONTROLLER = forestTrees.ferryTree;
-    }
-
-    function initialize() external onlyOwner {
-        require(_forestRoot == bytes32(0), "PF: Already initialized");
-
-        for (uint8 i; i < NUM_LEAFS; ) {
-            leafs[i] = ITreeRootGetter(_getLeafController(i)).getRoot();
-            unchecked {
-                ++i;
-            }
-        }
-
-        _forestRoot = hash(leafs);
-        cacheNewRoot(_forestRoot);
-    }
-
-    function getRoot() external view returns (bytes32) {
-        return _forestRoot;
-    }
-
-    function updateRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
-        require(msg.sender == _getLeafController(leafIndex), "unauthorized");
-
-        leafs[leafIndex] = updatedLeaf;
-        bytes32 forestRoot = hash(leafs);
-        uint256 cacheIndex = cacheNewRoot(forestRoot);
-
-        _forestRoot = forestRoot;
-        emit RootUpdated(leafIndex, updatedLeaf, forestRoot, cacheIndex);
-    }
-
-    function _getLeafController(
-        uint256 leafIndex
-    ) internal view returns (address leafController) {
-        require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
-        if (leafIndex == TAXI_TREE_FOREST_LEAF_INDEX)
-            leafController = TAXI_TREE_CONTROLLER;
-
-        if (leafIndex == BUS_TREE_FOREST_LEAF_INDEX)
-            leafController = BUS_TREE_CONTROLLER;
-
-        if (leafIndex == FERRY_TREE_FOREST_LEAF_INDEX)
-            leafController = FERRY_TREE_CONTROLLER;
-    }
-
-    function hash(
-        bytes32[NUM_LEAFS] memory _leafs
-    ) internal pure returns (bytes32) {
-        return PoseidonHashers.poseidonT4(_leafs);
     }
 }

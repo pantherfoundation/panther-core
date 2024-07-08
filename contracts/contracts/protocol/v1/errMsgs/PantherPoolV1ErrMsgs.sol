@@ -6,7 +6,7 @@ pragma solidity ^0.8.19;
 string constant ERR_INIT = "PP:E1";
 string constant ERR_UNAUTHORIZED = "PP:E2";
 string constant ERR_UNDEFINED_CIRCUIT = "PP:E3";
-string constant ERR_INVALID_FOREST_ROOT = "PP:E4";
+string constant ERR_INVALID_PANTHER_TREES_ROOT = "PP:E4";
 string constant ERR_FAILED_ZK_PROOF = "PP:E5";
 string constant ERR_INVALID_CREATE_TIME = "PP:E6";
 string constant ERR_ZERO_NULLIFIER = "PP:E7";

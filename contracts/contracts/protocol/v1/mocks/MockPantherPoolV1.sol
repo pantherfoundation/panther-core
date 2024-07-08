@@ -9,8 +9,7 @@ contract MockPantherPoolV1 is PantherPoolV1 {
     constructor(
         address _owner,
         address zkpToken,
-        ForestTrees memory forestTrees,
-        address staticTree,
+        address pantherTrees,
         address vault,
         address zAccountRegistry,
         address prpVoucherGrantor,
@@ -21,8 +20,7 @@ contract MockPantherPoolV1 is PantherPoolV1 {
         PantherPoolV1(
             _owner,
             zkpToken,
-            forestTrees,
-            staticTree,
+            pantherTrees,
             vault,
             zAccountRegistry,
             prpVoucherGrantor,
@@ -32,11 +30,11 @@ contract MockPantherPoolV1 is PantherPoolV1 {
         )
     {}
 
-    function internalCacheNewRoot(
-        uint256 root
-    ) external returns (uint256 cacheIndex) {
-        cacheIndex = cacheNewRoot(bytes32(root));
-    }
+    // function internalCacheNewRoot(
+    //     uint256 root
+    // ) external returns (uint256 cacheIndex) {
+    //     cacheIndex = cacheNewRoot(bytes32(root));
+    // }
 
     function mockSpendUtxo(uint256 _utxo, bool _isSpent) external {
         isSpent[bytes32(_utxo)] = _isSpent;

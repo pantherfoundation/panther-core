@@ -3,6 +3,7 @@
 pragma solidity ^0.8.19;
 
 import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
+import "../../../../common/crypto/PoseidonHashers.sol";
 import { HUNDRED_PERCENT } from "../../../../common/Constants.sol";
 
 /**
@@ -27,7 +28,7 @@ import { HUNDRED_PERCENT } from "../../../../common/Constants.sol";
  * "Opened -> (optionally) Closed -> Processed (and deleted)."
  */
 abstract contract BusQueues is DegenerateIncrementalBinaryTree {
-    // TODO: adding gap to the beginning and end of the storage
+    bytes32[50] private _startGap;
 
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
     uint256 private constant QUEUE_MAX_SIZE = 2 ** QUEUE_MAX_LEVELS;
@@ -115,6 +116,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
     // Emitted when queue reward increased w/o adding UTXOs
     event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
+
+    bytes32[50] private _endGap;
 
     modifier nonEmptyBusQueue(uint32 queueId) {
         require(_busQueues[queueId].nUtxos > 0, "BQ:EMPTY_QUEUE");
@@ -240,7 +243,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
-    function addUtxos(
+    function _addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint96 reward
     ) internal returns (uint32 firstQueueId, uint8 firstIndexInFirstQueue) {
@@ -362,6 +365,13 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             _busQueues[queueId].reward = accumReward;
         }
         emit BusQueueRewardAdded(queueId, accumReward);
+    }
+
+    function hash(
+        bytes32 left,
+        bytes32 right
+    ) internal pure override returns (bytes32) {
+        return PoseidonHashers.poseidonT3([left, right]);
     }
 
     function _createNewBusQueue()

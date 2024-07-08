@@ -17,10 +17,9 @@ import "../../common/ImmutableOwnable.sol";
  * @author Pantherprotocol Contributors
  * @dev It enables the direct insertion of an array of UTXOs into the TaxiTree.
  */
-contract PantherTaxiTree is
+abstract contract PantherTaxiTree is
     TaxiTree,
     ImmutableOwnable,
-    ITreeRootGetter,
     IPantherTaxiTree
 {
     address public immutable PANTHER_POOL;
@@ -36,7 +35,7 @@ contract PantherTaxiTree is
         PANTHER_POOL = pantherPool;
     }
 
-    function getRoot() external view returns (bytes32) {
+    function getTaxiTreeRoot() public view returns (bytes32) {
         return
             _currentRoot == bytes32(0)
                 ? EIGHT_LEVEL_EMPTY_TREE_ROOT
@@ -81,15 +80,15 @@ contract PantherTaxiTree is
         bytes32 taxiTreeNewRoot,
         uint256 numLeaves
     ) private {
-        // Synchronize the sate of `PantherForest` contract
-        // Trusted contract - no reentrancy guard needed
-        ITreeRootUpdater(PANTHER_POOL).updateRoot(
-            taxiTreeNewRoot,
-            TAXI_TREE_FOREST_LEAF_INDEX
-        );
+        _updateForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);
 
         _currentRoot = taxiTreeNewRoot;
 
         emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
     }
+
+    function _updateForestRoot(
+        bytes32 updatedLeaf,
+        uint256 leafIndex
+    ) internal virtual;
 }

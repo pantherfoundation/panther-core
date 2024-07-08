@@ -4,12 +4,10 @@ pragma solidity ^0.8.19;
 
 import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
-import "../interfaces/ITreeRootGetter.sol";
-import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
-import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "../zeroTrees/Constants.sol";
-import { BUS_TREE_FOREST_LEAF_INDEX } from "../Constants.sol";
-import "../interfaces/ITreeRootUpdater.sol";
+
 import "../../errMsgs/BusTreeErrMsgs.sol";
+import "../../../../common/ImmutableOwnable.sol";
+import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
 
 /**
  * @dev The Bus Tree ("Tree") is an incremental binary Merkle tree that stores
@@ -28,15 +26,14 @@ import "../../errMsgs/BusTreeErrMsgs.sol";
  * Each time the Bus Tree root is updated, this contract MUST call PantherPoolV1
  * contract to trigger updates of that contract state (see PantherForest).
  */
-abstract contract BusTree is BusQueues, ITreeRootGetter {
-    // TODO: add gap to the beginning and end of the storage
-
-    bytes32 internal constant EMPTY_BUS_TREE_ROOT =
-        TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
+abstract contract BusTree is BusQueues, ImmutableOwnable {
+    // The contract is supposed to run behind a proxy DELEGATECALLing it.
+    // On upgrades, adjust `__gap` to match changes of the storage layout.
+    // slither-disable-next-line shadowing-state unused-state
+    bytes32[50] private _startGap;
 
     // Number of levels in every Batch (that is a binary tree)
     uint256 internal constant BATCH_LEVELS = QUEUE_MAX_LEVELS;
-
     // Number of levels in every Branch, counting from roots of Batches
     uint256 private constant BRANCH_LEVELS = 10;
     // Number of Batches in a fully filled Branch
@@ -44,22 +41,27 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
     // Bitmask for cheaper modulo math
     uint256 private constant BRANCH_BITMASK = BRANCH_SIZE - 1;
 
-    IPantherVerifier public immutable VERIFIER;
-    uint160 public immutable CIRCUIT_ID;
-
     // address of panther pool
     address public immutable PANTHER_POOL;
+    // address of panther verifier
+    address public immutable VERIFIER;
 
-    bytes32 private _busTreeRoot;
-
+    bytes32 internal _busTreeRoot;
     // Number of Batches in the Bus Tree
-    uint32 private _numBatchesInBusTree;
+    uint32 internal _numBatchesInBusTree;
     // Number of UTXOs (excluding empty leafs) in the tree
-    uint32 private _numUtxosInBusTree;
+    uint32 internal _numUtxosInBusTree;
     // Block when the 1st Batch inserted in the latest branch
-    uint40 private _latestBranchFirstBatchBlock;
+    uint40 internal _latestBranchFirstBatchBlock;
     // Block when the latest Batch inserted in the Bus Tree
-    uint40 private _latestBatchBlock;
+    uint40 internal _latestBatchBlock;
+
+    // keeps track of number of the added utxos
+    uint32 public utxoCounter;
+    // address of circuitId
+    uint160 public circuitId;
+
+    bytes32[50] private _endGap;
 
     event BusBatchOnboarded(
         uint256 indexed queueId,
@@ -71,32 +73,21 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         bytes32 busTreeNewRoot,
         bytes32 busBranchNewRoot
     );
-
     event BusBranchFilled(
         uint256 indexed branchIndex,
         bytes32 busBranchFinalRoot
     );
 
     // @dev It is "proxy-friendly" as it does not change the storage
-    constructor(address _verifier, uint160 _circuitId, address _pantherPool) {
+    constructor(
+        address _owner,
+        address _pantherPool,
+        address _pantherVerifier
+    ) ImmutableOwnable(_owner) {
         require(_pantherPool != address(0), ERR_INIT);
-        require(
-            IPantherVerifier(_verifier).getVerifyingKey(_circuitId).ic.length >=
-                1,
-            ERR_INVALID_VK
-        );
-        VERIFIER = IPantherVerifier(_verifier);
-        CIRCUIT_ID = _circuitId;
-        // Code of `function getRoot` let avoid explicit initialization:
-        // `busTreeRoot = EMPTY_BUS_TREE_ROOT`.
-        // Initial value of storage variables is 0 (which is implicitly set in
-        // new storage slots). There is no need for explicit initialization.
 
+        VERIFIER = _pantherVerifier;
         PANTHER_POOL = _pantherPool;
-    }
-
-    function getRoot() public view returns (bytes32) {
-        return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
     }
 
     function getBusTreeStats()
@@ -115,25 +106,30 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
         latestBatchBlock = _latestBatchBlock;
     }
 
-    /// @dev ZK-circuit public signals:
-    /// @param inputs[0] - oldRoot (BusTree root before insertion)
-    /// @param inputs[1] - newRoot (BusTree root after insertion)
-    /// @param inputs[2] - replacedNodeIndex
-    /// @param inputs[3] - newLeafsCommitment (commitment to leafs in batch)
-    /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
-    /// @param inputs[5] - batchRoot (Root of the batch to insert)
-    /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
-    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
-    /// @param inputs[8] - magicalConstraint (non-zero random number)
-    function onboardQueue(
+    function _updateCircuitId(uint160 _circuitId) internal {
+        require(
+            IPantherVerifier(VERIFIER).getVerifyingKey(circuitId).ic.length >=
+                1,
+            ERR_INVALID_VK
+        );
+        circuitId = _circuitId;
+    }
+
+    function _onboardQueue(
         address miner,
         uint32 queueId,
         uint256[] memory inputs,
         SnarkProof memory proof
-    ) external nonEmptyBusQueue(queueId) {
+    )
+        internal
+        nonEmptyBusQueue(queueId)
+        returns (bytes32 busTreeNewRoot, uint96 reward)
+    {
+        require(circuitId != 0, ERR_UNDEFINED_CIRCUIT);
+
         {
             bytes32 oldRoot = bytes32(inputs[0]);
-            require(oldRoot == getRoot(), ERR_INVALID_BUS_TREE_ROOT);
+            require(oldRoot == _busTreeRoot, ERR_INVALID_BUS_TREE_ROOT);
         }
         {
             bytes memory extraInput = abi.encodePacked(miner, queueId);
@@ -147,18 +143,14 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
             uint256 magicalConstraint = inputs[8];
             require(magicalConstraint != 0, ERR_ZERO_MAGIC_CONSTR);
         }
-
         uint32 nBatches = _numBatchesInBusTree;
         {
             uint256 replacedNodeIndex = inputs[2];
             require(replacedNodeIndex == nBatches, ERR_INVALID_REPLACE_INDEX);
         }
-
-        (
-            bytes32 commitment,
-            uint8 nUtxos,
-            uint96 reward
-        ) = setBusQueueAsProcessed(queueId);
+        bytes32 commitment;
+        uint8 nUtxos;
+        (commitment, nUtxos, reward) = setBusQueueAsProcessed(queueId);
         {
             uint256 newLeafsCommitment = inputs[3];
             require(
@@ -170,20 +162,17 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
             uint256 nNonEmptyNewLeafs = inputs[4];
             require(nNonEmptyNewLeafs == nUtxos, ERR_INVALID_LEAFS_NUM);
         }
-
         // Verify the proof
         // Trusted contract - no reentrancy guard needed
         require(
-            VERIFIER.verify(CIRCUIT_ID, inputs, proof),
+            IPantherVerifier(VERIFIER).verify(circuitId, inputs, proof),
             ERR_FAILED_ZK_PROOF
         );
-
         bytes32 busBranchNewRoot = bytes32(inputs[6]);
         {
             // Overflow risk ignored
             uint40 curBlock = uint40(block.number);
             _latestBatchBlock = curBlock;
-
             // `& BRANCH_BITMASK` is equivalent to `% BRANCH_SIZE`
             uint256 batchBranchIndex = uint256(nBatches) & BRANCH_BITMASK;
             if (batchBranchIndex == 0) {
@@ -196,21 +185,10 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
                 }
             }
         }
-
-        // Store updated Bus Tree params
-        bytes32 busTreeNewRoot = bytes32(inputs[1]);
-        _busTreeRoot = busTreeNewRoot;
+        busTreeNewRoot = bytes32(inputs[1]);
         // Overflow impossible as nUtxos and _numBatchesInBusTree are limited
         _numBatchesInBusTree = nBatches + 1;
         _numUtxosInBusTree += nUtxos;
-
-        // Synchronize the sate of `PantherForest` contract
-        // Trusted contract - no reentrancy guard needed
-        ITreeRootUpdater(PANTHER_POOL).updateRoot(
-            busTreeNewRoot,
-            BUS_TREE_FOREST_LEAF_INDEX
-        );
-
         // `<< BATCH_LEVELS` is equivalent to `* 2**BATCH_LEVELS`
         uint32 leftLeafIndex = nBatches << uint32(BATCH_LEVELS);
         bytes32 batchRoot = bytes32(inputs[5]);
@@ -222,9 +200,5 @@ abstract contract BusTree is BusQueues, ITreeRootGetter {
             busTreeNewRoot,
             busBranchNewRoot
         );
-
-        rewardMiner(miner, reward);
     }
-
-    function rewardMiner(address miner, uint256 reward) internal virtual;
 }
