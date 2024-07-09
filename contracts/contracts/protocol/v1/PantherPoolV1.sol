@@ -6,8 +6,6 @@ pragma solidity ^0.8.19;
 
 import "./pantherTrees/interfaces/IPantherTreesRootVerifier.sol";
 import "./interfaces/IPantherVerifier.sol";
-import "./interfaces/IPantherTaxiTree.sol";
-import "./interfaces/IBusTree.sol";
 import "./interfaces/IPantherPoolV1.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";

@@ -3,6 +3,7 @@
 pragma solidity ^0.8.19;
 
 import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
+
 import "../../../../common/crypto/PoseidonHashers.sol";
 import { HUNDRED_PERCENT } from "../../../../common/Constants.sol";
 
@@ -242,7 +243,18 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         );
     }
 
-    // @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
+    /// @return firstQueueId ID of the queue which `utxos[0]` was added to
+    /// @return firstIndexInFirstQueue Index of `utxos[0]` in the queue
+    /// @dev Code that calls it MUST ensure utxos[i] < FIELD_SIZE
+    /// If the current queue has no space left to add all UTXOs, a part of
+    /// UTXOs only are added to the current queue until it gets full, then the
+    /// remaining UTXOs are added to a new queue.
+    /// Index of any UTXO (not just the 1st one) may be computed as follows:
+    /// - index of UTXO in a queue increments by +1 with every new UTXO added,
+    ///   (from 0 for the 1st UTXO in a queue up to `QUEUE_MAX_SIZE - 1`)
+    /// - number of UTXOs added to the new queue (if there are such) equals to
+    ///   `firstUtxoIndexInQueue + utxos[0].length - QUEUE_MAX_SIZE`
+    /// - new queue (if created) has ID equal to `firstUtxoQueueId + 1`
     function _addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint96 reward

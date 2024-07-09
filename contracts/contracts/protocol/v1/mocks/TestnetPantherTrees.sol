@@ -95,6 +95,6 @@ contract TestnetPantherTrees is PantherTrees {
         uint256 basePerUtxoReward = getPerUtxoReward();
         uint256 reward = basePerUtxoReward * length;
 
-        addUtxosToBusQueue(utxos, uint96(reward));
+        _addUtxosToBusQueue(utxos, uint96(reward));
     }
 }

@@ -3,11 +3,11 @@
 pragma solidity ^0.8.19;
 
 import "../interfaces/IPantherPoolV1.sol";
-import "./busTree/BusTree.sol";
-import "../errMsgs/PantherBusTreeErrMsgs.sol";
 
+import "./busTree/BusTree.sol";
+
+import "../errMsgs/PantherBusTreeErrMsgs.sol";
 import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
-import { BUS_TREE_FOREST_LEAF_INDEX } from "./Constants.sol";
 import { ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
 import { LockData } from "../../../common/Types.sol";
 
@@ -47,26 +47,17 @@ abstract contract PantherBusTree is BusTree {
     event MinerRewarded(address miner, uint256 reward);
 
     constructor(
-        address owner,
         address pantherPool,
         address pantherVerifier,
         address feeMaster,
         address rewardToken
-    ) BusTree(owner, pantherPool, pantherVerifier) {
+    ) BusTree(pantherPool, pantherVerifier) {
         REWARD_TOKEN = rewardToken;
         FEE_MASTER = feeMaster;
     }
 
-    function _initializeBusTree(
-        uint16 reservationRate,
-        uint16 premiumRate,
-        uint16 minEmptyQueueAge,
-        uint160 circuitId
-    ) private {
+    function _initializeBusTree() internal {
         busTreeStartTime = uint32(block.timestamp);
-
-        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
-        _updateCircuitId(circuitId);
     }
 
     // Code of `function getBusTreeRoot` let avoid explicit initialization:
@@ -77,76 +68,21 @@ abstract contract PantherBusTree is BusTree {
         return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
     }
 
-    function updateCircuitId(uint160 circuitId) external onlyOwner {
-        _updateCircuitId(circuitId);
-    }
-
-    function updateBusTreeParams(
-        uint16 reservationRate,
-        uint16 premiumRate,
-        uint16 minEmptyQueueAge
-    ) external onlyOwner {
-        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
-    }
-
-    /// @dev ZK-circuit public signals:
-    /// @param inputs[0] - oldRoot (BusTree root before insertion)
-    /// @param inputs[1] - newRoot (BusTree root after insertion)
-    /// @param inputs[2] - replacedNodeIndex
-    /// @param inputs[3] - newLeafsCommitment (commitment to leafs in batch)
-    /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
-    /// @param inputs[5] - batchRoot (Root of the batch to insert)
-    /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
-    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
-    /// @param inputs[8] - magicalConstraint (non-zero random number)
-    function onboardQueue(
+    function _onboardQueueAndAccountReward(
         address miner,
         uint32 queueId,
         uint256[] memory inputs,
         SnarkProof memory proof
-    ) external {
-        (bytes32 busTreeNewRoot, uint96 reward) = _onboardQueue(
-            miner,
-            queueId,
-            inputs,
-            proof
-        );
+    ) internal returns (bytes32 busTreeNewRoot) {
+        uint96 reward;
+        (busTreeNewRoot, reward) = _onboardQueue(miner, queueId, inputs, proof);
+
         _busTreeRoot = busTreeNewRoot;
-        // Synchronize the sate of `PantherForest` contract
-        // Trusted contract - no reentrancy guard needed
-        _updateForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
+
         // TODO: Account fees
         _rewardMiner(miner, reward);
         // _accountMinerRewards();
     }
-
-    /// @return firstUtxoQueueId ID of the queue which `utxos[0]` was added to
-    /// @return firstUtxoIndexInQueue Index of `utxos[0]` in the queue
-    /// @dev If the current queue has no space left to add all UTXOs, a part of
-    /// UTXOs only are added to the current queue until it gets full, then the
-    /// remaining UTXOs are added to a new queue.
-    /// Index of any UTXO (not just the 1st one) may be computed as follows:
-    /// - index of UTXO in a queue increments by +1 with every new UTXO added,
-    ///   (from 0 for the 1st UTXO in a queue up to `QUEUE_MAX_SIZE - 1`)
-    /// - number of UTXOs added to the new queue (if there are such) equals to
-    ///   `firstUtxoIndexInQueue + utxos[0].length - QUEUE_MAX_SIZE`
-    /// - new queue (if created) has ID equal to `firstUtxoQueueId + 1`
-    function addUtxosToBusQueue(
-        bytes32[] memory utxos,
-        uint96 reward
-    ) public returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
-        require(msg.sender == PANTHER_POOL, "");
-        require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
-
-        (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
-            utxos,
-            reward
-        );
-    }
-
-    // TODO
-    // solhint-disable-next-line no-empty-blocks
-    function claimReward() external {}
 
     // TODO
     // solhint-disable-next-line no-empty-blocks
@@ -165,9 +101,4 @@ abstract contract PantherBusTree is BusTree {
         IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
         emit MinerRewarded(miner, reward);
     }
-
-    function _updateForestRoot(
-        bytes32 updatedLeaf,
-        uint256 leafIndex
-    ) internal virtual;
 }

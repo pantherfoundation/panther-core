@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./interfaces/IOnboardingController.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IPrpVoucherGrantor.sol";
 import "./pantherTrees/interfaces/ITreeRootUpdater.sol";

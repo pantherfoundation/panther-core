@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "../../../common/TransferHelper.sol";
-import "../interfaces/IWETH9.sol";
+import "../../../common/interfaces/IWETH.sol";
 import "./MockCallbackValidation.sol";
 import "../DeFi/uniswap/libraries/TickMath.sol";
 import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
@@ -95,7 +95,7 @@ contract MockUniSwapV3Router {
     }
 
     function deposit() public payable {
-        IWETH9(WETH9).deposit{ value: msg.value }();
+        IWETH(WETH9).deposit{ value: msg.value }();
     }
 
     /// @param token The token to pay
@@ -110,9 +110,9 @@ contract MockUniSwapV3Router {
     ) internal {
         if (token == WETH9 && address(this).balance >= value) {
             // pay with WETH9
-            IWETH9(WETH9).deposit{ value: value }();
+            IWETH(WETH9).deposit{ value: value }();
             // wrap only what is needed to pay
-            IWETH9(WETH9).transfer(recipient, value);
+            IWETH(WETH9).transfer(recipient, value);
         } else if (payer == address(this)) {
             // pay with tokens already in the contract (for the exact input multihop case)
             TransferHelper.safeTransfer(token, recipient, value);
