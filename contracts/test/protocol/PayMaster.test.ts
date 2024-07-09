@@ -10,7 +10,7 @@ import {toBytes32} from '../../lib/utilities';
 import {EntryPoint, PayMaster} from '../../types/contracts';
 import {UserOperationStruct} from '../../types/contracts/EntryPoint';
 
-import {ADDRESS_ZERO, PluginFixture} from './shared';
+import {ADDRESS_ONE, ADDRESS_ZERO, PluginFixture} from './shared';
 
 const oneToken = ethers.constants.WeiPerEther;
 
@@ -119,6 +119,18 @@ describe('Paymaster contract', function () {
                     feeData.maxFeePerGas,
                     paymasterCompensation,
                 );
+        });
+    });
+
+    context('function postOp', () => {
+        it('should handle post-operation correctly', async function () {
+            const context = ethers.utils.defaultAbiCoder.encode(
+                ['uint256', 'uint256'],
+                [100, 150],
+            );
+            await expect(fixture.paymaster.postOp(0, context, 200))
+                .to.emit(fixture.paymaster, 'UserOperationSponsored')
+                .withArgs(200, 100, 150);
         });
     });
 
@@ -245,6 +257,96 @@ describe('Paymaster contract', function () {
             await expect(after.deposit).to.eq(
                 before.deposit.add(nativeBalanceBefore.add(oneToken)),
             );
+        });
+    });
+
+    context('Stake Management', () => {
+        let entryPoint: EntryPoint;
+        let paymaster: PayMaster;
+        let ethersSigner;
+
+        beforeEach(async function () {
+            [ethersSigner] = await ethers.getSigners();
+
+            entryPoint = await (
+                await ethers.getContractFactory('EntryPoint')
+            ).deploy();
+            paymaster = await (
+                await ethers.getContractFactory('PayMaster')
+            ).deploy(
+                entryPoint.address,
+                entryPoint.address,
+                entryPoint.address,
+                entryPoint.address,
+            );
+        });
+
+        it('should add stake', async function () {
+            await paymaster.addStake(100, {
+                value: ethers.utils.parseEther('1'),
+            });
+            const depositInfo = await entryPoint.getDepositInfo(
+                paymaster.address,
+            );
+            expect(depositInfo.stake).to.eq(ethers.utils.parseEther('1'));
+        });
+
+        it('should unlock stake', async function () {
+            await paymaster.addStake(100, {
+                value: ethers.utils.parseEther('1'),
+            });
+            await ethers.provider.send('evm_increaseTime', [100]);
+            await paymaster.unlockStake();
+            const depositInfo = await entryPoint.getDepositInfo(
+                paymaster.address,
+            );
+            expect(depositInfo.withdrawTime).to.be.gt(0);
+        });
+
+        it('should withdraw stake', async function () {
+            await paymaster.addStake(100, {
+                value: ethers.utils.parseEther('1'),
+            });
+            await paymaster.unlockStake();
+            // Wait for unlock time
+            await ethers.provider.send('evm_increaseTime', [100]);
+            await ethers.provider.send('evm_mine', []);
+            await paymaster.withdrawStake(ethersSigner.address);
+            const depositInfo = await entryPoint.getDepositInfo(
+                paymaster.address,
+            );
+            expect(depositInfo.stake).to.eq(0);
+        });
+    });
+
+    context('function withdrawTo', () => {
+        let entryPoint: EntryPoint;
+        let paymaster: PayMaster;
+
+        beforeEach(async function () {
+            entryPoint = await (
+                await ethers.getContractFactory('EntryPoint')
+            ).deploy();
+            paymaster = await (
+                await ethers.getContractFactory('PayMaster')
+            ).deploy(
+                entryPoint.address,
+                entryPoint.address,
+                entryPoint.address,
+                entryPoint.address,
+            );
+        });
+
+        it('should withdraw deposit to address', async function () {
+            await paymaster.depositToEntryPoint({
+                value: ethers.utils.parseEther('1'),
+            });
+            await paymaster.withdrawTo(
+                ADDRESS_ONE,
+                ethers.utils.parseEther('1'),
+            );
+            const balance = await ethers.provider.getBalance(ADDRESS_ONE);
+            expect(balance).to.be.eq(ethers.utils.parseEther('1'));
         });
     });
 });
