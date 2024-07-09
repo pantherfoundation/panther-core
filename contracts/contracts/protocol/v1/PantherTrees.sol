@@ -2,15 +2,15 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import "./pantherForest/interfaces/IPantherTreesRootGetter.sol";
-import "./pantherForest/Constants.sol";
+import "./pantherTrees/interfaces/IPantherTreesRootGetter.sol";
+import "./pantherTrees/Constants.sol";
 
-import "./pantherForest/PantherForest.sol";
-import "./pantherForest/PantherStaticTree.sol";
+import "./pantherTrees/PantherForest.sol";
+import "./pantherTrees/PantherStaticTree.sol";
 
-import "./PantherTaxiTree.sol";
-import "./PantherBusTree.sol";
-import "./PantherFerryTree.sol";
+import "./pantherTrees/PantherTaxiTree.sol";
+import "./pantherTrees/PantherBusTree.sol";
+import "./pantherTrees/PantherFerryTree.sol";
 
 contract PantherTrees is
     PantherForest,

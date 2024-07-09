@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 import "./interfaces/IOnboardingController.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IPrpVoucherGrantor.sol";
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+import "./pantherTrees/interfaces/ITreeRootUpdater.sol";
 import "./pantherPool/publicSignals/ZAccountActivationPublicSignals.sol";
 
 import "../../common/crypto/BabyJubJub.sol";
@@ -21,7 +21,7 @@ import "../../common/ImmutableOwnable.sol";
 import "../../common/Types.sol";
 import "../../common/UtilsLib.sol";
 import { GT_ONBOARDING } from "../../common/Constants.sol";
-import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
+import { ZACCOUNT_BLACKLIST_STATIC_LEAF_INDEX } from "./pantherTrees/Constants.sol";
 
 /**
  * @title ZAccountsRegistry

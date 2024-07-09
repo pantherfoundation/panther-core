@@ -4,7 +4,7 @@
 // solhint-disable no-inline-assembly
 pragma solidity ^0.8.19;
 
-import "./pantherForest/interfaces/IPantherTreesRootVerifier.sol";
+import "./pantherTrees/interfaces/IPantherTreesRootVerifier.sol";
 import "./interfaces/IPantherVerifier.sol";
 import "./interfaces/IPantherTaxiTree.sol";
 import "./interfaces/IBusTree.sol";

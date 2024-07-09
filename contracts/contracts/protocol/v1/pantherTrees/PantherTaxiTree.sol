@@ -2,15 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./interfaces/IPantherTaxiTree.sol";
-import "./pantherForest/interfaces/ITreeRootGetter.sol";
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+import "../interfaces/IPantherTaxiTree.sol";
 
-import "./pantherForest/taxiTree/TaxiTree.sol";
-import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
-import { TAXI_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constants.sol";
+import ".//taxiTree/TaxiTree.sol";
+import { TAXI_TREE_FOREST_LEAF_INDEX } from "./Constants.sol";
+import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
 
-import "../../common/ImmutableOwnable.sol";
+import "../../../common/ImmutableOwnable.sol";
 
 /**
  * @title PantherTaxiTree

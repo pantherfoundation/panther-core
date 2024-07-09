@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./pantherForest/interfaces/ITreeRootGetter.sol";
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+import "./pantherTrees/interfaces/ITreeRootGetter.sol";
+import "./pantherTrees/interfaces/ITreeRootUpdater.sol";
 
 import "../../common/UtilsLib.sol";
 import "../../common/crypto/BabyJubJub.sol";
@@ -11,9 +11,9 @@ import "../../common/crypto/PoseidonHashers.sol";
 import "./errMsgs/ProvidersKeysErrMsgs.sol";
 
 import "./providersKeys/ProvidersKeysSignatureVerifier.sol";
-import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
-import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
-import { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "./pantherForest/zeroTrees/Constants.sol";
+import "./pantherTrees/merkleTrees/BinaryUpdatableTree.sol";
+import { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from "./pantherTrees/Constants.sol";
+import { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "./pantherTrees/zeroTrees/Constants.sol";
 
 import "../../common/ImmutableOwnable.sol";
 

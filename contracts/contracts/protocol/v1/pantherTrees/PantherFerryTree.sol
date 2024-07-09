@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import { THIRTY_TWO_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+import { THIRTY_TWO_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
 
 // It's supposed to run on the mainnet only.
 // It keeps roots of the "Bus" trees on supported networks.
