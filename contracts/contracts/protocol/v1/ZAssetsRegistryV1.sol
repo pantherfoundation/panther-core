@@ -2,15 +2,15 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
-import "./pantherForest/interfaces/ITreeRootGetter.sol";
+import "./pantherTrees/interfaces/ITreeRootUpdater.sol";
+import "./pantherTrees/interfaces/ITreeRootGetter.sol";
 
-import "./pantherForest/merkleTrees/BinaryUpdatableTree.sol";
+import "./pantherTrees/merkleTrees/BinaryUpdatableTree.sol";
 import "../../common/crypto/PoseidonHashers.sol";
 import "../../common/ImmutableOwnable.sol";
 
-import { ZASSET_STATIC_LEAF_INDEX } from "./pantherForest/Constants.sol";
-import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+import { ZASSET_STATIC_LEAF_INDEX } from "./pantherTrees/Constants.sol";
+import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT } from "./pantherTrees/zeroTrees/Constants.sol";
 
 /**
  * @title ZAssetsRegistryV1

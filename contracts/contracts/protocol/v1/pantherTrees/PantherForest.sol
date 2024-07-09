@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import "./Constants.sol";
-import "./cachedRoots/CachedRoots.sol";
+import "./forestTree/CachedRoots.sol";
 import "../../../common/crypto/PoseidonHashers.sol";
 
 // import "../../../common/ImmutableOwnable.sol";

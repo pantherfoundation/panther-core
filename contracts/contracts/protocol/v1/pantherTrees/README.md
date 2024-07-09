@@ -1,7 +1,9 @@
 # Architecture of Panther Merkle Trees
 
 ## Major changes
+
 Changes of the "old architecture" (see the description in the edn of this doc):
+
 - Gas-expensive on-chain UTXO tree rebuilding on every MASP transaction replaced
   by much cheaper off-chain rebuilding, verified on-chain with SNARK proof for a
   batch of MASP transactions at once
@@ -11,6 +13,7 @@ Changes of the "old architecture" (see the description in the edn of this doc):
 - "Miners" and "Keepers" introduced
 
 ## Structure of Panther Merkle Trees
+
 ```
                               Forest Tree
                               on every chain
@@ -46,6 +49,7 @@ on every chain|    |on every chain   on every chain|   |on mainnet only
 ```
 
 ### How it "works"
+
 1. A UTXO (no matter if it's the zAsset or zAccount one) may reside in the Taxi,
    the Bus, and the Ferry trees:
    depending on user choice and sync state, at some point in time, a UTXO may be
@@ -88,22 +92,22 @@ on every chain|    |on every chain   on every chain|   |on mainnet only
 9. "Keepers" update the root of the "Ferry" tree in the process of syncing the
    Bus tree roots between networks. It may be done with or without SNARK proving
    (to be decide).
-10.A UTXO created on one network may be spent on another network only when the
+   10.A UTXO created on one network may be spent on another network only when the
    UTXO gets into the Bus tree on this first network, then the Ferry tree root
    gets updated on "another" network to include the new root of that Bus tree.
    In other words, in order a UTXO to be included in the Ferry tree, first Miners
    shall insert the batch with that UTXO to the Bus tree on the network the MASP
    tx take place at, and then Keepers shall update the new root of the Ferry tree
    on the network where the UTXO is to be spent.
-11.The Static tree gets hashed into the Forest root to decrease a public inputs
+   11.The Static tree gets hashed into the Forest root to decrease a public inputs
    to the on-chain verifier. It contains relatively rare updated params. These
    params (i.e. the root of the static tree) shall be the same on all networks.
    !!! Update of the Static tree root resets (cleans) the history of the Forest
    roots.
-12.The Forest root is unique on every network. The contract keeps a history of,
+   12.The Forest root is unique on every network. The contract keeps a history of,
    say, 256 latest seen roots, and users may refer to any of the root saved on
    the history.
-13.The Forest tree root gets updated by the smart contract on-chain every time:
+   13.The Forest tree root gets updated by the smart contract on-chain every time:
    - User inserts UTXO(s) into the Taxi tree
    - Miner inserts a batch into the Bus tree
    - Keepers update the root of the Ferry tree
@@ -112,6 +116,7 @@ on every chain|    |on every chain   on every chain|   |on mainnet only
 ## Panther Trees: Strategy of syncing between supported networks
 
 Data / and (config) params to share & sync between networks:
+
 - UTXO "Bus" tree root from every supported network
 - zAccount UTXOs
 - TrustProvidersKeys global tree root
@@ -121,31 +126,31 @@ Data / and (config) params to share & sync between networks:
 - zNetworks global tree root
 
 ------------------------------|-------------------------------------------------
-Data kind                     | Sync strategy
+Data kind | Sync strategy
 ------------------------------|-------------------------------------------------
-UTXO trees roots              | Keepers trigger sending network's Bus tree root
-                              | to a contract on the mainnet which computes the
-                              | new Ferry tree root (of all networks Bus roots).
-                              | Keepers propagates the root to other networks.
-zAccount UTXOs                | Created on every network a user operates, and it
-                              | gets to the Bus / Taxi tree on that network.
+UTXO trees roots | Keepers trigger sending network's Bus tree root
+| to a contract on the mainnet which computes the
+| new Ferry tree root (of all networks Bus roots).
+| Keepers propagates the root to other networks.
+zAccount UTXOs | Created on every network a user operates, and it
+| gets to the Bus / Taxi tree on that network.
 zAccountBlacklist global root | The DAO updates it on the mainnet. Then keepers
-                              | propagate the root to other networks.
+| propagate the root to other networks.
 TrustProvidersKeys global root| Trust providers update the tree on the mainnet.
-                              | Keepers propagate the root to other networks.
-zAssets global root           | The DAO updates it on the mainnet.
-                              | Keepers propagate the root to other networks.
-zZones global root            | DAO and Zone Operators update it on the mainnet.
-                              | Keepers propagate the root to other networks.
-zNetworks global tree root    | The DAO updates it on the mainnet.
-                              | Keepers propagate the root to other networks.
-
+| Keepers propagate the root to other networks.
+zAssets global root | The DAO updates it on the mainnet.
+| Keepers propagate the root to other networks.
+zZones global root | DAO and Zone Operators update it on the mainnet.
+| Keepers propagate the root to other networks.
+zNetworks global tree root | The DAO updates it on the mainnet.
+| Keepers propagate the root to other networks.
 
 ## Panther Trees: Smart contracts hierarchy
 
 ### Single-chain architecture
 
 #### Smart contracts on Polygon
+
 ```
 Proxy -> PantherPool
          |-is-> PantherForest // immutable links to proxies of "trees"
@@ -174,6 +179,7 @@ Similar to the "single-chain" architecture
 (all "hard-coded root" contracts replaced with full implementations).
 
 #### Smart contracts on other supported network
+
 ```
 Proxy -> PantherPool // immutable links to PantherVault.Proxy, PantherVerifier and verification keys
          |-is-> PantherForest // immutable links to proxies of "trees"

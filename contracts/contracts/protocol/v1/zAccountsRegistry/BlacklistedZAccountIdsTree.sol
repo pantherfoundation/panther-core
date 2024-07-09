@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../pantherForest/interfaces/ITreeRootGetter.sol";
+import "../pantherTrees/interfaces/ITreeRootGetter.sol";
 
-import "../pantherForest/merkleTrees/BinaryUpdatableTree.sol";
+import "../pantherTrees/merkleTrees/BinaryUpdatableTree.sol";
 import "../errMsgs/ZAccountsRegistryErrMsgs.sol";
 
 import "../../../common/crypto/PoseidonHashers.sol";
