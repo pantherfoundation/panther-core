@@ -14,7 +14,7 @@ import {bigintToBytes} from '../utils/bigint-conversions';
 
 // for reference, see contracts/protocol/pantherPool/TransactionNoteEmitter.sol
 // Message Type Constants
-const MT = {
+export const MsgType = {
     CreateTime: 0x60,
     BusTreeIds: 0x62,
     ZAccount: 0x06,
@@ -26,7 +26,7 @@ const MT = {
 };
 
 // Length Constants
-const LMT = {
+const MsgLength = {
     CreateTime: 1 + 4, // 1 byte for message type, 4 bytes for createTime
     SpendTime: 1 + 4, // 1 byte for message type, 4 bytes for spendTime
     BusTreeIds: 1 + 37, // 1 byte for message type, 32 bytes for commitment, 4 bytes for queueId, 1 byte for indexInQueue
@@ -42,58 +42,58 @@ type Segment = {type: number; length: number};
 // Segment Configurations for each transaction note type
 const SegmentConfigs: {[key in TxType]: Segment[]} = {
     [TxType.ZAccountActivation]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
     ],
     [TxType.PrpClaiming]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAccount},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
     ],
     [TxType.PrpConversion]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAssetPub, length: LMT.ZAssetPub},
-        {type: MT.ZAccount, length: LMT.ZAccount},
-        {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAssetPub, length: MsgLength.ZAssetPub},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+        {type: MsgType.ZAssetPriv, length: MsgLength.ZAssetPriv},
     ],
     [TxType.ZTransaction]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.SpendTime, length: LMT.SpendTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAccount},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.SpendTime, length: MsgLength.SpendTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.SpentUTXO, length: MsgLength.SpentUTXO},
     ],
     [TxType.Deposit]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.SpendTime, length: LMT.SpendTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAccount},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.SpendTime, length: MsgLength.SpendTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.SpentUTXO, length: MsgLength.SpentUTXO},
     ],
     [TxType.Withdrawal]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.SpendTime, length: LMT.SpendTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAccount, length: LMT.ZAccount},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.SpendTime, length: MsgLength.SpendTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.SpentUTXO, length: MsgLength.SpentUTXO},
     ],
     [TxType.ZSwap]: [
-        {type: MT.CreateTime, length: LMT.CreateTime},
-        {type: MT.SpendTime, length: LMT.SpendTime},
-        {type: MT.BusTreeIds, length: LMT.BusTreeIds},
-        {type: MT.ZAssetPub, length: LMT.ZAssetPub},
-        {type: MT.ZAccount, length: LMT.ZAccount},
-        {type: MT.ZAsset, length: LMT.ZAsset},
-        {type: MT.ZAssetPriv, length: LMT.ZAssetPriv},
-        {type: MT.SpentUTXO, length: LMT.SpentUTXO},
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.SpendTime, length: MsgLength.SpendTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAssetPub, length: MsgLength.ZAssetPub},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+        {type: MsgType.ZAsset, length: MsgLength.ZAsset},
+        {type: MsgType.ZAssetPriv, length: MsgLength.ZAssetPriv},
+        {type: MsgType.SpentUTXO, length: MsgLength.SpentUTXO},
     ],
 };
 
@@ -145,7 +145,7 @@ function decodeZAccountActivationNote(
     return {
         createTime: parseInt(createTime, 16),
         ...decodeBusTreeIds(busTreeIds),
-        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccountMsg),
+        zAccountUTXOMessage: prependMessageType(MsgType.ZAccount, zAccountMsg),
         txType,
     };
 }
@@ -161,8 +161,8 @@ function decodePrpConversionNote(
         createTime: parseInt(createTime, 16),
         ...decodeBusTreeIds(busTreeIds),
         zkpAmountScaled: BigInt(`0x${zAssetPub}`),
-        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccountMsg),
-        zAssetUTXOMessage: prependMessageType(MT.ZAssetPriv, zAssetPriv),
+        zAccountUTXOMessage: prependMessageType(MsgType.ZAccount, zAccountMsg),
+        zAssetUTXOMessage: prependMessageType(MsgType.ZAssetPriv, zAssetPriv),
         txType,
     };
 }
@@ -184,12 +184,15 @@ function decodeZTransactionNote(
         createTime: parseInt(createTime, 16),
         spendTime: parseInt(spendTime, 16),
         ...decodeBusTreeIds(busTreeIds),
-        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
+        zAccountUTXOMessage: prependMessageType(MsgType.ZAccount, zAccount),
         zAssetUTXOMessages: [
-            prependMessageType(MT.ZAsset, zAsset1),
-            prependMessageType(MT.ZAsset, zAsset2),
+            prependMessageType(MsgType.ZAsset, zAsset1),
+            prependMessageType(MsgType.ZAsset, zAsset2),
         ],
-        spentUTXOCommitmentMessage: prependMessageType(MT.SpentUTXO, spentUTXO),
+        spentUTXOCommitmentMessage: prependMessageType(
+            MsgType.SpentUTXO,
+            spentUTXO,
+        ),
         txType,
     };
 }
@@ -210,13 +213,16 @@ function decodeZSwapNote(segments: string[], txType: TxType): ZSwapNote {
         spendTime: parseInt(spendTime, 16),
         ...decodeBusTreeIds(busTreeIds),
         amountScaled: BigInt(`0x${amountScaled}`),
-        zAccountUTXOMessage: prependMessageType(MT.ZAccount, zAccount),
+        zAccountUTXOMessage: prependMessageType(MsgType.ZAccount, zAccount),
         zAssetUTXOMessages: [
-            prependMessageType(MT.ZAsset, zAsset),
-            prependMessageType(MT.ZAssetPriv, zAssetPriv),
+            prependMessageType(MsgType.ZAsset, zAsset),
+            prependMessageType(MsgType.ZAssetPriv, zAssetPriv),
         ],
 
-        spentUTXOCommitmentMessage: prependMessageType(MT.SpentUTXO, spentUTXO),
+        spentUTXOCommitmentMessage: prependMessageType(
+            MsgType.SpentUTXO,
+            spentUTXO,
+        ),
         txType,
     };
 }

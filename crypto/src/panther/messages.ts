@@ -33,7 +33,7 @@ import {
 } from '../utils/bigint-conversions';
 
 const EPHEMERAL_KEY_WIDTH = PACKED_PUB_KEY_SIZE * 2;
-const MSG_TYPE_WIDTH = 2;
+export const MSG_TYPE_WIDTH = 2;
 
 const FIELD_BIT_LENGTHS = {
     secretRandom: 256,
