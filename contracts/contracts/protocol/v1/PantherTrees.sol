@@ -2,15 +2,18 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+import "./interfaces/IPantherTrees.sol";
 import "./pantherTrees/interfaces/IPantherTreesRootGetter.sol";
-import "./pantherTrees/Constants.sol";
 
 import "./pantherTrees/PantherForest.sol";
 import "./pantherTrees/PantherStaticTree.sol";
-
 import "./pantherTrees/PantherTaxiTree.sol";
 import "./pantherTrees/PantherBusTree.sol";
 import "./pantherTrees/PantherFerryTree.sol";
+import "../../common/ImmutableOwnable.sol";
+
+import "./pantherTrees/Constants.sol";
+import "./errMsgs/PantherTreesErrMsgs.sol";
 
 contract PantherTrees is
     PantherForest,
@@ -18,11 +21,22 @@ contract PantherTrees is
     PantherTaxiTree,
     PantherBusTree,
     PantherFerryTree,
+    ImmutableOwnable,
+    IPantherTrees,
     IPantherTreesRootGetter
 {
     bytes32[50] private _gap;
 
     event Initialized(bytes32 pantherForestRoot, bytes32 pantherStaticRoot);
+
+    modifier onlyPantherPool() {
+        require(msg.sender == PANTHER_POOL, ERR_UNAUTHORIZED);
+        _;
+    }
+    modifier nonZeroUtxosLength(bytes32[] memory utxos) {
+        require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
+        _;
+    }
 
     constructor(
         address _owner,
@@ -33,18 +47,17 @@ contract PantherTrees is
         PantherStaticTrees memory pantherStaticTrees
     )
         PantherStaticTree(pantherStaticTrees)
-        PantherTaxiTree(_pantherPool)
-        PantherBusTree(
-            _owner,
-            _pantherPool,
-            _pantherVerifier,
-            _feeMaster,
-            _zkpToken
-        )
+        PantherBusTree(_pantherPool, _pantherVerifier, _feeMaster, _zkpToken)
+        ImmutableOwnable(_owner)
     {}
 
-    function getRoots() external view returns (bytes32, bytes32) {
-        return (pantherStaticRoot, pantherForestRoot);
+    function getRoots()
+        external
+        view
+        returns (bytes32 _pantherStaticRoot, bytes32 _pantherForestRoot)
+    {
+        _pantherStaticRoot = pantherStaticRoot;
+        _pantherForestRoot = pantherForestRoot;
     }
 
     function verifyPantherTreesRoots(
@@ -69,31 +82,100 @@ contract PantherTrees is
         );
         bytes32 _pantherStaticRoot = _initializeStaticTree();
 
-        // TODO initializeBusTree
+        _initializeBusTree();
 
         emit Initialized(_pantherForestRoot, _pantherStaticRoot);
     }
 
-    // function addUtxos(
-    //     bytes32[] memory utxos,
-    //     uint96 reward,
-    //     bool isTaxiApplicable
-    // ) external returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
-    //     require(msg.sender == PANTHER_POOL, "");
-    //     require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
-
-    //     (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
-    //         utxos,
-    //         reward
-    //     );
-
-    //     if (isTaxiApplicable) {}
-    // }
-
-    function _updateForestRoot(
-        bytes32 updatedLeaf,
-        uint256 leafIndex
-    ) internal override(PantherBusTree, PantherTaxiTree, PantherFerryTree) {
-        PantherForest.updateForestRoot(updatedLeaf, leafIndex);
+    function updateBusTreeCircuitId(uint160 _circuitId) external onlyOwner {
+        _updateCircuitId(_circuitId);
     }
+
+    function updateBusTreeParams(
+        uint16 reservationRate,
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge
+    ) external onlyOwner {
+        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
+    }
+
+    function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+        // can only be executed by `PantherStaticTrees` contracts
+        _updateStaticRoot(updatedLeaf, leafIndex);
+    }
+
+    function addUtxosToBusQueue(
+        bytes32[] memory utxos,
+        uint96 reward
+    )
+        external
+        onlyPantherPool
+        nonZeroUtxosLength(utxos)
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
+    {
+        (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
+            utxos,
+            reward
+        );
+    }
+
+    function addUtxosToBusQueueAndTaxiTree(
+        bytes32[] memory utxos,
+        uint96 reward,
+        uint8 numTaxiUtxos
+    )
+        external
+        onlyPantherPool
+        nonZeroUtxosLength(utxos)
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
+    {
+        require(numTaxiUtxos <= 3, ERR_INVALID_TAXI_UTXOS_COUNT);
+
+        (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
+            utxos,
+            reward
+        );
+
+        bytes32 taxiTreeNewRoot;
+
+        if (numTaxiUtxos == 1) {
+            taxiTreeNewRoot = _addUtxoToTaxiTree(utxos[0]);
+        }
+        if (numTaxiUtxos == 2) {
+            taxiTreeNewRoot = _addThreeUtxosToTaxiTree(
+                utxos[0],
+                utxos[1],
+                bytes32(0)
+            );
+        }
+        if (numTaxiUtxos == 3) {
+            taxiTreeNewRoot = _addThreeUtxosToTaxiTree(
+                utxos[0],
+                utxos[1],
+                utxos[2]
+            );
+        }
+
+        _updateForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);
+    }
+
+    function onboardBusQueue(
+        address miner,
+        uint32 queueId,
+        uint256[] memory inputs,
+        SnarkProof memory proof
+    ) external {
+        bytes32 busTreeNewRoot = _onboardQueueAndAccountReward(
+            miner,
+            queueId,
+            inputs,
+            proof
+        );
+
+        _updateForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
+    }
+
+    // TODO
+    // solhint-disable-next-line no-empty-blocks
+    function claimOnboardingReward() external {}
 }

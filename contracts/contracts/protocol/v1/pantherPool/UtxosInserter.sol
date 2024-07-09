@@ -2,8 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../interfaces/IPantherTaxiTree.sol";
-import "../interfaces/IBusTree.sol";
+import "../interfaces/IUtxoInserter.sol";
 
 import "./TransactionOptions.sol";
 import "./publicSignals/ZAccountActivationPublicSignals.sol";
@@ -53,14 +52,24 @@ abstract contract UtxosInserter {
         utxos[0] = zAccountUtxoOutCommitment;
         utxos[1] = kycSignedMessageHash;
 
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(utxos, miningRewards);
-
         if (transactionOptions.isTaxiApplicable()) {
-            _addUtxoToTaxiTree(utxos[0]);
+            // first utxo in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 1;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                miningRewards,
+                numTaxiUtxos
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(utxos, miningRewards);
         }
     }
 
@@ -84,14 +93,24 @@ abstract contract UtxosInserter {
         bytes32[] memory utxos = new bytes32[](1);
         utxos[0] = zAccountUtxoOutCommitment;
 
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(utxos, miningRewards);
-
         if (transactionOptions.isTaxiApplicable()) {
-            _addUtxoToTaxiTree(zAccountUtxoOutCommitment);
+            // first utxo in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 1;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                miningRewards,
+                numTaxiUtxos
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(utxos, miningRewards);
         }
     }
 
@@ -120,14 +139,24 @@ abstract contract UtxosInserter {
         utxos[0] = zAccountUtxoOutCommitment;
         utxos[1] = zAssetUtxoOutCommitment;
 
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(utxos, miningRewards);
-
         if (transactionOptions.isTaxiApplicable()) {
-            _addUtxosToTaxiTree(utxos);
+            // All 2 utxos in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 2;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                miningRewards,
+                numTaxiUtxos
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(utxos, miningRewards);
         }
     }
 
@@ -168,26 +197,31 @@ abstract contract UtxosInserter {
             ERR_ZERO_COMITMENT
         );
 
-        bytes32[] memory busUtxos = new bytes32[](5);
-        busUtxos[0] = zAccountUtxoOutCommitment;
-        busUtxos[1] = zAssetUtxoOutCommitment1;
-        busUtxos[2] = zAssetUtxoOutCommitment2;
-        busUtxos[3] = kytDepositSignedMessageHash;
-        busUtxos[4] = kytWithdrawSignedMessageHash;
-
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(busUtxos, miningRewards);
+        bytes32[] memory utxos = new bytes32[](5);
+        utxos[0] = zAccountUtxoOutCommitment;
+        utxos[1] = zAssetUtxoOutCommitment1;
+        utxos[2] = zAssetUtxoOutCommitment2;
+        utxos[3] = kytDepositSignedMessageHash;
+        utxos[4] = kytWithdrawSignedMessageHash;
 
         if (transactionOptions.isTaxiApplicable()) {
-            bytes32[] memory taxiUtxos = new bytes32[](3);
-            taxiUtxos[0] = zAccountUtxoOutCommitment;
-            taxiUtxos[1] = zAssetUtxoOutCommitment1;
-            taxiUtxos[2] = zAssetUtxoOutCommitment2;
-
-            _addUtxosToTaxiTree(taxiUtxos);
+            // first 3 utxos in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 3;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                miningRewards,
+                numTaxiUtxos
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(utxos, miningRewards);
         }
     }
 
@@ -219,14 +253,24 @@ abstract contract UtxosInserter {
         utxos[1] = zAssetUtxos[0];
         utxos[2] = zAssetUtxos[1];
 
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(utxos, miningRewards);
-
         if (transactionOptions.isTaxiApplicable()) {
-            _addUtxosToTaxiTree(utxos);
+            // All 3 utxos in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 3;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                miningRewards,
+                numTaxiUtxos
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(utxos, miningRewards);
         }
     }
 
@@ -241,40 +285,58 @@ abstract contract UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        try IBusTree(PANTHER_TREES).addUtxosToBusQueue(utxos, rewards) returns (
-            uint32 firstUtxoQueueId,
-            uint8 firstUtxoIndexInQueue
-        ) {
+        try
+            IUtxoInserter(PANTHER_TREES).addUtxosToBusQueue(utxos, rewards)
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
             zAccountUtxoQueueId = firstUtxoQueueId;
             zAccountUtxoIndexInQueue = firstUtxoIndexInQueue;
         } catch Error(string memory reason) {
             revert(reason);
         }
 
+        zAccountUtxoBusQueuePos = _getZAccountUtxoBusQueuePos(
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue
+        );
+    }
+
+    function _addUtxosToBusQueueAndTaxiTree(
+        bytes32[] memory utxos,
+        uint96 reward,
+        uint8 numTaxiUtxos
+    )
+        private
+        returns (
+            uint32 zAccountUtxoQueueId,
+            uint8 zAccountUtxoIndexInQueue,
+            uint256 zAccountUtxoBusQueuePos
+        )
+    {
+        try
+            IUtxoInserter(PANTHER_TREES).addUtxosToBusQueueAndTaxiTree(
+                utxos,
+                reward,
+                numTaxiUtxos
+            )
+        returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue) {
+            zAccountUtxoQueueId = firstUtxoQueueId;
+            zAccountUtxoIndexInQueue = firstUtxoIndexInQueue;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
+
+        zAccountUtxoBusQueuePos = _getZAccountUtxoBusQueuePos(
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue
+        );
+    }
+
+    function _getZAccountUtxoBusQueuePos(
+        uint256 zAccountUtxoQueueId,
+        uint256 zAccountUtxoIndexInQueue
+    ) private pure returns (uint256 zAccountUtxoBusQueuePos) {
         zAccountUtxoBusQueuePos =
-            (uint256(zAccountUtxoQueueId) << 8) |
-            uint256(zAccountUtxoIndexInQueue);
-    }
-
-    function _addUtxoToTaxiTree(bytes32 utxo) private {
-        try
-            IPantherTaxiTree(PANTHER_TREES).addUtxoToTaxiTree(utxo)
-        // solhint-disable-next-line no-empty-blocks
-        {
-
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
-    }
-
-    function _addUtxosToTaxiTree(bytes32[] memory utxos) private {
-        try
-            IPantherTaxiTree(PANTHER_TREES).addUtxos(utxos)
-        // solhint-disable-next-line no-empty-blocks
-        {
-
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
+            (zAccountUtxoQueueId << 8) |
+            zAccountUtxoIndexInQueue;
     }
 }

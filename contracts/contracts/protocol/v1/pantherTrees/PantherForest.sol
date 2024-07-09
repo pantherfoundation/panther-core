@@ -69,7 +69,10 @@ abstract contract PantherForest is CachedRoots {
         pantherForestRoot = _pantherForestRoot;
     }
 
-    function updateForestRoot(bytes32 updatedLeaf, uint256 leafIndex) internal {
+    function _updateForestRoot(
+        bytes32 updatedLeaf,
+        uint256 leafIndex
+    ) internal {
         forestLeafs[leafIndex] = updatedLeaf;
 
         bytes32 _pantherForestRoot = PoseidonHashers.poseidonT4(forestLeafs);

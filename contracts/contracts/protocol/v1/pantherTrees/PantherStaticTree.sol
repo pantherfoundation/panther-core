@@ -64,7 +64,10 @@ abstract contract PantherStaticTree {
         pantherStaticRoot = _pantherStaticRoot;
     }
 
-    function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+    function _updateStaticRoot(
+        bytes32 updatedLeaf,
+        uint256 leafIndex
+    ) internal {
         require(
             msg.sender == _getStaticTreeLeafController(leafIndex),
             "unauthorized"

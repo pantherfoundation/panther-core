@@ -15,9 +15,4 @@ abstract contract PantherFerryTree {
     function getFerryTreeRoot() public pure returns (bytes32) {
         return THIRTY_TWO_LEVEL_EMPTY_TREE_ROOT;
     }
-
-    function _updateForestRoot(
-        bytes32 updatedLeaf,
-        uint256 leafIndex
-    ) internal virtual;
 }

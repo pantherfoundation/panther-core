@@ -2,12 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./BusQueues.sol";
 import "../../interfaces/IPantherVerifier.sol";
 
+import "./BusQueues.sol";
+
 import "../../errMsgs/BusTreeErrMsgs.sol";
-import "../../../../common/ImmutableOwnable.sol";
-import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
 
 /**
  * @dev The Bus Tree ("Tree") is an incremental binary Merkle tree that stores
@@ -26,7 +25,7 @@ import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
  * Each time the Bus Tree root is updated, this contract MUST call PantherPoolV1
  * contract to trigger updates of that contract state (see PantherForest).
  */
-abstract contract BusTree is BusQueues, ImmutableOwnable {
+abstract contract BusTree is BusQueues {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -59,7 +58,7 @@ abstract contract BusTree is BusQueues, ImmutableOwnable {
     // keeps track of number of the added utxos
     uint32 public utxoCounter;
     // address of circuitId
-    uint160 public circuitId;
+    uint160 public busTreeCircuitId;
 
     bytes32[50] private _endGap;
 
@@ -79,11 +78,7 @@ abstract contract BusTree is BusQueues, ImmutableOwnable {
     );
 
     // @dev It is "proxy-friendly" as it does not change the storage
-    constructor(
-        address _owner,
-        address _pantherPool,
-        address _pantherVerifier
-    ) ImmutableOwnable(_owner) {
+    constructor(address _pantherPool, address _pantherVerifier) {
         require(_pantherPool != address(0), ERR_INIT);
 
         VERIFIER = _pantherVerifier;
@@ -108,13 +103,23 @@ abstract contract BusTree is BusQueues, ImmutableOwnable {
 
     function _updateCircuitId(uint160 _circuitId) internal {
         require(
-            IPantherVerifier(VERIFIER).getVerifyingKey(circuitId).ic.length >=
+            IPantherVerifier(VERIFIER).getVerifyingKey(_circuitId).ic.length >=
                 1,
             ERR_INVALID_VK
         );
-        circuitId = _circuitId;
+        busTreeCircuitId = _circuitId;
     }
 
+    /// @dev ZK-circuit public signals:
+    /// @param inputs[0] - oldRoot (BusTree root before insertion)
+    /// @param inputs[1] - newRoot (BusTree root after insertion)
+    /// @param inputs[2] - replacedNodeIndex
+    /// @param inputs[3] - newLeafsCommitment (commitment to leafs in batch)
+    /// @param inputs[4] - nNonEmptyNewLeafs (non-empty leafs in batch number)
+    /// @param inputs[5] - batchRoot (Root of the batch to insert)
+    /// @param inputs[6] - branchRoot (BusTree branch root after insertion)
+    /// @param inputs[7] - extraInput (Hash of `miner` and `queueId`)
+    /// @param inputs[8] - magicalConstraint (non-zero random number)
     function _onboardQueue(
         address miner,
         uint32 queueId,
@@ -125,7 +130,7 @@ abstract contract BusTree is BusQueues, ImmutableOwnable {
         nonEmptyBusQueue(queueId)
         returns (bytes32 busTreeNewRoot, uint96 reward)
     {
-        require(circuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        require(busTreeCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
             bytes32 oldRoot = bytes32(inputs[0]);
@@ -165,7 +170,7 @@ abstract contract BusTree is BusQueues, ImmutableOwnable {
         // Verify the proof
         // Trusted contract - no reentrancy guard needed
         require(
-            IPantherVerifier(VERIFIER).verify(circuitId, inputs, proof),
+            IPantherVerifier(VERIFIER).verify(busTreeCircuitId, inputs, proof),
             ERR_FAILED_ZK_PROOF
         );
         bytes32 busBranchNewRoot = bytes32(inputs[6]);

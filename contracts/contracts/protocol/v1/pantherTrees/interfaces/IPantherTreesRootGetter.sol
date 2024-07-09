@@ -3,5 +3,8 @@
 pragma solidity ^0.8.19;
 
 interface IPantherTreesRootGetter {
-    function getRoots() external view returns (bytes32, bytes32);
+    function getRoots()
+        external
+        view
+        returns (bytes32 _pantherStaticRoot, bytes32 _pantherForestRoot);
 }

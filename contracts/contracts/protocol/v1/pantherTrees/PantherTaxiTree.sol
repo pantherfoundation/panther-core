@@ -2,36 +2,19 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../interfaces/IPantherTaxiTree.sol";
-
 import ".//taxiTree/TaxiTree.sol";
-import { TAXI_TREE_FOREST_LEAF_INDEX } from "./Constants.sol";
 import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
-
-import "../../../common/ImmutableOwnable.sol";
 
 /**
  * @title PantherTaxiTree
  * @author Pantherprotocol Contributors
  * @dev It enables the direct insertion of an array of UTXOs into the TaxiTree.
  */
-abstract contract PantherTaxiTree is
-    TaxiTree,
-    ImmutableOwnable,
-    IPantherTaxiTree
-{
-    address public immutable PANTHER_POOL;
-
+abstract contract PantherTaxiTree is TaxiTree {
     bytes32 private _currentRoot;
 
     event TaxiRootUpdated(bytes32 updatedRoot, uint256 numLeaves);
     event TaxiUtxoAdded(bytes32 utxo, uint256 totalUtxoInsertions);
-
-    constructor(address pantherPool) ImmutableOwnable(pantherPool) {
-        require(pantherPool != address(0), "Init");
-
-        PANTHER_POOL = pantherPool;
-    }
 
     function getTaxiTreeRoot() public view returns (bytes32) {
         return
@@ -40,7 +23,7 @@ abstract contract PantherTaxiTree is
                 : _currentRoot;
     }
 
-    function addUtxos(bytes32[] calldata utxos) external onlyOwner {
+    function addUtxos(bytes32[] calldata utxos) external {
         bytes32 newRoot;
 
         for (uint256 i = 0; i < utxos.length; ) {
@@ -51,13 +34,13 @@ abstract contract PantherTaxiTree is
             }
         }
 
-        _updateTaxiAndForestRoots(newRoot, utxos.length);
+        _currentRoot = newRoot;
     }
 
-    function addUtxo(bytes32 utxo) external onlyOwner {
-        bytes32 newRoot = _addUtxo(utxo);
+    function addUtxo(bytes32 utxo) external {
+        _currentRoot = _addUtxo(utxo);
 
-        _updateTaxiAndForestRoots(newRoot, 1);
+        // _updateTaxiAndForestRoots(newRoot, 1);
     }
 
     function _addUtxo(bytes32 utxo) private returns (bytes32 newRoot) {
@@ -74,19 +57,12 @@ abstract contract PantherTaxiTree is
         emit TaxiUtxoAdded(utxo, _totalLeavesInsertions);
     }
 
-    function _updateTaxiAndForestRoots(
-        bytes32 taxiTreeNewRoot,
-        uint256 numLeaves
-    ) private {
-        _updateForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);
+    // function _updateTaxiRootAndEmitEvent(
+    //     bytes32 taxiTreeNewRoot,
+    //     uint256 numLeaves
+    // ) private {
+    //     _currentRoot = taxiTreeNewRoot;
 
-        _currentRoot = taxiTreeNewRoot;
-
-        emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
-    }
-
-    function _updateForestRoot(
-        bytes32 updatedLeaf,
-        uint256 leafIndex
-    ) internal virtual;
+    //     emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
+    // }
 }
