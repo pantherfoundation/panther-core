@@ -9,31 +9,32 @@ import {BigNumber} from 'ethers';
 
 import {pantherCoreZeroLeaf} from '../utilities';
 
-const publicKey = [
-    13277427435165878497778222415993513565335242147425444199013288855685581939618n,
-    13622229784656158136036771217484571176836296686641868549125388198837476602820n,
-] as PublicKey;
-
-function packPublicKey(publicKey: PublicKey): bigint[] {
-    return [BigInt(publicKey[0]), BigInt(publicKey[1])];
-}
-
 type RegisterKeyData = {
     keyringId: string;
     publicKey: PublicKey;
     expiryDate: BigNumberish;
 };
 
-export const leafs: RegisterKeyData[] = [
+const FIRST_KEYRING_ID = '1';
+
+// Purify keys on test network.
+// Don't use them on mainn or local networks
+export const testnetLeafs: RegisterKeyData[] = [
     {
-        keyringId: '1',
-        publicKey: publicKey,
+        keyringId: FIRST_KEYRING_ID,
+        publicKey: [
+            9487832625653172027749782479736182284968410276712116765581383594391603612850n,
+            20341243520484112812812126668555427080517815150392255522033438580038266039458n,
+        ],
         expiryDate: 1735689600n,
     },
     {
-        keyringId: '2',
-        publicKey: publicKey,
-        expiryDate: 1735689600n + 1n,
+        keyringId: FIRST_KEYRING_ID,
+        publicKey: [
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        ],
+        expiryDate: 1735689600n,
     },
 ];
 
@@ -60,8 +61,8 @@ export class ProvidersKeys {
     computeCommitments(): ProvidersKeys {
         this.commitments = this.leafs.map(leaf => {
             const {publicKey, expiryDate} = leaf;
-            const packedKey = packPublicKey(publicKey);
-            const inputs = [...packedKey, BigInt(expiryDate)];
+            const inputs = [...publicKey, expiryDate];
+
             return poseidon(inputs).toString();
         });
         return this;
