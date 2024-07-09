@@ -5,12 +5,12 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {isProd} from '../../lib/checkNetwork';
+import {isDev} from '../../lib/checkNetwork';
 import {getContractAddress} from '../../lib/deploymentHelpers';
-import {ProvidersKeys, leafs} from '../../lib/staticTree/providersKeys';
+import {ProvidersKeys, testnetLeafs} from '../../lib/staticTree/providersKeys';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    if (isProd(hre)) return;
+    if (!isDev(hre)) return;
 
     const {artifacts, ethers} = hre;
 
@@ -23,11 +23,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {abi} = await artifacts.readArtifact('ProvidersKeys');
     const providersKeys = await ethers.getContractAt(abi, providersKeyAddress);
 
-    const providersKeyLeafs = Object.values(leafs);
+    const providersKeyLeafs = Object.values(testnetLeafs);
     const providersKeyTree = new ProvidersKeys(providersKeyLeafs);
+
     const inputs = providersKeyTree
         .computeCommitments()
         .getInsertionInputs().providersKeyInsertionInputs;
+
+    console.log('root', providersKeyTree.root);
 
     for (const input of inputs) {
         const {keyringId, publicKey, expiryDate, proofSiblings} = input;
@@ -49,5 +52,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['register-provider-key', 'forest', 'protocol'];
+func.tags = ['register-test-network-provider-key', 'forest', 'protocol'];
 func.dependencies = ['providers-keys', 'add-provider'];
