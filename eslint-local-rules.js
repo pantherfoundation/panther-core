@@ -30,20 +30,22 @@ function validateFirstLine(firstLine, context, node) {
     }
 }
 
+const fileCopyRightTextRegExp = new RegExp(
+    /SPDX-FileCopyrightText: Copyright 2021-\d+ Panther Ventures Limited Gibraltar/,
+);
+
 function validateSecondLine(secondLine, context, node) {
-    const isValidSecondLine = secondLine.includes(
-        '// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar',
-    );
+    const isValidSecondLine = fileCopyRightTextRegExp.test(secondLine);
+
+    const year = new Date().getFullYear() - 2000;
+    const correctSecondLine = `// SPDX-FileCopyrightText: Copyright 2021-${year} Panther Ventures Limited Gibraltar`;
 
     if (!isValidSecondLine) {
         context.report({
             node,
-            message:
-                'The second line should be "// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar"',
+            message: `The second line should be "${correctSecondLine}"`,
             loc: {line: 2, column: 0},
             fix(fixer) {
-                const correctSecondLine =
-                    '// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar';
                 const sourceCode = context.getSourceCode();
                 const lines = sourceCode.lines;
 
