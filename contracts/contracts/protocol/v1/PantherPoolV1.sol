@@ -576,7 +576,7 @@ contract PantherPoolV1 is
     /// @param pluginData The address of plugin that manages the swap proccess
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
-    function _swapZAsset(
+    function swapZAsset(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
@@ -630,14 +630,10 @@ contract PantherPoolV1 is
             transactionOptions.cachedForestRootIndex()
         );
 
-        uint96 protocolFee;
         uint96 miningReward;
 
         {
-            (
-                protocolFee,
-                miningReward
-            ) = accountFeesAndReturnProtocolFeeAndMiningReward(
+            miningReward = accountFeesAndReturnMiningReward(
                 inputs,
                 paymasterCompensation,
                 TT_ZSWAP
@@ -648,98 +644,30 @@ contract PantherPoolV1 is
 
         // solhint-disable-next-line no-empty-blocks
         {
-            // uint32 zAccountUtxoQueueId;
-            // uint8 zAccountUtxoIndexInQueue;
-            // (
-            //     bytes32[2] memory zAssetUtxos,
-            //     uint256 zAssetAmountScaled
-            // ) = _handleSwap(inputs, pluginData);
-            // (
-            //     zAccountUtxoQueueId,
-            //     zAccountUtxoIndexInQueue,
-            //     zAccountUtxoBusQueuePos
-            // ) = _insertZSwapUtxos(
-            //     inputs,
-            //     zAssetUtxos,
-            //     transactionOptions,
-            //     miningReward
-            // );
-            // _emitZSwapNote(
-            //     inputs,
-            //     zAccountUtxoQueueId,
-            //     zAccountUtxoIndexInQueue,
-            //     zAssetAmountScaled,
-            //     privateMessages
-            // );
+            uint32 zAccountUtxoQueueId;
+            uint8 zAccountUtxoIndexInQueue;
+            (
+                bytes32[2] memory zAssetUtxos,
+                uint256 zAssetAmountScaled
+            ) = _processSwap(inputs, pluginData);
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _insertZSwapUtxos(
+                inputs,
+                zAssetUtxos,
+                transactionOptions,
+                miningReward
+            );
+            _emitZSwapNote(
+                inputs,
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAssetAmountScaled,
+                privateMessages
+            );
         }
-    }
-
-    function _handleSwap(
-        uint256[] calldata inputs,
-        bytes memory pluginData
-    )
-        private
-        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
-    {
-        address plugin = pluginData.extractPluginAddress();
-        require(zSwapPlugins[plugin], "Invalid plugin");
-
-        // TODO: get TokenType from inputs
-        address existingToken = address(
-            uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
-        );
-        uint8 tokenType = existingToken == NATIVE_TOKEN
-            ? NATIVE_TOKEN_TYPE
-            : ERC20_TOKEN_TYPE;
-
-        _unlockAsset(
-            LockData(
-                tokenType,
-                existingToken,
-                inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
-                plugin,
-                UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND])
-            )
-        );
-
-        uint256 vaultInitialBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        IPlugin(plugin).execute(
-            PluginData({
-                tokenIn: existingToken,
-                tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-                amountIn: UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND]),
-                tokenType: tokenType,
-                data: pluginData
-            })
-        );
-
-        uint256 vaultUpdatedBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        uint256 receivedAmount = vaultUpdatedBalance - vaultInitialBalance;
-
-        _validateNonZero(receivedAmount, "Zero output");
-
-        uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
-
-        uint256 zAssetAmountRounded = UtilsLib.safe96(
-            (receivedAmount / scale) * scale
-        );
-        zAssetAmountScaled = zAssetAmountRounded / scale;
-
-        zAssetUtxos[0] = bytes32(
-            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
-        );
-        zAssetUtxos[1] = generateZAssetUtxoCommitment(
-            zAssetAmountScaled,
-            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_PRIVATE_PART_IND]
-        );
     }
 
     function _getCircuitIdOrRevert(
@@ -948,6 +876,74 @@ contract PantherPoolV1 is
         }
     }
 
+    function _processSwap(
+        uint256[] calldata inputs,
+        bytes memory pluginData
+    )
+        private
+        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
+    {
+        address plugin = pluginData.extractPluginAddress();
+        require(zSwapPlugins[plugin], "Invalid plugin");
+
+        // TODO: get TokenType from inputs
+        address existingToken = address(
+            uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
+        );
+        uint8 tokenType = existingToken == NATIVE_TOKEN
+            ? NATIVE_TOKEN_TYPE
+            : ERC20_TOKEN_TYPE;
+
+        _unlockAsset(
+            LockData(
+                tokenType,
+                existingToken,
+                inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
+                plugin,
+                UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND])
+            )
+        );
+
+        uint256 vaultInitialBalance = IVaultV1(VAULT).getBalance(
+            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
+        );
+
+        IPlugin(plugin).execute(
+            PluginData({
+                tokenIn: existingToken,
+                tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
+                amountIn: UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND]),
+                tokenType: tokenType,
+                data: pluginData
+            })
+        );
+
+        uint256 vaultUpdatedBalance = IVaultV1(VAULT).getBalance(
+            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
+        );
+
+        uint256 receivedAmount = vaultUpdatedBalance - vaultInitialBalance;
+
+        _validateNonZero(receivedAmount, "Zero output");
+
+        uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
+
+        uint256 zAssetAmountRounded = UtilsLib.safe96(
+            (receivedAmount / scale) * scale
+        );
+        zAssetAmountScaled = zAssetAmountRounded / scale;
+
+        zAssetUtxos[0] = bytes32(
+            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
+        );
+        zAssetUtxos[1] = generateZAssetUtxoCommitment(
+            zAssetAmountScaled,
+            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_PRIVATE_PART_IND]
+        );
+    }
+
     function _lockZkp(address from, uint256 amount) internal {
         // Trusted contract - no reentrancy guard needed
         IVaultV1(VAULT).lockAsset(
@@ -969,133 +965,5 @@ contract PantherPoolV1 is
     ) private view {
         // Trusted contract - no reentrancy guard needed
         require(VERIFIER.verify(circuitId, inputs, proof), ERR_FAILED_ZK_PROOF);
-    }
-
-    // TODO: Delete the codes before
-    function swapZAsset(
-        uint256[] calldata inputs,
-        SnarkProof calldata proof,
-        uint32 transactionOptions,
-        uint96 paymasterCompensation,
-        bytes memory pluginData,
-        bytes calldata privateMessages
-    ) external returns (uint256 zAccountUtxoBusQueuePos) {
-        uint160 zSwapCircuitId = _getCircuitIdOrRevert(TT_ZSWAP);
-
-        {
-            uint256 extraInputsHash = inputs[ZSWAP_EXTRA_INPUTS_HASH_IND];
-            bytes memory extraInp = abi.encodePacked(
-                transactionOptions,
-                paymasterCompensation,
-                pluginData,
-                privateMessages
-            );
-            require(
-                extraInputsHash == uint256(keccak256(extraInp)) % FIELD_SIZE,
-                "Invadlid hash"
-            );
-        }
-
-        {
-            _verifyProof(zSwapCircuitId, inputs, proof);
-        }
-
-        {
-            uint32 zAccountUtxoQueueId;
-            uint8 zAccountUtxoIndexInQueue;
-            (
-                bytes32[2] memory zAssetUtxos,
-                uint256 zAssetAmountScaled
-            ) = tempHandleSwap(inputs, pluginData);
-
-            (
-                zAccountUtxoQueueId,
-                zAccountUtxoIndexInQueue,
-                zAccountUtxoBusQueuePos
-            ) = _tempInsertZSwapUtxos(
-                inputs,
-                zAssetUtxos,
-                transactionOptions,
-                5e17
-            );
-
-            _tempEmitZSwapNote(
-                inputs,
-                zAccountUtxoQueueId,
-                zAccountUtxoIndexInQueue,
-                zAssetAmountScaled,
-                privateMessages
-            );
-        }
-    }
-
-    function tempHandleSwap(
-        uint256[] calldata inputs,
-        bytes memory pluginData
-    )
-        private
-        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
-    {
-        {
-            address plugin = pluginData.extractPluginAddress();
-            require(zSwapPlugins[plugin], "Invalid plugin");
-
-            address existingToken = address(
-                uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
-            );
-
-            uint8 tokenType = existingToken == NATIVE_TOKEN
-                ? NATIVE_TOKEN_TYPE
-                : ERC20_TOKEN_TYPE;
-
-            _unlockAsset(
-                LockData(
-                    tokenType,
-                    existingToken,
-                    inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
-                    plugin,
-                    UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND])
-                )
-            );
-
-            uint256 vaultInitialBalance = IVaultV1(VAULT).getBalance(
-                address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-                inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-            );
-
-            IPlugin(plugin).execute(
-                PluginData({
-                    tokenIn: existingToken,
-                    tokenOut: address(
-                        uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])
-                    ),
-                    amountIn: UtilsLib.safe96(
-                        inputs[ZSWAP_WITHDRAW_AMOUNT_IND]
-                    ),
-                    tokenType: tokenType,
-                    data: pluginData
-                })
-            );
-
-            uint256 vaultUpdatedBalance = IVaultV1(VAULT).getBalance(
-                address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-                inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-            );
-
-            uint256 amount = vaultUpdatedBalance - vaultInitialBalance;
-
-            _validateNonZero(amount, "Zero output");
-
-            uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
-
-            uint256 amountRounded = UtilsLib.safe96((amount / scale) * scale);
-            zAssetAmountScaled = amountRounded / scale;
-
-            zAssetUtxos[0] = bytes32(inputs[39]);
-            zAssetUtxos[1] = generateZAssetUtxoCommitment(
-                zAssetAmountScaled,
-                inputs[40]
-            );
-        }
     }
 }

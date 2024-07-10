@@ -99,26 +99,6 @@ abstract contract TransactionChargesHandler {
             });
         }
 
-        if (txType == TT_ZSWAP) {
-            numOutputUtxos = 5;
-
-            scAddedZkpAmount = inputs[ZSWAP_ADDED_AMOUNT_ZKP_IND]
-                .scaleDownBy1e12()
-                .safe40();
-            scChargedZkpAmount = inputs[ZSWAP_CHARGED_AMOUNT_ZKP_IND]
-                .scaleDownBy1e12()
-                .safe40();
-
-            // TODO: change the deposit and withdraw amounts
-            assetData = AssetData({
-                tokenAddress: address(
-                    inputs[ZSWAP_EXISTING_TOKEN_IND].safe160()
-                ),
-                depositAmount: inputs[ZSWAP_DEPOSIT_AMOUNT_IND].safe128(),
-                withdrawAmount: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe128()
-            });
-        }
-
         feeData = FeeData({
             txType: txType,
             numOutputUtxos: numOutputUtxos,
@@ -185,6 +165,17 @@ abstract contract TransactionChargesHandler {
                 .scaleDownBy1e12()
                 .safe40();
             scChargedZkpAmount = inputs[PRP_CONVERSION_CHARGED_AMOUNT_ZKP_IND]
+                .scaleDownBy1e12()
+                .safe40();
+        }
+
+        if (txType == TT_ZSWAP) {
+            numOutputUtxos = 3;
+
+            scAddedZkpAmount = inputs[ZSWAP_ADDED_AMOUNT_ZKP_IND]
+                .scaleDownBy1e12()
+                .safe40();
+            scChargedZkpAmount = inputs[ZSWAP_CHARGED_AMOUNT_ZKP_IND]
                 .scaleDownBy1e12()
                 .safe40();
         }
