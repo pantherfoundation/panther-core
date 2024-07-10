@@ -220,7 +220,7 @@ library TransferHelper {
         );
     }
 
-    function _getBalance(
+    function getBalance(
         address token,
         address account,
         uint256 tokenId

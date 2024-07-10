@@ -62,4 +62,9 @@ library UtilsLib {
     function revertZeroAddress(address account) internal pure {
         require(account != address(0), "UNEXPECTED_ZERO_ADDRESS");
     }
+
+    function safeAddress(uint256 n) internal pure returns (address _address) {
+        _address = address(safe160(n));
+        revertZeroAddress(_address);
+    }
 }
