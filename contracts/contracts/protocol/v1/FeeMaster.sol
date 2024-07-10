@@ -289,6 +289,9 @@ contract FeeMaster is
         if (feeData.txType == TT_PRP_CONVERSION) {
             return chargedFeesPerTx = _accountPrpConversionOrClaimFees(feeData);
         }
+        if (feeData.txType == TT_ZSWAP) {
+            return chargedFeesPerTx = _accountZSwap(feeData);
+        }
     }
 
     function accountFees(
@@ -305,9 +308,6 @@ contract FeeMaster is
 
         if (feeData.txType.isMain()) {
             return chargedFeesPerTx = _accountMainFees(feeData, assetData);
-        }
-        if (feeData.txType == TT_ZSWAP) {
-            return chargedFeesPerTx = _accountZSwap(feeData, assetData);
         }
     }
 
