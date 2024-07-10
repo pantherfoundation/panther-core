@@ -205,6 +205,6 @@ contract VaultV1 is
         address token,
         uint256 tokenId
     ) external view returns (uint256) {
-        return token._getBalance(address(this), tokenId);
+        return token.getBalance(address(this), tokenId);
     }
 }

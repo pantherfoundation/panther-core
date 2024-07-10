@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import "../../../common/crypto/PoseidonHashers.sol";
 
-abstract contract ZAssetUtxoGenerator {
+library ZAssetUtxoGeneratorLib {
     function generateZAssetUtxoCommitment(
         uint256 zAssetScaledAmount,
         uint256 zAssetutxoCommitmentPrivatePart
