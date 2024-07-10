@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
 // ALT_BN128 (also known as BN254) order and BabyJubJub field prime
 export const SNARK_FIELD_SIZE = BigInt(
