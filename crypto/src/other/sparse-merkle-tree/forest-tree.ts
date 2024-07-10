@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
 import {BusTree} from './bus-tree';
 import {FOREST_TREE_DEPTH} from './constants';
