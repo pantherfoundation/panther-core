@@ -65,8 +65,6 @@ template ZSwapV1( nUtxoIn,
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
     // main data-escrow
-    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
-    var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
     var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
     // dao data-escrow
     var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
@@ -773,6 +771,7 @@ template ZSwapV1( nUtxoIn,
     dataEscrow.zAssetId <== utxoZAsset[transactedToken];
     dataEscrow.zAccountId <== zAccountUtxoInId;
     dataEscrow.zAccountZoneId <== zAccountUtxoInZoneId;
+    dataEscrow.zAccountNonce <== zAccountUtxoInNonce;
     dataEscrow.utxoInMerkleTreeSelector <== utxoInMerkleTreeSelector;
     dataEscrow.utxoInPathIndices <== utxoInPathIndices;
     dataEscrow.utxoInAmount <== utxoInAmount;
