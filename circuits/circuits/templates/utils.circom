@@ -78,7 +78,7 @@ function MaxUtxoInOut_Fn(nUtxoIn, nUtxoOut) {
     return  nUtxoIn > nUtxoOut ? nUtxoIn : nUtxoOut;
 }
 
-// the only point in the zZone data-escrow is the ephemeral pub-key of the main data-escrow safe
+// the only 1 points in the zZone data-escrow is the ephemeral pub-key of the main data-escrow safe
 function ZZoneDataEscrowPoints_Fn() {
     return 1;
 }
@@ -86,15 +86,19 @@ function ZZoneDataEscrowPoints_Fn() {
 function ZZoneDataEscrowEncryptedPoints_Fn() {
     return ZZoneDataEscrowPoints_Fn();
 }
-
+// ------------- pudding-points-size -------------
+function DataEscrowPaddingPointSize_Fn() {
+    return 0;
+}
 // ------------- scalars-size --------------------------------
 // 1) 1 x 64 (zAsset)
 // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-// 3) nUtxoIn x 64 amount
-// 4) nUtxoOut x 64 amount
-// 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
+// 3) 1 x 32 (zAccountNonce)
+// 4) nUtxoIn x 64 amount
+// 5) nUtxoOut x 64 amount
+// 6) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
 function DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut ) {
-    var dataEscrowScalarSize =  1 + 1 + nUtxoIn + nUtxoOut + MaxUtxoInOut_Fn(nUtxoIn,nUtxoOut);
+    var dataEscrowScalarSize =  1 + 1 + 1 + nUtxoIn + nUtxoOut + MaxUtxoInOut_Fn(nUtxoIn,nUtxoOut);
     return dataEscrowScalarSize;
 }
 // ------------- ec-points-size -------------
@@ -104,10 +108,10 @@ function DataEscrowPointSize_Fn( nUtxoOut ) {
 }
 
 function DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut ) {
-    return DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut ) + DataEscrowPointSize_Fn( nUtxoOut );
+    return DataEscrowPaddingPointSize_Fn() + DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut ) + DataEscrowPointSize_Fn( nUtxoOut );
 }
 
-// the only point in the zZone data-escrow is the ephemeral pub-key of the main data-escrow safe
+// the only 1 point in the Dao data-escrow is the ephemeral pub-key of the main data-escrow safe
 function DaoDataEscrowPoints_Fn() {
     return 1;
 }
@@ -945,8 +949,8 @@ template BabyJubJubSubOrderTag2DimArray(isActive,N,M) {
 template ExtractLSBits(M, N) { // extract M out of N LSB bits
     signal input in;
     signal output out;
-    assert(N < 254);
-    assert(M < N);
+    assert(0 <= N <= 254);
+    assert(0 <= M <= N);
     component n = Num2Bits(N);
     n.in <== in;
     component b = Bits2Num(M);
