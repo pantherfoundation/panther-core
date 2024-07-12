@@ -259,12 +259,12 @@ describe.only('PrpConverter', function () {
         });
     });
 
-    describe('updateZkpReserve', function () {
-        it('should update zkp reserve  ', async function () {
+    describe('increaseZkpReserve', function () {
+        it('should increase zkp reserve  ', async function () {
             const newZkpAmount = ethers.utils.parseUnits('500', 9);
             await zkpToken.transfer(prpConverter.address, newZkpAmount);
 
-            await expect(prpConverter.updateZkpReserve()).to.emit(
+            await expect(prpConverter.increaseZkpReserve()).to.emit(
                 prpConverter,
                 'Sync',
             );
@@ -280,7 +280,7 @@ describe.only('PrpConverter', function () {
                 owner.address,
                 1000,
             );
-            await expect(prpConverter.updateZkpReserve());
+            await expect(prpConverter.increaseZkpReserve());
             expect((await prpConverter.getReserves())._zkpReserve).to.be.equal(
                 zkpReserve,
             );
@@ -300,7 +300,7 @@ describe.only('PrpConverter', function () {
                 vault.address,
             )) as PrpConverter;
 
-            await expect(prpConverter.updateZkpReserve()).to.be.revertedWith(
+            await expect(prpConverter.increaseZkpReserve()).to.be.revertedWith(
                 'PC:E3',
             );
         });

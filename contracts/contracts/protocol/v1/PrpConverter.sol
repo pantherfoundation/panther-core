@@ -76,7 +76,7 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         emit Initialized(prpVirtualAmount, zkpAmount);
     }
 
-    function updateZkpReserve() external {
+    function increaseZkpReserve() external {
         require(initialized, ERR_NOT_INITIALIZED);
 
         uint256 zkpBalance = TransferHelper.safeBalanceOf(
