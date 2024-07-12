@@ -6,6 +6,7 @@ import "./interfaces/IOnboardingController.sol";
 import "./interfaces/IPantherPoolV1.sol";
 import "./interfaces/IPrpVoucherGrantor.sol";
 import "./pantherForest/interfaces/ITreeRootUpdater.sol";
+import "./pantherPool/publicSignals/ZAccountActivationPublicSignals.sol";
 
 import "../../common/crypto/BabyJubJub.sol";
 import { FIELD_SIZE } from "../../common/crypto/SnarkConstants.sol";
@@ -45,6 +46,8 @@ contract ZAccountsRegistry is
     BlacklistedZAccountIdsTree,
     ZAccountsRegeistrationSignatureVerifier
 {
+    using UtilsLib for uint256;
+
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -238,7 +241,9 @@ contract ZAccountsRegistry is
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
         {
-            uint256 extraInputsHash = inputs[0];
+            uint256 extraInputsHash = inputs[
+                ZACCOUNT_ACTIVATION_EXTRA_INPUT_HASH_IND
+            ];
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
                 paymasterCompensation,
@@ -250,8 +255,11 @@ contract ZAccountsRegistry is
             );
         }
 
-        uint24 zAccountId = UtilsLib.safe24(inputs[3]);
-        address zAccountMasterEOA = address(uint160(inputs[11]));
+        uint24 zAccountId = inputs[ZACCOUNT_ACTIVATION_ZACCOUNT_ID_IND]
+            .safe24();
+
+        address zAccountMasterEOA = inputs[ZACCOUNT_ACTIVATION_MASTER_EOA_IND]
+            .safeAddress();
 
         require(
             masterEOAs[zAccountId] == zAccountMasterEOA,
@@ -262,7 +270,10 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubRootSpendingKey = BabyJubJub.pointPack(
-                G1Point({ x: inputs[5], y: inputs[6] })
+                G1Point({
+                    x: inputs[ZACCOUNT_ACTIVATION_ROOT_SPEND_PUB_KEY_X_IND],
+                    y: inputs[ZACCOUNT_ACTIVATION_ROOT_SPEND_PUB_KEY_Y_IND]
+                })
             );
             require(
                 _zAccount.pubRootSpendingKey == pubRootSpendingKey,
@@ -278,7 +289,10 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubReadingKey = BabyJubJub.pointPack(
-                G1Point({ x: inputs[7], y: inputs[8] })
+                G1Point({
+                    x: inputs[ZACCOUNT_ACTIVATION_ROOT_READ_PUB_KEY_X_IND],
+                    y: inputs[ZACCOUNT_ACTIVATION_ROOT_READ_PUB_KEY_Y_IND]
+                })
             );
 
             require(
@@ -289,7 +303,14 @@ contract ZAccountsRegistry is
 
         {
             bytes32 pubKeyNullifier = BabyJubJub.pointPack(
-                G1Point({ x: inputs[9], y: inputs[10] })
+                G1Point({
+                    x: inputs[
+                        ZACCOUNT_ACTIVATION_ZACCOUNT_NULLIFIER_PUB_KEY_X_IND
+                    ],
+                    y: inputs[
+                        ZACCOUNT_ACTIVATION_ZACCOUNT_NULLIFIER_PUB_KEY_Y_IND
+                    ]
+                })
             );
             require(
                 pubKeyZAccountNullifiers[pubKeyNullifier] == 0,
@@ -301,7 +322,9 @@ contract ZAccountsRegistry is
 
         {
             // Prevent double-activation for the same zone and network
-            bytes32 zoneNullifier = bytes32(inputs[12]);
+            bytes32 zoneNullifier = bytes32(
+                inputs[ZACCOUNT_ACTIVATION_NULLIFIER_ZONE_IND]
+            );
             require(
                 zoneZAccountNullifiers[zoneNullifier] == 0,
                 ERR_DUPLICATED_NULLIFIER
@@ -319,7 +342,9 @@ contract ZAccountsRegistry is
         if (userPrevStatus == ZACCOUNT_STATUS.REGISTERED) {
             zAccounts[zAccountMasterEOA].status = ZACCOUNT_STATUS.ACTIVATED;
 
-            bytes32 secretHash = bytes32(inputs[17]);
+            bytes32 secretHash = bytes32(
+                inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND]
+            );
             _grantPrpRewardsToUser(secretHash);
             transactionType = TT_ZACCOUNT_ACTIVATION;
         } else {

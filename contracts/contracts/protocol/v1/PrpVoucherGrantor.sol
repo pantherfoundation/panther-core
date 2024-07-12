@@ -4,6 +4,9 @@
 pragma solidity 0.8.19;
 
 import "./interfaces/IPantherPoolV1.sol";
+
+import "./pantherPool/publicSignals/PrpClaimPublicSignals.sol";
+
 import { FIELD_SIZE } from "../../common/crypto/SnarkConstants.sol";
 import { MAX_PRP_AMOUNT } from "../../common/Constants.sol";
 
@@ -164,7 +167,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         uint96 paymasterCompensation,
         bytes memory privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
-        bytes32 secretHash = bytes32(inputs[15]);
+        bytes32 secretHash = bytes32(inputs[PRP_CLAIM_SALT_HASH_IND]);
 
         uint256 rewardAmount = balance[secretHash];
 
@@ -174,7 +177,9 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         );
 
         {
-            uint256 withdrawAmountPrp = inputs[5];
+            uint256 withdrawAmountPrp = inputs[
+                PRP_CLAIM_WITHDRAW_PRP_AMOUNT_IND
+            ];
             require(
                 withdrawAmountPrp == 0,
                 "PrpVoucherGrantor: Non zero withdraw amount prp"
@@ -182,7 +187,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         }
 
         {
-            uint256 depositAmountPrp = inputs[4];
+            uint256 depositAmountPrp = inputs[PRP_CLAIM_DEPOSIT_PRP_AMOUNT_IND];
             require(
                 depositAmountPrp <= MAX_PRP_AMOUNT,
                 "PrpVoucherGrantor: Too large prp amount"
@@ -194,7 +199,7 @@ contract PrpVoucherGrantor is ImmutableOwnable, Utils {
         }
 
         {
-            uint256 extraInputsHash = inputs[0];
+            uint256 extraInputsHash = inputs[PRP_CLAIM_EXTRA_INPUT_HASH_IND];
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
                 paymasterCompensation,

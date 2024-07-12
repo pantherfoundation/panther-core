@@ -4,6 +4,9 @@
 pragma solidity 0.8.19;
 
 import "./interfaces/IPantherPoolV1.sol";
+
+import "./pantherPool/publicSignals/PrpConversionPublicSignals.sol";
+
 import { FIELD_SIZE } from "../../common/crypto/SnarkConstants.sol";
 
 import "../../common/TransferHelper.sol";
@@ -14,6 +17,7 @@ import "../../common/UtilsLib.sol";
 import "./errMsgs/PrpConverterErrMsgs.sol";
 
 contract PrpConverter is ImmutableOwnable, Claimable {
+    using UtilsLib for uint256;
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -177,7 +181,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
         // acts as a deadline
 
         {
-            uint256 extraInputsHash = inputs[0];
+            uint256 extraInputsHash = inputs[
+                PRP_CONVERSION_EXTRA_INPUT_HASH_IND
+            ];
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
                 zkpAmountOutMin,
@@ -192,7 +198,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         {
             // this function is not supposed to add (aka deposit) prp to zAccount
-            uint256 depositAmountPrp = inputs[4];
+            uint256 depositAmountPrp = inputs[
+                PRP_CONVERSION_DEPOSIT_PRP_AMOUNT_IND
+            ];
             require(depositAmountPrp == 0, ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP);
         }
 
@@ -202,7 +210,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
 
         uint96 zkpAmountOutRounded;
         // amount to be withdrawn from zAccount UTXO and added to the converter's prpVirtualBalance
-        uint256 withdrawAmountPrp = inputs[5];
+        uint256 withdrawAmountPrp = inputs[
+            PRP_CONVERSION_WITHDRAW_PRP_AMOUNT_IND
+        ];
 
         {
             uint256 zkpAmountOut = getAmountOut(
@@ -211,15 +221,14 @@ contract PrpConverter is ImmutableOwnable, Claimable {
                 _zkpReserve
             );
 
-            uint256 scale = inputs[9];
+            uint256 scale = inputs[PRP_CONVERSION_ZASSET_SCALE_IND];
+            require(scale != 0, "zero scale");
             require(zkpAmountOut >= scale, ERR_INSUFFICIENT_AMOUNT_OUT);
             require(zkpAmountOut >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);
 
             unchecked {
                 // rounding the amount (leaving the changes in the contract)
-                zkpAmountOutRounded = UtilsLib.safe96(
-                    (zkpAmountOut / scale) * scale
-                );
+                zkpAmountOutRounded = ((zkpAmountOut / scale) * scale).safe96();
             }
 
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
@@ -250,9 +259,9 @@ contract PrpConverter is ImmutableOwnable, Claimable {
     }
 
     function _update(uint256 prpVirtualBalance, uint256 zkpBalance) private {
-        prpReserve = UtilsLib.safe64(prpVirtualBalance);
-        zkpReserve = UtilsLib.safe96(zkpBalance);
-        blockTimestampLast = UtilsLib.safe32(block.timestamp);
+        prpReserve = prpVirtualBalance.safe64();
+        zkpReserve = zkpBalance.safe96();
+        blockTimestampLast = block.timestamp.safe32();
 
         emit Sync(prpReserve, zkpReserve);
     }
