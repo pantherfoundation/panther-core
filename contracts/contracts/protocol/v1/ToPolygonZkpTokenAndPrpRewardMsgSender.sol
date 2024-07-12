@@ -126,7 +126,7 @@ contract ToPolygonZkpTokenAndPrpRewardMsgSender is
         nonce = uint128(_nonce);
 
         // TODO: the contract is better to include the `PRP_CONVERTER` address so that
-        // `PROTOCOL_REWARD_MESSAGE_RELAYER` get the address and execute updateZkpReserve()
+        // `PROTOCOL_REWARD_MESSAGE_RELAYER` get the address and execute increaseZkpReserve()
         bytes memory content = _encodeBridgedData(
             _nonce,
             GT_ZKP_RELEASE,

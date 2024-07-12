@@ -96,7 +96,7 @@ contract PolygonPrpRewardMsgRelayer is
         );
 
         // Trusted contract - no reentrancy guard needed
-        IPrpConverter(PRP_CONVERTER).updateZkpReserve();
+        IPrpConverter(PRP_CONVERTER).increaseZkpReserve();
 
         emit PrpRewardMsgRelayed(_nonce, content);
     }
