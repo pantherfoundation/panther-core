@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./ammV1.circom";
 include "./templates/utils.circom";
