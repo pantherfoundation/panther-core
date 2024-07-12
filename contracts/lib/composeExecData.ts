@@ -27,7 +27,7 @@ function composeExecData(data: SaltedLockDataStruct, vault: string): string {
     } else if (data.tokenType === TokenType.Erc721) {
         execData = ethers.utils.hexConcat([
             ethers.utils
-                .id('transferFrom(address,address,uint256)')
+                .id('safeTransferFrom(address,address,uint256)')
                 .substr(0, 10),
             ethers.utils.defaultAbiCoder.encode(
                 ['address', 'address', 'uint256'],
@@ -45,7 +45,7 @@ function composeExecData(data: SaltedLockDataStruct, vault: string): string {
             ),
         ]);
     } else if (data.tokenType === TokenType.Native) {
-        execData = '0x33ff00';
+        throw new Error('use vault.getEscrowAddress(salt,sender)');
     } else {
         throw new Error(ERR_INVALID_TOKEN_TYPE);
     }
