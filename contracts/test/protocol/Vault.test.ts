@@ -5,12 +5,16 @@ import crypto from 'crypto';
 
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SaltedLockDataStruct} from '@panther-core/dapp/src/types/contracts/Vault';
 import chai, {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
+import {TokenType} from '../../lib/token';
 import {toBigNum} from '../../lib/utilities';
 import {VaultV1, IERC20, IERC721, IERC1155} from '../../types/contracts';
+
+import {ADDRESS_ZERO, composeERC20SenderStealthAddress} from './shared';
 
 chai.use(smock.matchers);
 
@@ -22,16 +26,9 @@ describe('VaultV1 contract', function () {
     let owner: SignerWithAddress;
     let extAccount: SignerWithAddress;
     let lockData: LockData;
-    let saltedLockData: SaltedLockData;
+    let saltedLockData: SaltedLockDataStruct;
 
     const oneEth = ethers.constants.WeiPerEther;
-    const TokenType = {
-        Erc20: 0x00,
-        Erc721: 0x10,
-        Erc1155: 0x11,
-        Native: 0xff,
-        unknown: 0x99,
-    };
 
     before(async function () {
         [owner, extAccount] = await ethers.getSigners();
@@ -250,7 +247,6 @@ describe('VaultV1 contract', function () {
                 const balanceToAfter = await ethers.provider.getBalance(
                     saltedLockData.extAccount,
                 );
-
                 expect(balanceVaultBefore.sub(balanceVaultAfter)).to.be.equal(
                     oneEth,
                 );
@@ -259,107 +255,236 @@ describe('VaultV1 contract', function () {
         });
     });
 
-    // TODO: implement tests for 'function lockAssetWithSalt'
-    describe.skip('function lockAssetWithSalt', () => {
-        describe('Erc20', () => {
-            before(() => {
-                erc20Token.transferFrom.returns(true);
-                erc20Token.transfer.returns(true);
+    describe('function lockAssetWithSalt', () => {
+        let saltedLockData: SaltedLockDataStruct;
+        let token;
+        let stealthAddress;
+        let deployerAddress;
+        let tokenType;
+        const salt =
+            '0x00fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fe';
+        const amount = 1e2;
 
-                saltedLockData = extendLockDataWithSalt(
-                    genLockData(TokenType.Erc20, erc20Token.address),
+        before(async () => {
+            deployerAddress = owner.address;
+            const MockERC20 = await ethers.getContractFactory('MockERC20');
+            token = await MockERC20.deploy(0, deployerAddress);
+        });
+
+        describe('Erc20', () => {
+            before(async () => {
+                tokenType = TokenType.Erc20;
+                saltedLockData = {
+                    tokenType: tokenType,
+                    token: token.address,
+                    tokenId: 0,
+                    salt: salt,
+                    extAccount: owner.address,
+                    extAmount: amount,
+                };
+                expect(await token.balanceOf(deployerAddress)).gt(
+                    saltedLockData.extAmount,
                 );
+
+                stealthAddress = composeERC20SenderStealthAddress(
+                    saltedLockData,
+                    vault.address,
+                );
+
+                await token.transfer(extAccount.address, amount);
+
+                await token
+                    .connect(owner)
+                    .approve(stealthAddress, saltedLockData.extAmount);
+
+                const allowance = await token.allowance(
+                    deployerAddress,
+                    stealthAddress,
+                );
+
+                await expect(allowance).gte(saltedLockData.extAmount);
             });
 
             it('should lock erc20', async () => {
-                await expect(vault.lockAssetWithSalt(saltedLockData))
+                await expect(await vault.lockAssetWithSalt(saltedLockData))
                     .to.emit(vault, 'Locked')
                     .withArgs([
-                        lockData.tokenType,
-                        lockData.token,
-                        lockData.tokenId,
-                        lockData.extAccount,
-                        lockData.extAmount,
+                        saltedLockData.tokenType,
+                        saltedLockData.token,
+                        saltedLockData.tokenId,
+                        saltedLockData.extAccount,
+                        saltedLockData.extAmount,
                     ]);
-
-                expect(erc20Token.transferFrom).to.have.been.calledWith(
-                    extAccount.address,
-                    vault.address,
-                    lockData.extAmount,
-                );
             });
         });
 
         describe('Erc721', () => {
-            before(() => {
-                erc721Token[
-                    'safeTransferFrom(address,address,uint256)'
-                ].returns(true);
+            before(async () => {
+                const tokenId = 333;
+                token = await (
+                    await ethers.getContractFactory('MockERC721')
+                ).deploy();
+                await token.mint(extAccount.address, tokenId);
+                tokenType = TokenType.Erc721;
+                saltedLockData = {
+                    tokenType: tokenType,
+                    token: token.address,
+                    tokenId: tokenId,
+                    salt: salt,
+                    extAccount: extAccount.address,
+                    extAmount: 1,
+                };
 
-                saltedLockData = extendLockDataWithSalt(
-                    genLockData(TokenType.Erc721, erc721Token.address),
+                expect(await token.ownerOf(tokenId)).eq(extAccount.address);
+
+                stealthAddress = composeERC20SenderStealthAddress(
+                    saltedLockData,
+                    vault.address,
                 );
+
+                await token
+                    .connect(extAccount)
+                    .approve(stealthAddress, tokenId);
+
+                const approved = await token.getApproved(tokenId);
+
+                await expect(approved).eq(stealthAddress);
             });
 
             it('should lock erc721', async () => {
                 await expect(vault.lockAssetWithSalt(saltedLockData))
                     .to.emit(vault, 'Locked')
                     .withArgs([
-                        lockData.tokenType,
-                        lockData.token,
-                        lockData.tokenId,
-                        lockData.extAccount,
-                        lockData.extAmount,
+                        saltedLockData.tokenType,
+                        saltedLockData.token,
+                        saltedLockData.tokenId,
+                        saltedLockData.extAccount,
+                        saltedLockData.extAmount,
                     ]);
-
-                expect(
-                    erc721Token['safeTransferFrom(address,address,uint256)'],
-                ).to.have.been.calledWith(
-                    extAccount.address,
-                    vault.address,
-                    lockData.tokenId,
-                );
             });
         });
 
         describe('Erc1155', () => {
-            before(() => {
-                erc1155Token.safeTransferFrom.returns(true);
+            before(async () => {
+                const tokenId = 333;
+                const amount = 1;
+                token = await (
+                    await ethers.getContractFactory('MockERC1155')
+                ).deploy();
+                await token.mint(extAccount.address, tokenId, amount, '0x');
+                tokenType = TokenType.Erc1155;
+                saltedLockData = {
+                    tokenType: tokenType,
+                    token: token.address,
+                    tokenId: tokenId,
+                    salt: salt,
+                    extAccount: extAccount.address,
+                    extAmount: amount,
+                };
 
-                saltedLockData = extendLockDataWithSalt(
-                    genLockData(TokenType.Erc1155, erc1155Token.address),
+                stealthAddress = composeERC20SenderStealthAddress(
+                    saltedLockData,
+                    vault.address,
                 );
+
+                await token
+                    .connect(extAccount)
+                    .setApprovalForAll(stealthAddress, true);
+
+                const approved = await token.isApprovedForAll(
+                    extAccount.address,
+                    stealthAddress,
+                );
+
+                await expect(approved).eq(true);
             });
 
             it('should lock erc1155', async () => {
                 await expect(vault.lockAssetWithSalt(saltedLockData))
                     .to.emit(vault, 'Locked')
                     .withArgs([
-                        lockData.tokenType,
-                        lockData.token,
-                        lockData.tokenId,
-                        lockData.extAccount,
-                        lockData.extAmount,
+                        saltedLockData.tokenType,
+                        saltedLockData.token,
+                        saltedLockData.tokenId,
+                        saltedLockData.extAccount,
+                        saltedLockData.extAmount,
                     ]);
-
-                expect(erc1155Token.safeTransferFrom).to.have.been.calledWith(
-                    extAccount.address,
-                    vault.address,
-                    lockData.tokenId,
-                    lockData.extAmount,
-                    '0x',
-                );
             });
         });
 
-        // TODO: implement tests for the native token lock with 'function lockAssetWithSalt'
         describe('Native token', () => {
+            const amount = ethers.constants.WeiPerEther;
+            beforeEach(async () => {
+                tokenType = TokenType.Native;
+                saltedLockData = {
+                    tokenType: tokenType,
+                    token: ADDRESS_ZERO,
+                    tokenId: 0,
+                    salt: salt,
+                    extAccount: owner.address,
+                    extAmount: amount,
+                };
+            });
+
             describe('if msg.value is zero', () => {
-                it('should lock native token from escrow', async () => {});
+                before(async () => {
+                    tokenType = TokenType.Native;
+                    saltedLockData = {
+                        tokenType: tokenType,
+                        token: ADDRESS_ZERO,
+                        tokenId: 0,
+                        salt: salt,
+                        extAccount: owner.address,
+                        extAmount: amount,
+                    };
+
+                    const stealthAddress = await vault.getEscrowAddress(
+                        salt,
+                        owner.address,
+                    );
+
+                    await owner.sendTransaction({
+                        to: stealthAddress,
+                        value: amount,
+                    });
+
+                    await expect(
+                        await ethers.provider.getBalance(stealthAddress),
+                    ).gte(saltedLockData.extAmount);
+                });
+
+                it('should lock native token from escrow', async () => {
+                    await expect(vault.lockAssetWithSalt(saltedLockData))
+                        .to.emit(vault, 'Locked')
+                        .withArgs([
+                            saltedLockData.tokenType,
+                            saltedLockData.token,
+                            saltedLockData.tokenId,
+                            saltedLockData.extAccount,
+                            saltedLockData.extAmount,
+                        ]);
+                });
             });
 
             describe('if msg.value is NOT zero', () => {
-                it('should lock native token being sent with the tx', async () => {});
+                before(async () => {
+                    await vault
+                        .connect(owner)
+                        .sendEthToEscrow(salt, {value: amount})
+                        .then(tx => tx.wait());
+                });
+
+                it('should lock native token being sent with the tx', async () => {
+                    await expect(vault.lockAssetWithSalt(saltedLockData))
+                        .to.emit(vault, 'Locked')
+                        .withArgs([
+                            saltedLockData.tokenType,
+                            saltedLockData.token,
+                            saltedLockData.tokenId,
+                            saltedLockData.extAccount,
+                            saltedLockData.extAmount,
+                        ]);
+                });
             });
         });
     });
@@ -439,7 +564,7 @@ describe('VaultV1 contract', function () {
             });
         });
 
-        describe('when lockAsset/unlockAsset with zero amount', () => {
+        describe('when lockAsset/unlockAsset with zero lockData.extAmount', () => {
             before(() => {
                 lockData = genLockData(TokenType.Erc20, erc20Token.address);
                 lockData.extAmount = toBigNum(0);
@@ -477,7 +602,7 @@ describe('VaultV1 contract', function () {
         };
     }
 
-    function extendLockDataWithSalt(lockData: LockData): SaltedLockData {
+    function extendLockDataWithSalt(lockData: LockData): SaltedLockDataStruct {
         // Random 64-bytes hex string
         const salt =
             '0x' +
@@ -489,15 +614,6 @@ describe('VaultV1 contract', function () {
         tokenType: number;
         token: string;
         tokenId: BigNumber;
-        extAccount: string;
-        extAmount: BigNumber;
-    };
-
-    type SaltedLockData = {
-        tokenType: number;
-        token: string;
-        tokenId: BigNumber;
-        salt: string;
         extAccount: string;
         extAmount: BigNumber;
     };
