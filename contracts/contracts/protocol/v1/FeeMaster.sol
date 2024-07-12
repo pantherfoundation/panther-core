@@ -360,16 +360,17 @@ contract FeeMaster is
 
     function payOff(
         address tokenAddress,
-        address receiver
+        address receiver,
+        uint256 amount
     ) external returns (uint256 debt) {
         debt = debts[msg.sender][tokenAddress];
-        require(debt > 0, "zero debt");
+        require(debt >= amount, "zero debt");
 
-        _updateDebts(msg.sender, tokenAddress, -int256(debt));
+        _updateDebts(msg.sender, tokenAddress, -int256(amount));
 
         PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             tokenAddress,
-            -int256(debt),
+            -int256(amount),
             receiver
         );
 

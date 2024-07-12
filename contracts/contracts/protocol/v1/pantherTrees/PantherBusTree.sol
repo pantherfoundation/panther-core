@@ -2,14 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../interfaces/IPantherPoolV1.sol";
-
 import "./busTree/BusTree.sol";
+import "./busTree/MiningRewards.sol";
 
 import "../errMsgs/PantherBusTreeErrMsgs.sol";
 import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
-import { ERC20_TOKEN_TYPE } from "../../../common/Constants.sol";
-import { LockData } from "../../../common/Types.sol";
 
 /**
  * @title PantherBusTree
@@ -24,7 +21,7 @@ import { LockData } from "../../../common/Types.sol";
  * Through its inherent knowledge of the Verification key's whereabouts, this contract undertakes
  * the verification process, subsequently updating the corresponding Panther forest leaf.
  */
-abstract contract PantherBusTree is BusTree {
+abstract contract PantherBusTree is BusTree, MiningRewards {
     // The contract is supposed to run behind a proxy DELEGATECALLing it.
     // On upgrades, adjust `__gap` to match changes of the storage layout.
     // slither-disable-next-line shadowing-state unused-state
@@ -33,28 +30,21 @@ abstract contract PantherBusTree is BusTree {
     bytes32 internal constant EMPTY_BUS_TREE_ROOT =
         TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
 
-    // address of reward token
-    address public immutable REWARD_TOKEN;
-
-    // address of feeMaster contract
-    address public immutable FEE_MASTER;
-
     // timestamp to start adding utxo
     uint32 public busTreeStartTime;
 
     bytes32[50] private _endGap;
 
-    event MinerRewarded(address miner, uint256 reward);
-
     constructor(
         address pantherPool,
         address pantherVerifier,
         address feeMaster,
-        address rewardToken
-    ) BusTree(pantherPool, pantherVerifier) {
-        REWARD_TOKEN = rewardToken;
-        FEE_MASTER = feeMaster;
-    }
+        address rewardToken,
+        uint8 miningRewardVersion
+    )
+        BusTree(pantherPool, pantherVerifier)
+        MiningRewards(feeMaster, rewardToken, miningRewardVersion)
+    {}
 
     function _initializeBusTree() internal {
         busTreeStartTime = uint32(block.timestamp);
@@ -79,26 +69,6 @@ abstract contract PantherBusTree is BusTree {
 
         _busTreeRoot = busTreeNewRoot;
 
-        // TODO: Account fees
-        _rewardMiner(miner, reward);
-        // _accountMinerRewards();
-    }
-
-    // TODO
-    // solhint-disable-next-line no-empty-blocks
-    function _accountMinerRewards() private {}
-
-    // TODO: account reward miner
-    function _rewardMiner(address miner, uint256 reward) private {
-        LockData memory data = LockData({
-            tokenType: ERC20_TOKEN_TYPE,
-            token: REWARD_TOKEN,
-            tokenId: 0,
-            extAccount: miner,
-            extAmount: uint96(reward)
-        });
-        // Trusted contract - no reentrancy guard needed
-        IPantherPoolV1(PANTHER_POOL).unlockAssetFromVault(data);
-        emit MinerRewarded(miner, reward);
+        _accountMinerRewards(queueId, miner, reward);
     }
 }

@@ -26,6 +26,7 @@ contract TestnetPantherTrees is PantherTrees {
         address _pantherVerifier,
         address _feeMaster,
         address _zkpToken,
+        uint8 _miningRewardVersion,
         PantherStaticTrees memory pantherStaticTrees
     )
         PantherTrees(
@@ -34,6 +35,7 @@ contract TestnetPantherTrees is PantherTrees {
             _pantherVerifier,
             _feeMaster,
             _zkpToken,
+            _miningRewardVersion,
             pantherStaticTrees
         )
     {}

@@ -15,5 +15,12 @@ interface IPantherTrees is IUtxoInserter {
         SnarkProof memory proof
     ) external;
 
-    function claimOnboardingReward() external;
+    function claimMiningReward(address receiver) external;
+
+    function claimMiningRewardWithSignature(
+        address receiver,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 }

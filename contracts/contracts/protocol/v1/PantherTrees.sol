@@ -44,10 +44,17 @@ contract PantherTrees is
         address _pantherVerifier,
         address _feeMaster,
         address _zkpToken,
+        uint8 _miningRewardVersion,
         PantherStaticTrees memory pantherStaticTrees
     )
         PantherStaticTree(pantherStaticTrees)
-        PantherBusTree(_pantherPool, _pantherVerifier, _feeMaster, _zkpToken)
+        PantherBusTree(
+            _pantherPool,
+            _pantherVerifier,
+            _feeMaster,
+            _zkpToken,
+            _miningRewardVersion
+        )
         ImmutableOwnable(_owner)
     {}
 
@@ -175,7 +182,18 @@ contract PantherTrees is
         _updateForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
     }
 
-    // TODO
-    // solhint-disable-next-line no-empty-blocks
-    function claimOnboardingReward() external {}
+    /// sends zkp token rewards to miner
+    function claimMiningReward(address receiver) external {
+        _claimMinerRewards(msg.sender, receiver);
+    }
+
+    function claimMiningRewardWithSignature(
+        address receiver,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        address miner = recoverOperator(receiver, v, r, s);
+        _claimMinerRewards(miner, receiver);
+    }
 }
