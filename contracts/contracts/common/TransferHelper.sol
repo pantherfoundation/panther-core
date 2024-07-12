@@ -45,9 +45,9 @@ library TransferHelper {
     function safeBalanceOf(
         address token,
         address account
-    ) internal returns (uint256 balance) {
+    ) internal view returns (uint256 balance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('balanceOf(address)')));
             abi.encodeWithSelector(0x70a08231, account)
         );
@@ -64,9 +64,9 @@ library TransferHelper {
     function safe721OwnerOf(
         address token,
         uint256 tokenId
-    ) internal returns (address owner) {
+    ) internal view returns (address owner) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('ownerOf(uint256)')));
             abi.encodeWithSelector(0x6352211e, tokenId)
         );
@@ -83,9 +83,9 @@ library TransferHelper {
         address token,
         address account,
         uint256 tokenId
-    ) internal returns (uint256 balance) {
+    ) internal view returns (uint256 balance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('balanceOf(address,uint256)')));
             abi.encodeWithSelector(0x00fdd58e, account, tokenId)
         );
@@ -102,9 +102,9 @@ library TransferHelper {
         address token,
         address owner,
         address spender
-    ) internal onlyDeployedToken(token) returns (uint256 allowance) {
+    ) internal view onlyDeployedToken(token) returns (uint256 allowance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256("allowance(address,address)"));
             abi.encodeWithSelector(0xdd62ed3e, owner, spender)
         );
@@ -206,6 +206,14 @@ library TransferHelper {
         _requireSuccess(success, data);
     }
 
+    /// @dev Get the Native balance of `_contract`
+    function safeContractBalance(
+        address _contract
+    ) internal view returns (uint256) {
+        isDeployedContract(_contract);
+        return _contract.balance;
+    }
+
     /// @dev Transfer `value` Ether from caller to `to`.
     function safeTransferETH(address to, uint256 value) internal {
         // slither-disable-next-line low-level-calls
@@ -218,56 +226,5 @@ library TransferHelper {
             success && (res.length == 0 || abi.decode(res, (bool))),
             "TransferHelper: token contract call failed"
         );
-    }
-
-    function getBalance(
-        address token,
-        address account,
-        uint256 tokenId
-    ) internal view onlyDeployedToken(token) returns (uint256) {
-        bytes4 balanceOfSelector;
-        bool success;
-        bytes memory data;
-
-        // Native token (ETH, MATIC, etc.)
-        if (token == address(0)) {
-            return account.balance;
-        }
-
-        // Check if the token is ERC20 by calling balanceOf(address)
-        balanceOfSelector = 0x70a08231;
-        (success, data) = token.staticcall(
-            abi.encodeWithSelector(balanceOfSelector, account)
-        );
-        if (success && data.length == 32) {
-            return abi.decode(data, (uint256));
-        }
-
-        // Check if the token is ERC1155 by calling balanceOf(address,uint256)
-        balanceOfSelector = 0x00fdd58e;
-        (success, data) = token.staticcall(
-            abi.encodeWithSelector(balanceOfSelector, account, tokenId)
-        );
-        if (success && data.length == 32) {
-            return abi.decode(data, (uint256));
-        }
-
-        // Check if the token is ERC721 by calling ownerOf(uint256)
-        balanceOfSelector = 0x6352211e;
-        (success, data) = token.staticcall(
-            abi.encodeWithSelector(balanceOfSelector, tokenId)
-        );
-        if (success && data.length == 32) {
-            address owner = abi.decode(data, (address));
-            bool isOwner = (owner == account);
-            if (isOwner) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
-        // Return unknown type if none match
-        revert("Unknown token");
     }
 }

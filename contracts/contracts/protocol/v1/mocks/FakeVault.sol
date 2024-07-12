@@ -4,8 +4,9 @@ pragma solidity ^0.8.19;
 
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
 import "../interfaces/IVaultV1.sol";
+import "../interfaces/IEthEscrow.sol";
 
-contract FakeVault is IVaultV1 {
+contract FakeVault is IVaultV1, IEthEscrow {
     event DebugData(bytes32 data);
     event DebugData(LockData data);
     event DebugSaltedData(SaltedLockData data);
@@ -39,13 +40,5 @@ contract FakeVault is IVaultV1 {
         // to silence mutability warning
         this;
         escrowAddr = address(uint160(0x1010));
-    }
-
-    function getBalance(
-        address token,
-        uint256 tokenId
-    ) external view returns (uint256) {
-        (tokenId, token);
-        return 0;
     }
 }

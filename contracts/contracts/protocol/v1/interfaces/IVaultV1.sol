@@ -3,9 +3,10 @@
 pragma solidity ^0.8.19;
 
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
-import { IEthEscrow } from "./IEthEscrow.sol";
 
-interface IVaultV1 is IEthEscrow {
+// import { IEthEscrow } from "./IEthEscrow.sol";
+
+interface IVaultV1 {
     /***
       @notice Transfers token from account defined by `salt` to this contract.
       Only the owner may call.
@@ -31,11 +32,6 @@ interface IVaultV1 is IEthEscrow {
       @dev The comment above on the re-entrance is applicable for9 this function.
      */
     function unlockAsset(LockData calldata lData) external;
-
-    function getBalance(
-        address token,
-        uint256 tokenId
-    ) external view returns (uint256);
 
     event Locked(LockData data);
     event Unlocked(LockData data);
