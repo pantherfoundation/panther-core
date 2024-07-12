@@ -12,4 +12,3 @@ string constant ERR_NONZERO_LOCK_TOKEN_ID = "VA1:E6";
 string constant ERR_MISMATCHING_MSG_VALUE = "VA1:E7";
 string constant ERR_NON_ZERO_MSG_VALUE = "VA1:E8";
 string constant ERR_UNEXPECTED_NFT_AMOUNT = "VA1:E9";
-// string constant ERR_UNEXPECTED_SENDER = "VA1:EA";

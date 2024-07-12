@@ -2,17 +2,17 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import { ERC20_TOKEN_TYPE, ERC721_TOKEN_TYPE, ERC1155_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../common/Constants.sol";
+import "./interfaces/IVaultV1.sol";
+
 import { LockData, SaltedLockData } from "../../common/Types.sol";
 import "../../common/ImmutableOwnable.sol";
-import "../../common/TransferHelper.sol";
 import "../../common/PullWithSaltHelper.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/OnERC1155Received.sol";
 import "../../common/OnERC721Received.sol";
 import "./errMsgs/VaultErrMsgs.sol";
-import "./interfaces/IVaultV1.sol";
 import "./vault/EthEscrow.sol";
+import "./vault/BalanceViewer.sol";
 
 /**
  * @title Vault
@@ -27,6 +27,7 @@ contract VaultV1 is
     OnERC721Received,
     OnERC1155Received,
     EthEscrow,
+    BalanceViewer,
     IVaultV1
 {
     using TransferHelper for address;
@@ -199,12 +200,5 @@ contract VaultV1 is
             saltedData.extAccount,
             UtilsLib.safe96(saltedData.extAmount)
         );
-    }
-
-    function getBalance(
-        address token,
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return token.getBalance(address(this), tokenId);
     }
 }
