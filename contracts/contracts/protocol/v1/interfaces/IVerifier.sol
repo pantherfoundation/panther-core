@@ -3,7 +3,6 @@
 pragma solidity ^0.8.19;
 
 import { SnarkProof } from "../../../common/Types.sol";
-import "./IVerifier.sol";
 
 interface IVerifier {
     /**

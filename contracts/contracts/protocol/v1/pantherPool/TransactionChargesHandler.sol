@@ -3,7 +3,8 @@
 pragma solidity ^0.8.19;
 
 import "../interfaces/IVaultV1.sol";
-import "../interfaces/IFeeMaster.sol";
+import "../interfaces/IFeeAccountant.sol";
+import "../interfaces/ITransactionChargesHandler.sol";
 
 import "./Types.sol";
 import "./publicSignals/MainPublicSignals.sol";
@@ -15,27 +16,50 @@ import { NATIVE_TOKEN, NATIVE_TOKEN_TYPE, ERC20_TOKEN_TYPE } from "../../../comm
 import { LockData } from "../../../common/Types.sol";
 import "../../../common/UtilsLib.sol";
 import "./TransactionTypes.sol";
+import "./VaultLib.sol";
 
-abstract contract TransactionChargesHandler {
+/**
+ * @title TransactionChargesHandler
+ * @notice Provides methods for adjusting vault assets, accounting fees,
+ * and handling various transaction types with specific fee calculations.
+ */
+abstract contract TransactionChargesHandler is ITransactionChargesHandler {
     using TransactionTypes for uint16;
+    using VaultLib for address;
     using UtilsLib for uint256;
     using UtilsLib for uint96;
     using UtilsLib for uint40;
 
     mapping(address => uint256) public feeMasterDebt;
 
+    // Immutable state variables
     address public immutable ZKP_TOKEN;
     address public immutable FEE_MASTER;
-    address public immutable VAULT;
 
     event FeesAccounted(ChargedFeesPerTx chargedFeesPerTx);
 
-    constructor(address zkpToken, address feeMaster, address vault) {
+    /**
+     * @dev Constructor sets the ZKP token and fee master contract addresses.
+     * @param zkpToken Address of ZKP token.
+     * @param feeMaster Address of the fee master contract responsible for fee calculations.
+     */
+    constructor(address zkpToken, address feeMaster) {
+        require(
+            zkpToken != address(0) && feeMaster != address(0),
+            "init::TransactionChargesHandler:zero address"
+        );
+
         ZKP_TOKEN = zkpToken;
         FEE_MASTER = feeMaster;
-        VAULT = vault;
     }
 
+    /**
+     * @notice Adjusts vault assets based on net amount and updates fee master debt.
+     * @dev Only callable by the fee master contract.
+     * @param token Address of the token being adjusted.
+     * @param netAmount Net amount of tokens being locked/unlocked.
+     * @param extAccount External account affected by the transaction.
+     */
     function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
         address token,
         int256 netAmount,
@@ -66,6 +90,15 @@ abstract contract TransactionChargesHandler {
         }
     }
 
+    /**
+     * @notice Accounts fees and returns protocol fee and mining reward.
+     * @dev Handles specific transaction type: Main (Deposit, Withdrawal and, Internal)
+     * @param inputs Public input parameters for the transaction.
+     * @param paymasterCompensation Compensation amount for the paymaster in ZKP token.
+     * @param txType Type of the transaction being processed.
+     * @return protocolFee The fee for protocol operations.
+     * @return miningReward The reward for mining the transaction.
+     */
     function accountFeesAndReturnProtocolFeeAndMiningReward(
         uint256[] calldata inputs,
         uint96 paymasterCompensation,
@@ -124,6 +157,15 @@ abstract contract TransactionChargesHandler {
         emit FeesAccounted(chargedFeesPerTx);
     }
 
+    /**
+     * @notice Accounts fees and returns mining reward.
+     * @dev Handles specific transaction types: ZAccount activation, PRP claim,
+     * PRP Conversion, and zSwap.
+     * @param inputs The public input parameters to be passed to verifier.
+     * @param paymasterCompensation Compensation amount for the paymaster in ZKP token.
+     * @param txType Type of the transaction being processed.
+     * @return miningReward The reward for mining the transaction.
+     */
     function accountFeesAndReturnMiningReward(
         uint256[] calldata inputs,
         uint96 paymasterCompensation,
@@ -197,31 +239,48 @@ abstract contract TransactionChargesHandler {
         emit FeesAccounted(chargedFeesPerTx);
     }
 
+    /**
+     * @dev Internal function to lock asset and increase fee master debt.
+     * @param data Lock data specifying token, amount, and external account.
+     */
     function _lockAssetAndIncreaseFeeMasterDebt(LockData memory data) private {
         address token = data.token;
 
         feeMasterDebt[token] += data.extAmount;
-        uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
 
-        IVaultV1(VAULT).lockAsset{ value: msgValue }(data);
+        _getVault().lockAsset(data);
     }
 
+    /**
+     * @dev Internal function to unlock asset and decrease fee master debt.
+     * @param data Unlock data specifying token, amount, and external account.
+     */
     function _unlockAssetAndDecreaseFeeMasterDebt(
         LockData memory data
     ) private {
         feeMasterDebt[data.token] -= data.extAmount;
 
-        IVaultV1(VAULT).unlockAsset(data);
+        _getVault().unlockAsset(data);
     }
 
+    /**
+     * @dev Internal function to increase fee master debt for a specific token.
+     * @param token Address of the token for which debt is increased.
+     * @param amount Amount by which to increase the debt.
+     */
     function _increaseFeeMasterDebt(address token, uint256 amount) private {
         feeMasterDebt[token] += amount;
     }
 
+    /**
+     * @dev Internal function to account fees based on fee data.
+     * @param feeData Fee-related data including transaction type and ZKP fees.
+     * @return chargedFeesPerTx Structure containing detailed fee information.
+     */
     function _accountFees(
         FeeData memory feeData
     ) private returns (ChargedFeesPerTx memory) {
-        try IFeeMaster(FEE_MASTER).accountFees(feeData) returns (
+        try IFeeAccountant(FEE_MASTER).accountFees(feeData) returns (
             ChargedFeesPerTx memory chargedFeesPerTx
         ) {
             return chargedFeesPerTx;
@@ -230,11 +289,17 @@ abstract contract TransactionChargesHandler {
         }
     }
 
+    /**
+     * @dev Internal function to account fees based on fee data and asset data.
+     * @param feeData Fee-related data including transaction type and ZKP fees.
+     * @param assetData Asset-related data including token address and amounts.
+     * @return chargedFeesPerTx Structure containing detailed fee information.
+     */
     function _accountFees(
         FeeData memory feeData,
         AssetData memory assetData
     ) private returns (ChargedFeesPerTx memory) {
-        try IFeeMaster(FEE_MASTER).accountFees(feeData, assetData) returns (
+        try IFeeAccountant(FEE_MASTER).accountFees(feeData, assetData) returns (
             ChargedFeesPerTx memory chargedFeesPerTx
         ) {
             return chargedFeesPerTx;
@@ -242,4 +307,10 @@ abstract contract TransactionChargesHandler {
             revert(reason);
         }
     }
+
+    /**
+     * @dev Internal function to retrieve the vault address.
+     * @return Address of the vault used for asset locking/unlocking operations.
+     */
+    function _getVault() internal view virtual returns (address);
 }

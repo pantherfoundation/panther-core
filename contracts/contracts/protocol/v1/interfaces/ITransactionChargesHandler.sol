@@ -8,4 +8,6 @@ interface ITransactionChargesHandler {
         int256 netAmount,
         address extAccount
     ) external payable;
+
+    function feeMasterDebt(address) external view returns (uint256);
 }
