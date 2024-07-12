@@ -3,6 +3,7 @@
 pragma solidity ^0.8.19;
 
 import "../interfaces/IPlugin.sol";
+import "../interfaces/IBalanceViewer.sol";
 
 import "./VaultLib.sol";
 import "./ZAssetUtxoGeneratorLib.sol";
@@ -31,14 +32,11 @@ library ZSwapLib {
         returns (bytes32[2] memory zAssetUtxos, uint256 outputAmountScaled)
     {
         // it trusts the caller check if this input parameter is equal to vault address
-        address vault = address(
-            uint160(inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND])
-        );
+        address vault = inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
+            .safeAddress();
 
         // TODO: get TokenType from inputs
-        address existingToken = address(
-            uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
-        );
+        address existingToken = inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress();
         uint8 tokenType = existingToken == NATIVE_TOKEN
             ? NATIVE_TOKEN_TYPE
             : ERC20_TOKEN_TYPE;
@@ -49,36 +47,16 @@ library ZSwapLib {
                 existingToken,
                 inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
                 plugin,
-                UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND])
+                inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96()
             )
         );
 
-        uint256 vaultInitialBalance = IVaultV1(vault).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        uint96 outputAmount = execute(
+        uint96 outputAmount = _executeSwapAndVerifyOutput(
             plugin,
-            PluginData({
-                tokenIn: existingToken,
-                tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-                amountIn: UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND]),
-                tokenType: tokenType,
-                data: data
-            })
-        );
-
-        uint256 vaultUpdatedBalance = IVaultV1(vault).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        uint256 receivedAmount = vaultUpdatedBalance - vaultInitialBalance;
-
-        require(
-            outputAmount != 0 && receivedAmount == outputAmount,
-            "Zero received amount"
+            vault,
+            tokenType,
+            inputs,
+            data
         );
 
         uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
@@ -94,14 +72,48 @@ library ZSwapLib {
         );
     }
 
-    function execute(
+    function _executeSwapAndVerifyOutput(
         address plugin,
-        PluginData memory pluginData
+        address vault,
+        uint8 tokenType,
+        uint256[] memory inputs,
+        bytes memory swapData
     ) private returns (uint96 _outputAmount) {
+        address existingToken = inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress();
+        address incomingToken = inputs[ZSWAP_INCOMING_TOKEN_IND].safeAddress();
+
+        PluginData memory pluginData = PluginData({
+            tokenIn: existingToken,
+            tokenOut: incomingToken,
+            amountIn: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96(),
+            tokenType: tokenType,
+            data: swapData
+        });
+
+        uint256 vaultInitialBalance = IBalanceViewer(vault).getBalance(
+            tokenType,
+            incomingToken,
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
+        );
+
         try IPlugin(plugin).execute(pluginData) returns (uint256 outputAmount) {
             _outputAmount = outputAmount.safe96();
         } catch Error(string memory reason) {
             revert(reason);
         }
+
+        uint256 vaultUpdatedBalance = IBalanceViewer(vault).getBalance(
+            tokenType,
+            incomingToken,
+            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
+        );
+
+        uint256 receivedAmountInVault = vaultUpdatedBalance -
+            vaultInitialBalance;
+
+        require(
+            _outputAmount != 0 && receivedAmountInVault == _outputAmount,
+            "Zero received amount"
+        );
     }
 }

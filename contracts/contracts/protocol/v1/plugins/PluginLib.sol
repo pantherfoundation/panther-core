@@ -19,13 +19,15 @@ library PluginLib {
     }
 
     /**
-     * The data should be encoded like this:
-     * abi.encodePacked(
-     *  address pluginAddress,
-     *  uint32 deadline,
-     *  uint96 amountOutMinimum,
-     *  uint24 fee,
-     *  uint160 sqrtPriceLimitX96)
+     * @notice Decodes data for Uniswap V3 router.
+     * @param data The data to be decoded.
+     * @dev **The data should be encoded as:
+     * `abi.encodePacked(
+     * address pluginAddress,
+     * uint32 deadline,
+     * uint96 amountOutMinimum,
+     * uint24 fee,
+     * uint160 sqrtPriceLimitX96)`.
      */
     function decodeUniswapV3RouterData(
         bytes memory data
@@ -64,11 +66,13 @@ library PluginLib {
     }
 
     /**
-     * The data should be encoded like this:
-     * abi.encodePacked(
-     *  address pluginAddress,
-     *  address poolAddress,
-     *  uint160 sqrtPriceLimitX96)
+     * @notice Decodes data for Uniswap V3 pool.
+     * @param data The data to be decoded.
+     * @dev The data should be encoded as:
+     * `abi.encodePacked(
+     * address pluginAddress,
+     * address poolAddress,
+     * uint160 sqrtPriceLimitX96)`.
      */
     function decodeUniswapV3PoolData(
         bytes memory data
@@ -90,11 +94,13 @@ library PluginLib {
     }
 
     /**
-     * The data should be encoded like this:
-     * abi.encodePacked(
-     *  address pluginAddress
-     *  uint96 amountOutMin,
-     *  uint32 deadline)
+     * @notice Decodes data for Quickswap router.
+     * @param data The data to be decoded.
+     * @dev The data should be encoded as:
+     * `abi.encodePacked(
+     * address pluginAddress,
+     * uint96 amountOutMin,
+     * uint32 deadline)`.
      */
     function decodeQuickswapRouterData(
         bytes memory data

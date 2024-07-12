@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import { FeeData, AssetData, ChargedFeesPerTx } from "../feeMaster/Types.sol";
+import "./IFeeAccountant.sol";
 
-interface IFeeMaster {
+interface IFeeMaster is IFeeAccountant {
     /**
      * @dev Emitted when native token reserve target is updated.
      * @param nativeTokenReserveTarget The new target amount of native token reserve.

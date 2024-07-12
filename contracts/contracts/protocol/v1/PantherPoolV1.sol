@@ -4,27 +4,23 @@
 // solhint-disable no-inline-assembly
 pragma solidity ^0.8.19;
 
-import "./interfaces/IPantherVerifier.sol";
-import "./interfaces/IPantherTaxiTree.sol";
-import "./interfaces/IBusTree.sol";
+import "./interfaces/IVerifier.sol";
 import "./interfaces/IPantherPoolV1.sol";
-import "./interfaces/IVaultV1.sol";
-import "./interfaces/IPlugin.sol";
-import "../../common/NonReentrant.sol";
-import "../../common/ImmutableOwnable.sol";
-import { ERC20_TOKEN_TYPE, MAX_PRP_AMOUNT } from "../../common/Constants.sol";
-import { LockData } from "../../common/Types.sol";
-import "../../common/UtilsLib.sol";
-import "./plugins/PluginLib.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
 import "./pantherForest/PantherForest.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
-import "./pantherPool/UtxosInserter.sol";
-import "./pantherPool/ZAssetUtxoGenerator.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
+import "./pantherPool/DepositAndWithdrawalHandler.sol";
+import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/TransactionTypes.sol";
+import "./pantherPool/ZAssetUtxoGeneratorLib.sol";
+import "./pantherPool/ZSwapLib.sol";
+import "./plugins/PluginLib.sol";
+
+import "../../common/UtilsLib.sol";
+import "../../common/NonReentrant.sol";
 
 /**
  * @title PantherPool
@@ -50,24 +46,29 @@ contract PantherPoolV1 is
     PantherForest,
     TransactionNoteEmitter,
     UtxosInserter,
-    ZAssetUtxoGenerator,
     NonReentrant,
     TransactionChargesHandler,
+    DepositAndWithdrawalHandler,
     IPantherPoolV1
 {
+    using ZAssetUtxoGeneratorLib for uint256;
     using TransactionOptions for uint32;
     using TransactionTypes for uint16;
     using PluginLib for bytes;
+    using ZSwapLib for address;
+    using VaultLib for address;
+    using UtilsLib for uint256;
 
     // initialGap - PantherForest slots - CachedRoots slots => 500 - 22 - 25
     // slither-disable-next-line shadowing-state unused-state
-    uint256[451] private __gap;
+    uint256[450] private __gap;
 
-    IPantherVerifier public immutable VERIFIER;
+    address public immutable VERIFIER;
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable PRP_CONVERTER;
     address public immutable STATIC_TREE;
+    address public immutable VAULT;
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -84,7 +85,7 @@ contract PantherPoolV1 is
     uint32 public maxTimeDelta;
 
     // kytMessageHash => blockNumber
-    mapping(bytes32 => uint256) public seenKytMessageHashes;
+    uint256 private seenKytMessageHashesGap;
     // TODO:to be deleted
     // left for storage compatibility of the "testnet" version, must be deleted in the prod version
     uint256 private _feeMasterDebtGap;
@@ -94,12 +95,11 @@ contract PantherPoolV1 is
     // plugin address to boolean
     mapping(address => bool) public zSwapPlugins;
 
-    event ZSwapPluginUpdated(address plugin, bool status);
     event CircuitIdUpdated(uint16 txType, uint160 newId);
+    event ZSwapPluginUpdated(address plugin, bool status);
     event KycRewardUpdated(uint256 newReward);
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
     event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
-    event SeenKytMessageHash(bytes32 indexed kytMessageHash);
 
     constructor(
         address _owner,
@@ -115,7 +115,7 @@ contract PantherPoolV1 is
     )
         PantherForest(_owner, forestTrees)
         UtxosInserter(forestTrees.busTree, forestTrees.taxiTree)
-        TransactionChargesHandler(zkpToken, feeMaster, vault)
+        TransactionChargesHandler(zkpToken, feeMaster)
     {
         require(
             staticTree != address(0) &&
@@ -127,10 +127,11 @@ contract PantherPoolV1 is
         );
 
         STATIC_TREE = staticTree;
-        VERIFIER = IPantherVerifier(verifier);
+        VERIFIER = verifier;
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
         PRP_CONVERTER = prpConverter;
+        VAULT = vault;
     }
 
     // function updateVaultAssetUnlocker(
@@ -168,9 +169,7 @@ contract PantherPoolV1 is
 
     function unlockAssetFromVault(LockData calldata data) external {
         require(vaultAssetUnlockers[msg.sender], ERR_UNAUTHORIZED);
-
-        // Trusted contract - no reentrancy guard needed
-        IVaultV1(VAULT).unlockAsset(data);
+        VAULT.unlockAsset(data);
     }
 
     /// @notice Creates zAccount utxo
@@ -367,12 +366,6 @@ contract PantherPoolV1 is
             TT_PRP_CONVERSION
         );
 
-        // Note: extraInputsHash is computed in PrpConverter
-        _validateNonZero(
-            inputs[PRP_CONVERSION_EXTRA_INPUT_HASH_IND],
-            ERR_ZERO_EXTRA_INPUT_HASH
-        );
-
         _validateNonZero(
             inputs[PRP_CONVERSION_SALT_HASH_IND],
             ERR_ZERO_SALT_HASH
@@ -383,11 +376,6 @@ contract PantherPoolV1 is
         );
 
         _validateStaticRoot(inputs[PRP_CONVERSION_STATIC_MERKLE_ROOT_IND]);
-
-        _validateNonZero(
-            inputs[PRP_CONVERSION_ZASSET_SCALE_IND],
-            ERR_ZERO_ZASSET_SCALE
-        );
 
         _validateZNetworkChainId(inputs[PRP_CONVERSION_ZNETWORK_CHAIN_ID_IND]);
 
@@ -416,10 +404,10 @@ contract PantherPoolV1 is
         uint256 zkpAmountScaled = zkpAmountRounded /
             inputs[PRP_CONVERSION_ZASSET_SCALE_IND];
 
-        bytes32 zAssetUtxoOutCommitment = generateZAssetUtxoCommitment(
-            zkpAmountScaled,
-            inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART_IND]
-        );
+        bytes32 zAssetUtxoOutCommitment = zkpAmountScaled
+            .generateZAssetUtxoCommitment(
+                inputs[PRP_CONVERSION_UTXO_COMMITMENT_PRIVATE_PART_IND]
+            );
 
         uint96 miningReward = accountFeesAndReturnMiningReward(
             inputs,
@@ -573,7 +561,7 @@ contract PantherPoolV1 is
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
-    /// @param pluginData The address of plugin that manages the swap proccess
+    /// @param swapData The address of plugin that manages the swap proccess
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
     function swapZAsset(
@@ -581,7 +569,7 @@ contract PantherPoolV1 is
         SnarkProof calldata proof,
         uint32 transactionOptions,
         uint96 paymasterCompensation,
-        bytes memory pluginData,
+        bytes memory swapData,
         bytes calldata privateMessages
     ) external returns (uint256 zAccountUtxoBusQueuePos) {
         uint160 zSwapCircuitId = _getCircuitIdOrRevert(TT_ZSWAP);
@@ -591,7 +579,7 @@ contract PantherPoolV1 is
             bytes memory extraInp = abi.encodePacked(
                 transactionOptions,
                 paymasterCompensation,
-                pluginData,
+                swapData,
                 privateMessages
             );
             require(
@@ -630,26 +618,31 @@ contract PantherPoolV1 is
             transactionOptions.cachedForestRootIndex()
         );
 
-        uint96 miningReward;
+        _validateVaultAddress(
+            VAULT,
+            inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
+        );
+        _validateVaultAddress(
+            VAULT,
+            inputs[ZSWAP_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER_IND]
+        );
+
+        _verifyProof(zSwapCircuitId, inputs, proof);
 
         {
-            miningReward = accountFeesAndReturnMiningReward(
+            (
+                bytes32[2] memory zAssetUtxos,
+                uint256 zAssetAmountScaled
+            ) = _getKnownPluginOrRevert(swapData).processSwap(swapData, inputs);
+
+            uint96 miningReward = accountFeesAndReturnMiningReward(
                 inputs,
                 paymasterCompensation,
                 TT_ZSWAP
             );
-        }
 
-        _verifyProof(zSwapCircuitId, inputs, proof);
-
-        // solhint-disable-next-line no-empty-blocks
-        {
             uint32 zAccountUtxoQueueId;
             uint8 zAccountUtxoIndexInQueue;
-            (
-                bytes32[2] memory zAssetUtxos,
-                uint256 zAssetAmountScaled
-            ) = _processSwap(inputs, pluginData);
             (
                 zAccountUtxoQueueId,
                 zAccountUtxoIndexInQueue,
@@ -675,6 +668,34 @@ contract PantherPoolV1 is
     ) private view returns (uint160 circuitId) {
         circuitId = circuitIds[txType];
         require(circuitId != 0, ERR_UNDEFINED_CIRCUIT);
+    }
+
+    function _getKnownPluginOrRevert(
+        bytes memory swapData
+    ) private view returns (address _plugin) {
+        _plugin = swapData.extractPluginAddress();
+        require(zSwapPlugins[_plugin], ERR_UNKNOWN_PLUGIN);
+    }
+
+    function _verifyProof(
+        uint160 circuitId,
+        uint256[] calldata inputs,
+        SnarkProof calldata proof
+    ) private view {
+        // Trusted contract - no reentrancy guard needed
+        require(
+            IVerifier(VERIFIER).verify(circuitId, inputs, proof),
+            ERR_FAILED_ZK_PROOF
+        );
+    }
+
+    function _getVault()
+        internal
+        view
+        override(DepositAndWithdrawalHandler, TransactionChargesHandler)
+        returns (address)
+    {
+        return VAULT;
     }
 
     function _validateAndSpendNullifier(uint256 nullifier) private {
@@ -748,222 +769,26 @@ contract PantherPoolV1 is
         require(value != 0, errMsg);
     }
 
-    function _lockAssetWithSalt(SaltedLockData memory slData) private {
-        // Trusted contract - no reentrancy guard needed
-        try
-            IVaultV1(VAULT).lockAssetWithSalt{ value: msg.value }(slData)
-        // solhint-disable-next-line no-empty-blocks
-        {
-
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
-    }
-
-    function _unlockAsset(LockData memory lData) private {
-        // Trusted contract - no reentrancy guard needed
-        // solhint-disable-next-line no-empty-blocks
-        try IVaultV1(VAULT).unlockAsset(lData) {} catch Error(
-            string memory reason
-        ) {
-            revert(reason);
-        }
-    }
-
-    function _processDepositAndWithdraw(
-        uint256[] calldata inputs,
-        uint8 tokenType,
-        uint16 transactionType,
-        uint96 protocolFee
-    ) private {
-        uint96 depositAmount = UtilsLib.safe96(inputs[MAIN_DEPOSIT_AMOUNT_IND]);
-        uint96 withdrawAmount = UtilsLib.safe96(
-            inputs[MAIN_WITHDRAW_AMOUNT_IND]
-        );
-
-        address token = address(UtilsLib.safe160(inputs[MAIN_TOKEN_IND]));
-        uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
-
-        if (transactionType.isDeposit()) {
-            bytes32 kytDepositSignedMessageHash = bytes32(
-                inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]
-            );
-
-            require(
-                address(
-                    UtilsLib.safe160(
-                        inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER_IND]
-                    )
-                ) == address(VAULT),
-                ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER
-            );
-
-            require(
-                kytDepositSignedMessageHash != 0,
-                ERR_ZERO_KYT_DEPOSIT_SIGNED_MESSAGE_HASH
-            );
-            require(
-                seenKytMessageHashes[kytDepositSignedMessageHash] == 0,
-                ERR_DUPLICATED_KYT_MESSAGE_HASH
-            );
-
-            seenKytMessageHashes[kytDepositSignedMessageHash] = block.number;
-
-            _lockAssetWithSalt(
-                SaltedLockData(
-                    tokenType,
-                    token,
-                    tokenId,
-                    bytes32(inputs[MAIN_SALT_HASH_IND]),
-                    address(
-                        UtilsLib.safe160(
-                            inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER_IND]
-                        )
-                    ),
-                    depositAmount
-                )
-            );
-
-            emit SeenKytMessageHash(kytDepositSignedMessageHash);
-        }
-
-        if (transactionType.isWithdrawal()) {
-            withdrawAmount = protocolFee > 0
-                ? withdrawAmount - protocolFee
-                : withdrawAmount;
-
-            bytes32 kytWithdrawSignedMessageHash = bytes32(
-                inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]
-            );
-
-            require(
-                address(
-                    UtilsLib.safe160(
-                        inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
-                    )
-                ) == address(VAULT),
-                ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER
-            );
-
-            require(
-                kytWithdrawSignedMessageHash != 0,
-                ERR_ZERO_KYT_WITHDRAW_SIGNED_MESSAGE_HASH
-            );
-            require(
-                seenKytMessageHashes[kytWithdrawSignedMessageHash] == 0,
-                ERR_DUPLICATED_KYT_MESSAGE_HASH
-            );
-
-            seenKytMessageHashes[kytWithdrawSignedMessageHash] = block.number;
-
-            _unlockAsset(
-                LockData(
-                    tokenType,
-                    token,
-                    tokenId,
-                    address(
-                        UtilsLib.safe160(
-                            inputs[
-                                MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND
-                            ]
-                        )
-                    ),
-                    withdrawAmount
-                )
-            );
-
-            emit SeenKytMessageHash(kytWithdrawSignedMessageHash);
-        }
-    }
-
-    function _processSwap(
-        uint256[] calldata inputs,
-        bytes memory pluginData
-    )
-        private
-        returns (bytes32[2] memory zAssetUtxos, uint256 zAssetAmountScaled)
-    {
-        address plugin = pluginData.extractPluginAddress();
-        require(zSwapPlugins[plugin], "Invalid plugin");
-
-        // TODO: get TokenType from inputs
-        address existingToken = address(
-            uint160(inputs[ZSWAP_EXISTING_TOKEN_IND])
-        );
-        uint8 tokenType = existingToken == NATIVE_TOKEN
-            ? NATIVE_TOKEN_TYPE
-            : ERC20_TOKEN_TYPE;
-
-        _unlockAsset(
-            LockData(
-                tokenType,
-                existingToken,
-                inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
-                plugin,
-                UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND])
-            )
-        );
-
-        uint256 vaultInitialBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        IPlugin(plugin).execute(
-            PluginData({
-                tokenIn: existingToken,
-                tokenOut: address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-                amountIn: UtilsLib.safe96(inputs[ZSWAP_WITHDRAW_AMOUNT_IND]),
-                tokenType: tokenType,
-                data: pluginData
-            })
-        );
-
-        uint256 vaultUpdatedBalance = IVaultV1(VAULT).getBalance(
-            address(uint160(inputs[ZSWAP_INCOMING_TOKEN_IND])),
-            inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
-        );
-
-        uint256 receivedAmount = vaultUpdatedBalance - vaultInitialBalance;
-
-        _validateNonZero(receivedAmount, "Zero output");
-
-        uint256 scale = inputs[ZSWAP_INCOMING_ZASSET_SCALE_IND];
-
-        uint256 zAssetAmountRounded = UtilsLib.safe96(
-            (receivedAmount / scale) * scale
-        );
-        zAssetAmountScaled = zAssetAmountRounded / scale;
-
-        zAssetUtxos[0] = bytes32(
-            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_1_IND]
-        );
-        zAssetUtxos[1] = generateZAssetUtxoCommitment(
-            zAssetAmountScaled,
-            inputs[ZSWAP_ZASSET_UTXO_OUT_COMMITMENT_2_PRIVATE_PART_IND]
+    function _validateVaultAddress(
+        address vault,
+        uint256 publicInputParameter
+    ) private pure {
+        require(
+            vault == publicInputParameter.safeAddress(),
+            ERR_INVALID_VAULT_ADDRESS
         );
     }
 
     function _lockZkp(address from, uint256 amount) internal {
-        // Trusted contract - no reentrancy guard needed
-        IVaultV1(VAULT).lockAsset(
+        VAULT.lockAsset(
             LockData(
                 ERC20_TOKEN_TYPE,
                 ZKP_TOKEN,
                 // tokenId undefined for ERC-20
                 0,
                 from,
-                UtilsLib.safe96(amount)
+                amount.safe96()
             )
         );
-    }
-
-    function _verifyProof(
-        uint160 circuitId,
-        uint256[] calldata inputs,
-        SnarkProof calldata proof
-    ) private view {
-        // Trusted contract - no reentrancy guard needed
-        require(VERIFIER.verify(circuitId, inputs, proof), ERR_FAILED_ZK_PROOF);
     }
 }
