@@ -630,7 +630,7 @@ export function composeERC20SenderStealthAddress(
 
     return ethers.utils.getCreate2Address(
         vault,
-        lockData.saltHash,
+        lockData.salt,
         ethers.utils.keccak256(initCode2),
     );
 }
