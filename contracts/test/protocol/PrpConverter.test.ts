@@ -179,6 +179,21 @@ describe.only('PrpConverter', function () {
         ).to.emit(prpConverter, 'Sync');
     }
 
+    function getAmountOutRounded(
+        amountIn: BigNumber,
+        reserveIn: BigNumber,
+        reserveOut: BigNumber,
+        scale: BigNumber,
+    ): BigNumber {
+        const numerator = amountIn.mul(reserveOut);
+        const denominator = reserveIn.add(amountIn);
+        const amountOut = numerator.div(denominator);
+
+        // Rounding the amount
+        const roundedAmountOut = amountOut.div(scale).mul(scale);
+        return roundedAmountOut;
+    }
+
     describe('deployment', function () {
         it('should set the correct owner address', async function () {
             expect(await prpConverter.OWNER()).to.equal(owner.address);
@@ -320,16 +335,28 @@ describe.only('PrpConverter', function () {
             const withdrawPrp = BigNumber.from(1000);
             const prpReserve = (await prpConverter.getReserves())._prpReserve;
             const zkpReserve = (await prpConverter.getReserves())._zkpReserve;
+            const zkpBalance = await zkpToken.balanceOf(prpConverter.address);
+
             await convert({
                 withdrawPrpAmount: withdrawPrp,
             });
+
+            const roundedAmountOut = getAmountOutRounded(
+                withdrawPrp,
+                prpReserve,
+                zkpReserve,
+                BigNumber.from(1000),
+            );
 
             await expect(
                 (await prpConverter.getReserves())._prpReserve,
             ).to.be.equal(prpReserve.add(withdrawPrp));
             await expect(
                 (await prpConverter.getReserves())._zkpReserve,
-            ).to.be.lessThan(zkpReserve);
+            ).to.be.equal(zkpReserve.sub(roundedAmountOut));
+            expect(await zkpToken.balanceOf(prpConverter.address)).to.be.equal(
+                zkpBalance.sub(roundedAmountOut),
+            );
         });
 
         it('should revert if the extraInputsHash is larger than FIELD_SIZE', async function () {
