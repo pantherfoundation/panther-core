@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {FakeContract, smock} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {expect} from 'chai';
@@ -10,7 +9,7 @@ import {ethers} from 'hardhat';
 
 import {
     PrpConverter,
-    PantherPoolV1,
+    MockPantherPoolandPrpConverter,
     TokenMock,
     VaultV1,
 } from '../../types/contracts';
@@ -22,9 +21,9 @@ describe.only('PrpConverter', function () {
     let owner: SignerWithAddress;
     let notOwner: SignerWithAddress;
     let prpConverter: PrpConverter;
-    let pantherPool: FakeContract<PantherPoolV1>;
+    let pantherPool: MockPantherPoolandPrpConverter;
     let zkpToken: TokenMock;
-    let vault: FakeContract<VaultV1>;
+    let vault: VaultV1;
     let snapshot: number;
     let PrpConverter: ContractFactory;
 
@@ -39,14 +38,18 @@ describe.only('PrpConverter', function () {
     before(async function () {
         [owner, notOwner] = await ethers.getSigners();
 
-        pantherPool = await smock.fake('PantherPoolV1', {});
-        vault = await smock.fake('VaultV1');
-
         const ZkpToken = await ethers.getContractFactory('TokenMock');
         zkpToken = await ZkpToken.deploy();
 
-        PrpConverter = await ethers.getContractFactory('PrpConverter');
+        const PantherPool = await ethers.getContractFactory(
+            'MockPantherPoolandPrpConverter',
+        );
+        pantherPool = await PantherPool.deploy(owner.address, zkpToken.address);
 
+        const Vault = await ethers.getContractFactory('VaultV1');
+        vault = (await Vault.deploy(pantherPool.address)) as VaultV1;
+
+        PrpConverter = await ethers.getContractFactory('PrpConverter');
         prpConverter = (await PrpConverter.deploy(
             owner.address,
             zkpToken.address,
@@ -54,6 +57,11 @@ describe.only('PrpConverter', function () {
             vault.address,
         )) as PrpConverter;
         await prpConverter.deployed();
+
+        await pantherPool.updatePrpConverterandVault(
+            prpConverter.address,
+            vault.address,
+        );
     });
 
     beforeEach(async () => {
@@ -95,7 +103,7 @@ describe.only('PrpConverter', function () {
         const chargedAmountZkp = options.chargedAmountZkp || BigNumber.from(0);
         const depositPrpAmount = options.depositPrpAmount || BigNumber.from(0);
         const withdrawPrpAmount =
-            options.withdrawPrpAmount || BigNumber.from(100);
+            options.withdrawPrpAmount || BigNumber.from(10);
         const utxoCommitmentPrivatePart = 0;
         const privateMessages =
             ethers.utils.formatBytes32String('privateMessages');
@@ -287,6 +295,7 @@ describe.only('PrpConverter', function () {
             expect((await prpConverter.getReserves())._prpReserve).to.be.equal(
                 prpReserve,
             );
+            await revertSnapshot(snapshot);
         });
 
         it('should revert if the pool is not initialized', async function () {
@@ -310,7 +319,7 @@ describe.only('PrpConverter', function () {
         it('Should perform conversion and update reserves', async function () {
             const withdrawPrp = BigNumber.from(1000);
             const prpReserve = (await prpConverter.getReserves())._prpReserve;
-
+            const zkpReserve = (await prpConverter.getReserves())._zkpReserve;
             await convert({
                 withdrawPrpAmount: withdrawPrp,
             });
@@ -318,6 +327,9 @@ describe.only('PrpConverter', function () {
             await expect(
                 (await prpConverter.getReserves())._prpReserve,
             ).to.be.equal(prpReserve.add(withdrawPrp));
+            await expect(
+                (await prpConverter.getReserves())._zkpReserve,
+            ).to.be.lessThan(zkpReserve);
         });
 
         it('should revert if the extraInputsHash is larger than FIELD_SIZE', async function () {
@@ -352,6 +364,15 @@ describe.only('PrpConverter', function () {
                     withdrawPrpAmount: BigNumber.from(1),
                 }),
             ).to.be.revertedWith('PC:E7');
+        });
+
+        it('should revert if zkpBalance and zkpReserve is not in sync  ', async function () {
+            await prpConverter.rescueErc20(
+                zkpToken.address,
+                owner.address,
+                100000,
+            );
+            await expect(convert({})).to.be.revertedWith('PC:E11');
         });
     });
 
