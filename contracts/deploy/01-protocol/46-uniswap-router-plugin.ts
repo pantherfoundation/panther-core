@@ -26,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [swapRouter, quoterV2, vaultProxyAddress],
         proxy: {
-            proxyContract: 'EIP173Proxy',
+            proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
         },
         log: true,

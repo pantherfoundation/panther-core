@@ -5,7 +5,7 @@ import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../../interfaces/IPlugin.sol";
 
-import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../../../common/Constants.sol";
+import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE, NATIVE_TOKEN } from "../../../../common/Constants.sol";
 import "../../../../common/TransferHelper.sol";
 import "../PluginLib.sol";
 
@@ -15,6 +15,7 @@ contract UniswapV3RouterPlugin {
 
     address public immutable UNISWAP_ROUTER;
     address public immutable UNISWAP_QUOTERV2;
+    address public immutable WETH;
     address public immutable VAULT;
 
     struct Quote {
@@ -35,6 +36,7 @@ contract UniswapV3RouterPlugin {
 
         UNISWAP_ROUTER = uniswapRouter;
         UNISWAP_QUOTERV2 = uniswapQuoterV2;
+        WETH = ISwapRouter(uniswapRouter).WETH9();
         VAULT = vault;
     }
 
@@ -101,19 +103,23 @@ contract UniswapV3RouterPlugin {
             uint160 sqrtPriceLimitX96
         ) = pluginData.data.decodeUniswapV3RouterData();
 
-        uint256 amountInNative;
+        uint8 tokenType = pluginData.tokenType;
+        uint96 amountIn = pluginData.amountIn;
 
-        if (pluginData.tokenType == ERC20_TOKEN_TYPE) {
-            pluginData.tokenIn.safeApprove(UNISWAP_ROUTER, pluginData.amountIn);
-        }
-        if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
-            amountInNative = pluginData.amountIn;
-        }
+        (address tokenIn, address tokenOut) = _getTokenInAndTokenOut(
+            pluginData
+        );
+
+        uint256 nativeInputAmount = _approveInputAmountOrReturnNativeInputAmount(
+                tokenType,
+                tokenIn,
+                amountIn
+            );
 
         ISwapRouter.ExactInputSingleParams
             memory pluginParamsParams = ISwapRouter.ExactInputSingleParams({
-                tokenIn: pluginData.tokenIn,
-                tokenOut: pluginData.tokenOut,
+                tokenIn: tokenIn,
+                tokenOut: tokenOut,
                 amountIn: pluginData.amountIn,
                 amountOutMinimum: amountOutMinimum,
                 sqrtPriceLimitX96: sqrtPriceLimitX96,
@@ -124,12 +130,40 @@ contract UniswapV3RouterPlugin {
 
         try
             ISwapRouter(UNISWAP_ROUTER).exactInputSingle{
-                value: amountInNative
+                value: nativeInputAmount
             }(pluginParamsParams)
         returns (uint256 amount) {
             amountOut = amount;
         } catch Error(string memory reason) {
             revert(reason);
+        }
+    }
+
+    function _getTokenInAndTokenOut(
+        PluginData calldata pluginData
+    ) private view returns (address tokenIn, address tokenOut) {
+        tokenIn = pluginData.tokenIn;
+        tokenOut = pluginData.tokenOut;
+
+        if (tokenIn == NATIVE_TOKEN) {
+            tokenIn = WETH;
+        }
+
+        if (tokenOut == NATIVE_TOKEN) {
+            tokenOut = WETH;
+        }
+    }
+
+    function _approveInputAmountOrReturnNativeInputAmount(
+        uint8 tokenType,
+        address tokenIn,
+        uint96 amountIn
+    ) private returns (uint256 nativeInputAmount) {
+        if (tokenType == ERC20_TOKEN_TYPE) {
+            tokenIn.safeApprove(UNISWAP_ROUTER, amountIn);
+        }
+        if (tokenType == NATIVE_TOKEN_TYPE) {
+            nativeInputAmount = amountIn;
         }
     }
 
