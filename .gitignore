@@ -23,3 +23,6 @@ crypto/types/
 .DS_Store
 .yarn/*
 junit.xml
+
+
+worktrees
