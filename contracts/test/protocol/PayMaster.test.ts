@@ -5,10 +5,11 @@ import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
+import {abi, bytecode} from '../../external/abi/EntryPoint.json';
 import {callculateAndGetNonce} from '../../lib/calcAndGetNonce';
 import {toBytes32} from '../../lib/utilities';
-import {EntryPoint, PayMaster} from '../../types/contracts';
-import {UserOperationStruct} from '../../types/contracts/EntryPoint';
+import {PayMaster} from '../../types/contracts';
+import {UserOperationStruct} from '../../types/contracts/Account';
 
 import {ADDRESS_ONE, ADDRESS_ZERO, PluginFixture} from './shared';
 
@@ -51,7 +52,7 @@ describe('Paymaster contract', function () {
             nonce = await callculateAndGetNonce(
                 zeroBytesCallData,
                 fixture.smartAccount.address,
-                fixture.entryPoint,
+                fixture.entryPoint.address,
             );
 
             paymasterAndData = ethers.utils.solidityPack(
@@ -207,16 +208,20 @@ describe('Paymaster contract', function () {
     });
 
     context('function depositToEntryPoint without proxy', () => {
-        let entryPoint: EntryPoint;
+        let entryPoint;
         let paymaster: PayMaster;
-        let ethersSigner;
 
         beforeEach(async function () {
-            [ethersSigner] = await ethers.getSigners();
+            const factory = new ethers.ContractFactory(
+                abi,
+                bytecode,
+                fixture.ethersSigner,
+            );
 
-            entryPoint = await (
-                await ethers.getContractFactory('EntryPoint')
-            ).deploy();
+            entryPoint = await factory.deploy();
+
+            await entryPoint.deployed();
+
             paymaster = await (
                 await ethers.getContractFactory('PayMaster')
             ).deploy(
@@ -232,7 +237,7 @@ describe('Paymaster contract', function () {
 
             const txData = {to: paymaster.address, value: oneToken};
 
-            const tx = await ethersSigner.sendTransaction(txData);
+            const tx = await fixture.ethersSigner.sendTransaction(txData);
 
             await tx.wait();
 
@@ -261,16 +266,20 @@ describe('Paymaster contract', function () {
     });
 
     context('Stake Management', () => {
-        let entryPoint: EntryPoint;
+        let entryPoint;
         let paymaster: PayMaster;
-        let ethersSigner;
 
         beforeEach(async function () {
-            [ethersSigner] = await ethers.getSigners();
+            const factory = new ethers.ContractFactory(
+                abi,
+                bytecode,
+                fixture.ethersSigner,
+            );
 
-            entryPoint = await (
-                await ethers.getContractFactory('EntryPoint')
-            ).deploy();
+            entryPoint = await factory.deploy();
+
+            await entryPoint.deployed();
+
             paymaster = await (
                 await ethers.getContractFactory('PayMaster')
             ).deploy(
@@ -311,7 +320,7 @@ describe('Paymaster contract', function () {
             // Wait for unlock time
             await ethers.provider.send('evm_increaseTime', [100]);
             await ethers.provider.send('evm_mine', []);
-            await paymaster.withdrawStake(ethersSigner.address);
+            await paymaster.withdrawStake(fixture.ethersSigner.address);
             const depositInfo = await entryPoint.getDepositInfo(
                 paymaster.address,
             );
@@ -320,13 +329,20 @@ describe('Paymaster contract', function () {
     });
 
     context('function withdrawTo', () => {
-        let entryPoint: EntryPoint;
+        let entryPoint;
         let paymaster: PayMaster;
 
         beforeEach(async function () {
-            entryPoint = await (
-                await ethers.getContractFactory('EntryPoint')
-            ).deploy();
+            const factory = new ethers.ContractFactory(
+                abi,
+                bytecode,
+                fixture.ethersSigner,
+            );
+
+            entryPoint = await factory.deploy();
+
+            await entryPoint.deployed();
+
             paymaster = await (
                 await ethers.getContractFactory('PayMaster')
             ).deploy(

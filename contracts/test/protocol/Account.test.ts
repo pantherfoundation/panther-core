@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {UserOperationStruct} from '@panther-core/dapp/src/types/contracts/Account';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
 import {Account} from '../../types/contracts';
+import {UserOperationStruct} from '../../types/contracts/Account';
 
 import {
     ADDRESS_ONE,
