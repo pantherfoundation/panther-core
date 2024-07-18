@@ -17,7 +17,7 @@ import {SnarkProofStruct} from '../../types/contracts/IPantherPoolV1';
 
 import {revertSnapshot, takeSnapshot} from './helpers/hardhat';
 
-describe.only('PrpConverter', function () {
+describe('PrpConverter', function () {
     let owner: SignerWithAddress;
     let notOwner: SignerWithAddress;
     let prpConverter: PrpConverter;

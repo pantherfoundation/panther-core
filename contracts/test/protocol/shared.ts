@@ -3,12 +3,11 @@
 
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {JsonRpcSigner} from '@ethersproject/providers/src.ts/json-rpc-provider';
-import {UserOperationStruct} from '@panther-core/dapp/src/types/contracts/EntryPoint';
-import {SaltedLockDataStruct} from '@panther-core/dapp/src/types/contracts/Vault';
 import {BigNumber, Contract, Wallet} from 'ethers';
 import {parseEther} from 'ethers/lib/utils';
 import hre, {ethers} from 'hardhat';
 
+import {abi, bytecode} from '../../external/abi/EntryPoint.json';
 import {composeExecData} from '../../lib/composeExecData';
 import {
     deployContentDeterministically,
@@ -33,10 +32,11 @@ import {
     PrpVoucherGrantor,
     VaultV1,
     PrpConverter,
-    EntryPoint,
     PayMaster,
     Account,
 } from '../../types/contracts';
+import {UserOperationStruct} from '../../types/contracts/Account';
+import {SaltedLockDataStruct} from '../../types/contracts/Vault';
 
 import {
     depositInputs,
@@ -145,7 +145,7 @@ export class PluginFixture {
 
     public deployer!: {deployerCode: string; deployerAddr: string};
 
-    public entryPoint!: EntryPoint;
+    public entryPoint!: Contract;
 
     public paymasterProxy!: Contract;
 
@@ -436,9 +436,15 @@ export class PluginFixture {
             this.vault.address,
         );
 
-        const EntryPoint = await ethers.getContractFactory('EntryPoint');
+        const factory = new ethers.ContractFactory(
+            abi,
+            bytecode,
+            this.ethersSigner,
+        );
 
-        this.entryPoint = await EntryPoint.deploy();
+        this.entryPoint = await factory.deploy();
+
+        await this.entryPoint.deployed();
 
         const poolMainSelector = ethers.utils
             .id(

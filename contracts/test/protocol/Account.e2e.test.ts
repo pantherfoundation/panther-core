@@ -9,7 +9,7 @@ import {callculateAndGetNonce} from '../../lib/calcAndGetNonce';
 import {composeExecData} from '../../lib/composeExecData';
 import {TokenType} from '../../lib/token';
 import {toBytes32} from '../../lib/utilities';
-import {UserOperationStruct} from '../../types/contracts/EntryPoint';
+import {UserOperationStruct} from '../../types/contracts/Account';
 
 import {sampleProof} from './data/samples/pantherPool.data';
 import {
@@ -189,7 +189,7 @@ describe.skip('Account e2e', function () {
                 nonce = await callculateAndGetNonce(
                     orphanedWalletCallData,
                     fixture.smartAccount.address,
-                    fixture.entryPoint,
+                    fixture.entryPoint.address,
                 );
 
                 depositOp = {
@@ -379,7 +379,7 @@ describe.skip('Account e2e', function () {
                     nonce = await callculateAndGetNonce(
                         orphanedWalletCallData,
                         fixture.smartAccount.address,
-                        fixture.entryPoint,
+                        fixture.entryPoint.address,
                     );
 
                     depositOp = {
