@@ -29,7 +29,7 @@ import {
     takeSnapshot,
 } from './helpers/hardhat';
 
-describe.only('ZAccountsRegistry', function () {
+describe('ZAccountsRegistry', function () {
     let zAccountsRegistry: MockZAccountsRegistry;
     let poseidonT3: PoseidonT3;
     let pantherPool: FakeContract<IPantherPoolV1>;
