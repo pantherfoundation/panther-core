@@ -223,7 +223,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // @dev Refer to return values of the `getParam` function
-    function updateParams(
+    function _updateBusQueueRewardParams(
         uint16 reservationRate,
         uint16 premiumRate,
         uint16 minEmptyQueueAge
@@ -236,6 +236,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         _reservationRate = reservationRate;
         _premiumRate = premiumRate;
         _minEmptyQueueAge = minEmptyQueueAge;
+
         emit BusQueueRewardParamsUpdated(
             reservationRate,
             premiumRate,
@@ -319,7 +320,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     // It delete the processed queue and returns the queue params
-    function setBusQueueAsProcessed(
+    function _setBusQueueAsProcessed(
         uint32 queueId
     )
         internal
@@ -365,7 +366,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         emit BusQueueProcessed(queueId);
     }
 
-    function addBusQueueReward(
+    function _addBusQueueReward(
         uint32 queueId,
         uint96 extraReward
     ) internal nonEmptyBusQueue(queueId) {

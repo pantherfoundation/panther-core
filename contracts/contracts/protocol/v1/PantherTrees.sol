@@ -38,6 +38,11 @@ contract PantherTrees is
         _;
     }
 
+    modifier isInitialized() {
+        require(onboardingQueueCircuitId != 0, ERR_PT_NOT_INIT);
+        _;
+    }
+
     constructor(
         address _owner,
         address _pantherPool,
@@ -77,7 +82,14 @@ contract PantherTrees is
             _pantherStaticRoot == pantherStaticRoot;
     }
 
-    function initialize() external onlyOwner {
+    function initialize(
+        uint160 onboardingQueueCircuitId,
+        uint16 reservationRate,
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge
+    ) external onlyOwner {
+        require(onboardingQueueCircuitId == 0, ERR_PT_INIT);
+
         bytes32 taxiTreeRoot = getTaxiTreeRoot();
         bytes32 busTreeRoot = getBusTreeRoot();
         bytes32 ferryTreeRoot = getFerryTreeRoot();
@@ -89,24 +101,32 @@ contract PantherTrees is
         );
         bytes32 _pantherStaticRoot = _initializeStaticTree();
 
-        _initializeBusTree();
+        _initializeBusTree(
+            onboardingQueueCircuitId,
+            reservationRate,
+            premiumRate,
+            minEmptyQueueAge
+        );
 
         emit Initialized(_pantherForestRoot, _pantherStaticRoot);
     }
 
-    function updateBusTreeCircuitId(uint160 _circuitId) external onlyOwner {
-        _updateCircuitId(_circuitId);
-    }
-
-    function updateBusTreeParams(
+    function updateBusQueueRewardParams(
         uint16 reservationRate,
         uint16 premiumRate,
         uint16 minEmptyQueueAge
     ) external onlyOwner {
-        BusQueues.updateParams(reservationRate, premiumRate, minEmptyQueueAge);
+        _updateBusQueueRewardParams(
+            reservationRate,
+            premiumRate,
+            minEmptyQueueAge
+        );
     }
 
-    function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+    function updateStaticRoot(
+        bytes32 updatedLeaf,
+        uint256 leafIndex
+    ) external isInitialized {
         // can only be executed by `PantherStaticTrees` contracts
         _updateStaticRoot(updatedLeaf, leafIndex);
     }
@@ -116,6 +136,7 @@ contract PantherTrees is
         uint96 reward
     )
         external
+        isInitialized
         onlyPantherPool
         nonZeroUtxosLength(utxos)
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
@@ -132,6 +153,7 @@ contract PantherTrees is
         uint8 numTaxiUtxos
     )
         external
+        isInitialized
         onlyPantherPool
         nonZeroUtxosLength(utxos)
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
