@@ -20,6 +20,7 @@ circuits/.gitattributes
 contracts/artifacts/
 contracts/cache/
 contracts/contracts/common/proxy/
+contracts/contracts/protocol/v1/erc4337/contracts/
 contracts/coverage.json
 contracts/coverage/
 contracts/deployments/
@@ -37,7 +38,7 @@ contracts/typechain/
 contracts/types/
 contracts/typing/
 contracts/LICENSE*
-
+contracts/.solhintignore
 
 crypto/coverage/
 crypto/lib/
