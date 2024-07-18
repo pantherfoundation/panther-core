@@ -19,8 +19,8 @@
 pragma solidity ^0.8.16;
 
 import "../../common/ImmutableOwnable.sol";
-import "@account-abstraction/contracts/interfaces/IAccount.sol";
-import "@account-abstraction/contracts/interfaces/UserOperation.sol";
+import "./erc4337/contracts/interfaces/IAccount.sol";
+import "./erc4337/contracts/interfaces/UserOperation.sol";
 import "../../common/NonReentrant.sol";
 import "./errMsgs/AccountErrMsgs.sol";
 import "../../common/misc/RevertMsgGetter.sol";
