@@ -4,6 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {abi} from '../../external/abi/EntryPoint.json';
 import {
     getContractAddress,
     getContractEnvAddress,
@@ -17,13 +18,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // const entryPointAddress ="0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789";
     // PUBLIC AMOY ADDRESSES
     // const paymasterAddress ="0xc0208D4bd3D5Bd48b59339d2ABfB0933e5a09288"
-    const {abi: abiEntryPoint} = await artifacts.readArtifact('EntryPoint');
     const entryPointAddress = getContractEnvAddress(hre, 'ENTRY_POINT');
     const paymasterAddress = await getContractAddress(hre, 'PayMaster', '');
-    const entryPoint = await ethers.getContractAt(
-        abiEntryPoint,
-        entryPointAddress,
-    );
+    const entryPoint = await ethers.getContractAt(abi, entryPointAddress);
 
     const depositValue = await entryPoint.balanceOf(paymasterAddress);
 
