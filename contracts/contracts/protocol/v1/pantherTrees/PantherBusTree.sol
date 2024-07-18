@@ -46,8 +46,20 @@ abstract contract PantherBusTree is BusTree, MiningRewards {
         MiningRewards(feeMaster, rewardToken, miningRewardVersion)
     {}
 
-    function _initializeBusTree() internal {
+    function _initializeBusTree(
+        uint160 onboardingQueueCircuitId,
+        uint16 reservationRate,
+        uint16 premiumRate,
+        uint16 minEmptyQueueAge
+    ) internal {
         busTreeStartTime = uint32(block.timestamp);
+        _updateCircuitId(onboardingQueueCircuitId);
+
+        _updateBusQueueRewardParams(
+            reservationRate,
+            premiumRate,
+            minEmptyQueueAge
+        );
     }
 
     // Code of `function getBusTreeRoot` let avoid explicit initialization:

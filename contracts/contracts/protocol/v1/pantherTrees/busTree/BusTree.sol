@@ -58,7 +58,7 @@ abstract contract BusTree is BusQueues {
     // keeps track of number of the added utxos
     uint32 public utxoCounter;
     // address of circuitId
-    uint160 public busTreeCircuitId;
+    uint160 public onboardingQueueCircuitId;
 
     bytes32[50] private _endGap;
 
@@ -107,7 +107,7 @@ abstract contract BusTree is BusQueues {
                 1,
             ERR_INVALID_VK
         );
-        busTreeCircuitId = _circuitId;
+        onboardingQueueCircuitId = _circuitId;
     }
 
     /// @dev ZK-circuit public signals:
@@ -130,7 +130,7 @@ abstract contract BusTree is BusQueues {
         nonEmptyBusQueue(queueId)
         returns (bytes32 busTreeNewRoot, uint96 reward)
     {
-        require(busTreeCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
+        require(onboardingQueueCircuitId != 0, ERR_UNDEFINED_CIRCUIT);
 
         {
             bytes32 oldRoot = bytes32(inputs[0]);
@@ -155,7 +155,7 @@ abstract contract BusTree is BusQueues {
         }
         bytes32 commitment;
         uint8 nUtxos;
-        (commitment, nUtxos, reward) = setBusQueueAsProcessed(queueId);
+        (commitment, nUtxos, reward) = _setBusQueueAsProcessed(queueId);
         {
             uint256 newLeafsCommitment = inputs[3];
             require(
@@ -170,7 +170,11 @@ abstract contract BusTree is BusQueues {
         // Verify the proof
         // Trusted contract - no reentrancy guard needed
         require(
-            IPantherVerifier(VERIFIER).verify(busTreeCircuitId, inputs, proof),
+            IPantherVerifier(VERIFIER).verify(
+                onboardingQueueCircuitId,
+                inputs,
+                proof
+            ),
             ERR_FAILED_ZK_PROOF
         );
         bytes32 busBranchNewRoot = bytes32(inputs[6]);
