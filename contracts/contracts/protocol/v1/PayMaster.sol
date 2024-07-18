@@ -16,10 +16,10 @@ pragma solidity ^0.8.19;
 
 import "../../common/ImmutableOwnable.sol";
 import "../../common/interfaces/IFeeMaster.sol";
-import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
-import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "./erc4337/contracts/interfaces/IPaymaster.sol";
+import "./erc4337/contracts/interfaces/IEntryPoint.sol";
+import "./erc4337/contracts/interfaces/UserOperation.sol";
 import "./interfaces/IPrpVoucherGrantor.sol";
-import "@account-abstraction/contracts/interfaces/UserOperation.sol";
 import "../../common/Utils.sol";
 import "./errMsgs/PayMasterErrMsgs.sol";
 import "../../common/misc/RevertMsgGetter.sol";
