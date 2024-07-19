@@ -94,7 +94,6 @@
     "@typescript-eslint/parser": "^6.6.0",
     "bigint-conversion": "^2.2.1",
     "chai": "^4.3.8",
-    "chalk": "^5.0.1",
     "circomlibjs": "^0.0.8",
     "dayjs": "^1.11.3",
     "dotenv": "^8.6.0",
