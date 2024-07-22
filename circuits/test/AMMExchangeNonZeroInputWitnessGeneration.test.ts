@@ -131,10 +131,12 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
         1695282515, // Same time as ZAccountUTXO creation
         1,
         1,
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
     ]);
 
     const UtxoNoteLeafHasher = hiden_hash;
-    // Updated - 10737878881523789962798210406551165807070922751876233837797923419039556051321n
+    // Updated - 4559544338383536858093880749891621006674827955225789850199360281325186909499n
     // console.log('UtxoNoteLeafHasher=>', UtxoNoteLeafHasher);
     /* START ===== AMM Exchange ZAccountUTXO computation ===== */
 
@@ -379,7 +381,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
         createTime: 1695282515,
 
         utxoCommitment:
-            10737878881523789962798210406551165807070922751876233837797923419039556051321n,
+            4559544338383536858093880749891621006674827955225789850199360281325186909499n,
 
         // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
         utxoSpendPubKey: [
@@ -396,10 +398,10 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
         zZoneKycExpiryTime: 10368000, // 1 week epoch time
         zZoneKytExpiryTime: 86400,
         zZoneDepositMaxAmount: 1 * 10 ** 12,
-        zZoneWithrawMaxAmount: 1 * 10 ** 12,
+        zZoneWithdrawMaxAmount: 1 * 10 ** 12,
         zZoneInternalMaxAmount: 1 * 10 ** 12,
         zZoneMerkleRoot:
-            9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+            14189511324259672403799169204478898082389936563693111126414306380356116434465n,
 
         zZonePathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -429,6 +431,11 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
 
         zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
         zZoneTimePeriodPerMaximumAmount: 86400,
+        zZoneDataEscrowPubKey: [
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        ],
+        zZoneSealing: 1,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,
@@ -456,7 +463,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
             675413191976636849763056983375622181122390331630387511499559599588194530856n,
 
         staticTreeMerkleRoot:
-            16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+            17931067957218291153823825912158291535579397890455292055678506728658508421915n,
 
         forestMerkleRoot:
             15148756497956328799489825370048035661060906623943489854820045117891566644365n,
