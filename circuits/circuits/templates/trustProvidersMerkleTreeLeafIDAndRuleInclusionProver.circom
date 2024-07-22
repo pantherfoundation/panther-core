@@ -14,6 +14,7 @@ template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
     signal input {uint4}   offset;                // 4 bit
 
     assert(leafIDsAndRulesList < 2**240);
+    // less than 2**240 component can be added here - check again
     assert(offset < 10);
     component offset_lessThan_10 = LessThan(4);
     offset_lessThan_10.in[0] <== offset;
