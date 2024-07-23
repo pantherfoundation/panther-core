@@ -7,6 +7,8 @@ import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
 import "../../../../common/crypto/PoseidonHashers.sol";
 import { HUNDRED_PERCENT } from "../../../../common/Constants.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @dev It handles "queues" of commitments to UTXOs (further - "UTXOs").
  * Queue is an ordered list of UTXOs. All UTXOs in a queue are supposed to be
@@ -86,7 +88,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // (i.e. an extra reward) for every block the queue pends processing
     uint16 private _premiumRate;
     // Unused yet part of queue rewards which were reserved for premiums
-    uint96 private _rewardReserve;
+    uint96 internal _rewardReserve;
 
     // Minimum number of blocks an empty queue must pend processing.
     uint16 private _minEmptyQueueAge;
@@ -388,7 +390,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     }
 
     function _createNewBusQueue()
-        private
+        internal
         returns (uint32 newQueueId, BusQueue memory queue, bytes32 commitment)
     {
         newQueueId = _nextQueueId;
@@ -411,7 +413,8 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // For an empty queue it returns a meaningless value.
     function _getQueueRemainingBlocks(
         BusQueue memory queue
-    ) private view returns (uint40) {
+    ) internal view returns (uint40) {
+        //! shouldn't be queue.nUtxos == QUEUE_MAX_SIZE ?
         if (queue.nUtxos >= QUEUE_MAX_SIZE) return 0;
 
         // Minimum "age" declines linearly to the number of UTXOs in the queue
@@ -427,13 +430,15 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
     function _computeReward(
         BusQueue memory queue
-    ) private returns (uint256 actReward) {
+    ) internal returns (uint256 actReward) {
         (
             uint256 reward,
             uint256 premium,
             int256 netReserveChange
         ) = _estimateRewarding(queue);
+
         uint256 reserve = _rewardReserve;
+
         if (netReserveChange > 0) {
             uint256 addition = uint256(netReserveChange);
             _rewardReserve = uint96(reserve + addition);
@@ -441,11 +446,14 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         }
         if (netReserveChange < 0) {
             uint256 usage = uint256(-netReserveChange);
+
             if (usage > reserve) {
-                premium -= (usage - reserve);
+                premium -= (usage - reserve); //! can it be premium = reserve
+
                 usage = reserve;
             }
             _rewardReserve = uint96(reserve - usage);
+
             emit BusQueueRewardReserveUsed(usage);
         }
         actReward = reward + premium;
@@ -454,7 +462,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     function _estimateRewarding(
         BusQueue memory queue
     )
-        private
+        internal
         view
         returns (uint256 reward, uint256 premium, int256 netReserveChange)
     {
@@ -464,6 +472,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         // ... so this can't underflow
         reward = uint256(queue.reward) - contrib;
         uint256 pendBlocks = block.number - queue.firstUtxoBlock;
+
         premium =
             (uint256(queue.reward) * pendBlocks * _premiumRate) /
             HUNDRED_PERCENT;
