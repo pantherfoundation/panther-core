@@ -4,14 +4,17 @@
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
+import {SaltedLockDataStruct} from '@panther-core/dapp/src/types/contracts/Vault';
 import {expect} from 'chai';
 import {BigNumber, Contract} from 'ethers';
 import {ethers} from 'hardhat';
 
+import {composeExecData} from '../../lib/composeExecData';
 import {
     getPoseidonT3Contract,
     getPoseidonT4Contract,
 } from '../../lib/poseidonBuilder';
+import {TokenType} from '../../lib/token';
 import {
     TokenMock,
     VaultV1,
@@ -32,15 +35,18 @@ import {
     TransactionTypes,
 } from './data/samples/transactionNote.data';
 import {ErrorMessages} from './errMsgs/PantherPoolV1ErrMsgs';
-import {getBlockTimestamp} from './helpers/hardhat';
+import {
+    getCreateZAccountInputs,
+    getPrpClaimandConversionInputs,
+    getMainInputs,
+} from './helpers/pantherPoolV1Inputs';
 
 describe.only('PantherPoolV1', function () {
     let owner: SignerWithAddress,
         zAccountRegistry: SignerWithAddress,
         prpVoucherGrantor: SignerWithAddress,
         prpConverter: SignerWithAddress,
-        feeMaster: FakeContract<FeeMaster>,
-        user: SignerWithAddress;
+        feeMaster: FakeContract<FeeMaster>;
     let pantherStaticTree: FakeContract<PantherStaticTree>;
     let pantherTaxiTree: FakeContract<PantherTaxiTree>;
     let pantherBusTree: FakeContract<PantherBusTree>;
@@ -52,18 +58,34 @@ describe.only('PantherPoolV1', function () {
     let poseidonT3: PoseidonT3;
     let poseidonT4: PoseidonT4;
     let vaultProxy: Contract;
+    let privateMessage: string;
+    let currentLockData: SaltedLockDataStruct;
+    let stealthAddress: string;
 
-    const examplePubKeys = {
-        x: '11422399650618806433286579969134364085104724365992006856880595766565570395421',
-        y: '1176938832872885725065086511371600479013703711997288837813773296149367990317',
-    };
+    const placeholder = BigNumber.from(0);
+    const proof = {
+        a: {x: placeholder, y: placeholder},
+        b: {
+            x: [placeholder, placeholder],
+            y: [placeholder, placeholder],
+        },
+        c: {x: placeholder, y: placeholder},
+    } as SnarkProofStruct;
+    const transactionOptions = 0;
+
+    const forestMerkleRoot = ethers.utils.id('forestMerkleRoot');
+    const hexForestRoot = ethers.utils.hexlify(
+        BigNumber.from(forestMerkleRoot),
+    );
+    const paymasterCompensation = ethers.BigNumber.from('10');
+    const zkpAmountMin = ethers.utils.parseEther('10');
 
     before(async function () {
-        [owner, zAccountRegistry, prpVoucherGrantor, prpConverter, user] =
+        [owner, zAccountRegistry, prpVoucherGrantor, prpConverter] =
             await ethers.getSigners();
 
         const ZkpToken = await ethers.getContractFactory('TokenMock');
-        zkpToken = await ZkpToken.deploy();
+        zkpToken = (await ZkpToken.deploy()) as TokenMock;
 
         const PoseidonT3 = await getPoseidonT3Contract();
         poseidonT3 = (await PoseidonT3.deploy()) as PoseidonT3;
@@ -81,17 +103,21 @@ describe.only('PantherPoolV1', function () {
             protocolFee: 0,
         });
 
+        feeMaster[
+            'accountFees((uint16,uint8,uint40,uint40,uint40),(address,uint128,uint128))'
+        ].returns({
+            scMiningReward: 100,
+            scKycFee: 456,
+            scPaymasterCompensationInNative: 789,
+            scKytFees: 0,
+            protocolFee: 0,
+        });
+
         pantherStaticTree = await smock.fake('PantherStaticTree', {});
         pantherTaxiTree = await smock.fake('PantherTaxiTree');
         pantherFerryTree = await smock.fake('PantherFerryTree');
         pantherBusTree = await smock.fake('PantherBusTree');
         verifier = await smock.fake('PantherVerifier');
-
-        verifier.verify.returns(true);
-
-        pantherStaticTree.getRoot.returns(
-            ethers.utils.id('staticTreeMerkleRoot'),
-        );
 
         const EIP173Proxy = await ethers.getContractFactory('EIP173Proxy');
 
@@ -103,6 +129,12 @@ describe.only('PantherPoolV1', function () {
     });
 
     beforeEach(async function () {
+        verifier.verify.returns(true);
+
+        pantherStaticTree.getRoot.returns(
+            ethers.utils.id('staticTreeMerkleRoot'),
+        );
+
         const PantherPool = await ethers.getContractFactory(
             'MockPantherPoolV1',
             {
@@ -121,7 +153,7 @@ describe.only('PantherPoolV1', function () {
             ferryTree: pantherFerryTree.address,
         };
 
-        pantherPool = await PantherPool.deploy(
+        pantherPool = (await PantherPool.deploy(
             owner.address,
             zkpToken.address,
             forestTrees,
@@ -132,139 +164,47 @@ describe.only('PantherPoolV1', function () {
             prpConverter.address,
             feeMaster.address,
             verifier.address,
-        );
+        )) as MockPantherPoolV1;
 
         await pantherPool.deployed();
 
         const Vault = await ethers.getContractFactory('VaultV1');
-        vault = await Vault.deploy(pantherPool.address);
+        vault = (await Vault.deploy(pantherPool.address)) as VaultV1;
 
         await vaultProxy.upgradeTo(vault.address);
-    });
-
-    interface CreateZAccountOptions {
-        extraInputsHash?: string;
-        addedAmountZkp?: number;
-        chargedAmountZkp?: BigNumber;
-        zAccountId?: number;
-        zAccountCreateTime?: BigNumber;
-        zAccountRootSpendPubKeyX?: string;
-        zAccountRootSpendPubKeyY?: string;
-        zAccountPubReadKeyX?: string;
-        zAccountPubReadKeyY?: string;
-        zAccountNullifierPubKeyX?: string;
-        zAccountNullifierPubKeyY?: string;
-        zAccountMasterEOA?: string;
-        zAccountNullifierZone?: BigNumber;
-        commitment?: string;
-        kycSignedMessageHash?: string;
-        staticTreeMerkleRoot?: string;
-        forestMerkleRoot?: string;
-        saltHash?: string;
-        magicalConstraint?: string;
-    }
-
-    async function createZAccount(options: CreateZAccountOptions) {
-        const placeholder = BigNumber.from(0);
-        const proof = {
-            a: {x: placeholder, y: placeholder},
-            b: {
-                x: [placeholder, placeholder],
-                y: [placeholder, placeholder],
-            },
-            c: {x: placeholder, y: placeholder},
-        } as SnarkProofStruct;
-
-        const addedAmountZkp = options.addedAmountZkp || 0;
-        const chargedAmountZkp =
-            options.chargedAmountZkp || ethers.utils.parseEther('10');
-        const zAccountId = options.zAccountId || 0;
-        const privateMessages = generatePrivateMessage(
-            TransactionTypes.zAccountActivation,
-        );
-        const zAccountCreateTime =
-            options.zAccountCreateTime || (await getBlockTimestamp()) + 10;
-        const zAccountRootSpendPubKeyX =
-            options.zAccountRootSpendPubKeyX || examplePubKeys.x;
-        const zAccountRootSpendPubKeyY =
-            options.zAccountRootSpendPubKeyY || examplePubKeys.y;
-        const zAccountPubReadKeyX =
-            options.zAccountPubReadKeyX || examplePubKeys.x;
-        const zAccountPubReadKeyY =
-            options.zAccountPubReadKeyY || examplePubKeys.y;
-        const zAccountMasterEOA = options.zAccountMasterEOA || user.address;
-        const zAccountNullifierZone =
-            options.zAccountNullifierZone || BigNumber.from(1);
-        const zAccountNullifierPubKeyX =
-            options.zAccountNullifierPubKeyX || ethers.utils.id('nullifier');
-        const zAccountNullifierPubKeyY =
-            options.zAccountNullifierPubKeyY || ethers.utils.id('nullifier');
-        const commitment = options.commitment || ethers.utils.id('commitment');
-        const kycSignedMessageHash =
-            options.kycSignedMessageHash ||
-            ethers.utils.id('kycSignedMessageHash');
-        const staticTreeMerkleRoot =
-            options.staticTreeMerkleRoot ||
-            ethers.utils.id('staticTreeMerkleRoot');
-        const forestMerkleRoot =
-            options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
-        const saltHash =
-            options.saltHash ||
-            ethers.utils.keccak256(
-                ethers.utils.toUtf8Bytes('PANTHER_EIP712_DOMAIN_SALT'),
-            );
-        const magicalConstraint =
-            options.magicalConstraint || ethers.utils.id('magicalConstraint');
-        const transactionOptions = 0;
-        const paymasterCompensation = ethers.BigNumber.from('10');
-        const extraInput = ethers.utils.solidityPack(
-            ['uint32', 'uint96', 'bytes'],
-            [transactionOptions, paymasterCompensation, privateMessages],
-        );
-        const calculatedExtraInputHash = BigNumber.from(
-            ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-        ).mod(SNARK_FIELD_SIZE);
-
-        const extraInputsHash =
-            options.extraInputsHash || calculatedExtraInputHash;
-
-        const hexForestRoot = ethers.utils.hexlify(
-            BigNumber.from(forestMerkleRoot),
-        );
 
         await pantherPool.internalCacheNewRoot(hexForestRoot);
-        await expect(
-            pantherPool
-                .connect(zAccountRegistry)
-                .createZAccountUtxo(
-                    [
-                        extraInputsHash,
-                        addedAmountZkp,
-                        chargedAmountZkp,
-                        zAccountId,
-                        zAccountCreateTime,
-                        zAccountRootSpendPubKeyX,
-                        zAccountRootSpendPubKeyY,
-                        zAccountPubReadKeyX,
-                        zAccountPubReadKeyY,
-                        zAccountNullifierPubKeyX,
-                        zAccountNullifierPubKeyY,
-                        zAccountMasterEOA,
-                        zAccountNullifierZone,
-                        commitment,
-                        kycSignedMessageHash,
-                        staticTreeMerkleRoot,
-                        forestMerkleRoot,
-                        saltHash,
-                        magicalConstraint,
-                    ],
-                    proof,
-                    transactionOptions,
-                    0x100,
-                    paymasterCompensation,
-                    privateMessages,
-                ),
-        ).to.emit(pantherPool, 'TransactionNote');
+    });
+
+    function getStealthAddress() {
+        const salt =
+            '0xc0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fe';
+
+        currentLockData = {
+            tokenType: TokenType.Erc20,
+            token: zkpToken.address,
+            tokenId: 0,
+            salt: salt,
+            extAccount: owner.address,
+            extAmount: BigNumber.from('10'),
+        };
+
+        const execData = composeExecData(currentLockData, vaultProxy.address);
+
+        const initCode = ethers.utils.solidityPack(
+            ['bytes', 'address', 'bytes'],
+            [
+                '0x3d6014602a3d395160601C3d3d603e80380380913d393d343d955af16026573d908181803efd5b80f300',
+                zkpToken.address,
+                execData,
+            ],
+        );
+
+        return ethers.utils.getCreate2Address(
+            vaultProxy.address,
+            salt,
+            ethers.utils.keccak256(initCode),
+        );
     }
 
     describe('Deployment', function () {
@@ -289,57 +229,616 @@ describe.only('PantherPoolV1', function () {
     });
 
     describe('#createZAccountUtxo', function () {
+        privateMessage = generatePrivateMessage(
+            TransactionTypes.zAccountActivation,
+        );
+
         it('should create zAccountUtxo and increase feeMaster debt', async function () {
             expect(
                 await pantherPool.feeMasterDebt(zkpToken.address),
             ).to.be.equal(BigNumber.from(0));
+
             await pantherPool.updateCircuitId(0x100, 1);
-            await createZAccount({});
+
+            const inputs = await getCreateZAccountInputs({});
+            await pantherPool
+                .connect(zAccountRegistry)
+                .createZAccountUtxo(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                );
             expect(
                 await pantherPool.feeMasterDebt(zkpToken.address),
             ).to.be.equal(ethers.utils.parseEther('10'));
         });
 
+        it('should revert if not called by zAccountRegistry ', async function () {
+            await pantherPool.updateCircuitId(0x100, 1);
+            const inputs = await getCreateZAccountInputs({});
+            await expect(
+                pantherPool.createZAccountUtxo(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNAUTHORIZED);
+        });
+
         it('should revert if circuit id is not updated ', async function () {
-            await expect(createZAccount({})).to.be.revertedWith(
-                ErrorMessages.ERR_UNDEFINED_CIRCUIT,
-            );
+            const inputs = await getCreateZAccountInputs({});
+            await expect(
+                pantherPool
+                    .connect(zAccountRegistry)
+                    .createZAccountUtxo(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        TransactionTypes.zAccountActivation,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNDEFINED_CIRCUIT);
         });
 
         it('should revert if the input values are passed as zero ', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
-            await expect(createZAccount({saltHash: '0'})).to.be.revertedWith(
-                ErrorMessages.ERR_ZERO_SALT_HASH,
-            );
+            await expect(
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        saltHash: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_ZERO_SALT_HASH);
 
             await expect(
-                createZAccount({magicalConstraint: '0'}),
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        magicalConstraint: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith(ErrorMessages.ERR_ZERO_MAGIC_CONSTR);
 
             await expect(
-                createZAccount({zAccountNullifierZone: BigNumber.from(0)}),
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        zAccountNullifierZone: BigNumber.from(0),
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith(ErrorMessages.ERR_ZERO_NULLIFIER);
 
-            await expect(createZAccount({commitment: '0'})).to.be.revertedWith(
-                ErrorMessages.ERR_ZERO_ZACCOUNT_COMMIT,
-            );
             await expect(
-                createZAccount({kycSignedMessageHash: '0'}),
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        commitment: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_ZERO_ZACCOUNT_COMMIT);
+
+            await expect(
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        kycSignedMessageHash: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith(ErrorMessages.ERR_ZERO_KYC_MSG_HASH);
         });
 
-        it('should revert if static tree root is not valid', async function () {
+        it('should revert for invalid static root', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
+
             await expect(
-                createZAccount({staticTreeMerkleRoot: ethers.utils.id('root')}),
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        staticTreeMerkleRoot: ethers.utils.id('root'),
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_STATIC_ROOT);
         });
 
         it('should revert if zAccount creation time is not valid', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
+
             await expect(
-                createZAccount({zAccountCreateTime: BigNumber.from(0)}),
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        zAccountCreateTime: BigNumber.from(0),
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_CREATE_TIME);
+        });
+
+        it('should revert for invalid forest root', async function () {
+            await pantherPool.updateCircuitId(0x100, 1);
+            await expect(
+                pantherPool.connect(zAccountRegistry).createZAccountUtxo(
+                    await getCreateZAccountInputs({
+                        forestMerkleRoot: ethers.utils.id('root'),
+                    }),
+                    proof,
+                    transactionOptions,
+                    TransactionTypes.zAccountActivation,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_FOREST_ROOT);
+        });
+
+        it('should revert if the proof is not valid', async function () {
+            await pantherPool.updateCircuitId(0x100, 1);
+            verifier.verify.returns(false);
+            await expect(
+                pantherPool
+                    .connect(zAccountRegistry)
+                    .createZAccountUtxo(
+                        await getCreateZAccountInputs({}),
+                        proof,
+                        transactionOptions,
+                        TransactionTypes.zAccountActivation,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.be.revertedWith(ErrorMessages.ERR_FAILED_ZK_PROOF);
+        });
+    });
+
+    describe('#accountPrp', function () {
+        privateMessage = generatePrivateMessage(TransactionTypes.prpClaim);
+
+        it('should execute account PRP', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await pantherPool
+                .connect(prpVoucherGrantor)
+                .accountPrp(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                );
+            expect(
+                await pantherPool.feeMasterDebt(zkpToken.address),
+            ).to.be.equal(ethers.utils.parseEther('10'));
+        });
+
+        it('should revert if not called by prpVoucherGrantor ', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await expect(
+                pantherPool.accountPrp(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNAUTHORIZED);
+        });
+
+        it('should revert if circuit id is not updated ', async function () {
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await expect(
+                pantherPool
+                    .connect(prpVoucherGrantor)
+                    .accountPrp(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNDEFINED_CIRCUIT);
+        });
+
+        it('should revert if the input values are passed as zero ', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+
+            await expect(
+                pantherPool.connect(prpVoucherGrantor).accountPrp(
+                    await getPrpClaimandConversionInputs({
+                        zAccountUtxoOutCommitment: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_ZERO_ZACCOUNT_COMMIT);
+
+            await expect(
+                pantherPool.connect(prpVoucherGrantor).accountPrp(
+                    await getPrpClaimandConversionInputs({
+                        zAccountUtxoInNullifier: '0',
+                    }),
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_ZERO_NULLIFIER);
+        });
+
+        it('should revert for invalid static root', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+
+            await expect(
+                pantherPool.connect(prpVoucherGrantor).accountPrp(
+                    await getPrpClaimandConversionInputs({
+                        staticTreeMerkleRoot: ethers.utils.id('root'),
+                    }),
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_STATIC_ROOT);
+        });
+
+        it('should revert if creation time is not valid', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+
+            await expect(
+                pantherPool.connect(prpVoucherGrantor).accountPrp(
+                    await getPrpClaimandConversionInputs({
+                        utxoOutCreateTime: BigNumber.from(0),
+                    }),
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_CREATE_TIME);
+        });
+
+        it('should revert for invalid forest root', async function () {
+            await pantherPool.updateCircuitId(0x103, 1);
+            await expect(
+                pantherPool.connect(prpVoucherGrantor).accountPrp(
+                    await getPrpClaimandConversionInputs({
+                        forestMerkleRoot: ethers.utils.id('root'),
+                    }),
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_FOREST_ROOT);
+        });
+    });
+
+    describe('#createZzkpUtxoAndSpendPrpUtxo', function () {
+        privateMessage = generatePrivateMessage(TransactionTypes.prpConversion);
+
+        it('should execute PRP Converter', async function () {
+            await pantherPool.updateCircuitId(0x104, 1);
+
+            await zkpToken.increaseAllowance(
+                vaultProxy.address,
+                ethers.utils.parseEther('100'),
+            );
+
+            await zkpToken.transfer(
+                prpConverter.address,
+                ethers.utils.parseEther('100'),
+            );
+            expect(await zkpToken.balanceOf(prpConverter.address)).to.be.equal(
+                ethers.utils.parseEther('100'),
+            );
+
+            await zkpToken
+                .connect(prpConverter)
+                .approve(vaultProxy.address, ethers.utils.parseEther('100'));
+
+            const inputs = await getPrpClaimandConversionInputs({});
+            privateMessage = generatePrivateMessage(
+                TransactionTypes.prpConversion,
+            );
+            await pantherPool
+                .connect(prpConverter)
+                .createZzkpUtxoAndSpendPrpUtxo(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                );
+
+            expect(
+                await pantherPool.feeMasterDebt(zkpToken.address),
+            ).to.be.equal(ethers.utils.parseEther('10'));
+            expect(await zkpToken.balanceOf(vaultProxy.address)).to.be.equal(
+                ethers.utils.parseEther('10'),
+            );
+        });
+
+        it('should revert if not called by prpConverter ', async function () {
+            await pantherPool.updateCircuitId(0x104, 1);
+
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await expect(
+                pantherPool.createZzkpUtxoAndSpendPrpUtxo(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNAUTHORIZED);
+        });
+
+        it('should revert if circuit id is not updated ', async function () {
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await expect(
+                pantherPool
+                    .connect(prpConverter)
+                    .createZzkpUtxoAndSpendPrpUtxo(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        zkpAmountMin,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.be.revertedWith(ErrorMessages.ERR_UNDEFINED_CIRCUIT);
+        });
+
+        it('should revert if deposit amount is greater then zero ', async function () {
+            await pantherPool.updateCircuitId(0x104, 1);
+
+            const inputs = await getPrpClaimandConversionInputs({
+                depositPrpAmount: BigNumber.from('10'),
+            });
+
+            await expect(
+                pantherPool
+                    .connect(prpConverter)
+                    .createZzkpUtxoAndSpendPrpUtxo(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        zkpAmountMin,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.be.revertedWith(ErrorMessages.ERR_TOO_LARGE_PRP_AMOUNT);
+        });
+    });
+
+    describe('#main', function () {
+        it('should execute Internal main transaction ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+            privateMessage = generatePrivateMessage(TransactionTypes.main);
+
+            const inputs = await getMainInputs({
+                depositPrpAmount: BigNumber.from('0'),
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: ethers.constants.AddressZero,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            await pantherPool
+                .connect(prpConverter)
+                .main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                );
+        });
+
+        it('should withdraw native token from vault', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+            const inputs = await getMainInputs({
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: ethers.constants.AddressZero,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            const extraInput = ethers.utils.solidityPack(
+                ['uint32', 'uint8', 'uint96', 'bytes'],
+                [
+                    transactionOptions,
+                    TokenType.Native,
+                    paymasterCompensation,
+                    privateMessage,
+                ],
+            );
+            const calculatedExtraInputHash = BigNumber.from(
+                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+            ).mod(SNARK_FIELD_SIZE);
+
+            const withdrawAmount = inputs[2];
+            inputs[0] = calculatedExtraInputHash;
+
+            const balanceOfVault = await ethers.provider.getBalance(
+                vaultProxy.address,
+            );
+
+            await pantherPool.main(
+                inputs,
+                proof,
+                transactionOptions,
+                TokenType.Native,
+                paymasterCompensation,
+                privateMessage,
+            );
+
+            expect(
+                await ethers.provider.getBalance(vaultProxy.address),
+            ).to.be.equal(balanceOfVault.sub(withdrawAmount));
+        });
+
+        it('should withdraw token from vault', async function () {
+            const extraInput = ethers.utils.solidityPack(
+                ['uint32', 'uint8', 'uint96', 'bytes'],
+                [
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ],
+            );
+            const calculatedExtraInputHash = BigNumber.from(
+                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+            ).mod(SNARK_FIELD_SIZE);
+
+            await zkpToken.transfer(vaultProxy.address, BigNumber.from('100'));
+            await zkpToken.increaseAllowance(
+                vaultProxy.address,
+                BigNumber.from('100'),
+            );
+            const vaultZkpBalance = await zkpToken.balanceOf(
+                vaultProxy.address,
+            );
+            await pantherPool.updateCircuitId(0x105, 1);
+            const inputs = await getMainInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                token: zkpToken.address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            const withdrawAmount = inputs[2];
+
+            await pantherPool.main(
+                inputs,
+                proof,
+                transactionOptions,
+                TokenType.Erc20,
+                paymasterCompensation,
+                privateMessage,
+            );
+
+            expect(await zkpToken.balanceOf(vaultProxy.address)).to.be.equal(
+                vaultZkpBalance.sub(withdrawAmount),
+            );
+        });
+
+        it('should execute deposit main transaction', async function () {
+            const extraInput = ethers.utils.solidityPack(
+                ['uint32', 'uint8', 'uint96', 'bytes'],
+                [
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ],
+            );
+            const calculatedExtraInputHash = BigNumber.from(
+                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+            ).mod(SNARK_FIELD_SIZE);
+
+            const vaultZkpBalance = await zkpToken.balanceOf(
+                vaultProxy.address,
+            );
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                token: zkpToken.address,
+                depositPrpAmount: BigNumber.from('10'),
+                withdrawPrpAmount: BigNumber.from('0'),
+                kytDepositSignedMessageSender: owner.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+            const depositAmount = inputs[1];
+
+            stealthAddress = getStealthAddress();
+            console.log('stealthAddress', stealthAddress);
+
+            console.log('feeMaster address', feeMaster.address);
+            console.log('vault address', vaultProxy.address);
+
+            await zkpToken.approve(stealthAddress, depositAmount);
+            console.log(
+                await zkpToken.allowance(owner.address, stealthAddress),
+            );
+
+            await pantherPool
+                .connect(owner)
+                .main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                );
+
+            expect(await zkpToken.balanceOf(vaultProxy.address)).to.be.equal(
+                vaultZkpBalance.add(depositAmount),
+            );
+        });
+
+        it('should revert Internal main transaction if token address is non zero ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+            privateMessage = generatePrivateMessage(TransactionTypes.main);
+
+            const inputs = await getMainInputs({
+                depositPrpAmount: BigNumber.from('0'),
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: ethers.Wallet.createRandom().address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_NON_ZERO_TOKEN);
         });
     });
 });
