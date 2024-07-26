@@ -6,13 +6,14 @@ import "../../DeFi/uniswap/interfaces/IUniswapV2Factory.sol";
 import "../../DeFi/uniswap/interfaces/IUniswapV2Pair.sol";
 import "../../interfaces/IPlugin.sol";
 
-import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE, NATIVE_TOKEN } from "../../../../common/Constants.sol";
-import "../../../../common/TransferHelper.sol";
-import "../PluginLib.sol";
+import "../TokenPairResolverLib.sol";
+import "../PluginDataDecoderLib.sol";
+import "../TokenApprovalLib.sol";
 
 contract QuickswapRouterPlugin {
-    using TransferHelper for address;
-    using PluginLib for bytes;
+    using TokenPairResolverLib for PluginData;
+    using PluginDataDecoderLib for bytes;
+    using TokenApprovalLib for address;
 
     address public immutable QUICKSWAP_ROUTER;
     address public immutable QUICKSWAP_FACTORY;
@@ -48,74 +49,252 @@ contract QuickswapRouterPlugin {
             tokenIn,
             tokenOut
         );
-        (uint112 reserve0, uint112 reserve1, ) = IUniswapV2Pair(pair)
-            .getReserves();
 
-        address token0 = IUniswapV2Pair(pair).token0();
+        if (pair != address(0)) {
+            return amountOut = _getAmountOutSinglePair(pair, tokenIn, amountIn);
+        }
 
-        (uint256 reserveIn, uint256 reserveOut) = tokenIn == token0
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
+        address tokenInNativePair = IUniswapV2Factory(QUICKSWAP_FACTORY)
+            .getPair(tokenIn, WETH);
+        address tokenOutNativePair = IUniswapV2Factory(QUICKSWAP_FACTORY)
+            .getPair(tokenOut, WETH);
 
-        amountOut = IUniswapV2Router(QUICKSWAP_ROUTER).getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut
-        );
+        if (
+            tokenInNativePair != address(0) && tokenOutNativePair != address(0)
+        ) {
+            return
+                amountOut = _getAmountsOutMultiPair(
+                    tokenIn,
+                    tokenOut,
+                    amountIn
+                );
+        }
     }
 
     function execute(
         PluginData calldata pluginData
     ) external payable returns (uint256 amountOut) {
-        (uint96 amountOutMin, uint32 deadline) = pluginData
-            .data
-            .decodeQuickswapRouterData();
+        uint96 amountOutMin;
+        uint32 deadline;
+        address[] memory completeSwapPath;
 
-        if (pluginData.tokenType == ERC20_TOKEN_TYPE) {
-            pluginData.tokenIn.safeApprove(
+        uint96 amountIn = pluginData.amountIn;
+
+        (address tokenIn, address tokenOut) = pluginData.getTokenInAndTokenOut(
+            WETH
+        );
+
+        uint256 nativeInputAmount = tokenIn
+            .approveInputAmountOrReturnNativeInputAmount(
+                pluginData.tokenType,
                 QUICKSWAP_ROUTER,
-                pluginData.amountIn
+                amountIn
             );
 
-            address[] memory path = new address[](2);
-            path[0] = pluginData.tokenIn;
-            path[1] = pluginData.tokenOut;
+        if (
+            pluginData.data.length ==
+            QUICKSWAP_ROUTER_EXACT_INPUT_SINGLE_DATA_LENGTH
+        ) {
+            (amountOutMin, deadline) = pluginData
+                .data
+                .decodeQuickswapRouterExactInputSingleData();
 
-            IUniswapV2Router(QUICKSWAP_ROUTER).swapExactTokensForTokens(
-                pluginData.amountIn,
-                amountOutMin,
+            completeSwapPath = _generateCompleteSwapPath(tokenIn, tokenOut);
+        } else {
+            address[] memory path;
+
+            (amountOutMin, deadline, path) = pluginData
+                .data
+                .decodeQuickswapRouterExactInputData();
+
+            completeSwapPath = _generateCompleteSwapPath(
                 path,
-                VAULT,
-                deadline
+                tokenIn,
+                tokenOut
             );
         }
 
-        if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
-            address[] memory path = new address[](2);
-            path[0] = WETH;
-            path[1] = pluginData.tokenOut;
+        amountOut = _execute(
+            amountIn,
+            nativeInputAmount,
+            amountOutMin,
+            deadline,
+            completeSwapPath
+        );
+    }
 
+    function _execute(
+        uint256 amountIn,
+        uint256 nativeInputAmount,
+        uint256 amountOutMin,
+        uint32 deadline,
+        address[] memory path
+    ) public payable returns (uint256 amountOut) {
+        if (path[0] == WETH) {
+            amountOut = _swapExactETHForTokens(
+                nativeInputAmount,
+                amountOutMin,
+                deadline,
+                path
+            );
+        } else if (path[path.length - 1] == WETH) {
+            amountOut = _swapExactTokensForETH(
+                amountIn,
+                amountOutMin,
+                deadline,
+                path
+            );
+        } else {
+            amountOut = _swapExactTokensForTokens(
+                amountIn,
+                amountOutMin,
+                deadline,
+                path
+            );
+        }
+    }
+
+    function _swapExactETHForTokens(
+        uint256 nativeInputAmount,
+        uint256 amountOutMin,
+        uint32 deadline,
+        address[] memory path
+    ) private returns (uint256 amountOut) {
+        uint256 pathLength = path.length;
+        uint256[] memory _amounts = new uint256[](pathLength);
+
+        try
             IUniswapV2Router(QUICKSWAP_ROUTER).swapExactETHForTokens{
-                value: pluginData.amountIn
-            }(amountOutMin, path, VAULT, deadline);
+                value: nativeInputAmount
+            }(amountOutMin, path, VAULT, deadline)
+        returns (uint256[] memory amounts) {
+            _amounts = amounts;
+        } catch Error(string memory reason) {
+            revert(reason);
         }
 
-        if (pluginData.tokenOut == NATIVE_TOKEN) {
-            address[] memory path = new address[](2);
-            path[0] = pluginData.tokenIn;
-            path[1] = WETH;
+        amountOut = _amounts[pathLength - 1];
+    }
 
+    function _swapExactTokensForETH(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        uint32 deadline,
+        address[] memory path
+    ) private returns (uint256 amountOut) {
+        uint256 pathLength = path.length;
+        uint256[] memory _amounts = new uint256[](pathLength);
+
+        try
             IUniswapV2Router(QUICKSWAP_ROUTER).swapExactTokensForETH(
-                pluginData.amountIn,
+                amountIn,
                 amountOutMin,
                 path,
                 VAULT,
                 deadline
-            );
+            )
+        returns (uint256[] memory amounts) {
+            _amounts = amounts;
+        } catch Error(string memory reason) {
+            revert(reason);
         }
 
-        // Get amount out from uniswap router call
-        amountOut = 0;
+        amountOut = _amounts[pathLength - 1];
+    }
+
+    function _swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        uint32 deadline,
+        address[] memory path
+    ) private returns (uint256 amountOut) {
+        uint256 pathLength = path.length;
+        uint256[] memory _amounts = new uint256[](pathLength);
+
+        try
+            IUniswapV2Router(QUICKSWAP_ROUTER).swapExactTokensForTokens(
+                amountIn,
+                amountOutMin,
+                path,
+                VAULT,
+                deadline
+            )
+        returns (uint256[] memory amounts) {
+            _amounts = amounts;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
+
+        amountOut = _amounts[pathLength - 1];
+    }
+
+    function _generateCompleteSwapPath(
+        address[] memory _path,
+        address _tokenIn,
+        address _tokenOut
+    ) private pure returns (address[] memory completeSwapPath) {
+        uint256 numTokens = 2 + _path.length;
+
+        completeSwapPath = new address[](numTokens);
+        completeSwapPath[0] = _tokenIn; // first index
+        completeSwapPath[numTokens - 1] = _tokenOut; // last index
+
+        // adding tokens at index `1` to index `one before the last`
+        for (uint256 i = 1; i < numTokens - 1; ) {
+            completeSwapPath[i] = _path[i - 1];
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _generateCompleteSwapPath(
+        address _tokenIn,
+        address _tokenOut
+    ) private pure returns (address[] memory completeSwapPath) {
+        completeSwapPath = new address[](2);
+
+        completeSwapPath[0] = _tokenIn; // first index
+        completeSwapPath[1] = _tokenOut; // last index
+    }
+
+    function _getAmountOutSinglePair(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    ) private view returns (uint256 amountOut) {
+        address[] memory path = new address[](2);
+        path[0] = tokenIn;
+        path[1] = tokenOut;
+
+        uint256[] memory amountsOut = new uint256[](2);
+
+        amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER).getAmountsOut(
+            amountIn,
+            path
+        );
+
+        amountOut = amountsOut[amountsOut.length - 1];
+    }
+
+    function _getAmountsOutMultiPair(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    ) private view returns (uint256 amountOut) {
+        address[] memory path = new address[](3);
+        path[0] = tokenIn;
+        path[1] = WETH;
+        path[2] = tokenOut;
+
+        uint256[] memory amountsOut = new uint256[](3);
+
+        amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER).getAmountsOut(
+            amountIn,
+            path
+        );
+
+        amountOut = amountsOut[amountsOut.length - 1];
     }
 
     receive() external payable {}

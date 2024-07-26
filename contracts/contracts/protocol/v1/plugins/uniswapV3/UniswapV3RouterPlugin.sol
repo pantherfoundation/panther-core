@@ -5,13 +5,14 @@ import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../../interfaces/IPlugin.sol";
 
-import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE, NATIVE_TOKEN } from "../../../../common/Constants.sol";
-import "../../../../common/TransferHelper.sol";
-import "../PluginLib.sol";
+import "../TokenPairResolverLib.sol";
+import "../PluginDataDecoderLib.sol";
+import "../TokenApprovalLib.sol";
 
 contract UniswapV3RouterPlugin {
-    using TransferHelper for address;
-    using PluginLib for bytes;
+    using TokenPairResolverLib for PluginData;
+    using PluginDataDecoderLib for bytes;
+    using TokenApprovalLib for address;
 
     address public immutable UNISWAP_ROUTER;
     address public immutable UNISWAP_QUOTERV2;
@@ -51,7 +52,7 @@ contract UniswapV3RouterPlugin {
         address tokenIn,
         address tokenOut,
         uint256 amountIn
-    ) external returns (Quote[4] memory quotes) {
+    ) public returns (Quote[4] memory quotes) {
         uint24[3] memory feeTiers = getFeeTiers();
 
         for (uint256 i = 0; i < feeTiers.length; i++) {
@@ -93,45 +94,130 @@ contract UniswapV3RouterPlugin {
         }
     }
 
+    function quoteExactInput(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    ) external returns (bytes memory path, uint256 amountOut) {
+        Quote[4] memory tokenInToNativeQuotes = quoteExactInputSingle(
+            tokenIn,
+            WETH,
+            amountIn
+        );
+
+        (uint24 feeForTokenInNativePool, ) = _findOptimalSwapParameters(
+            tokenInToNativeQuotes
+        );
+
+        //
+        Quote[4] memory nativeToTokenOutQuotes = quoteExactInputSingle(
+            WETH,
+            tokenOut,
+            amountIn
+        );
+
+        uint24 feeForTokenOutNativePool;
+
+        (feeForTokenOutNativePool, amountOut) = _findOptimalSwapParameters(
+            nativeToTokenOutQuotes
+        );
+
+        // This path must be passed to `execute()` method. the `tokenIn` and `tokenOut`
+        // will be added by that methods
+        path = abi.encodePacked(
+            feeForTokenInNativePool,
+            WETH,
+            feeForTokenOutNativePool
+        );
+    }
+
     function execute(
         PluginData calldata pluginData
     ) external payable returns (uint256 amountOut) {
-        (
-            uint32 deadline,
-            uint96 amountOutMinimum,
-            uint24 fee,
-            uint160 sqrtPriceLimitX96
-        ) = pluginData.data.decodeUniswapV3RouterData();
-
         uint8 tokenType = pluginData.tokenType;
         uint96 amountIn = pluginData.amountIn;
+        bytes memory data = pluginData.data;
 
-        (address tokenIn, address tokenOut) = _getTokenInAndTokenOut(
-            pluginData
+        (address tokenIn, address tokenOut) = pluginData.getTokenInAndTokenOut(
+            WETH
         );
 
-        uint256 nativeInputAmount = _approveInputAmountOrReturnNativeInputAmount(
+        uint256 nativeInputAmount = tokenIn
+            .approveInputAmountOrReturnNativeInputAmount(
                 tokenType,
-                tokenIn,
+                UNISWAP_ROUTER,
                 amountIn
             );
 
-        ISwapRouter.ExactInputSingleParams
-            memory pluginParamsParams = ISwapRouter.ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                amountIn: pluginData.amountIn,
-                amountOutMinimum: amountOutMinimum,
-                sqrtPriceLimitX96: sqrtPriceLimitX96,
-                deadline: deadline,
-                fee: fee,
-                recipient: VAULT
-            });
+        amountOut = _execute(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            nativeInputAmount,
+            data
+        );
+    }
 
+    function _execute(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 nativeAmount,
+        bytes memory data
+    ) private returns (uint256 amountOut) {
+        if (data.length == UNISWAPV3_ROUTER_EXACT_INPUT_SINGLE_DATA_LENGTH) {
+            (
+                uint32 deadline,
+                uint96 amountOutMinimum,
+                uint24 fee,
+                uint160 sqrtPriceLimitX96
+            ) = data.decodeUniswapV3RouterExactInputSingleData();
+
+            ISwapRouter.ExactInputSingleParams
+                memory pluginParamsParams = ISwapRouter.ExactInputSingleParams({
+                    tokenIn: tokenIn,
+                    tokenOut: tokenOut,
+                    amountIn: amountIn,
+                    amountOutMinimum: amountOutMinimum,
+                    sqrtPriceLimitX96: sqrtPriceLimitX96,
+                    deadline: deadline,
+                    fee: fee,
+                    recipient: VAULT
+                });
+
+            _executeExactInputSignle(pluginParamsParams, nativeAmount);
+        } else {
+            (uint32 deadline, uint96 amountOutMinimum, bytes memory path) = data
+                .decodeUniswapV3RouterExactInputData();
+
+            // tokenIn + {fee+address1+fee+...+fee+addressN+fee} + tokenOut
+            bytes memory completeSwapPath = abi.encodePacked(
+                tokenIn,
+                path,
+                tokenOut
+            );
+
+            ISwapRouter.ExactInputParams memory pluginParams = ISwapRouter
+                .ExactInputParams({
+                    path: completeSwapPath,
+                    amountIn: amountIn,
+                    amountOutMinimum: amountOutMinimum,
+                    deadline: deadline,
+                    recipient: VAULT
+                });
+
+            amountOut = _executeExactInput(pluginParams, nativeAmount);
+        }
+    }
+
+    function _executeExactInputSignle(
+        ISwapRouter.ExactInputSingleParams memory exactInputSingleParams,
+        uint256 nativeAmount
+    ) private returns (uint256 amountOut) {
         try
-            ISwapRouter(UNISWAP_ROUTER).exactInputSingle{
-                value: nativeInputAmount
-            }(pluginParamsParams)
+            ISwapRouter(UNISWAP_ROUTER).exactInputSingle{ value: nativeAmount }(
+                exactInputSingleParams
+            )
         returns (uint256 amount) {
             amountOut = amount;
         } catch Error(string memory reason) {
@@ -139,31 +225,31 @@ contract UniswapV3RouterPlugin {
         }
     }
 
-    function _getTokenInAndTokenOut(
-        PluginData calldata pluginData
-    ) private view returns (address tokenIn, address tokenOut) {
-        tokenIn = pluginData.tokenIn;
-        tokenOut = pluginData.tokenOut;
-
-        if (tokenIn == NATIVE_TOKEN) {
-            tokenIn = WETH;
-        }
-
-        if (tokenOut == NATIVE_TOKEN) {
-            tokenOut = WETH;
+    function _executeExactInput(
+        ISwapRouter.ExactInputParams memory exactInputParams,
+        uint256 nativeAmount
+    ) private returns (uint256 amountOut) {
+        try
+            ISwapRouter(UNISWAP_ROUTER).exactInput{ value: nativeAmount }(
+                exactInputParams
+            )
+        returns (uint256 amount) {
+            amountOut = amount;
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
-    function _approveInputAmountOrReturnNativeInputAmount(
-        uint8 tokenType,
-        address tokenIn,
-        uint96 amountIn
-    ) private returns (uint256 nativeInputAmount) {
-        if (tokenType == ERC20_TOKEN_TYPE) {
-            tokenIn.safeApprove(UNISWAP_ROUTER, amountIn);
-        }
-        if (tokenType == NATIVE_TOKEN_TYPE) {
-            nativeInputAmount = amountIn;
+    function _findOptimalSwapParameters(
+        Quote[4] memory quotes
+    ) private pure returns (uint24 fee, uint256 amountOut) {
+        // first quote has to lowest fee (500), so it may gives us more output token amount.
+        fee = quotes[0].fee;
+        amountOut = quotes[0].amountOut;
+
+        // checking if pools with other fees gives us better amountOut
+        for (uint256 i = 1; i < quotes.length; i++) {
+            if (quotes[i].amountOut > amountOut) fee = quotes[i].fee;
         }
     }
 
