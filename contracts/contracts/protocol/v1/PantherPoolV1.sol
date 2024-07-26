@@ -17,7 +17,6 @@ import "./pantherPool/UtxosInserter.sol";
 import "./pantherPool/TransactionTypes.sol";
 import "./pantherPool/ZAssetUtxoGeneratorLib.sol";
 import "./pantherPool/ZSwapLib.sol";
-import "./plugins/PluginLib.sol";
 
 import "../../common/UtilsLib.sol";
 import "../../common/NonReentrant.sol";
@@ -54,7 +53,7 @@ contract PantherPoolV1 is
     using ZAssetUtxoGeneratorLib for uint256;
     using TransactionOptions for uint32;
     using TransactionTypes for uint16;
-    using PluginLib for bytes;
+    using PluginDataDecoderLib for bytes;
     using ZSwapLib for address;
     using VaultLib for address;
     using UtilsLib for uint256;

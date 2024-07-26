@@ -9,7 +9,7 @@ import "./VaultLib.sol";
 import "./ZAssetUtxoGeneratorLib.sol";
 import "./publicSignals/ZSwapPublicSignals.sol";
 
-import "../plugins/PluginLib.sol";
+import "../plugins/PluginDataDecoderLib.sol";
 
 import "../../../common/TransferHelper.sol";
 import "../../../common/UtilsLib.sol";
@@ -19,7 +19,7 @@ import { LockData } from "../../../common/Types.sol";
 library ZSwapLib {
     using UtilsLib for uint256;
     using VaultLib for address;
-    using PluginLib for bytes;
+    using PluginDataDecoderLib for bytes;
     using ZAssetUtxoGeneratorLib for uint256;
     using TransferHelper for address;
 

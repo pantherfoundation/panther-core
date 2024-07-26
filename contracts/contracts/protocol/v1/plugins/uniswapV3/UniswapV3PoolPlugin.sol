@@ -5,12 +5,12 @@ import "../../interfaces/IPlugin.sol";
 
 import "../../../../common/TransferHelper.sol";
 import "../../DeFi/UniswapV3FlashSwap.sol";
-import "../PluginLib.sol";
+import "../PluginDataDecoderLib.sol";
 
 import { NATIVE_TOKEN_TYPE } from "../../../../common/Constants.sol";
 
 contract UniswapV3PoolPlugin {
-    using PluginLib for bytes;
+    using PluginDataDecoderLib for bytes;
     using UniswapV3FlashSwap for address;
     using TransferHelper for address;
     using TransferHelper for address payable;
