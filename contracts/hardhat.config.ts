@@ -271,6 +271,12 @@ function getNamedAccounts() {
         quoterV2: {
             amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
         },
+        quickswapRouter02: {
+            amoy: '0xf253c47dcD36Ab80BAB5731f548fd818551f1c16',
+        },
+        quickswapFactory: {
+            amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
+        },
     };
 
     return namedAccounts;
