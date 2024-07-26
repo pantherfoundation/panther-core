@@ -35,5 +35,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['vault-impl', 'protocol-v0'];
+func.tags = ['vault-v0-impl', 'protocol-v0'];
 func.dependencies = ['check-params', 'pool'];
