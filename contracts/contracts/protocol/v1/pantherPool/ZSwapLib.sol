@@ -111,9 +111,11 @@ library ZSwapLib {
         uint256 receivedAmountInVault = vaultUpdatedBalance -
             vaultInitialBalance;
 
+        require(_outputAmount != 0, "Zero received amount");
+
         require(
-            _outputAmount != 0 && receivedAmountInVault == _outputAmount,
-            "Zero received amount"
+            _outputAmount == receivedAmountInVault,
+            "Unexpected vault balance"
         );
     }
 }
