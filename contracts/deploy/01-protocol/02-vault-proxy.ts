@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (reuseEnvAddress(hre, 'VAULT_PROXY')) return;
 
     await deploy('Vault_Proxy', {
-        contract: 'EIP173Proxy',
+        contract: 'EIP173ProxyWithReceive',
         from: deployer,
         args: [
             ethers.constants.AddressZero, // implementation will be changed

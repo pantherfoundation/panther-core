@@ -101,7 +101,7 @@ func.tags = ['pool', 'protocol-v0'];
 func.dependencies = [
     'check-params',
     'crypto-libs',
-    'vault-proxy',
+    'vault-v0-proxy',
     'grantor-proxy',
     'registry',
 ];
