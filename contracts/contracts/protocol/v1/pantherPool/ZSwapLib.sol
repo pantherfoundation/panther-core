@@ -35,16 +35,17 @@ library ZSwapLib {
         address vault = inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
             .safeAddress();
 
-        // TODO: get TokenType from inputs
-        address existingToken = inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress();
-        uint8 tokenType = existingToken == NATIVE_TOKEN
-            ? NATIVE_TOKEN_TYPE
-            : ERC20_TOKEN_TYPE;
+        uint8 existingTokenType = _getTokenType(
+            inputs[ZSWAP_EXISTING_TOKEN_IND]
+        );
+        uint8 incomingTokenType = _getTokenType(
+            inputs[ZSWAP_INCOMING_TOKEN_IND]
+        );
 
         vault.unlockAsset(
             LockData(
-                tokenType,
-                existingToken,
+                existingTokenType,
+                inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress(),
                 inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
                 plugin,
                 inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96()
@@ -54,7 +55,8 @@ library ZSwapLib {
         uint96 outputAmount = _executeSwapAndVerifyOutput(
             plugin,
             vault,
-            tokenType,
+            existingTokenType,
+            incomingTokenType,
             inputs,
             data
         );
@@ -75,7 +77,8 @@ library ZSwapLib {
     function _executeSwapAndVerifyOutput(
         address plugin,
         address vault,
-        uint8 tokenType,
+        uint8 existingTokenType,
+        uint8 incomingTokenType,
         uint256[] memory inputs,
         bytes memory swapData
     ) private returns (uint96 _outputAmount) {
@@ -86,12 +89,12 @@ library ZSwapLib {
             tokenIn: existingToken,
             tokenOut: incomingToken,
             amountIn: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96(),
-            tokenType: tokenType,
+            tokenType: existingTokenType,
             data: swapData
         });
 
         uint256 vaultInitialBalance = IBalanceViewer(vault).getBalance(
-            tokenType,
+            incomingTokenType,
             incomingToken,
             inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
@@ -103,7 +106,7 @@ library ZSwapLib {
         }
 
         uint256 vaultUpdatedBalance = IBalanceViewer(vault).getBalance(
-            tokenType,
+            incomingTokenType,
             incomingToken,
             inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
@@ -117,5 +120,16 @@ library ZSwapLib {
             _outputAmount == receivedAmountInVault,
             "Unexpected vault balance"
         );
+    }
+
+    function _getTokenType(
+        uint256 token
+    ) private pure returns (uint8 tokenType) {
+        // TODO: get TokenType from MSB of token
+        address tokenAddress = token.safeAddress();
+
+        tokenType = tokenAddress == NATIVE_TOKEN
+            ? NATIVE_TOKEN_TYPE
+            : ERC20_TOKEN_TYPE;
     }
 }

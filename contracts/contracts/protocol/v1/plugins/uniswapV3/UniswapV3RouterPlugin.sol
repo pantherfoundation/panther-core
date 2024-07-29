@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
+import "../../../../common/interfaces/IWETH.sol";
 import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
 import "../../interfaces/IPlugin.sol";
@@ -13,6 +14,7 @@ contract UniswapV3RouterPlugin {
     using TokenPairResolverLib for PluginData;
     using PluginDataDecoderLib for bytes;
     using TokenApprovalLib for address;
+    using TransferHelper for address;
 
     address public immutable UNISWAP_ROUTER;
     address public immutable UNISWAP_QUOTERV2;
@@ -149,13 +151,18 @@ contract UniswapV3RouterPlugin {
                 amountIn
             );
 
+        address recipient = _getOutputRecipient(tokenOut);
+
         amountOut = _execute(
             tokenIn,
             tokenOut,
             amountIn,
             nativeInputAmount,
+            recipient,
             data
         );
+
+        if (tokenOut == WETH) withdrawWethAndTransferToVault(amountOut);
     }
 
     function _execute(
@@ -163,6 +170,7 @@ contract UniswapV3RouterPlugin {
         address tokenOut,
         uint256 amountIn,
         uint256 nativeAmount,
+        address recipient,
         bytes memory data
     ) private returns (uint256 amountOut) {
         if (data.length == UNISWAPV3_ROUTER_EXACT_INPUT_SINGLE_DATA_LENGTH) {
@@ -182,10 +190,13 @@ contract UniswapV3RouterPlugin {
                     sqrtPriceLimitX96: sqrtPriceLimitX96,
                     deadline: deadline,
                     fee: fee,
-                    recipient: VAULT
+                    recipient: recipient
                 });
 
-            _executeExactInputSignle(pluginParamsParams, nativeAmount);
+            amountOut = _executeExactInputSignle(
+                pluginParamsParams,
+                nativeAmount
+            );
         } else {
             (uint32 deadline, uint96 amountOutMinimum, bytes memory path) = data
                 .decodeUniswapV3RouterExactInputData();
@@ -203,7 +214,7 @@ contract UniswapV3RouterPlugin {
                     amountIn: amountIn,
                     amountOutMinimum: amountOutMinimum,
                     deadline: deadline,
-                    recipient: VAULT
+                    recipient: recipient
                 });
 
             amountOut = _executeExactInput(pluginParams, nativeAmount);
@@ -238,6 +249,21 @@ contract UniswapV3RouterPlugin {
         } catch Error(string memory reason) {
             revert(reason);
         }
+    }
+
+    function _getOutputRecipient(
+        address tokenOut
+    ) private view returns (address recipient) {
+        recipient = VAULT;
+
+        if (tokenOut == WETH) {
+            recipient = address(this);
+        }
+    }
+
+    function withdrawWethAndTransferToVault(uint256 amount) private {
+        IWETH(WETH).withdraw(amount);
+        VAULT.safeTransferETH(amount);
     }
 
     function _findOptimalSwapParameters(

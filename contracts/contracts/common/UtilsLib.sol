@@ -65,6 +65,5 @@ library UtilsLib {
 
     function safeAddress(uint256 n) internal pure returns (address _address) {
         _address = address(safe160(n));
-        revertZeroAddress(_address);
     }
 }
