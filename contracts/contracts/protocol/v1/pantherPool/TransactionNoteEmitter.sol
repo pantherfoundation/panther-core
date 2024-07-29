@@ -203,7 +203,7 @@ abstract contract TransactionNoteEmitter {
     // - bytes[64] cypherText
     // (the ephemeral key omitted to avoid duplication)
     // Length in bytes (msgType, msgContainer)
-    uint256 internal constant LMT_SPENT_2UTXO = 1 + 64;
+    uint256 internal constant LMT_SPENT_2UTXO = 1 + 32 + 64;
     // Preimage of `cipherText` MUST contain (512 bit):
     // - spentUtxoCommitment1 XOR createdZaccountUtxoRandom
     // - spentUtxoCommitment2 XOR createdZaccountUtxoRandom
@@ -342,7 +342,6 @@ abstract contract TransactionNoteEmitter {
      * The `MT_SPENT_2UTXO` is expected to start at index 291
      */
     function _sanitizeMainMessage(bytes memory privateMessages) private pure {
-        ///@dev check `LMT_UTXO_ZASSET` description
         uint8 mtFirstUtxoZAssetIndex = 97;
         uint8 mtSecondUtxoZAssetIndex = 194;
         uint16 mtSpend2UtxoIndex = 291;
@@ -367,6 +366,55 @@ abstract contract TransactionNoteEmitter {
         require(
             uint8(privateMessages[mtSpend2UtxoIndex]) == MT_SPENT_2UTXO,
             ERR_INVALID_MT_UTXO_SPEND_2UTXO
+        );
+    }
+
+    /**
+     * @notice Sanitizes private msg for prpConversion tx
+     * @param privateMessages the message to be sanitized
+     * @dev privateMessages for zSwap tx is expected to contain a MT_UTXO_ZACCOUNT, MT_UTXO_ZASSET,
+     * `MT_UTXO_ZASSET_PRIV` and, MT_SPENT_2UTXO messages.
+     * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
+     * The MT_UTXO_ZASSET contains 97 bytes (search for `LMT_UTXO_ZASSET` in the current file)
+     * and it is expected to be started at index 97.
+     * The LMT_UTXO_ZASSET_PRIV contains 97 bytes (search for `LMT_UTXO_ZASSET_PRIV` in the current file)
+     * and it is expected to be started at index 97.
+     * The `MT_SPENT_2UTXO` is expected to start at index 291 and contains 97 bytes (search for `LMT_SPENT_2UTXO`
+     * in the current file)
+     */
+    function _sanitizeZSwapMessage(bytes memory privateMessages) private pure {
+        uint8 mtUtxoZAssetIndex = 97;
+        uint8 mtUtxoZAssetPrivIndex = 194;
+        uint16 mtSpend2UtxoIndex = 291;
+
+        require(
+            privateMessages.length >=
+                LMT_UTXO_ZACCOUNT +
+                    LMT_UTXO_ZASSET +
+                    LMT_UTXO_ZASSET_PRIV +
+                    LMT_SPENT_2UTXO,
+            "ERR_LOW_MESSAGE_LENGTH"
+        );
+
+        // privateMessages for zSwap is expected to containd
+        // `MT_UTXO_ZASSET` at index 97
+        require(
+            uint8(privateMessages[mtUtxoZAssetIndex]) == MT_UTXO_ZASSET,
+            "ERR_INVALID_MT_UTXO_ZASSET"
+        );
+
+        // privateMessages for zSwap is expected to containd
+        // `MT_UTXO_ZASSET_PRIV` at index 194
+        require(
+            uint8(privateMessages[mtUtxoZAssetPrivIndex]) ==
+                MT_UTXO_ZASSET_PRIV,
+            "ERR_INVALID_MT_UTXO_ZASSET_PRIV"
+        );
+
+        // It is also expected to contain `MT_SPENT_2UTXO` started at index 291
+        require(
+            uint8(privateMessages[mtSpend2UtxoIndex]) == MT_SPENT_2UTXO,
+            "ERR_INVALID_MT_UTXO_SPEND_2UTXO"
         );
     }
 
@@ -396,6 +444,10 @@ abstract contract TransactionNoteEmitter {
 
         if (txType == TT_MAIN_TRANSACTION) {
             _sanitizeMainMessage(privateMessages);
+        }
+
+        if (txType == TT_ZSWAP) {
+            _sanitizeZSwapMessage(privateMessages);
         }
     }
 

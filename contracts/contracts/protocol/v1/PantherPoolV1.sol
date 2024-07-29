@@ -595,8 +595,7 @@ contract PantherPoolV1 is
 
         _validateZNetworkChainId(inputs[ZSWAP_ZNETWORK_CHAIN_ID_IND]);
 
-        // TODO: extend it to sanitize the message
-        // _sanitizePrivateMessage(privateMessages, TT_ZSWAP);
+        _sanitizePrivateMessage(privateMessages, TT_ZSWAP);
 
         _validateCreationTime(inputs[ZSWAP_UTXO_OUT_CREATE_TIME_IND]);
 
