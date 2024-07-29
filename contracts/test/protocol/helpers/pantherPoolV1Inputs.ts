@@ -23,6 +23,12 @@ const getSnarkFriendlyBytes = (length = 32) => {
         .toString();
 };
 
+export type ForestTreesStruct = {
+    taxiTree: string;
+    busTree: string;
+    ferryTree: string;
+};
+
 interface CreateZAccountOptions {
     extraInputsHash?: string;
     addedAmountZkp?: number;
@@ -72,7 +78,7 @@ interface MainOptions {
     addedAmountZkp?: number;
     token?: string;
     tokenId?: number;
-    utxoSpendTime?: BigNumber;
+    spendTime?: number;
     zAssetUtxoInNullifier1?: string;
     zAssetUtxoInNullifier2?: string;
     zAccountUtxoInNullifier?: string;
@@ -270,7 +276,8 @@ export async function getMainInputs(options: MainOptions) {
     const addedAmountZkp = options.addedAmountZkp || 0;
     const zAccountCreateTime =
         options.zAccountCreateTime || (await getBlockTimestamp()) + 10;
-    const spendTime = ((await getBlockTimestamp()) - 60).toString();
+    const spendTime =
+        options.spendTime || ((await getBlockTimestamp()) - 60).toString();
     const zAssetUtxoInNullifier1 =
         options.zAccountUtxoInNullifier || BigNumber.from(1);
     const zAssetUtxoInNullifier2 =
@@ -293,13 +300,15 @@ export async function getMainInputs(options: MainOptions) {
     const kytDepositSignedMessageReceiver =
         options.kytDepositSignedMessageReceiver ||
         ethers.Wallet.createRandom().address; // MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER_IND
-    const kytDepositSignedMessageHash = getSnarkFriendlyBytes(); // MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND
+    const kytDepositSignedMessageHash =
+        options.kytDepositSignedMessageHash || getSnarkFriendlyBytes(); // MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND
     const kytWithdrawSignedMessageSender =
         options.kytWithdrawSignedMessageSender ||
         ethers.Wallet.createRandom().address; // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND
     const kytWithdrawSignedMessageReceiver =
         ethers.Wallet.createRandom().address; // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND
-    const kytWithdrawSignedMessageHash = getSnarkFriendlyBytes(); // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND
+    const kytWithdrawSignedMessageHash =
+        options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes(); // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND
     const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
     const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX0_IND
     const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX1_IND
@@ -323,22 +332,22 @@ export async function getMainInputs(options: MainOptions) {
         options.magicalConstraint || ethers.utils.id('magicalConstraint');
 
     return [
-        extraInputsHash, //0
-        depositPrpAmount, //1
-        withdrawPrpAmount, //2
-        addedAmountZkp, //3
-        token, //MAIN_TOKEN_IND //4
-        tokenId, //MAIN_TOKEN_ID_IND //5
-        spendTime, //MAIN_SPEND_TIME_IND 6
-        zAssetUtxoInNullifier1, //7
-        zAssetUtxoInNullifier2, //8
-        zAccountUtxoInNullifier, //9
-        ZoneDataEscrowEphimeralPubKeyAx, //10
-        zZoneDataEscrowEncryptedMessageAx, //11
-        kytDepositSignedMessageSender, //12
-        kytDepositSignedMessageReceiver, //13
-        kytDepositSignedMessageHash, //14
-        kytWithdrawSignedMessageSender, //15
+        extraInputsHash,
+        depositPrpAmount,
+        withdrawPrpAmount,
+        addedAmountZkp,
+        token,
+        tokenId,
+        spendTime,
+        zAssetUtxoInNullifier1,
+        zAssetUtxoInNullifier2,
+        zAccountUtxoInNullifier,
+        ZoneDataEscrowEphimeralPubKeyAx,
+        zZoneDataEscrowEncryptedMessageAx,
+        kytDepositSignedMessageSender,
+        kytDepositSignedMessageReceiver,
+        kytDepositSignedMessageHash,
+        kytWithdrawSignedMessageSender,
         kytWithdrawSignedMessageReceiver,
         kytWithdrawSignedMessageHash,
         dataEscrowEphimeralPubKeyAx,
