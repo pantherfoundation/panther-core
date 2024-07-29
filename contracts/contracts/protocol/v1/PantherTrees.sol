@@ -38,11 +38,6 @@ contract PantherTrees is
         _;
     }
 
-    modifier isInitialized() {
-        require(onboardingQueueCircuitId != 0, ERR_PT_NOT_INIT);
-        _;
-    }
-
     constructor(
         address _owner,
         address _pantherPool,
@@ -123,10 +118,10 @@ contract PantherTrees is
         );
     }
 
-    function updateStaticRoot(
-        bytes32 updatedLeaf,
-        uint256 leafIndex
-    ) external isInitialized {
+    function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+        // checking if contract is initialized
+        require(onboardingQueueCircuitId != 0, ERR_PT_NOT_INIT);
+
         // can only be executed by `PantherStaticTrees` contracts
         _updateStaticRoot(updatedLeaf, leafIndex);
     }
@@ -136,11 +131,11 @@ contract PantherTrees is
         uint96 reward
     )
         external
-        isInitialized
         onlyPantherPool
         nonZeroUtxosLength(utxos)
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
+        // The pool cannot execute this method before this contract is initialized
         (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
             utxos,
             reward
@@ -153,11 +148,12 @@ contract PantherTrees is
         uint8 numTaxiUtxos
     )
         external
-        isInitialized
         onlyPantherPool
         nonZeroUtxosLength(utxos)
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
+        // The pool cannot execute this method before this contract is initialized
+
         require(numTaxiUtxos <= 3, ERR_INVALID_TAXI_UTXOS_COUNT);
 
         (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
@@ -194,6 +190,8 @@ contract PantherTrees is
         uint256[] memory inputs,
         SnarkProof memory proof
     ) external {
+        // No queue will be exist before initializing
+
         bytes32 busTreeNewRoot = _onboardQueueAndAccountReward(
             miner,
             queueId,
