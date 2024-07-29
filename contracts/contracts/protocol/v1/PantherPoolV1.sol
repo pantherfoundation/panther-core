@@ -10,6 +10,7 @@ import "./interfaces/IPantherPoolV1.sol";
 
 import "./errMsgs/PantherPoolV1ErrMsgs.sol";
 
+import "../../common/ImmutableOwnable.sol";
 import "./pantherPool/TransactionNoteEmitter.sol";
 import "./pantherPool/TransactionChargesHandler.sol";
 import "./pantherPool/DepositAndWithdrawalHandler.sol";
@@ -46,6 +47,7 @@ contract PantherPoolV1 is
     UtxosInserter,
     NonReentrant,
     TransactionChargesHandler,
+    DepositAndWithdrawalHandler,
     ImmutableOwnable,
     IPantherPoolV1
 {
@@ -65,6 +67,7 @@ contract PantherPoolV1 is
     address public immutable ZACCOUNT_REGISTRY;
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable PRP_CONVERTER;
+    address public immutable VAULT;
 
     mapping(address => bool) public vaultAssetUnlockers;
 
@@ -93,9 +96,7 @@ contract PantherPoolV1 is
 
     event CircuitIdUpdated(uint16 txType, uint160 newId);
     event ZSwapPluginUpdated(address plugin, bool status);
-    event KycRewardUpdated(uint256 newReward);
     event MaxTimeDeltaUpdated(uint256 newMaxTimeDelta);
-    event VaultAssetUnlockerUpdated(address newAssetUnlocker, bool status);
 
     constructor(
         address _owner,
@@ -110,7 +111,7 @@ contract PantherPoolV1 is
     )
         ImmutableOwnable(_owner)
         UtxosInserter(pantherTrees)
-        TransactionChargesHandler(zkpToken, feeMaster, vault)
+        TransactionChargesHandler(zkpToken, feeMaster)
     {
         require(
             verifier != address(0) &&
@@ -120,7 +121,7 @@ contract PantherPoolV1 is
             ERR_INIT
         );
 
-        VERIFIER = IPantherVerifier(verifier);
+        VERIFIER = verifier;
         ZACCOUNT_REGISTRY = zAccountRegistry;
         PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
         PRP_CONVERTER = prpConverter;
