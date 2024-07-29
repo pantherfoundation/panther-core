@@ -35,10 +35,12 @@ import {
     TransactionTypes,
 } from './data/samples/transactionNote.data';
 import {ErrorMessages} from './errMsgs/PantherPoolV1ErrMsgs';
+import {getBlockTimestamp} from './helpers/hardhat';
 import {
     getCreateZAccountInputs,
     getPrpClaimandConversionInputs,
     getMainInputs,
+    ForestTreesStruct,
 } from './helpers/pantherPoolV1Inputs';
 
 describe.only('PantherPoolV1', function () {
@@ -61,6 +63,7 @@ describe.only('PantherPoolV1', function () {
     let privateMessage: string;
     let currentLockData: SaltedLockDataStruct;
     let stealthAddress: string;
+    let forestTrees: ForestTreesStruct;
 
     const placeholder = BigNumber.from(0);
     const proof = {
@@ -119,6 +122,12 @@ describe.only('PantherPoolV1', function () {
         pantherBusTree = await smock.fake('PantherBusTree');
         verifier = await smock.fake('PantherVerifier');
 
+        forestTrees = {
+            taxiTree: pantherTaxiTree.address,
+            busTree: pantherBusTree.address,
+            ferryTree: pantherFerryTree.address,
+        };
+
         const EIP173Proxy = await ethers.getContractFactory('EIP173Proxy');
 
         vaultProxy = await EIP173Proxy.deploy(
@@ -146,12 +155,6 @@ describe.only('PantherPoolV1', function () {
                 },
             },
         );
-
-        const forestTrees = {
-            taxiTree: pantherTaxiTree.address,
-            busTree: pantherBusTree.address,
-            ferryTree: pantherFerryTree.address,
-        };
 
         pantherPool = (await PantherPool.deploy(
             owner.address,
@@ -208,7 +211,7 @@ describe.only('PantherPoolV1', function () {
     }
 
     describe('Deployment', function () {
-        it('sets the correct address', async function () {
+        it('should set the correct address', async function () {
             expect(await pantherPool.OWNER()).to.equal(owner.address);
             expect(await pantherPool.VAULT()).to.equal(vaultProxy.address);
             expect(await pantherPool.STATIC_TREE()).to.equal(
@@ -226,6 +229,50 @@ describe.only('PantherPoolV1', function () {
                 prpConverter.address,
             );
         });
+
+        it('should revert for zero addresses', async function () {
+            const PantherPool = await ethers.getContractFactory(
+                'MockPantherPoolV1',
+                {
+                    libraries: {
+                        'contracts/common/crypto/Poseidon.sol:PoseidonT3':
+                            poseidonT3.address,
+                        'contracts/common/crypto/Poseidon.sol:PoseidonT4':
+                            poseidonT4.address,
+                    },
+                },
+            );
+
+            await expect(
+                PantherPool.deploy(
+                    owner.address,
+                    zkpToken.address,
+                    forestTrees,
+                    ethers.constants.AddressZero,
+                    vaultProxy.address,
+                    zAccountRegistry.address,
+                    prpVoucherGrantor.address,
+                    prpConverter.address,
+                    feeMaster.address,
+                    verifier.address,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INIT);
+
+            await expect(
+                PantherPool.deploy(
+                    owner.address,
+                    zkpToken.address,
+                    forestTrees,
+                    pantherStaticTree.address,
+                    vaultProxy.address,
+                    ethers.constants.AddressZero,
+                    prpVoucherGrantor.address,
+                    prpConverter.address,
+                    feeMaster.address,
+                    verifier.address,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INIT);
+        });
     });
 
     describe('#createZAccountUtxo', function () {
@@ -241,16 +288,19 @@ describe.only('PantherPoolV1', function () {
             await pantherPool.updateCircuitId(0x100, 1);
 
             const inputs = await getCreateZAccountInputs({});
-            await pantherPool
-                .connect(zAccountRegistry)
-                .createZAccountUtxo(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    TransactionTypes.zAccountActivation,
-                    paymasterCompensation,
-                    privateMessage,
-                );
+            await expect(
+                await pantherPool
+                    .connect(zAccountRegistry)
+                    .createZAccountUtxo(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        TransactionTypes.zAccountActivation,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.emit(pantherPool, 'TransactionNote');
+
             expect(
                 await pantherPool.feeMasterDebt(zkpToken.address),
             ).to.be.equal(ethers.utils.parseEther('10'));
@@ -259,6 +309,7 @@ describe.only('PantherPoolV1', function () {
         it('should revert if not called by zAccountRegistry ', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
             const inputs = await getCreateZAccountInputs({});
+
             await expect(
                 pantherPool.createZAccountUtxo(
                     inputs,
@@ -273,6 +324,7 @@ describe.only('PantherPoolV1', function () {
 
         it('should revert if circuit id is not updated ', async function () {
             const inputs = await getCreateZAccountInputs({});
+
             await expect(
                 pantherPool
                     .connect(zAccountRegistry)
@@ -355,7 +407,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_ZERO_KYC_MSG_HASH);
         });
 
-        it('should revert for invalid static root', async function () {
+        it('should revert if static tree root is invalid', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
 
             await expect(
@@ -389,7 +441,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_CREATE_TIME);
         });
 
-        it('should revert for invalid forest root', async function () {
+        it('should revert if forest tree root is invalid', async function () {
             await pantherPool.updateCircuitId(0x100, 1);
             await expect(
                 pantherPool.connect(zAccountRegistry).createZAccountUtxo(
@@ -431,15 +483,18 @@ describe.only('PantherPoolV1', function () {
 
             const inputs = await getPrpClaimandConversionInputs({});
 
-            await pantherPool
-                .connect(prpVoucherGrantor)
-                .accountPrp(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    paymasterCompensation,
-                    privateMessage,
-                );
+            expect(
+                await pantherPool
+                    .connect(prpVoucherGrantor)
+                    .accountPrp(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.emit(pantherPool, 'TransactionNote');
+
             expect(
                 await pantherPool.feeMasterDebt(zkpToken.address),
             ).to.be.equal(ethers.utils.parseEther('10'));
@@ -505,7 +560,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_ZERO_NULLIFIER);
         });
 
-        it('should revert for invalid static root', async function () {
+        it('should revert if static tree root is invalid', async function () {
             await pantherPool.updateCircuitId(0x103, 1);
 
             await expect(
@@ -537,7 +592,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_CREATE_TIME);
         });
 
-        it('should revert for invalid forest root', async function () {
+        it('should revert if forest tree root is invalid', async function () {
             await pantherPool.updateCircuitId(0x103, 1);
             await expect(
                 pantherPool.connect(prpVoucherGrantor).accountPrp(
@@ -556,7 +611,7 @@ describe.only('PantherPoolV1', function () {
     describe('#createZzkpUtxoAndSpendPrpUtxo', function () {
         privateMessage = generatePrivateMessage(TransactionTypes.prpConversion);
 
-        it('should execute PRP Converter', async function () {
+        it('should execute PRP Conversion', async function () {
             await pantherPool.updateCircuitId(0x104, 1);
 
             await zkpToken.increaseAllowance(
@@ -577,19 +632,19 @@ describe.only('PantherPoolV1', function () {
                 .approve(vaultProxy.address, ethers.utils.parseEther('100'));
 
             const inputs = await getPrpClaimandConversionInputs({});
-            privateMessage = generatePrivateMessage(
-                TransactionTypes.prpConversion,
-            );
-            await pantherPool
-                .connect(prpConverter)
-                .createZzkpUtxoAndSpendPrpUtxo(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    zkpAmountMin,
-                    paymasterCompensation,
-                    privateMessage,
-                );
+
+            expect(
+                await pantherPool
+                    .connect(prpConverter)
+                    .createZzkpUtxoAndSpendPrpUtxo(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        zkpAmountMin,
+                        paymasterCompensation,
+                        privateMessage,
+                    ),
+            ).to.emit(vaultProxy, 'Locked');
 
             expect(
                 await pantherPool.feeMasterDebt(zkpToken.address),
@@ -633,7 +688,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_UNDEFINED_CIRCUIT);
         });
 
-        it('should revert if deposit amount is greater then zero ', async function () {
+        it('should revert if deposit amount is non zero ', async function () {
             await pantherPool.updateCircuitId(0x104, 1);
 
             const inputs = await getPrpClaimandConversionInputs({
@@ -680,11 +735,7 @@ describe.only('PantherPoolV1', function () {
 
         it('should withdraw native token from vault', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
-            const inputs = await getMainInputs({
-                withdrawPrpAmount: BigNumber.from('0'),
-                token: ethers.constants.AddressZero,
-                kytWithdrawSignedMessageSender: vaultProxy.address,
-            });
+
             const extraInput = ethers.utils.solidityPack(
                 ['uint32', 'uint8', 'uint96', 'bytes'],
                 [
@@ -698,8 +749,14 @@ describe.only('PantherPoolV1', function () {
                 ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
             ).mod(SNARK_FIELD_SIZE);
 
+            const inputs = await getMainInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: ethers.constants.AddressZero,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+
             const withdrawAmount = inputs[2];
-            inputs[0] = calculatedExtraInputHash;
 
             const balanceOfVault = await ethers.provider.getBalance(
                 vaultProxy.address,
@@ -720,19 +777,6 @@ describe.only('PantherPoolV1', function () {
         });
 
         it('should withdraw token from vault', async function () {
-            const extraInput = ethers.utils.solidityPack(
-                ['uint32', 'uint8', 'uint96', 'bytes'],
-                [
-                    transactionOptions,
-                    TokenType.Erc20,
-                    paymasterCompensation,
-                    privateMessage,
-                ],
-            );
-            const calculatedExtraInputHash = BigNumber.from(
-                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-            ).mod(SNARK_FIELD_SIZE);
-
             await zkpToken.transfer(vaultProxy.address, BigNumber.from('100'));
             await zkpToken.increaseAllowance(
                 vaultProxy.address,
@@ -743,7 +787,6 @@ describe.only('PantherPoolV1', function () {
             );
             await pantherPool.updateCircuitId(0x105, 1);
             const inputs = await getMainInputs({
-                extraInputsHash: calculatedExtraInputHash,
                 token: zkpToken.address,
                 kytWithdrawSignedMessageSender: vaultProxy.address,
             });
@@ -763,19 +806,17 @@ describe.only('PantherPoolV1', function () {
             );
         });
 
-        it('should execute deposit main transaction', async function () {
-            const extraInput = ethers.utils.solidityPack(
-                ['uint32', 'uint8', 'uint96', 'bytes'],
-                [
-                    transactionOptions,
-                    TokenType.Erc20,
-                    paymasterCompensation,
-                    privateMessage,
-                ],
-            );
-            const calculatedExtraInputHash = BigNumber.from(
-                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-            ).mod(SNARK_FIELD_SIZE);
+        it('should withdraw token from vault with protocol fee', async function () {
+            const protocolFee = 10;
+            feeMaster[
+                'accountFees((uint16,uint8,uint40,uint40,uint40),(address,uint128,uint128))'
+            ].returns({
+                scMiningReward: 100,
+                scKycFee: 100,
+                scPaymasterCompensationInNative: 100,
+                scKytFees: 0,
+                protocolFee: protocolFee,
+            });
 
             const vaultZkpBalance = await zkpToken.balanceOf(
                 vaultProxy.address,
@@ -783,7 +824,33 @@ describe.only('PantherPoolV1', function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
-                extraInputsHash: calculatedExtraInputHash,
+                token: zkpToken.address,
+                withdrawPrpAmount: BigNumber.from('100'),
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            const withdrawAmount = inputs[2] - protocolFee;
+
+            await pantherPool.main(
+                inputs,
+                proof,
+                transactionOptions,
+                TokenType.Erc20,
+                paymasterCompensation,
+                privateMessage,
+            );
+
+            expect(await zkpToken.balanceOf(vaultProxy.address)).to.be.equal(
+                vaultZkpBalance.sub(withdrawAmount),
+            );
+        });
+
+        it('should execute deposit main transaction', async function () {
+            const vaultZkpBalance = await zkpToken.balanceOf(
+                vaultProxy.address,
+            );
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
                 token: zkpToken.address,
                 depositPrpAmount: BigNumber.from('10'),
                 withdrawPrpAmount: BigNumber.from('0'),
@@ -793,15 +860,7 @@ describe.only('PantherPoolV1', function () {
             const depositAmount = inputs[1];
 
             stealthAddress = getStealthAddress();
-            console.log('stealthAddress', stealthAddress);
-
-            console.log('feeMaster address', feeMaster.address);
-            console.log('vault address', vaultProxy.address);
-
             await zkpToken.approve(stealthAddress, depositAmount);
-            console.log(
-                await zkpToken.allowance(owner.address, stealthAddress),
-            );
 
             await pantherPool
                 .connect(owner)
@@ -821,7 +880,6 @@ describe.only('PantherPoolV1', function () {
 
         it('should revert Internal main transaction if token address is non zero ', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
-            privateMessage = generatePrivateMessage(TransactionTypes.main);
 
             const inputs = await getMainInputs({
                 depositPrpAmount: BigNumber.from('0'),
@@ -839,6 +897,174 @@ describe.only('PantherPoolV1', function () {
                     privateMessage,
                 ),
             ).to.be.revertedWith(ErrorMessages.ERR_NON_ZERO_TOKEN);
+        });
+
+        it('should revert for invalid extraInputhash ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                extraInputsHash: BigNumber.from('0'),
+            });
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_EXTRA_INPUT_HASH);
+        });
+
+        it('should revert for invalid spendTime ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                spendTime: (await getBlockTimestamp()) + 10,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+            });
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_INVALID_SPEND_TIME);
+        });
+
+        it('should revert for invalid kytDepositSignedMessageReceiver', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                depositPrpAmount: BigNumber.from('10'),
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: ethers.Wallet.createRandom().address,
+                kytDepositSignedMessageReceiver:
+                    ethers.Wallet.createRandom().address,
+            });
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(
+                ErrorMessages.ERR_INVALID_KYT_DEPOSIT_SIGNED_MESSAGE_RECEIVER,
+            );
+        });
+
+        it('should revert for invalid kytDepositSignedMessageHash', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                depositPrpAmount: BigNumber.from('10'),
+                withdrawPrpAmount: BigNumber.from('0'),
+                token: zkpToken.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+                kytDepositSignedMessageHash: '0',
+            });
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(
+                ErrorMessages.ERR_ZERO_KYT_DEPOSIT_SIGNED_MESSAGE_HASH,
+            );
+        });
+
+        it('should revert for invalid kytWithdrawSignedMessageSender ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                token: zkpToken.address,
+                withdrawPrpAmount: BigNumber.from('100'),
+                kytWithdrawSignedMessageSender: owner.address,
+            });
+
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(
+                ErrorMessages.ERR_INVALID_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER,
+            );
+        });
+
+        it('should revert for invalid kytWithdrawSignedMessageHash', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                token: zkpToken.address,
+                withdrawPrpAmount: BigNumber.from('100'),
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytWithdrawSignedMessageHash: '0',
+            });
+
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(
+                ErrorMessages.ERR_ZERO_KYT_WITHDRAW_SIGNED_MESSAGE_HASH,
+            );
+        });
+
+        it('should revert for duplicate kytWithdrawSignedMessageHash ', async function () {
+            await pantherPool.updateCircuitId(0x105, 1);
+
+            const inputs = await getMainInputs({
+                token: zkpToken.address,
+                withdrawPrpAmount: BigNumber.from('100'),
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytWithdrawSignedMessageHash: ethers.utils.id(
+                    'kytWithdrawSignedMessageHash',
+                ),
+            });
+
+            await pantherPool.main(
+                inputs,
+                proof,
+                transactionOptions,
+                TokenType.Erc20,
+                paymasterCompensation,
+                privateMessage,
+            );
+            inputs[7] = ethers.utils.id('randomNullifier1');
+            inputs[8] = ethers.utils.id('randomNullifier2');
+            inputs[9] = ethers.utils.id('nullifier');
+
+            await expect(
+                pantherPool.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    TokenType.Erc20,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith(ErrorMessages.ERR_DUPLICATED_KYT_MESSAGE_HASH);
         });
     });
 });
