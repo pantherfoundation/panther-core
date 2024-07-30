@@ -61,6 +61,9 @@ abstract contract DepositAndWithdrawalHandler {
         }
 
         if (transactionType.isWithdrawal()) {
+            // The contract trust that the `FeeMaster` contract validates the `protocolFee`
+            if (protocolFee > 0) withdrawAmount -= protocolFee;
+
             _processWithdrawal(
                 inputs,
                 LockData(
@@ -70,8 +73,7 @@ abstract contract DepositAndWithdrawalHandler {
                     inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND]
                         .safeAddress(),
                     withdrawAmount
-                ),
-                protocolFee
+                )
             );
         }
     }
@@ -108,14 +110,8 @@ abstract contract DepositAndWithdrawalHandler {
 
     function _processWithdrawal(
         uint256[] calldata inputs,
-        LockData memory lockData,
-        uint96 protocolFee
+        LockData memory lockData
     ) private {
-        uint96 withdrawAmount = inputs[MAIN_WITHDRAW_AMOUNT_IND].safe96();
-
-        // The contract trust that the `FeeMaster` contract validates the `protocolFee`
-        if (protocolFee > 0) withdrawAmount -= protocolFee;
-
         bytes32 kytWithdrawSignedMessageHash = bytes32(
             inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]
         );
