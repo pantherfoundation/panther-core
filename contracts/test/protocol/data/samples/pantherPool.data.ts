@@ -47,16 +47,17 @@ export const depositInputs = async () => {
         dataEscrowEncryptedMessageAx9: getSnarkFriendlyBytes(), // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX8_IND
         dataEscrowEncryptedMessageAx10: getSnarkFriendlyBytes(), // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX9_IND
         daoDataEscrowEphimeralPubKeyAx: getSnarkFriendlyBytes(), // MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
-        daoDataEscrowEncryptedMessageAx1: getSnarkFriendlyBytes(), // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_1
+        creationTime: (await getBlockTimestamp()).toString(),
+        // daoDataEscrowEncryptedMessageAx1: getSnarkFriendlyBytes(), // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_1
         daoDataEscrowEncryptedMessageAx2: getSnarkFriendlyBytes(), // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_2
         daoDataEscrowEncryptedMessageAx3: getSnarkFriendlyBytes(), // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_3
         utxoOutCreateTime: ((await getBlockTimestamp()) + 60).toString(), // MAIN_UTXO_OUT_CREATE_TIME_IND
         zAssetUtxoOutCommitment1: getSnarkFriendlyBytes(), // MAIN_ZASSET_UTXO_OUT_COMMITMENT_1_IND
+        zNetworkChainId: chainId, // MAIN_ZNETWORK_CHAIN_ID_IND
+        staticMerkleRoot: ethers.BigNumber.from(0).toString(), // MAIN_STATIC_MERKLE_ROOT_IND
         zAssetUtxoOutCommitment2: getSnarkFriendlyBytes(), // MAIN_ZASSET_UTXO_OUT_COMMITMENT_2_IND
         zAccountUtxoOutCommitment: getSnarkFriendlyBytes(), // MAIN_ZACCOUNT_UTXO_OUT_COMMITMENT_IND
         chargedAmountZkp: ethers.utils.parseEther('1'), // MAIN_CHARGED_AMOUNT_ZKP_IND
-        zNetworkChainId: chainId, // MAIN_ZNETWORK_CHAIN_ID_IND
-        staticMerkleRoot: ethers.BigNumber.from(0).toString(), // MAIN_STATIC_MERKLE_ROOT_IND
         forestMerkleRoot: getSnarkFriendlyBytes(), // MAIN_FOREST_MERKLE_ROOT_IND
         saltHash: getSnarkFriendlyBytes(), // MAIN_SALT_HASH_IND
         magicalConstraint: getSnarkFriendlyBytes(), // MAIN_MAGICAL_CONSTRAINT_IND

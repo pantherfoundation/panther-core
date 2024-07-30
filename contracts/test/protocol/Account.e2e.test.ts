@@ -11,20 +11,18 @@ import {TokenType} from '../../lib/token';
 import {toBytes32} from '../../lib/utilities';
 import {UserOperationStruct} from '../../types/contracts/Account';
 
-import {sampleProof} from './data/samples/pantherPool.data';
 import {
     generatePrivateMessage,
     TransactionTypes,
 } from './data/samples/transactionNote.data';
 import {
-    composeETHEscrowStealthAddress,
     getEncodedProof,
     PluginFixture,
     setupInputFields,
     ADDRESS_ZERO,
 } from './shared';
 
-describe.skip('Account e2e', function () {
+describe('Account deposit e2e', function () {
     const zkpTransferFromCallGasCost = 69921n;
     const verificationGasCost = 88000n;
     const preVerificationGasCost = 73720n;
@@ -64,9 +62,7 @@ describe.skip('Account e2e', function () {
     let paymasterCompensation: BigNumber;
     let privateMessage;
 
-    context('when deposit ZKP:', () => {
-        let callData;
-
+    context('ZKP', () => {
         before(async function () {
             fixture = new PluginFixture();
             await fixture.initFixture();
@@ -80,7 +76,7 @@ describe.skip('Account e2e', function () {
             });
 
             privateMessage = generatePrivateMessage(TransactionTypes.main);
-
+            // console.log("privateMessage.length", privateMessage.length)
             cachedForestRootIndex = '0';
 
             currentLockData = {
@@ -114,122 +110,72 @@ describe.skip('Account e2e', function () {
             await tx.wait();
 
             composeERC20SenderStealthAddress();
-        });
+            0;
 
-        it('EOA -> Account::execute -> MASP::main', async () => {
-            callData = ethers.utils.solidityPack(
-                ['bytes4', 'bytes'],
-                [
-                    poolMainSelector,
-                    ethers.utils.defaultAbiCoder.encode(
-                        [
-                            'uint256[]',
-                            '((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))',
-                            'uint32',
-                            'uint8',
-                            'uint96',
-                            'bytes',
-                        ],
-                        [
-                            inputsArray,
-                            encodedProof,
-                            cachedForestRootIndex,
-                            tokenType,
-                            paymasterCompensation,
-                            privateMessage,
-                        ],
-                    ),
-                ],
+            feeData = await ethers.provider.getFeeData();
+
+            totalTransactionCost = BigNumber.from(
+                zkpTransferFromCallGasCost +
+                    verificationGasCost +
+                    preVerificationGasCost * 3n +
+                    maspMainGasCost,
             );
 
-            await fixture.zkpToken
-                .connect(fixture.ethersSigner)
-                .approve(stealthAddress, amount);
+            const bundlerChargedGasAmount = totalTransactionCost.mul(
+                feeData.maxFeePerGas,
+            );
+
+            paymasterCompensation = bundlerChargedGasAmount.mul(250);
+
+            orphanedWalletCallData = setOrphanedWalletCallData();
+
+            composeERC20SenderStealthAddress();
+
+            await fixture.erc20Token.approve(stealthAddress, oneToken);
+        });
+
+        it('should succeed via ERC-4337 contracts', async () => {
+            nonce = await callculateAndGetNonce(
+                orphanedWalletCallData,
+                fixture.smartAccount.address,
+                fixture.entryPoint.address,
+            );
+
+            depositOp = {
+                sender: fixture.smartAccount.address,
+                callData: orphanedWalletCallData,
+                verificationGasLimit: BigNumber.from(verificationGasCost),
+                callGasLimit: 1e5,
+                paymasterAndData: paymasterAndData,
+                nonce: nonce,
+                maxFeePerGas: feeData.maxFeePerGas,
+                initCode: '0x',
+                preVerificationGas: BigNumber.from(preVerificationGasCost),
+                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                signature: encodedMaintxIndex,
+            };
 
             await expect(
-                fixture.smartAccount.execute(
-                    fixture.pantherPoolV1Proxy.address,
-                    callData,
+                fixture.entryPoint.handleOps(
+                    [depositOp],
+                    fixture.beneficiaryAddress,
+                    {
+                        gasLimit: totalTransactionCost,
+                    },
                 ),
             )
                 // .to.be.revertedWithCustomError(fixture.entryPoint, 'FailedOp')
                 // .withArgs(0, 'AA31 paymaster deposit too low-');
-                .to.emit(fixture.vault, 'SaltUsed')
-                .withArgs(salt);
+                .to.emit(fixture.entryPoint, 'UserOperationEvent');
         });
-    });
 
-    context(
-        'via ERC-4337 contracts ( Account, Paymaster and EntryPoint )',
-        () => {
-            before(async function () {
-                feeData = await ethers.provider.getFeeData();
-
-                totalTransactionCost = BigNumber.from(
-                    zkpTransferFromCallGasCost +
-                        verificationGasCost +
-                        preVerificationGasCost * 3n +
-                        maspMainGasCost,
-                );
-
-                const bundlerChargedGasAmount = totalTransactionCost.mul(
-                    feeData.maxFeePerGas,
-                );
-
-                paymasterCompensation = bundlerChargedGasAmount.mul(250);
-
-                setOrphanedWalletCallData();
-
-                composeERC20SenderStealthAddress();
-
-                await fixture.erc20Token.approve(stealthAddress, oneToken);
-            });
-
-            it('should succeed', async () => {
-                nonce = await callculateAndGetNonce(
-                    orphanedWalletCallData,
-                    fixture.smartAccount.address,
-                    fixture.entryPoint.address,
-                );
-
-                depositOp = {
-                    sender: fixture.smartAccount.address,
-                    callData: orphanedWalletCallData,
-                    verificationGasLimit: BigNumber.from(verificationGasCost),
-                    callGasLimit: 1e5,
-                    paymasterAndData: paymasterAndData,
-                    nonce: nonce,
-                    maxFeePerGas: feeData.maxFeePerGas,
-                    initCode: '0x',
-                    preVerificationGas: BigNumber.from(preVerificationGasCost),
-                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-                    signature: encodedMaintxIndex,
-                };
-
-                await expect(
-                    fixture.entryPoint.handleOps(
-                        [depositOp],
-                        fixture.beneficiaryAddress,
-                        {
-                            gasLimit: totalTransactionCost,
-                        },
-                    ),
-                )
-                    // .to.be.revertedWithCustomError(fixture.entryPoint, 'FailedOp')
-                    // .withArgs(0, 'AA31 paymaster deposit too low-');
-                    .to.emit(fixture.entryPoint, 'UserOperationEvent');
-            });
-        },
-    );
-
-    context('refund EntryPoint:', () => {
-        it('should succeed', async () => {
+        it('should refund EntryPoint', async () => {
             const before = await fixture.entryPoint.getDepositInfo(
                 fixture.paymasterProxy.address,
             );
 
             const debt = await fixture.feeMaster.debts(
-                ADDRESS_ZERO,
+                fixture.paymaster.address,
                 ADDRESS_ZERO,
             );
 
@@ -238,12 +184,11 @@ describe.skip('Account e2e', function () {
             const after = await fixture.entryPoint.getDepositInfo(
                 fixture.paymasterProxy.address,
             );
-
             await expect(before.deposit.add(debt)).to.eq(after.deposit);
         });
     });
 
-    context('when deposit MATIC:', () => {
+    context('MATIC', () => {
         before(async function () {
             fixture = new PluginFixture();
 
@@ -260,157 +205,113 @@ describe.skip('Account e2e', function () {
             tokenType = TokenType.Native;
         });
 
-        context('by sending ETH to ETHEscrow and hitting main via EOA', () => {
-            it('should succeed', async () => {
-                cachedForestRootIndex = '0';
+        it('should send ETH to ETHEscrow and consume main trough bundlers', async () => {
+            feeData = await ethers.provider.getFeeData();
 
-                currentLockData = {
-                    tokenType: tokenType,
-                    token: ADDRESS_ZERO,
-                    tokenId: 0,
-                    saltHash: salt,
-                    extAccount: fixture.ethersSigner.address,
-                    extAmount: amount,
-                };
+            totalTransactionCost = BigNumber.from(
+                zkpTransferFromCallGasCost +
+                    verificationGasCost +
+                    preVerificationGasCost * 3n +
+                    maspMainGasCost,
+            );
 
-                inputs = await setupInputFields(
-                    currentLockData,
-                    BigNumber.from(0),
-                    cachedForestRootIndex,
-                    privateMessage,
-                    fixture.vault.address,
-                );
+            const bundlerChargedGasAmount = totalTransactionCost.mul(
+                feeData.maxFeePerGas,
+            );
 
-                const hexForestRoot = ethers.utils.hexlify(
-                    BigNumber.from(inputs.forestMerkleRoot),
-                );
+            paymasterCompensation = bundlerChargedGasAmount.mul(250);
 
-                const tx =
-                    await fixture.pantherPool.internalCacheNewRoot(
-                        hexForestRoot,
-                    );
+            currentLockData = {
+                tokenType: tokenType,
+                token: ADDRESS_ZERO,
+                tokenId: 0,
+                saltHash: salt,
+                extAccount: fixture.ethersSigner.address,
+                extAmount: amount,
+            };
 
-                await tx.wait();
+            inputs = await setupInputFields(
+                currentLockData,
+                BigNumber.from(0),
+                cachedForestRootIndex,
+                privateMessage,
+                fixture.vault.address,
+            );
 
-                stealthAddress = composeETHEscrowStealthAddress(
-                    currentLockData,
-                    fixture.vault.address,
-                );
+            const hexForestRoot = ethers.utils.hexlify(
+                BigNumber.from(inputs.forestMerkleRoot),
+            );
 
-                await fixture.ethersSigner.sendTransaction({
-                    to: stealthAddress,
-                    value: amount,
-                });
+            const tx =
+                await fixture.pantherPool.internalCacheNewRoot(hexForestRoot);
 
-                inputsArray = Object.values(inputs);
+            await tx.wait();
 
-                expect(
-                    await fixture.pantherPool.main(
-                        inputsArray,
-                        sampleProof,
-                        cachedForestRootIndex,
-                        tokenType,
-                        0,
-                        privateMessage,
-                    ),
-                ).to.emit(fixture.vault, 'Locked');
+            stealthAddress = await fixture.vault.getEscrowAddress(
+                salt,
+                fixture.ethersSigner.address,
+            );
+
+            await fixture.ethersSigner.sendTransaction({
+                to: stealthAddress,
+                value: amount,
             });
+
+            orphanedWalletCallData = setOrphanedWalletCallData();
+
+            nonce = await callculateAndGetNonce(
+                orphanedWalletCallData,
+                fixture.smartAccount.address,
+                fixture.entryPoint.address,
+            );
+
+            depositOp = {
+                sender: fixture.smartAccount.address,
+                callData: orphanedWalletCallData,
+                verificationGasLimit: BigNumber.from(verificationGasCost),
+                callGasLimit: 1e5,
+                paymasterAndData: paymasterAndData,
+                nonce: nonce,
+                maxFeePerGas: feeData.maxFeePerGas,
+                initCode: '0x',
+                preVerificationGas: BigNumber.from(preVerificationGasCost),
+                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                signature: encodedMaintxIndex,
+            };
+
+            await expect(
+                fixture.entryPoint.handleOps(
+                    [depositOp],
+                    fixture.beneficiaryAddress,
+                    {
+                        gasLimit: 1e7,
+                    },
+                ),
+            ).to.emit(fixture.entryPoint, 'UserOperationEvent');
         });
 
-        context(
-            'by sending ETH to ETHEscrow and consume main trough bundlers',
-            () => {
-                it('should succeed', async () => {
-                    feeData = await ethers.provider.getFeeData();
-
-                    totalTransactionCost = BigNumber.from(
-                        zkpTransferFromCallGasCost +
-                            verificationGasCost +
-                            preVerificationGasCost * 3n +
-                            maspMainGasCost,
-                    );
-
-                    const bundlerChargedGasAmount = totalTransactionCost.mul(
-                        feeData.maxFeePerGas,
-                    );
-
-                    paymasterCompensation = bundlerChargedGasAmount.mul(250);
-
-                    currentLockData = {
-                        tokenType: tokenType,
-                        token: ADDRESS_ZERO,
-                        tokenId: 0,
-                        saltHash: salt,
-                        extAccount: fixture.ethersSigner.address,
-                        extAmount: amount,
-                    };
-
-                    inputs = await setupInputFields(
-                        currentLockData,
-                        BigNumber.from(0),
-                        cachedForestRootIndex,
-                        privateMessage,
-                        fixture.vault.address,
-                    );
-
-                    const hexForestRoot = ethers.utils.hexlify(
-                        BigNumber.from(inputs.forestMerkleRoot),
-                    );
-
-                    const tx =
-                        await fixture.pantherPool.internalCacheNewRoot(
-                            hexForestRoot,
-                        );
-
-                    await tx.wait();
-
-                    stealthAddress = composeETHEscrowStealthAddress(
-                        currentLockData,
-                        fixture.vault.address,
-                    );
-
-                    await fixture.ethersSigner.sendTransaction({
-                        to: stealthAddress,
-                        value: amount,
-                    });
-
-                    setOrphanedWalletCallData();
-
-                    nonce = await callculateAndGetNonce(
-                        orphanedWalletCallData,
-                        fixture.smartAccount.address,
-                        fixture.entryPoint.address,
-                    );
-
-                    depositOp = {
-                        sender: fixture.smartAccount.address,
-                        callData: orphanedWalletCallData,
-                        verificationGasLimit:
-                            BigNumber.from(verificationGasCost),
-                        callGasLimit: 1e5,
-                        paymasterAndData: paymasterAndData,
-                        nonce: nonce,
-                        maxFeePerGas: feeData.maxFeePerGas,
-                        initCode: '0x',
-                        preVerificationGas: BigNumber.from(
-                            preVerificationGasCost,
-                        ),
-                        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-                        signature: encodedMaintxIndex,
-                    };
-
-                    await expect(
-                        fixture.entryPoint.handleOps(
-                            [depositOp],
-                            fixture.beneficiaryAddress,
-                            {
-                                gasLimit: 1e7,
-                            },
-                        ),
-                    ).to.emit(fixture.entryPoint, 'UserOperationEvent');
-                });
-            },
-        );
+        // context('function claimEthAndRefundEntryPoint', () => {
+        //     it('should send FeeMaster debt to EntryPoint', async () => {
+        //         const before = await fixture.entryPoint.getDepositInfo(
+        //             fixture.paymasterProxy.address,
+        //         );
+        //
+        //         const debt = await fixture.feeMaster.debts(
+        //             fixture.paymaster.address,
+        //             ADDRESS_ZERO,
+        //         );
+        //
+        //         expect(debt).gt(BigNumber.from(0))
+        //
+        //         await fixture.paymaster.claimEthAndRefundEntryPoint(toBytes32(0));
+        //
+        //         const after = await fixture.entryPoint.getDepositInfo(
+        //             fixture.paymasterProxy.address,
+        //         );
+        //
+        //         await expect(before.deposit.add(debt)).to.eq(after.deposit);
+        //     });
+        // });
     });
 
     function composeERC20SenderStealthAddress() {
@@ -445,38 +346,37 @@ describe.skip('Account e2e', function () {
             ['0', paymasterCompensation],
         );
 
-        orphanedWalletCallData =
-            fixture.smartAccount.interface.encodeFunctionData(
-                'executeBatchOrRevert',
+        return fixture.smartAccount.interface.encodeFunctionData(
+            'executeBatchOrRevert',
+            [
+                [fixture.pantherPoolV1Proxy.address],
                 [
-                    [fixture.pantherPoolV1Proxy.address],
-                    [
-                        ethers.utils.solidityPack(
-                            ['bytes4', 'bytes'],
-                            [
-                                poolMainSelector,
-                                ethers.utils.defaultAbiCoder.encode(
-                                    [
-                                        'uint256[]',
-                                        '((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))',
-                                        'uint32',
-                                        'uint8',
-                                        'uint96',
-                                        'bytes',
-                                    ],
-                                    [
-                                        inputsArray,
-                                        encodedProof,
-                                        cachedForestRootIndex,
-                                        tokenType,
-                                        paymasterCompensation,
-                                        privateMessage,
-                                    ],
-                                ),
-                            ],
-                        ),
-                    ],
+                    ethers.utils.solidityPack(
+                        ['bytes4', 'bytes'],
+                        [
+                            poolMainSelector,
+                            ethers.utils.defaultAbiCoder.encode(
+                                [
+                                    'uint256[]',
+                                    '((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))',
+                                    'uint32',
+                                    'uint8',
+                                    'uint96',
+                                    'bytes',
+                                ],
+                                [
+                                    inputsArray,
+                                    encodedProof,
+                                    cachedForestRootIndex,
+                                    tokenType,
+                                    paymasterCompensation,
+                                    privateMessage,
+                                ],
+                            ),
+                        ],
+                    ),
                 ],
-            );
+            ],
+        );
     }
 });
