@@ -51,11 +51,17 @@ contract QuickswapRouterPlugin {
         );
 
         if (pair != address(0)) {
-            return amountOut = _getAmountOutSinglePair(pair, tokenIn, amountIn);
+            return
+                amountOut = _getAmountOutSinglePair(
+                    tokenIn,
+                    tokenOut,
+                    amountIn
+                );
         }
 
         address tokenInNativePair = IUniswapV2Factory(QUICKSWAP_FACTORY)
             .getPair(tokenIn, WETH);
+
         address tokenOutNativePair = IUniswapV2Factory(QUICKSWAP_FACTORY)
             .getPair(tokenOut, WETH);
 
@@ -267,12 +273,8 @@ contract QuickswapRouterPlugin {
         path[0] = tokenIn;
         path[1] = tokenOut;
 
-        uint256[] memory amountsOut = new uint256[](2);
-
-        amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER).getAmountsOut(
-            amountIn,
-            path
-        );
+        uint256[] memory amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER)
+            .getAmountsOut(amountIn, path);
 
         amountOut = amountsOut[amountsOut.length - 1];
     }
@@ -287,12 +289,8 @@ contract QuickswapRouterPlugin {
         path[1] = WETH;
         path[2] = tokenOut;
 
-        uint256[] memory amountsOut = new uint256[](3);
-
-        amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER).getAmountsOut(
-            amountIn,
-            path
-        );
+        uint256[] memory amountsOut = IUniswapV2Router(QUICKSWAP_ROUTER)
+            .getAmountsOut(amountIn, path);
 
         amountOut = amountsOut[amountsOut.length - 1];
     }
