@@ -40,7 +40,8 @@ const zAssetPrivateMessage =
 const zAssetMessage =
     UtxoMessageTypes.zAsset + randomEphemeralKey + randomCypherText;
 
-const spend2UtxoMessage = UtxoMessageTypes.spent2Utxos + randomCypherText;
+const spend2UtxoMessage =
+    UtxoMessageTypes.spent2Utxos + randomEphemeralKey + randomCypherText;
 
 const invalidMessage = UtxoMessageTypes.invalid + '00';
 
@@ -58,6 +59,13 @@ export function generatePrivateMessage(txType: TransactionTypes): string {
     if (txType === TransactionTypes.main)
         privateMessage +=
             zAccountMessage + zAssetMessage + zAssetMessage + spend2UtxoMessage;
+
+    if (txType === TransactionTypes.swapZAsset)
+        privateMessage +=
+            zAccountMessage +
+            zAssetMessage +
+            zAssetPrivateMessage +
+            spend2UtxoMessage;
 
     return privateMessage;
 }
