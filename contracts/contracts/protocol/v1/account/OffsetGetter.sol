@@ -58,7 +58,7 @@ contract OffsetGetter {
         address target,
         bytes4 selector,
         uint32 offset
-    ) external view returns (bool) {
+    ) internal view returns (bool) {
         uint256 complexID = createComplexID(target, selector, offset);
         return
             complexID == ID_1 ||
