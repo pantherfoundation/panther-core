@@ -27,6 +27,7 @@ import {
     PantherBusTree,
     MockPantherPoolV1,
     FeeMaster,
+    MockUniswapPlugin,
 } from '../../types/contracts';
 import {SnarkProofStruct} from '../../types/contracts/IPantherPoolV1';
 
@@ -40,6 +41,7 @@ import {
     getCreateZAccountInputs,
     getPrpClaimandConversionInputs,
     getMainInputs,
+    getSwapInputs,
     ForestTreesStruct,
 } from './helpers/pantherPoolV1Inputs';
 
@@ -48,15 +50,18 @@ describe.only('PantherPoolV1', function () {
         zAccountRegistry: SignerWithAddress,
         prpVoucherGrantor: SignerWithAddress,
         prpConverter: SignerWithAddress,
-        feeMaster: FakeContract<FeeMaster>;
+        notOwner: SignerWithAddress;
+    let plugin: MockUniswapPlugin;
     let pantherStaticTree: FakeContract<PantherStaticTree>;
     let pantherTaxiTree: FakeContract<PantherTaxiTree>;
     let pantherBusTree: FakeContract<PantherBusTree>;
     let pantherFerryTree: FakeContract<PantherFerryTree>;
+    let feeMaster: FakeContract<FeeMaster>;
+    let verifier: FakeContract<PantherVerifier>;
     let vault: VaultV1;
     let zkpToken: TokenMock;
+    let linkToken: TokenMock;
     let pantherPool: MockPantherPoolV1;
-    let verifier: FakeContract<PantherVerifier>;
     let poseidonT3: PoseidonT3;
     let poseidonT4: PoseidonT4;
     let vaultProxy: Contract;
@@ -84,11 +89,14 @@ describe.only('PantherPoolV1', function () {
     const zkpAmountMin = ethers.utils.parseEther('10');
 
     before(async function () {
-        [owner, zAccountRegistry, prpVoucherGrantor, prpConverter] =
+        [owner, notOwner, zAccountRegistry, prpVoucherGrantor, prpConverter] =
             await ethers.getSigners();
 
         const ZkpToken = await ethers.getContractFactory('TokenMock');
         zkpToken = (await ZkpToken.deploy()) as TokenMock;
+
+        const LinkToken = await ethers.getContractFactory('TokenMock');
+        linkToken = (await LinkToken.deploy()) as TokenMock;
 
         const PoseidonT3 = await getPoseidonT3Contract();
         poseidonT3 = (await PoseidonT3.deploy()) as PoseidonT3;
@@ -135,6 +143,9 @@ describe.only('PantherPoolV1', function () {
             owner.address,
             [],
         );
+
+        const Plugin = await ethers.getContractFactory('MockUniswapPlugin');
+        plugin = (await Plugin.deploy(vaultProxy.address)) as MockUniswapPlugin;
     });
 
     beforeEach(async function () {
@@ -711,6 +722,8 @@ describe.only('PantherPoolV1', function () {
     });
 
     describe('#main', function () {
+        //privateMessage = generatePrivateMessage(TransactionTypes.main);
+
         it('should execute Internal main transaction ', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
             privateMessage = generatePrivateMessage(TransactionTypes.main);
@@ -899,7 +912,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_NON_ZERO_TOKEN);
         });
 
-        it('should revert for invalid extraInputhash ', async function () {
+        it('should revert if extraInputhash is invalid', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -917,7 +930,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_EXTRA_INPUT_HASH);
         });
 
-        it('should revert for invalid spendTime ', async function () {
+        it('should revert if spendTime is invalid', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -936,7 +949,7 @@ describe.only('PantherPoolV1', function () {
             ).to.be.revertedWith(ErrorMessages.ERR_INVALID_SPEND_TIME);
         });
 
-        it('should revert for invalid kytDepositSignedMessageReceiver', async function () {
+        it('should revert if kytDepositSignedMessageReceiver is invalid', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -960,7 +973,7 @@ describe.only('PantherPoolV1', function () {
             );
         });
 
-        it('should revert for invalid kytDepositSignedMessageHash', async function () {
+        it('should revert if kytDepositSignedMessageHash is invalid', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -984,7 +997,7 @@ describe.only('PantherPoolV1', function () {
             );
         });
 
-        it('should revert for invalid kytWithdrawSignedMessageSender ', async function () {
+        it('should revert kytWithdrawSignedMessageSender is invalid ', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -1007,7 +1020,7 @@ describe.only('PantherPoolV1', function () {
             );
         });
 
-        it('should revert for invalid kytWithdrawSignedMessageHash', async function () {
+        it('should revert if kytWithdrawSignedMessageHash is invalid', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -1031,7 +1044,7 @@ describe.only('PantherPoolV1', function () {
             );
         });
 
-        it('should revert for duplicate kytWithdrawSignedMessageHash ', async function () {
+        it('should revert if kytWithdrawSignedMessageHash is duplicate ', async function () {
             await pantherPool.updateCircuitId(0x105, 1);
 
             const inputs = await getMainInputs({
@@ -1065,6 +1078,332 @@ describe.only('PantherPoolV1', function () {
                     privateMessage,
                 ),
             ).to.be.revertedWith(ErrorMessages.ERR_DUPLICATED_KYT_MESSAGE_HASH);
+        });
+    });
+
+    describe('#swap', async function () {
+        before(async function () {
+            await zkpToken.transfer(
+                vaultProxy.address,
+                ethers.utils.parseEther('100'),
+            );
+            await zkpToken.increaseAllowance(
+                vaultProxy.address,
+                ethers.utils.parseEther('100'),
+            );
+            await linkToken.transfer(
+                plugin.address,
+                ethers.utils.parseEther('100'),
+            );
+            await linkToken.increaseAllowance(
+                plugin.address,
+                ethers.utils.parseEther('100'),
+            );
+        });
+
+        async function getSwapDataAndHash() {
+            const swapData = ethers.utils.solidityPack(
+                ['address'],
+                [plugin.address],
+            );
+
+            const extraInput = ethers.utils.solidityPack(
+                ['uint32', 'uint96', 'bytes', 'bytes'],
+                [
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ],
+            );
+            const calculatedExtraInputHash = BigNumber.from(
+                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+            ).mod(SNARK_FIELD_SIZE);
+
+            return {swapData, calculatedExtraInputHash};
+        }
+
+        it('should update plugin status and swap tokens', async function () {
+            await pantherPool.updatePluginStatus(plugin.address, true);
+
+            privateMessage = generatePrivateMessage(
+                TransactionTypes.swapZAsset,
+            );
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const vaultZkpBalance = await zkpToken.balanceOf(
+                vaultProxy.address,
+            );
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                withdrawPrpAmount: ethers.utils.parseEther('10'),
+                incomingZassetScale: BigNumber.from('1000000'),
+                existingZassetScale: BigNumber.from('1000000'),
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            const withdrawAmount = inputs[2];
+
+            await pantherPool.swapZAsset(
+                inputs,
+                proof,
+                transactionOptions,
+                paymasterCompensation,
+                swapData,
+                privateMessage,
+            );
+
+            expect(await zkpToken.balanceOf(vaultProxy.address)).to.be.equal(
+                vaultZkpBalance.sub(withdrawAmount),
+            );
+            expect(await linkToken.balanceOf(vaultProxy.address)).to.be.equal(
+                withdrawAmount.div(2),
+            );
+            expect(await zkpToken.balanceOf(plugin.address)).to.be.equal(
+                withdrawAmount,
+            );
+        });
+
+        it('should revert if plugin id not found', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_UNKNOWN_PLUGIN);
+        });
+
+        it('should revert if extraInputhash is invalid', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const {swapData} = await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: BigNumber.from('1'),
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith('Invadlid hash');
+        });
+
+        it('should revert if circuit id is not updated', async function () {
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_UNDEFINED_CIRCUIT);
+        });
+
+        it('should revert if kytWithdrawSignedMessageSender is not vault address', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                kytWithdrawSignedMessageSender:
+                    ethers.Wallet.createRandom().address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_INVALID_VAULT_ADDRESS);
+        });
+
+        it('should revert if invalid chain id', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                zNetworkChainId: 1,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_INVALID_CHAIN_ID);
+        });
+
+        it('should revert if the nullifier is already spent', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                zAccountUtxoInNullifier: BigNumber.from('1'),
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_SPENT_NULLIFIER);
+        });
+
+        it('should revert if spendtime has reached MaxTimeDelta', async function () {
+            await pantherPool.updateCircuitId(0x106, 1);
+            await pantherPool.updateMaxTimeDelta(10);
+
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                kytWithdrawSignedMessageSender: vaultProxy.address,
+                kytDepositSignedMessageReceiver: vaultProxy.address,
+            });
+
+            await expect(
+                pantherPool.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith(ErrorMessages.ERR_INVALID_SPEND_TIME);
+        });
+    });
+
+    describe('#updatePluginStatus', function () {
+        it('should update plugin status and swap', async function () {
+            await expect(
+                await pantherPool.updatePluginStatus(plugin.address, true),
+            ).to.emit(pantherPool, 'ZSwapPluginUpdated');
+
+            await expect(await pantherPool.zSwapPlugins(plugin.address)).to.be
+                .true;
+        });
+
+        it('should revert if not executed by owner', async function () {
+            await expect(
+                pantherPool
+                    .connect(notOwner)
+                    .updatePluginStatus(plugin.address, true),
+            ).to.be.revertedWith('ImmOwn: unauthorized');
+        });
+    });
+
+    describe('#updateCircuitId', function () {
+        it('should update plugin status and swap', async function () {
+            await expect(await pantherPool.updateCircuitId(105, 0)).to.emit(
+                pantherPool,
+                'CircuitIdUpdated',
+            );
+
+            await expect(await pantherPool.circuitIds(105)).to.be.equal(0);
+        });
+
+        it('should revert if not executed by owner', async function () {
+            await expect(
+                pantherPool.connect(notOwner).updateCircuitId(105, 0),
+            ).to.be.revertedWith('ImmOwn: unauthorized');
+        });
+    });
+
+    describe('#updateMaxTimeDelta', function () {
+        it('should update plugin status and swap', async function () {
+            await expect(await pantherPool.updateMaxTimeDelta(10)).to.emit(
+                pantherPool,
+                'MaxTimeDeltaUpdated',
+            );
+
+            await expect(await pantherPool.maxTimeDelta()).to.be.equal(10);
+        });
+
+        it('should revert if not executed by owner', async function () {
+            await expect(
+                pantherPool.connect(notOwner).updateMaxTimeDelta(10),
+            ).to.be.revertedWith('ImmOwn: unauthorized');
         });
     });
 });

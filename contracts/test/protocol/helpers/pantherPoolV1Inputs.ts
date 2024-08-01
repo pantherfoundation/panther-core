@@ -114,6 +114,34 @@ interface MainOptions {
     magicalConstraint?: string;
 }
 
+interface SwapOptions {
+    extraInputsHash?: BigNumber;
+    depositPrpAmount?: BigNumber;
+    withdrawPrpAmount?: BigNumber;
+    addedAmountZkp?: number;
+    existingToken?: string;
+    incomingToken?: string;
+    existingTokenId?: number;
+    incomingTokenId?: number;
+    existingZassetScale?: BigNumber;
+    incomingZassetScale?: BigNumber;
+    zzkpScale?: BigNumber;
+    spendTime?: string;
+    zAccountUtxoInNullifier?: BigNumber;
+    zAccountUtxoOutCommitment?: string;
+    kytDepositSignedMessageSender?: string;
+    kytDepositSignedMessageReceiver?: string;
+    kytDepositSignedMessageHash?: string;
+    kytWithdrawSignedMessageSender?: string;
+    kytWithdrawSignedMessageHash?: string;
+    chargedAmountZkp?: BigNumber;
+    zNetworkChainId?: number;
+    staticTreeMerkleRoot?: string;
+    forestMerkleRoot?: string;
+    saltHash?: string;
+    magicalConstraint?: string;
+}
+
 export async function getPrpClaimandConversionInputs(
     options: PrpClaimandConversionOptions,
 ) {
@@ -372,5 +400,151 @@ export async function getMainInputs(options: MainOptions) {
         forestMerkleRoot,
         saltHash,
         magicalConstraint,
+    ];
+}
+
+export async function getSwapInputs(options: SwapOptions) {
+    const privateMessages = generatePrivateMessage(TransactionTypes.swapZAsset);
+    const transactionOptions = 0;
+    const paymasterCompensation = ethers.BigNumber.from('10');
+    const deadline = 12345678; // example deadline
+    const amountOutMinimum = 1000000000; // example minimum amount
+    const fee = 3000; // example fee
+    const sqrtPriceLimitX96 = ethers.BigNumber.from(
+        '79228162514264337593543950336',
+    ); // example sqrt price limit
+
+    const swapData = ethers.utils.solidityPack(
+        ['address', 'uint32', 'uint96', 'uint24', 'uint160'],
+        [
+            ethers.Wallet.createRandom().address,
+            deadline, //deadline
+            amountOutMinimum,
+            fee, //fee
+            sqrtPriceLimitX96,
+        ],
+    );
+
+    const extraInput = ethers.utils.solidityPack(
+        ['uint32', 'uint8', 'bytes', 'bytes'],
+        [transactionOptions, paymasterCompensation, swapData, privateMessages],
+    );
+    const calculatedExtraInputHash = BigNumber.from(
+        ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+    ).mod(SNARK_FIELD_SIZE);
+
+    const extraInputsHash = options.extraInputsHash || calculatedExtraInputHash;
+    const depositPrpAmount = options.depositPrpAmount || BigNumber.from(0);
+    const withdrawPrpAmount = options.withdrawPrpAmount || BigNumber.from(10);
+    const addedAmountZkp = options.addedAmountZkp || 0;
+    const spendTime =
+        options.spendTime || ((await getBlockTimestamp()) - 60).toString();
+    const zAssetUtxoInNullifier1 = BigNumber.from(1);
+    const zAssetUtxoInNullifier2 = BigNumber.from(2);
+    const zAccountUtxoInNullifier =
+        options.zAccountUtxoInNullifier || BigNumber.from(3);
+    const zAccountUtxoOutCommitment =
+        options.zAccountUtxoOutCommitment ||
+        ethers.utils.id('zAccountUtxoOutCommitment');
+    const zAccountUtxoOutCommitmentPvrt = getSnarkFriendlyBytes();
+    const chargedAmountZkp =
+        options.chargedAmountZkp || ethers.utils.parseEther('10');
+    const existingToken =
+        options.existingToken || ethers.Wallet.createRandom().address;
+    const incomingToken =
+        options.incomingToken || ethers.Wallet.createRandom().address;
+    const existingTokenId = options.existingTokenId || 0;
+    const incomingTokenId = options.incomingTokenId || 0;
+    const zNetworkChainId = options.zNetworkChainId || 31337;
+    const existingZassetScale =
+        options.existingZassetScale || ethers.utils.parseUnits('1', 18);
+    const incomingZassetScale =
+        options.incomingZassetScale || ethers.utils.parseUnits('1', 18);
+    const zzkpScale = options.zzkpScale || ethers.utils.parseUnits('1', 18);
+    const ZoneDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
+    const zZoneDataEscrowEncryptedMessageAx = getSnarkFriendlyBytes();
+    const kytDepositSignedMessageSender =
+        options.kytDepositSignedMessageSender ||
+        ethers.Wallet.createRandom().address;
+    const kytDepositSignedMessageReceiver =
+        options.kytDepositSignedMessageReceiver ||
+        ethers.Wallet.createRandom().address;
+    const kytDepositSignedMessageHash =
+        options.kytDepositSignedMessageHash || getSnarkFriendlyBytes();
+    const kytWithdrawSignedMessageSender =
+        options.kytWithdrawSignedMessageSender ||
+        ethers.Wallet.createRandom().address;
+    const kytWithdrawSignedMessageReceiver =
+        ethers.Wallet.createRandom().address;
+    const kytWithdrawSignedMessageHash =
+        options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes();
+    const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx3 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx4 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx5 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx6 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx7 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageAx8 = getSnarkFriendlyBytes();
+    const daoDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
+    const daoDataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes();
+    const staticTreeMerkleRoot =
+        options.staticTreeMerkleRoot || ethers.utils.id('staticTreeMerkleRoot');
+    const forestMerkleRoot =
+        options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
+    const saltHash =
+        options.saltHash ||
+        '0xc0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fec0fe';
+    const magicalConstraint =
+        options.magicalConstraint || ethers.utils.id('magicalConstraint');
+
+    return [
+        extraInputsHash, //0
+        depositPrpAmount, //1
+        withdrawPrpAmount, //2
+        addedAmountZkp, //3
+        existingToken, //4
+        incomingToken, //5
+        existingTokenId, //6
+        incomingTokenId, //7
+        existingZassetScale, //8
+        incomingZassetScale, //9
+        zzkpScale, //10
+        spendTime, //11
+        zAssetUtxoInNullifier1, //12
+        zAssetUtxoInNullifier2, //13 // Assuming the same nullifier is used twice
+        zAccountUtxoInNullifier, //14 // Assuming the same nullifier is used three times
+        ZoneDataEscrowEphimeralPubKeyAx, //15
+        zZoneDataEscrowEncryptedMessageAx, //16
+        kytDepositSignedMessageSender, //17
+        kytDepositSignedMessageReceiver, //18
+        kytDepositSignedMessageHash, //19
+        kytWithdrawSignedMessageSender, //20
+        kytWithdrawSignedMessageReceiver, //21
+        kytWithdrawSignedMessageHash, //22
+        dataEscrowEphimeralPubKeyAx, //23
+        dataEscrowEncryptedMessageAx1, //24
+        dataEscrowEncryptedMessageAx2, //25
+        dataEscrowEncryptedMessageAx3, //26
+        dataEscrowEncryptedMessageAx4, //27
+        dataEscrowEncryptedMessageAx5, //28
+        dataEscrowEncryptedMessageAx6, //29
+        dataEscrowEncryptedMessageAx7, //30
+        dataEscrowEncryptedMessageAx8, //31
+        daoDataEscrowEphimeralPubKeyAx, //32
+        daoDataEscrowEncryptedMessageAx1, //33
+        daoDataEscrowEncryptedMessageAx1, //34
+        daoDataEscrowEncryptedMessageAx1, //35
+        (await getBlockTimestamp()) + 10, //36 // Assuming zAccountCreateTime is calculated like this
+        zAccountUtxoOutCommitment, //37
+        zAccountUtxoOutCommitmentPvrt, //38
+        zAccountUtxoOutCommitment, //39
+        chargedAmountZkp, //40
+        zNetworkChainId, //41
+        staticTreeMerkleRoot, //42
+        forestMerkleRoot, //43
+        saltHash, //44
+        magicalConstraint, //45
     ];
 }
