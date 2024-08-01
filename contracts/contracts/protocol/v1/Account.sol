@@ -69,21 +69,33 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
         address[] calldata targets,
         bytes[] memory calls
     ) external nonReentrant {
-        bool hasAllowedCall;
-        for (uint256 i = 0; i < targets.length; i++) {
-            /// check if the array contains allowed calls at the execution stage
-            if (!hasAllowedCall)
-                require(targets[i].code.length > 0, ERR_NO_CONTRACT);
-            hasAllowedCall = getOffset(targets[i], bytes4(calls[i])) > 0;
-            (bool success, bytes memory result) = targets[i].call{ value: 0 }(
-                calls[i]
-            );
-            if (!success) {
-                revert(getRevertMsg(result));
+        require(targets.length == calls.length, "arrays length mismatch");
+        if (targets.length == 1) {
+            this.execute(targets[0], calls[0]);
+        } else {
+            bool hasAllowedCall;
+            for (uint256 i = 0; i < targets.length; i++) {
+                address target = targets[i];
+                bytes memory call = calls[i];
+                /// check if the array contains allowed calls at the execution stage
+                require(target.code.length > 0, ERR_NO_CONTRACT);
+                require(call.length > 0, "Call data is empty");
+                (bool success, bytes memory result) = target.call{ value: 0 }(
+                    call
+                );
+                if (!success) {
+                    revert(getRevertMsg(result));
+                }
+                bytes4 sigHash = bytes4(call);
+                uint32 offSet = getOffset(target, sigHash);
+                if (!hasAllowedCall) {
+                    hasAllowedCall = isIncluded(target, sigHash, offSet);
+                }
             }
+
+            require(hasAllowedCall, ERR_BATCH_FORBIDDEN_ATTEMPT);
+            emit AccountBatchExecuted();
         }
-        require(hasAllowedCall, ERR_BATCH_FORBIDDEN_ATTEMPT);
-        emit AccountBatchExecuted();
     }
 
     function _validateUserOpDataFormat(UserOperation calldata userOp) internal {
@@ -97,8 +109,10 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
         /// new wallets are not to be deployed, so the initCode should be empty
         require(userOp.initCode.length == 0, ERR_INIT_CODE);
 
+        bytes4 selector = bytes4(userOp.callData[:4]);
         require(
-            bytes4(userOp.callData[:4]) == this.executeBatchOrRevert.selector,
+            selector == this.executeBatchOrRevert.selector ||
+                selector == this.execute.selector,
             ERR_NOT_ALLOWED_METHOD
         );
     }
