@@ -29,11 +29,11 @@ export const leafs: ZAsset[] = [
     // zZKP
     {
         zAsset: 0,
-        // zkp token on sepolia
+        // zkp token on amoy
         token: BigInt('0x9FBF5b80F2CfcB851dfE92272ae133eaD6786483'),
         // ID for NFTs, irrelevant for ERC-20 and the native token
         tokenId: 0,
-        // sepolia network id
+        // amoy network id
         network: 2,
         offset: 0,
         // 1 ZKP = 1e6 scaled units * 20 = 2e7 weighted units
@@ -41,7 +41,7 @@ export const leafs: ZAsset[] = [
         // 1 ZKP = 1e18 unscaled units / 1e12 = 1e6 scaled units
         scale: 1e12,
     },
-    // zEth on sepolia
+    // zMatic on sepolia
     {
         // IDs for the native tokens of different networks MUST be different
         // i.e. 1 for zEth, 2 for zMatic, etc.
@@ -58,6 +58,20 @@ export const leafs: ZAsset[] = [
         weight: 700,
         // 1 Eth = 1e18 unscaled units / 1e12 = 1e6 scaled units
         scale: 1e12,
+    },
+    {
+        zAsset: 3,
+        // Link token on amoy
+        token: BigInt('0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60'),
+        // ID for NFTs, irrelevant for ERC-20 and the native token
+        tokenId: 0,
+        // amoy network id
+        network: 2,
+        offset: 0,
+        // 1 LINK = 1e8 scaled units * 140 = 14e9 weighted units
+        weight: 140,
+        // 1 LINK = 1e18 unscaled units / 1e10 = 1e8 scaled units
+        scale: 1e10,
     },
 ];
 

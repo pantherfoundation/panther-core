@@ -73,11 +73,11 @@ export const leafs: ZZone[] = [
         // 24 hours
         zZoneKytExpiryTime: 86400n,
         // expressed in the "weighted units"
-        zZoneDepositMaxAmount: BigInt(1e12),
+        zZoneDepositMaxAmount: BigInt(2e12),
         // expressed in the "weighted units"
-        zZoneWithrawMaxAmount: BigInt(1e12),
+        zZoneWithrawMaxAmount: BigInt(2e12),
         // expressed in the "weighted units"
-        zZoneInternalMaxAmount: BigInt(1e12),
+        zZoneInternalMaxAmount: BigInt(2e12),
         // "no zAccounts are blacklisted")
         // The value is  240 bits set to 1:
         zZoneZAccountIDsBlackList:
