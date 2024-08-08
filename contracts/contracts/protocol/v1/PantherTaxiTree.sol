@@ -2,41 +2,38 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "./pantherForest/interfaces/ITreeRootUpdater.sol";
-import "./pantherForest/interfaces/ITreeRootGetter.sol";
 import "./interfaces/IPantherTaxiTree.sol";
+import "./pantherForest/interfaces/ITreeRootGetter.sol";
+import "./pantherForest/interfaces/ITreeRootUpdater.sol";
 
 import "./pantherForest/taxiTree/TaxiTree.sol";
-import { TAXI_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constants.sol";
 import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./pantherForest/zeroTrees/Constants.sol";
+import { TAXI_TREE_FOREST_LEAF_INDEX } from "./pantherForest/Constants.sol";
 
 import "../../common/ImmutableOwnable.sol";
 
 /**
  * @title PantherTaxiTree
  * @author Pantherprotocol Contributors
- * @dev It enables the direct insertion of UTXOs with a maximum capacity of 4 into the
- * Panther Forest. With each insertion, the old leaves are rewritten, and a new root is
- * generated. This root then serves as a leaf within the PantherForest Merkle tree.
+ * @dev It enables the direct insertion of an array of UTXOs into the TaxiTree.
  */
-contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
+contract PantherTaxiTree is
+    TaxiTree,
+    ImmutableOwnable,
+    ITreeRootGetter,
+    IPantherTaxiTree
+{
     address public immutable PANTHER_POOL;
 
-    // The current root of merkle tree.
-    // If it's undefined, the `zeroRoot()` shall be called.
     bytes32 private _currentRoot;
 
-    event RootUpdated(uint256 numLeaves, bytes32 updatedRoot);
+    event RootUpdated(bytes32 updatedRoot, uint256 numLeaves);
+    event UtxoAdded(bytes32 utxo, uint256 totalUtxoInsertions);
 
-    constructor(address pantherPool) {
+    constructor(address pantherPool) ImmutableOwnable(pantherPool) {
         require(pantherPool != address(0), "Init");
 
         PANTHER_POOL = pantherPool;
-    }
-
-    modifier onlyPantherPool() {
-        require(msg.sender == PANTHER_POOL, "Unauthorized");
-        _;
     }
 
     function getRoot() external view returns (bytes32) {
@@ -46,27 +43,43 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
                 : _currentRoot;
     }
 
-    function addUtxo(bytes32 utxo) external onlyPantherPool {
-        uint8 numLeaves = 1;
-        bytes32 taxiTreeNewRoot = _insert(utxo);
+    function addUtxos(bytes32[] calldata utxos) external onlyOwner {
+        bytes32 newRoot;
 
-        _updateTaxiAndStaticTreeRoots(taxiTreeNewRoot, numLeaves);
+        for (uint256 i = 0; i < utxos.length; ) {
+            newRoot = _addUtxo(utxos[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        _updateTaxiAndForestRoots(newRoot, utxos.length);
     }
 
-    function addThreeUtxos(
-        bytes32 utxo0,
-        bytes32 utxo1,
-        bytes32 utxo2
-    ) external onlyPantherPool {
-        uint8 numLeaves = 3;
-        bytes32 taxiTreeNewRoot = _insert(utxo0, utxo1, utxo2);
+    function addUtxo(bytes32 utxo) external onlyOwner {
+        bytes32 newRoot = _addUtxo(utxo);
 
-        _updateTaxiAndStaticTreeRoots(taxiTreeNewRoot, numLeaves);
+        _updateTaxiAndForestRoots(newRoot, 1);
     }
 
-    function _updateTaxiAndStaticTreeRoots(
+    function _addUtxo(bytes32 utxo) private returns (bytes32 newRoot) {
+        uint256 _totalLeavesInsertions = totalLeavesInsertions;
+        uint256 leafIndex;
+
+        unchecked {
+            leafIndex = _totalLeavesInsertions % MAX_LEAF_NUM;
+            totalLeavesInsertions = _totalLeavesInsertions + 1;
+        }
+
+        newRoot = _insertLeaf(leafIndex, utxo);
+
+        emit UtxoAdded(utxo, _totalLeavesInsertions);
+    }
+
+    function _updateTaxiAndForestRoots(
         bytes32 taxiTreeNewRoot,
-        uint8 numLeaves
+        uint256 numLeaves
     ) private {
         // Synchronize the sate of `PantherForest` contract
         // Trusted contract - no reentrancy guard needed
@@ -77,6 +90,6 @@ contract PantherTaxiTree is TaxiTree, ITreeRootGetter, IPantherTaxiTree {
 
         _currentRoot = taxiTreeNewRoot;
 
-        emit RootUpdated(numLeaves, taxiTreeNewRoot);
+        emit RootUpdated(taxiTreeNewRoot, numLeaves);
     }
 }

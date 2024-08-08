@@ -128,8 +128,7 @@ abstract contract UtxosInserter {
         ) = _addUtxosToBusQueue(utxos, miningRewards);
 
         if (transactionOptions.isTaxiApplicable()) {
-            // TODO: add 2 utxos to taxi
-            _addThreeUtxosToTaxiTree(utxos[0], utxos[1], bytes32(0));
+            _addUtxosToTaxiTree(utxos);
         }
     }
 
@@ -170,21 +169,26 @@ abstract contract UtxosInserter {
             ERR_ZERO_COMITMENT
         );
 
-        bytes32[] memory utxos = new bytes32[](5);
-        utxos[0] = zAccountUtxoOutCommitment;
-        utxos[1] = zAssetUtxoOutCommitment1;
-        utxos[2] = zAssetUtxoOutCommitment2;
-        utxos[3] = kytDepositSignedMessageHash;
-        utxos[4] = kytWithdrawSignedMessageHash;
+        bytes32[] memory busUtxos = new bytes32[](5);
+        busUtxos[0] = zAccountUtxoOutCommitment;
+        busUtxos[1] = zAssetUtxoOutCommitment1;
+        busUtxos[2] = zAssetUtxoOutCommitment2;
+        busUtxos[3] = kytDepositSignedMessageHash;
+        busUtxos[4] = kytWithdrawSignedMessageHash;
 
         (
             zAccountUtxoQueueId,
             zAccountUtxoIndexInQueue,
             zAccountUtxoBusQueuePos
-        ) = _addUtxosToBusQueue(utxos, miningRewards);
+        ) = _addUtxosToBusQueue(busUtxos, miningRewards);
 
         if (transactionOptions.isTaxiApplicable()) {
-            _addThreeUtxosToTaxiTree(utxos[0], utxos[1], utxos[2]);
+            bytes32[] memory taxiUtxos = new bytes32[](3);
+            taxiUtxos[0] = zAccountUtxoOutCommitment;
+            taxiUtxos[1] = zAssetUtxoOutCommitment1;
+            taxiUtxos[2] = zAssetUtxoOutCommitment2;
+
+            _addUtxosToTaxiTree(taxiUtxos);
         }
     }
 
@@ -223,7 +227,7 @@ abstract contract UtxosInserter {
         ) = _addUtxosToBusQueue(utxos, miningRewards);
 
         if (transactionOptions.isTaxiApplicable()) {
-            _addThreeUtxosToTaxiTree(utxos[0], utxos[1], utxos[2]);
+            _addUtxosToTaxiTree(utxos);
         }
     }
 
@@ -290,17 +294,9 @@ abstract contract UtxosInserter {
         }
     }
 
-    function _addThreeUtxosToTaxiTree(
-        bytes32 utxo0,
-        bytes32 utxo1,
-        bytes32 utxo2
-    ) private {
+    function _addUtxosToTaxiTree(bytes32[] memory utxos) private {
         try
-            IPantherTaxiTree(PANTHER_TAXI_TREE).addThreeUtxos(
-                utxo0,
-                utxo1,
-                utxo2
-            )
+            IPantherTaxiTree(PANTHER_TAXI_TREE).addUtxos(utxos)
         // solhint-disable-next-line no-empty-blocks
         {
 
