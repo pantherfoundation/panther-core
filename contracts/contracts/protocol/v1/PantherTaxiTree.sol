@@ -27,8 +27,8 @@ contract PantherTaxiTree is
 
     bytes32 private _currentRoot;
 
-    event RootUpdated(bytes32 updatedRoot, uint256 numLeaves);
-    event UtxoAdded(bytes32 utxo, uint256 totalUtxoInsertions);
+    event TaxiRootUpdated(bytes32 updatedRoot, uint256 numLeaves);
+    event TaxiUtxoAdded(bytes32 utxo, uint256 totalUtxoInsertions);
 
     constructor(address pantherPool) ImmutableOwnable(pantherPool) {
         require(pantherPool != address(0), "Init");
@@ -74,7 +74,7 @@ contract PantherTaxiTree is
 
         newRoot = _insertLeaf(leafIndex, utxo);
 
-        emit UtxoAdded(utxo, _totalLeavesInsertions);
+        emit TaxiUtxoAdded(utxo, _totalLeavesInsertions);
     }
 
     function _updateTaxiAndForestRoots(
@@ -90,6 +90,6 @@ contract PantherTaxiTree is
 
         _currentRoot = taxiTreeNewRoot;
 
-        emit RootUpdated(taxiTreeNewRoot, numLeaves);
+        emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
     }
 }
