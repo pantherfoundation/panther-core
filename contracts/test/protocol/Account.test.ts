@@ -237,7 +237,7 @@ describe('Account', () => {
             );
             await expect(
                 wallet.executeBatchOrRevert(targets, [callData]),
-            ).to.emit(wallet, 'AccountBatchExecuted');
+            ).to.emit(wallet, 'AccountCallExecuted');
         });
 
         it('shpould revert when destination reverts', async function () {
@@ -259,7 +259,7 @@ describe('Account', () => {
             const targets = [dummyAddress];
             await expect(
                 wallet.executeBatchOrRevert(targets, [BYTES64_ZERO]),
-            ).to.be.revertedWith('Call reverted silently');
+            ).to.be.revertedWith('OW:E11');
         });
     });
 });
