@@ -189,3 +189,29 @@ type ZAccountRegistrationCircuitIdUpdated @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type TaxiRootUpdated @entity(immutable: true) {
+    id: Bytes!
+    updatedRoot: Bytes! # bytes32
+    numLeaves: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TaxiSubtreeRootUpdated @entity(immutable: true) {
+    id: Bytes!
+    subtreeRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TaxiUtxoAdded @entity(immutable: true) {
+    id: Bytes!
+    utxo: Bytes! # bytes32
+    totalUtxoInsertions: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
