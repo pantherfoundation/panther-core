@@ -45,7 +45,7 @@ import {
     ForestTreesStruct,
 } from './helpers/pantherPoolV1Inputs';
 
-describe.only('PantherPoolV1', function () {
+describe('PantherPoolV1', function () {
     let owner: SignerWithAddress,
         zAccountRegistry: SignerWithAddress,
         prpVoucherGrantor: SignerWithAddress,
