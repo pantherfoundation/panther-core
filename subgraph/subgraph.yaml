@@ -120,3 +120,29 @@ dataSources:
         - event: ZAccountRegistrationCircuitIdUpdated(uint160)
           handler: handleZAccountRegistrationCircuitIdUpdated
       file: ./src/handlePoolContract.ts
+  - kind: ethereum
+    name: TaxiTree
+    network: polygon-amoy
+    source:
+      address: '0x85288bD4B26480841eaB038C1A1993d52947533E' # Internal
+      startBlock: 10652712 # Internal
+      abi: TaxiTree
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TaxiRootUpdated
+        - TaxiSubtreeRootUpdated
+        - TaxiUtxoAdded
+      abis:
+        - name: TaxiTree
+          file: ./abis/TaxiTree.json
+      eventHandlers:
+        - event: TaxiRootUpdated(bytes32,uint256)
+          handler: handleTaxiRootUpdated
+        - event: TaxiSubtreeRootUpdated(bytes32)
+          handler: handleTaxiSubtreeRootUpdated
+        - event: TaxiUtxoAdded(bytes32,uint256)
+          handler: handleTaxiUtxoAdded
+      file: ./src/handleTaxiTree.ts
