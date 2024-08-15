@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 
 describe('RewardsExtended circuit', async function (this: any) {
     let rewardsExtended: any;

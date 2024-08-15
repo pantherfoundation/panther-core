@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('ZoneIdInclusionProver circuit', async function (this: any) {
-    let zoneIdInclusionProver: any;
+describe('KycKytNoteInclusionProver circuit', async function (this: any) {
+    let kycKytNoteInclusionProver: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('ZoneIdInclusionProver circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zoneIdInclusionProver.circom',
+            './test/circuits/kycKytNoteInclusionProver.circom',
         );
-        zoneIdInclusionProver = await wasm_tester(input, opts);
+        kycKytNoteInclusionProver = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases

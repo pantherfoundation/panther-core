@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('ZAccountNullifierHasher circuit', async function (this: any) {
-    let zAccountNullifierHasher: any;
+describe('ZZoneNoteInclusionProver circuit', async function (this: any) {
+    let zZoneNoteInclusionProver: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('ZAccountNullifierHasher circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zAccountNullifierHasher.circom',
+            './test/circuits/zZoneNoteInclusionProver.circom',
         );
-        zAccountNullifierHasher = await wasm_tester(input, opts);
+        zZoneNoteInclusionProver = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases
@@ -30,7 +30,7 @@ describe('ZAccountNullifierHasher circuit', async function (this: any) {
     });
 
     // Example test case flow is below -
-    /* 
+    /*
     describe('Valid input signals',(){
             it(...){}
             it(...){}
