@@ -12,7 +12,7 @@ library PluginDataDecoderLib {
     function extractPluginAddress(
         bytes memory data
     ) internal pure returns (address plugin) {
-        require(data.length >= 20, "low length");
+        require(data.length >= 20, "invalid length");
 
         assembly {
             let location := data
@@ -135,7 +135,7 @@ library PluginDataDecoderLib {
     function decodeUniswapV3PoolData(
         bytes memory data
     ) internal pure returns (address poolAddress, uint160 sqrtPriceLimitX96) {
-        require(data.length == 60, "invalid Length");
+        require(data.length == 60, "invalid length");
 
         assembly {
             let location := data
@@ -165,7 +165,7 @@ library PluginDataDecoderLib {
     ) internal pure returns (uint96 amountOutMin, uint32 deadline) {
         require(
             data.length == QUICKSWAP_ROUTER_EXACT_INPUT_SINGLE_DATA_LENGTH,
-            "invalid Length"
+            "invalid length"
         );
 
         assembly {
