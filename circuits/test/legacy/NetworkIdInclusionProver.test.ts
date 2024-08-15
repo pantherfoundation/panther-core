@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('ZAccountBlackListLeafInclusionProver circuit', async function (this: any) {
-    let zAccountBlackListLeafInclusionProver: any;
+describe('NetworkIdInclusionProver circuit', async function (this: any) {
+    let networkIdInclusionProver: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('ZAccountBlackListLeafInclusionProver circuit', async function (this: a
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zAccountBlackListLeafInclusionProver.circom',
+            './test/circuits/networkIdInclusionProver.circom',
         );
-        zAccountBlackListLeafInclusionProver = await wasm_tester(input, opts);
+        networkIdInclusionProver = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases

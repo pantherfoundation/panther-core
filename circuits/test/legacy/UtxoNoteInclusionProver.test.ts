@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('UtxoNoteHasher circuit', async function (this: any) {
-    let utxoNoteHasher: any;
+describe('UtxoNoteInclusionProver circuit', async function (this: any) {
+    let utxoNoteInclusionProver: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('UtxoNoteHasher circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/utxoNoteHasher.circom',
+            './test/circuits/utxoNoteInclusionProver.circom',
         );
-        utxoNoteHasher = await wasm_tester(input, opts);
+        utxoNoteInclusionProver = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases

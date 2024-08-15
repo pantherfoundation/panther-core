@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('ZAssetNoteInclusionProver circuit', async function (this: any) {
-    let zAssetNoteInclusionProver: any;
+describe('ZAccountNoteHasher circuit', async function (this: any) {
+    let ZAccountNoteHasher: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('ZAssetNoteInclusionProver circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zAssetNoteInclusionProver.circom',
+            './test/circuits/ZAccountNoteHasher.circom',
         );
-        zAssetNoteInclusionProver = await wasm_tester(input, opts);
+        ZAccountNoteHasher = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases

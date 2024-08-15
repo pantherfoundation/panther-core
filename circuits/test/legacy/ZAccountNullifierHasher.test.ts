@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import cicom_wasm_tester from 'circom_tester';
 const wasm_tester = cicom_wasm_tester.wasm;
 
-import {getOptions} from './helpers/circomTester';
+import {getOptions} from './../helpers/circomTester';
 // TODO: Import the necessary packages here...
 
-describe('PublicInputHasherExtended circuit', async function (this: any) {
-    let publicInputHasherExtended: any;
+describe('ZAccountNullifierHasher circuit', async function (this: any) {
+    let zAccountNullifierHasher: any;
     // TODO: Declare all variables and their types here...
 
     // Use timeout if needed
@@ -19,9 +19,9 @@ describe('PublicInputHasherExtended circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/publicInputHasherExtended.circom',
+            './test/circuits/zAccountNullifierHasher.circom',
         );
-        publicInputHasherExtended = await wasm_tester(input, opts);
+        zAccountNullifierHasher = await wasm_tester(input, opts);
     });
 
     // Info: Executed before each test cases
