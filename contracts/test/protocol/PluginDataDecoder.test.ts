@@ -8,7 +8,7 @@ import {ethers} from 'hardhat';
 import {MockPluginDataDecoder} from '../../types/contracts';
 
 describe('PluginDataDecoder', function () {
-    const deadline = 12345678;
+    const deadline = 2525476824;
     const amountOutMinimum = 1000000000000;
     const fee = 3000;
     const sqrtPriceLimitX96 = 34028236692093;
@@ -150,12 +150,12 @@ describe('PluginDataDecoder', function () {
 
         await expect(
             pluginDataDecoder.testDecodeUniswapV3PoolData(invalidData),
-        ).to.be.revertedWith('invalid Length');
+        ).to.be.revertedWith('invalid length');
 
         await expect(
             pluginDataDecoder.testDecodeQuickswapRouterExactInputSingleData(
                 invalidData,
             ),
-        ).to.be.revertedWith('invalid Length');
+        ).to.be.revertedWith('invalid length');
     });
 });
