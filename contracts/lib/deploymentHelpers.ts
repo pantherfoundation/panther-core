@@ -544,4 +544,5 @@ export {
     setDeterministicDeploymentProxy,
     deployBytecodeDeterministically,
     deployContentDeterministically,
+    getDeterministicDeploymentProxyAddressAndCode,
 };
