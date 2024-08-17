@@ -88,7 +88,7 @@ template ZSwapV1( nUtxoIn,
     signal input {uint168}         zAssetToken[zAssetArraySize];
     signal input {uint252}         zAssetTokenId[zAssetArraySize];
     signal input {uint6}           zAssetNetwork[zAssetArraySize];
-    signal input {uint6}           zAssetOffset[zAssetArraySize];
+    signal input {uint32}          zAssetOffset[zAssetArraySize];
     signal input {non_zero_uint32} zAssetWeight[zAssetArraySize];
     signal input {non_zero_uint64} zAssetScale[zAssetArraySize];    // public - only in zSwap case
     signal input                   zAssetMerkleRoot;

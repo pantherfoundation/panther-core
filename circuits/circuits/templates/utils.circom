@@ -197,6 +197,24 @@ template LessEqThanWhenEnabled(n){
     lt.out * isNotZero.out === 1 * isNotZero.out;
 }
 
+template RangeCheck(n) {
+    signal input lowerBound;
+    signal input upperBound;
+    signal input enabled;
+    signal input in;
+
+    component l1 = LessEqThanWhenEnabled(n);
+    component l2 = LessEqThanWhenEnabled(n);
+
+    l1.in[0] <== lowerBound;
+    l1.in[1] <== in;
+    l1.enabled <== enabled;
+
+    l2.in[0] <== in;
+    l2.in[1] <== upperBound;
+    l2.enabled <== enabled;
+}
+
 template ForceLessEqThan(n){
     signal input in[2];
 

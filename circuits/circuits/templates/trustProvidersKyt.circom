@@ -32,16 +32,31 @@ template TrustProvidersInternalKyt() {
     signal input                        kytSignedMessageHash;
     signal input                        kytSignature[3];
 
-    component kytSignedMessageHashInternal = Poseidon(8);
+    var ENABLE_WHEN_IMPLEMENTED = 0;
+    component kytSignedMessageHashInternal;
+    if ( ENABLE_WHEN_IMPLEMENTED ) { // TODO: FIXME - depends on PuriFI to add this
+        kytSignedMessageHashInternal = Poseidon(8);
 
-    kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
-    kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
-    kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
-    kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
-    kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
-    kytSignedMessageHashInternal.inputs[5] <== kytSignedDepositSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[6] <== kytSignedWithdrawSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageDataEscrowHash;
+        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
+        kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedDepositSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[6] <== kytSignedWithdrawSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageDataEscrowHash;
+    } else {
+        kytSignedMessageHashInternal = Poseidon(7);
+
+        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
+        kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedDepositSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedWithdrawSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageDataEscrowHash;
+
+    }
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== enabled;

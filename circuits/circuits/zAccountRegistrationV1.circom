@@ -42,7 +42,7 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     signal input {uint168}         zAssetToken;
     signal input {uint252}         zAssetTokenId;
     signal input {uint6}           zAssetNetwork;
-    signal input {uint6}           zAssetOffset;
+    signal input {uint32}          zAssetOffset;
     signal input {non_zero_uint32} zAssetWeight;
     signal input {non_zero_uint64} zAssetScale;
     signal input                   zAssetMerkleRoot;

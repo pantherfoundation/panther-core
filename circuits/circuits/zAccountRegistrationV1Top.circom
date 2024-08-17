@@ -153,7 +153,7 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
     signal rc_zAssetToken <==  Uint168Tag(IGNORE_ANCHORED)(zAssetToken);
     signal rc_zAssetTokenId <== Uint252Tag(IGNORE_ANCHORED)(zAssetTokenId);
     signal rc_zAssetNetwork <== Uint6Tag(IGNORE_ANCHORED)(zAssetNetwork);
-    signal rc_zAssetOffset <== Uint6Tag(IGNORE_ANCHORED)(zAssetOffset);
+    signal rc_zAssetOffset <== Uint32Tag(IGNORE_ANCHORED)(zAssetOffset);
     signal rc_zAssetWeight <== NonZeroUint32Tag(IGNORE_ANCHORED)(zAssetWeight);
     signal rc_zAssetScale <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScale);
     signal rc_zAssetMerkleRoot <== SnarkFieldTag()(zAssetMerkleRoot);
