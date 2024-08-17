@@ -28,7 +28,7 @@ template ZAssetChecker() {
     signal input {uint64}  zAssetId;
     signal input {uint168} zAssetToken;
     signal input {uint252} zAssetTokenId;
-    signal input {uint6}   zAssetOffset;
+    signal input {uint32}  zAssetOffset;
     signal input {uint96}  depositAmount;
     signal input {uint96}  withdrawAmount;
     signal input {uint64}  utxoZAssetId;
@@ -43,10 +43,6 @@ template ZAssetChecker() {
     var enable_If_ExternalAmountsAre_Zero = isZeroExternalAmounts.out;
     var enable_If_ExternalAmountsAre_NOT_Zero = 1 - isZeroExternalAmounts.out;
 
-    component isZeroOffset = IsZero();
-    isZeroOffset.in <== zAssetOffset;
-    var enable_If_zAssetOffsetAre_NOT_Zero = 1 - isZeroOffset.out;
-
     // [0] - zAsset::token == token
     component isZAssetTokenEqualToToken = ForceEqualIfEnabled();
     isZAssetTokenEqualToToken.in[0] <== zAssetToken;
@@ -57,21 +53,23 @@ template ZAssetChecker() {
     component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
     isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
     isZAssetIdEqualToUtxoZAssetId.utxoZAssetId <== utxoZAssetId;
-    isZAssetIdEqualToUtxoZAssetId.offset <== zAssetOffset;
+    isZAssetIdEqualToUtxoZAssetId.offset <== Uint6Tag(ACTIVE)(32);
     isZAssetIdEqualToUtxoZAssetId.enabled <== BinaryOne()(); // always enabled
 
     // [2] - zAsset::tokenId == tokenId with respect to offset
-    component isZAssetIdEqualToTokenId = IsZAssetTokenIdEqualToTokenId();
+    component isZAssetIdEqualToTokenId = IsTokenIdInZAssetTokenIdRange();
     isZAssetIdEqualToTokenId.zAssetTokenId <== zAssetTokenId;
     isZAssetIdEqualToTokenId.tokenId <== tokenId;
     isZAssetIdEqualToTokenId.offset <== zAssetOffset;
-    isZAssetIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero * enable_If_zAssetOffsetAre_NOT_Zero);
+    isZAssetIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
 
     // [3] - UTXO::tokenId == tokenId with respect to offset
+    signal tokenIdDiff <== Uint252Tag(ACTIVE)(tokenId - zAssetTokenId);
+
     component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
     isUtxoTokenIdEqualToTokenId.utxoZAssetId <== utxoZAssetId;
-    isUtxoTokenIdEqualToTokenId.tokenId <== tokenId;
-    isUtxoTokenIdEqualToTokenId.offset <== zAssetOffset;
+    isUtxoTokenIdEqualToTokenId.tokenId <== tokenIdDiff;
+    isUtxoTokenIdEqualToTokenId.offset <== Uint6Tag(ACTIVE)(32);
     isUtxoTokenIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
 
     // [4] - token == 0 for internal tx
@@ -133,19 +131,16 @@ template IsZAssetIdEqualToUtxoZAssetId() {
 //     1. Deposit Transaction
 //     2. Withdraw Transaction
 // */
-template IsZAssetTokenIdEqualToTokenId() {
+template IsTokenIdInZAssetTokenIdRange() {
     signal input {uint252} zAssetTokenId;
     signal input {uint252} tokenId;
-    signal input {uint6}   offset;
+    signal input {uint32}  offset;
     signal input {binary}  enabled;
 
-    var isLSB = 1;
-    var isMSB = 1 - isLSB;
-
-    component p = IsIdEqualToId(252,252,isMSB);
-    p.id[0] <== zAssetTokenId; // 252
-    p.id[1] <== tokenId;       // 252
-    p.offset <== offset;
+    component p = RangeCheck(252);
+    p.lowerBound <== zAssetTokenId;
+    p.in <== tokenId;
+    p.upperBound <== zAssetTokenId + offset;
     p.enabled <== enabled;
 }
 

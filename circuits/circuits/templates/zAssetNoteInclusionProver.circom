@@ -7,10 +7,10 @@ include "../../node_modules/circomlib/circuits/gates.circom";
 
 template ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth){
     signal input {uint64}           zAsset;      // 64 bit ( was 160 )
-    signal input {uint168}          token;       // 160 bit - ERC20 address
+    signal input {uint168}          token;       // 168 bit - ERC20 address
     signal input {uint252}          tokenId;     // 256 bit - NFT-ID/Token-ID, can be zero in-case some LSB bits from zAssetID is used for NFT-count
     signal input {uint6}            network;     // 6 bit - network-id where UTXO is spent (UTXO-in)
-    signal input {uint6}            offset;      // 6 bit - 0..32 bit number, default value is 0 - means all 64 bit of zAssetID is in use
+    signal input {uint32}           offset;      // 0..31 bit number
     signal input {non_zero_uint32}  weight;      // 32 bit
     signal input {non_zero_uint64}  scale;       // 64 bit
     signal input                    merkleRoot;

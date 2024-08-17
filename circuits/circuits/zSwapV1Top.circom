@@ -301,7 +301,7 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_zAssetToken[zAssetArraySize] <== Uint168TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetToken);
     signal rc_zAssetTokenId[zAssetArraySize] <== Uint252TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetTokenId);
     signal rc_zAssetNetwork[zAssetArraySize] <== Uint6TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetNetwork);
-    signal rc_zAssetOffset[zAssetArraySize] <== Uint6TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetOffset);
+    signal rc_zAssetOffset[zAssetArraySize] <== Uint32TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetOffset);
     signal rc_zAssetWeight[zAssetArraySize] <== NonZeroUint32TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetWeight);
     signal rc_zAssetScale[zAssetArraySize] <== NonZeroUint64TagArray(IGNORE_ANCHORED,zAssetArraySize)(zAssetScale);
     signal rc_zAssetMerkleRoot <== SnarkFieldTag()(zAssetMerkleRoot);
