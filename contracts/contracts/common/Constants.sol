@@ -57,6 +57,9 @@ bytes4 constant GT_FEE_EXCHANGE = 0x1d91a712;
 // The "prp grant type" for the refilling the PayMaster's EntryPoint deposit
 // bytes4(keccak256('panther-paymaster-refund-grantor'))
 bytes4 constant GT_PAYMASTER_REFUND = 0x3002a002;
+// The "prp grant type" for the refilling the PRP-to-$ZKP AMM with $ZKP tokens
+// bytes4(keccak256('prp-zkp-amm-refund-grantor'))
+bytes4 constant GT_AMM_REFILL = 0xbeafcafe;
 
 // The default value that should be used
 uint64 constant DEFAULT_GRANT_TYPE_PRP_REWARDS = 0;
