@@ -7,8 +7,6 @@ import "../merkleTrees/DegenerateIncrementalBinaryTree.sol";
 import "../../../../common/crypto/PoseidonHashers.sol";
 import { HUNDRED_PERCENT } from "../../../../common/Constants.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @dev It handles "queues" of commitments to UTXOs (further - "UTXOs").
  * Queue is an ordered list of UTXOs. All UTXOs in a queue are supposed to be
@@ -77,21 +75,22 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     // ID of the next queue to create
     uint32 internal _nextQueueId;
     // Number of unprocessed queues
-    uint32 private _numPendingQueues;
+    uint32 internal _numPendingQueues;
     // Link to the oldest (created but yet) unprocessed queue
     // (if 0 - no such queue exists, otherwise the queue's ID adjusted by +1)
-    uint32 private _oldestPendingQueueLink;
+    uint32 internal _oldestPendingQueueLink;
 
     // Part (in 1/100th of 1%) of queue reward to be reserved for "premiums"
     uint16 private _reservationRate;
     // Part (in 1/100th of 1%) of a queue reward to be accrued as the premium
     // (i.e. an extra reward) for every block the queue pends processing
     uint16 private _premiumRate;
-    // Unused yet part of queue rewards which were reserved for premiums
-    uint96 internal _rewardReserve;
 
     // Minimum number of blocks an empty queue must pend processing.
     uint16 private _minEmptyQueueAge;
+
+    // Unused yet part of queue rewards which were reserved for premiums
+    int192 internal _netRewardReserve;
 
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
@@ -160,7 +159,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             uint32 curQueueId,
             uint32 numPendingQueues,
             uint32 oldestPendingQueueId,
-            uint96 rewardReserve
+            int192 newRewardReserve
         )
     {
         uint32 nextQueueId = _nextQueueId;
@@ -170,7 +169,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         oldestPendingQueueId = numPendingQueues == 0
             ? 0
             : _oldestPendingQueueLink - 1;
-        rewardReserve = _rewardReserve;
+        newRewardReserve = _netRewardReserve;
     }
 
     function getBusQueue(
@@ -422,6 +421,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint256 minAge = (nEmptySeats * _minEmptyQueueAge) / QUEUE_MAX_SIZE;
 
         uint256 maturityBlock = minAge + queue.firstUtxoBlock;
+
         return
             block.number >= maturityBlock
                 ? 0 // Overflow risk ignored
@@ -437,25 +437,17 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             int256 netReserveChange
         ) = _estimateRewarding(queue);
 
-        uint256 reserve = _rewardReserve;
+        int192 reserve = _netRewardReserve;
 
         if (netReserveChange > 0) {
-            uint256 addition = uint256(netReserveChange);
-            _rewardReserve = uint96(reserve + addition);
-            emit BusQueueRewardReserved(addition);
+            _netRewardReserve = int96(reserve + netReserveChange);
+            emit BusQueueRewardReserved(uint256(netReserveChange));
         }
         if (netReserveChange < 0) {
-            uint256 usage = uint256(-netReserveChange);
-
-            if (usage > reserve) {
-                premium -= (usage - reserve); //! can it be premium = reserve
-
-                usage = reserve;
-            }
-            _rewardReserve = uint96(reserve - usage);
-
-            emit BusQueueRewardReserveUsed(usage);
+            _netRewardReserve = int96(reserve + netReserveChange);
+            emit BusQueueRewardReserveUsed(uint256(netReserveChange));
         }
+
         actReward = reward + premium;
     }
 
