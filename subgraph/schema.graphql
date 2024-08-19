@@ -215,3 +215,53 @@ type TaxiUtxoAdded @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type BlacklistForMasterEoaUpdated @entity(immutable: true) {
+    id: Bytes!
+    masterEoa: Bytes! # address
+    isBlackListed: Boolean! # bool
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BlacklistForPubRootSpendingKeyUpdated @entity(immutable: true) {
+    id: Bytes!
+    packedPubRootSpendingKey: Bytes! # bytes32
+    isBlackListed: Boolean! # bool
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BlacklistForZAccountIdUpdated @entity(immutable: true) {
+    id: Bytes!
+    zAccountId: Int! # uint24
+    isBlackListed: Boolean! # bool
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ZAccountActivated @entity(immutable: true) {
+    id: Bytes!
+    ZAccountRegistry_id: Int! # uint24
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ZAccountRegistered @entity(immutable: true) {
+    id: Bytes!
+    masterEoa: Bytes! # address
+    zAccount__unused: BigInt! # uint184
+    zAccount_creationBlock: BigInt! # uint32
+    zAccount_id: Int! # uint24
+    zAccount_version: Int! # uint8
+    zAccount_status: Int! # uint8
+    zAccount_pubRootSpendingKey: Bytes! # bytes32
+    zAccount_pubReadingKey: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
