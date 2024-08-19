@@ -1,0 +1,464 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_owner", "type": "address"},
+      {"internalType": "uint8", "name": "_zAccountVersion", "type": "uint8"},
+      {"internalType": "address", "name": "pantherPool", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "pantherStaticTree",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "onboardingController",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "masterEoa",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isBlackListed",
+        "type": "bool"
+      }
+    ],
+    "name": "BlacklistForMasterEoaUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "packedPubRootSpendingKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isBlackListed",
+        "type": "bool"
+      }
+    ],
+    "name": "BlacklistForPubRootSpendingKeyUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "zAccountId",
+        "type": "uint24"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isBlackListed",
+        "type": "bool"
+      }
+    ],
+    "name": "BlacklistForZAccountIdUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "id",
+        "type": "uint24"
+      }
+    ],
+    "name": "ZAccountActivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "masterEoa",
+        "type": "address"
+      },
+      {
+        "components": [
+          {"internalType": "uint184", "name": "_unused", "type": "uint184"},
+          {
+            "internalType": "uint32",
+            "name": "creationBlock",
+            "type": "uint32"
+          },
+          {"internalType": "uint24", "name": "id", "type": "uint24"},
+          {"internalType": "uint8", "name": "version", "type": "uint8"},
+          {
+            "internalType": "enum ZACCOUNT_STATUS",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "pubRootSpendingKey",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "pubReadingKey",
+            "type": "bytes32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ZAccountsRegistry.ZAccount",
+        "name": "zAccount",
+        "type": "tuple"
+      }
+    ],
+    "name": "ZAccountRegistered",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "EIP712_NAME",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "EIP712_SALT",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "EIP712_VERSION",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ONBOARDING_CONTROLLER",
+    "outputs": [
+      {
+        "internalType": "contract IOnboardingController",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "OWNER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_POOL",
+    "outputs": [
+      {
+        "internalType": "contract IPantherPoolV1",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_STATIC_TREE",
+    "outputs": [
+      {
+        "internalType": "contract ITreeRootUpdater",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ZACCOUNT_VERSION",
+    "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256[]", "name": "inputs", "type": "uint256[]"},
+      {
+        "components": [
+          {
+            "components": [
+              {"internalType": "uint256", "name": "x", "type": "uint256"},
+              {"internalType": "uint256", "name": "y", "type": "uint256"}
+            ],
+            "internalType": "struct G1Point",
+            "name": "a",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256[2]",
+                "name": "x",
+                "type": "uint256[2]"
+              },
+              {
+                "internalType": "uint256[2]",
+                "name": "y",
+                "type": "uint256[2]"
+              }
+            ],
+            "internalType": "struct G2Point",
+            "name": "b",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {"internalType": "uint256", "name": "x", "type": "uint256"},
+              {"internalType": "uint256", "name": "y", "type": "uint256"}
+            ],
+            "internalType": "struct G1Point",
+            "name": "c",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SnarkProof",
+        "name": "proof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint32",
+        "name": "transactionOptions",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint96",
+        "name": "paymasterCompensation",
+        "type": "uint96"
+      },
+      {"internalType": "bytes", "name": "privateMessages", "type": "bytes"}
+    ],
+    "name": "activateZAccount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "utxoBusQueuePos",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "masterEoas",
+        "type": "address[]"
+      },
+      {"internalType": "bool[]", "name": "isBlackListed", "type": "bool[]"}
+    ],
+    "name": "batchUpdateBlacklistForMasterEoa",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "packedPubRootSpendingKeys",
+        "type": "bytes32[]"
+      },
+      {"internalType": "bool[]", "name": "isBlackListed", "type": "bool[]"}
+    ],
+    "name": "batchUpdateBlacklistForPubRootSpendingKey",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getDomainSeperator",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRoot",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      }
+    ],
+    "name": "isAcceptablePubKey",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "isMasterEoaBlacklisted",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "name": "isPubRootSpendingKeyBlacklisted",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint24", "name": "", "type": "uint24"}],
+    "name": "isZAccountIdBlacklisted",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_masterEOA", "type": "address"}
+    ],
+    "name": "isZAccountWhitelisted",
+    "outputs": [
+      {"internalType": "bool", "name": "isWhitelisted", "type": "bool"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint24", "name": "", "type": "uint24"}],
+    "name": "masterEOAs",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "name": "pubKeyZAccountNullifiers",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "_pubRootSpendingKey",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "_pubReadingKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint8", "name": "v", "type": "uint8"},
+      {"internalType": "bytes32", "name": "r", "type": "bytes32"},
+      {"internalType": "bytes32", "name": "s", "type": "bytes32"}
+    ],
+    "name": "registerZAccount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint24", "name": "zAccountId", "type": "uint24"},
+      {"internalType": "bytes32", "name": "leaf", "type": "bytes32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      },
+      {"internalType": "bool", "name": "isBlacklisted", "type": "bool"}
+    ],
+    "name": "updateBlacklistForZAccountId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "zAccountIdTracker",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "zAccounts",
+    "outputs": [
+      {"internalType": "uint184", "name": "_unused", "type": "uint184"},
+      {"internalType": "uint32", "name": "creationBlock", "type": "uint32"},
+      {"internalType": "uint24", "name": "id", "type": "uint24"},
+      {"internalType": "uint8", "name": "version", "type": "uint8"},
+      {
+        "internalType": "enum ZACCOUNT_STATUS",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "pubRootSpendingKey",
+        "type": "bytes32"
+      },
+      {"internalType": "bytes32", "name": "pubReadingKey", "type": "bytes32"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "name": "zoneZAccountNullifiers",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
