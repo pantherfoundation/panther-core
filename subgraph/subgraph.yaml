@@ -146,3 +146,35 @@ dataSources:
         - event: TaxiUtxoAdded(bytes32,uint256)
           handler: handleTaxiUtxoAdded
       file: ./src/handleTaxiTree.ts
+  - kind: ethereum
+    name: ZAccountRegistry
+    network: polygon-amoy
+    source:
+      abi: ZAccountRegistry
+      address: '0xDA080f159b9F866da43bBC9E77eFe75E886fB02B' # Internal
+      startBlock: 6869383 # Internal
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BlacklistForMasterEoaUpdated
+        - BlacklistForPubRootSpendingKeyUpdated
+        - BlacklistForZAccountIdUpdated
+        - ZAccountActivated
+        - ZAccountRegistered
+      abis:
+        - name: ZAccountRegistry
+          file: ./abis/ZAccountRegistry.json
+      eventHandlers:
+        - event: BlacklistForMasterEoaUpdated(address,bool)
+          handler: handleBlacklistForMasterEoaUpdated
+        - event: BlacklistForPubRootSpendingKeyUpdated(bytes32,bool)
+          handler: handleBlacklistForPubRootSpendingKeyUpdated
+        - event: BlacklistForZAccountIdUpdated(uint24,bool)
+          handler: handleBlacklistForZAccountIdUpdated
+        - event: ZAccountActivated(uint24)
+          handler: handleZAccountActivated
+        - event: ZAccountRegistered(address,(uint184,uint32,uint24,uint8,uint8,bytes32,bytes32))
+          handler: handleZAccountRegistered
+      file: ./src/handleZAccountRegistry.ts
