@@ -24,7 +24,7 @@ component main {
         kytWithdrawSignedMessageReceiver,      // [17]
         kytWithdrawSignedMessageHash,          // [18]
         kytSignedMessageHash,                  // [19]
-        dataEscrowEncryptedMessageAx,          // [20] - 1 + 1 + nUtxoIn + nUtxoOut + MAX(nUtxoIn,nUtxoOut) = 8 (NOTE: only x-coordinate)
+        dataEscrowEncryptedMessageAx,          // [20] - 11 (NOTE: only x-coordinate)
         daoDataEscrowEphemeralPubKeyAx,        // [21] - 1 (NOTE: only x-coordinate)
         daoDataEscrowEncryptedMessageAx,       // [22] - 1 (NOTE: only x-coordinate)
         utxoOutCreateTime,                     // [23]
@@ -36,7 +36,7 @@ component main {
         forestMerkleRoot,                      // [29]
         saltHash,                              // [30]
         magicalConstraint                      // [31]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + ... = 46
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 31 + 1 + 1 + 2 + 1 + 10 + 1 = 47
     ]} = ZSwapV1Top( 2,     // nUtxoIn
                      2,     // nUtxoOut
                      8,     // UtxoLeftMerkleTreeDepth
