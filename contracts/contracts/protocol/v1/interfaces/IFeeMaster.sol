@@ -3,6 +3,7 @@
 pragma solidity ^0.8.19;
 
 import "./IFeeAccountant.sol";
+import { FeeParams } from "../feeMaster/Types.sol";
 
 interface IFeeMaster is IFeeAccountant {
     /**
@@ -29,6 +30,51 @@ interface IFeeMaster is IFeeAccountant {
      * @param donation The new donation amount.
      */
     event DonationsUpdated(uint16 txType, uint256 donation);
+
+    /**
+     * @dev Emitted when fee params are updated
+     * @param feeParams params for calculating fees
+     */
+    event FeeParamsUpdated(FeeParams feeParams);
+
+    /**
+     * @dev Emitted zkp distribution params updated
+     * @param treasuryLockPercentage the percentgage of fee that needs to be sent to
+     * the treasury, after deduction of miner premium rewards
+     * @param minRewardableZkpAmount min amount of distributed zkps which generates prp rewards
+     */
+    event ProtocolZkpFeeDistributionParamsUpdated(
+        uint16 treasuryLockPercentage,
+        uint96 minRewardableZkpAmount
+    );
+
+    /**
+     * @dev Emitted when zkps are distributed
+     * @param totalAmount  total distributed amout of zkps
+     * @param minerPremiumRewards amount of zkps to cover miner premium rewards
+     */
+    event ZkpsDistributed(uint256 totalAmount, uint256 minerPremiumRewards);
+
+    /**
+     * @dev Emitted when twap updated
+     * @param twapPeriod period for time weighted avg price
+     */
+    event TwapPeriodUpdated(uint256 twapPeriod);
+
+    /**
+     * @dev Emitted when pool address is updated
+     * @param pool address of uniswap v3 pool
+     * @param enabled true/false for enabling/desabling pool
+     */
+    event PoolUpdated(address pool, bool enabled);
+
+    /**
+     * @dev Emitted when protocol pays the collected fees
+     * @param receiver address of the fee receiver
+     * @param token address of the fee token
+     * @param amount the amount that is sent
+     */
+    event PayOff(address receiver, address token, uint256 amount);
 
     /**
      * @dev Gets the rate of native token in terms of zk-proof token.
@@ -103,12 +149,12 @@ interface IFeeMaster is IFeeAccountant {
      * @dev Rebalances the debt.
      * @param sellToken The token to be sold.
      */
-    function rebalanceDebt(address sellToken) external;
+    function rebalanceDebt(bytes32 secretHash, address sellToken) external;
 
     /**
      * @dev Distributes the protocol fees in zk-proof token.
      */
-    function distributeZkpProtocolFees() external;
+    function distributeProtocolZkpFees(bytes32 secretHash) external;
 
     /**
      * @dev Accounts for the fees incurred in a transaction.

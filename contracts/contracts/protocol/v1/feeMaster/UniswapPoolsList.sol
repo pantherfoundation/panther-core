@@ -12,8 +12,6 @@ abstract contract UniswapPoolsList {
 
     mapping(bytes4 => Pool) public pools;
 
-    event PoolUpdated(address _address, bool _enabled);
-
     function getEnabledPoolAddress(
         address tokenA,
         address tokenB
@@ -32,8 +30,6 @@ abstract contract UniswapPoolsList {
     ) internal {
         bytes4 key = PoolKey.getKey(_tokenA, _tokenB);
         pools[key] = Pool({ _address: _pool, _enabled: true });
-
-        emit PoolUpdated(_pool, true);
     }
 
     function _updatePool(
@@ -48,7 +44,5 @@ abstract contract UniswapPoolsList {
         require(pool._address != address(0), "Pool not found");
 
         pools[key] = Pool({ _address: _address, _enabled: _enabled });
-
-        emit PoolUpdated(_address, _enabled);
     }
 }
