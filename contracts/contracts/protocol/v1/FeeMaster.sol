@@ -7,9 +7,10 @@ import "./interfaces/IFeeMaster.sol";
 import "./interfaces/ITransactionChargesHandler.sol";
 
 import "./feeMaster/PoolKey.sol";
-import "./feeMaster/UniswapV3Handler.sol";
-import "./feeMaster/UniswapPoolsList.sol";
 import "./feeMaster/FeeAccountant.sol";
+import "./feeMaster/ProtocolFeeSwapper.sol";
+import "./feeMaster/TotalDebtHandler.sol";
+import "./feeMaster/ProtocolFeeDistributor.sol";
 import { ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
 
 import "./pantherPool/Types.sol";
@@ -18,7 +19,7 @@ import "./pantherPool/TransactionTypes.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/ImmutableOwnable.sol";
-import { NATIVE_TOKEN } from "../../common/Constants.sol";
+import { GT_ZKP_DISTRIBUTE, GT_FEE_EXCHANGE, DEFAULT_GRANT_TYPE_PRP_REWARDS } from "../../common/Constants.sol";
 
 /**
  * @title FeeMaster
@@ -33,12 +34,13 @@ import { NATIVE_TOKEN } from "../../common/Constants.sol";
  */
 contract FeeMaster is
     ImmutableOwnable,
-    UniswapV3Handler,
-    UniswapPoolsList,
+    ProtocolFeeSwapper,
     FeeAccountant,
+    ProtocolFeeDistributor,
     IFeeMaster
 {
     using TransferHelper for address;
+    using TotalDebtHandler for address;
     using TransactionTypes for uint16;
     using UtilsLib for uint256;
     using UtilsLib for uint40;
@@ -46,6 +48,8 @@ contract FeeMaster is
 
     // panther VaultV1 contract address
     address public immutable VAULT;
+    // prpVoucherGrantor contract address
+    address public immutable PRP_VOUCHER_GRANTOR;
 
     // the cached ratio between native token and zkp token
     uint256 public cachedNativeRateInZkp;
@@ -61,25 +65,30 @@ contract FeeMaster is
     // to be used as donation to user to cover fees
     uint128 public zkpTokenDonationReserve;
 
+    uint96 private _minRewardableZkpAmount;
+
     // transaction types => donation amount
     mapping(uint16 => uint256) public donations;
 
     constructor(
         address owner,
-        address pantherPool,
-        address pantherBusTree,
-        address paymaster,
+        Providers memory providers,
         address zkpToken,
         address wethToken,
-        address vault
+        address prpConverter,
+        address prpVoucherGrantor,
+        address vault,
+        address treasury
     )
         ImmutableOwnable(owner)
         UniswapV3Handler(wethToken)
-        FeeAccountant(pantherPool, pantherBusTree, paymaster, zkpToken)
+        FeeAccountant(providers, zkpToken)
+        ProtocolFeeDistributor(treasury, prpConverter)
     {
         require(vault != address(0), "init: zero address");
 
         VAULT = vault;
+        PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -88,29 +97,44 @@ contract FeeMaster is
         uint256 nativeAmount
     ) public view returns (uint256) {
         address pool = getEnabledPoolAddress(NATIVE_TOKEN, ZKP_TOKEN);
-        return getQuoteAmount(pool, NATIVE_TOKEN, ZKP_TOKEN, nativeAmount);
+        return getQuoteAmount(pool, WETH, ZKP_TOKEN, nativeAmount);
     }
 
     function getZkpRateInNative(
         uint256 zkpAmount
     ) public view returns (uint256) {
         address pool = getEnabledPoolAddress(NATIVE_TOKEN, ZKP_TOKEN);
-        return getQuoteAmount(pool, ZKP_TOKEN, NATIVE_TOKEN, zkpAmount);
+        return getQuoteAmount(pool, ZKP_TOKEN, WETH, zkpAmount);
     }
 
-    /* ========== ONLY FOR OWNER FUNCTIONS ========== */
+    /* ========== ONLY FOR OWNER AND CONFIGURATION FUNCTIONS ========== */
 
     function updateFeeParams(
-        uint256 perUtxoReward,
-        uint256 perKytFee,
-        uint256 kycFee,
+        uint96 perUtxoReward,
+        uint96 perKytFee,
+        uint96 kycFee,
         uint16 protocolFeePercentage
     ) external onlyOwner {
-        _updateFeeParams(
+        FeeParams memory feeParams = _updateFeeParams(
             perUtxoReward,
             perKytFee,
             kycFee,
             protocolFeePercentage
+        );
+
+        emit FeeParamsUpdated(feeParams);
+    }
+
+    function updateProtocolZkpFeeDistributionParams(
+        uint16 treasuryLockPercentage,
+        uint96 minRewardableZkpAmount
+    ) external onlyOwner {
+        _treasuryLockPercentage = treasuryLockPercentage;
+        _minRewardableZkpAmount = minRewardableZkpAmount;
+
+        emit ProtocolZkpFeeDistributionParamsUpdated(
+            treasuryLockPercentage,
+            minRewardableZkpAmount
         );
     }
 
@@ -142,24 +166,11 @@ contract FeeMaster is
         emit NativeTokenReserveTargetUpdated(nativeTokenReserveTarget);
     }
 
-    function increaseZkpTokenDonations(
-        uint256 _zkpTokenDonation
-    ) external onlyOwner {
-        zkpTokenDonationReserve += _zkpTokenDonation.safe128();
-
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
-            ZKP_TOKEN,
-            int256(_zkpTokenDonation),
-            address(this)
-        );
-        emit ZkpTokenDonationsUpdated(_zkpTokenDonation);
-    }
-
     function increaseNativeTokenReserves() external payable onlyOwner {
         require(msg.value > 0, "invalid amount");
 
         nativeTokenReserve += msg.value.safe128();
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             NATIVE_TOKEN,
             int256(msg.value),
             address(this)
@@ -167,8 +178,24 @@ contract FeeMaster is
         emit NativeTokenReserveUpdated(msg.value);
     }
 
+    function increaseZkpTokenDonations(
+        uint256 _zkpTokenDonation
+    ) external onlyOwner {
+        zkpTokenDonationReserve += _zkpTokenDonation.safe128();
+
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+            ZKP_TOKEN,
+            int256(_zkpTokenDonation),
+            address(this)
+        );
+
+        emit ZkpTokenDonationsUpdated(_zkpTokenDonation);
+    }
+
     function updateTwapPeriod(uint256 _twapPeriod) external onlyOwner {
         _updateTwapPeriod(_twapPeriod);
+
+        emit TwapPeriodUpdated(twapPeriod);
     }
 
     function addPool(
@@ -177,6 +204,8 @@ contract FeeMaster is
         address _tokenB
     ) external onlyOwner {
         _addPool(_pool, _tokenA, _tokenB);
+
+        emit PoolUpdated(_pool, true);
     }
 
     function updatePool(
@@ -186,84 +215,87 @@ contract FeeMaster is
         bool _enabled
     ) external onlyOwner {
         _updatePool(_pool, _tokenA, _tokenB, _enabled);
+
+        emit PoolUpdated(_pool, _enabled);
+    }
+
+    function approveVaultToTransferZkp() external {
+        TransferHelper.safeApprove(ZKP_TOKEN, VAULT, type(uint256).max);
+    }
+
+    function cacheNativeToZkpRate() public {
+        cachedNativeRateInZkp = getNativeRateInZkp(1 ether);
     }
 
     /* ========== EXTERNAL FUNCTIONS ========== */
 
-    function rebalanceDebt(address sellToken) external {
+    function rebalanceDebt(bytes32 secretHash, address sellToken) external {
         // getting sell amount: total protocol fee in sell token
         uint256 sellTokenAmount = getDebtForProtocol(sellToken);
-
-        // Receiving sell token from Vault and decreasing the
-        // total debt that PantherPool owes to FeeMaster in sellToken
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
-            sellToken,
-            -int256(sellTokenAmount),
-            address(this)
-        );
 
         // Updating the speciefic debt that FeeMaster owes to
         // the Provider (i.e protocol) in sellToken
         _updateDebtForProtocol(sellToken, -int256(sellTokenAmount));
 
-        // Converting sellToken for Native
-        uint256 receivedNative = _convertTokenToNative(
+        // Receiving sell token from Vault and decreasing the
+        // total debt that PantherPool owes to FeeMaster in sellToken
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             sellToken,
-            sellTokenAmount
+            -int256(sellTokenAmount),
+            address(this)
         );
-        uint256 nativeBalance = address(this).balance;
-        assert(nativeBalance >= receivedNative);
 
-        // 1.6 Calculate the total native reserves
-        uint128 _nativeTokenReserve = nativeTokenReserve;
-        _nativeTokenReserve += nativeBalance.safe128();
-
-        if (_nativeTokenReserve > nativeTokenReserveTarget) {
-            // Getting the excess amount of Native tokens
-            uint256 excessNative = uint256(_nativeTokenReserve) -
-                nativeTokenReserveTarget;
-
-            // Converting Native for ZKP
-            uint256 receivedZkpAmount = _convertNativeToZkp(excessNative);
-
-            // Asking Vault to transfer ZKPs from this contract and
-            // increasing the total debt that PantherPool owes to FeeMaster in ZKP
-            _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        (
+            uint256 newNativeTokenReserves,
+            uint256 newProtocolFeeInZkp
+        ) = _trySwapProtoclFeesToNativeAndZkp(
                 ZKP_TOKEN,
-                int256(receivedZkpAmount),
-                address(this)
+                sellToken,
+                sellTokenAmount,
+                nativeTokenReserve,
+                nativeTokenReserveTarget
             );
 
-            // Updating the speciefic debt that FeeMaster owes to
-            // the Provider (i.e protocol) in ZKP
-            _updateDebtForProtocol(ZKP_TOKEN, int256(receivedZkpAmount));
-
-            // set _nativeTokenReserve to be equal to nativeTokenReserveTarget
-            _nativeTokenReserve -= excessNative.safe128();
-        }
+        nativeTokenReserve = newNativeTokenReserves.safe128();
 
         // Sending Natives to Vault and increasing the
         // total debt that PantherPool owes to FeeMaster in Native
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             NATIVE_TOKEN,
             int256(address(this).balance),
             address(this)
         );
 
-        // Updating the Native reserves
-        nativeTokenReserve = _nativeTokenReserve;
+        if (newProtocolFeeInZkp > 0) {
+            // Updating the speciefic debt that FeeMaster owes to
+            // the Provider (i.e protocol) in ZKP
+            _updateDebtForProtocol(ZKP_TOKEN, int256(newProtocolFeeInZkp));
 
-        // issue prp to msg sender
+            // Asking Vault to transfer ZKPs from this contract and
+            // increasing the total debt that PantherPool owes to FeeMaster in ZKP
+            PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+                ZKP_TOKEN,
+                int256(newProtocolFeeInZkp),
+                address(this)
+            );
+        }
 
-        // emit
+        _grantPrpRewardsToUser(secretHash, GT_FEE_EXCHANGE);
     }
 
-    // solhint-disable-next-line no-empty-blocks
-    function distributeZkpProtocolFees() external {
-        // distribute part of them to prp converter
-        // distribute part of them to panther fundation
-        // issue prp to msg sender
-        // emit
+    function distributeProtocolZkpFees(bytes32 secretHash) external {
+        uint256 zkpAmount = getDebtForProtocol(ZKP_TOKEN);
+
+        uint256 minersPremiumRewards = _distributeProtocolZkpFees(
+            ZKP_TOKEN,
+            zkpAmount
+        );
+
+        if (zkpAmount > _minRewardableZkpAmount) {
+            _grantPrpRewardsToUser(secretHash, GT_ZKP_DISTRIBUTE);
+        }
+
+        emit ZkpsDistributed(zkpAmount, minersPremiumRewards);
     }
 
     function accountFees(
@@ -311,19 +343,19 @@ contract FeeMaster is
         }
     }
 
-    // ?? having a special function to payoff paymaster and try to
-    // convert the remaining paymaster zkp debts if there are any
     function payOff(address receiver) external returns (uint256 debt) {
         debt = debts[msg.sender][NATIVE_TOKEN];
         require(debt > 0, "zero debt");
 
         _updateDebts(msg.sender, NATIVE_TOKEN, -int256(debt));
 
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             NATIVE_TOKEN,
             -int256(debt),
             receiver
         );
+
+        emit PayOff(receiver, NATIVE_TOKEN, debt);
     }
 
     function payOff(
@@ -335,42 +367,16 @@ contract FeeMaster is
 
         _updateDebts(msg.sender, tokenAddress, -int256(debt));
 
-        _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             tokenAddress,
             -int256(debt),
             receiver
         );
-    }
 
-    function cacheNativeToZkpRate() public {
-        cachedNativeRateInZkp = getNativeRateInZkp(1 ether);
-    }
-
-    function approveVaultToTransferZkp() external {
-        TransferHelper.safeApprove(ZKP_TOKEN, VAULT, type(uint256).max);
+        emit PayOff(receiver, tokenAddress, debt);
     }
 
     /* ========== PRIVATE FUNCTIONS ========== */
-
-    function _adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
-        address token,
-        int256 netAmount,
-        address extAccount
-    ) private {
-        uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
-
-        try
-            ITransactionChargesHandler(PANTHER_POOL)
-                .adjustVaultAssetsAndUpdateTotalFeeMasterDebt{
-                value: msgValue
-            }(token, netAmount, extAccount)
-        // solhint-disable-next-line no-empty-blocks
-        {
-
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
-    }
 
     function _decreaseAvailableDonation(FeeData calldata feeData) private {
         if (feeData.scAddedZkpAmount > 0) {
@@ -379,27 +385,6 @@ contract FeeMaster is
                 .scaleUpBy1e12()
                 .safe128();
         }
-    }
-
-    function _convertTokenToNative(
-        address _token,
-        uint256 _amount
-    ) private returns (uint256 receivedNative) {
-        // getting pool address
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, _token);
-
-        // Executing the flash swap and receive Natives
-        receivedNative = _flashSwap(pool, _token, NATIVE_TOKEN, _amount);
-    }
-
-    function _convertNativeToZkp(
-        uint256 _amount
-    ) private returns (uint256 receivedZkp) {
-        // getting pool address
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, ZKP_TOKEN);
-
-        // Executing the flash swap and receive ZKPs
-        receivedZkp = _flashSwap(pool, NATIVE_TOKEN, ZKP_TOKEN, _amount);
     }
 
     function _tryInternalZkpToNativeConversion(
@@ -471,6 +456,24 @@ contract FeeMaster is
             unconvertedAmount = convertibleNativeAmount - protocolNativeDebt;
 
             _updateDebtForProtocol(NATIVE_TOKEN, -int256(protocolNativeDebt));
+        }
+    }
+
+    function _grantPrpRewardsToUser(
+        bytes32 secretHash,
+        bytes4 grantType
+    ) private {
+        try
+            IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+                secretHash,
+                DEFAULT_GRANT_TYPE_PRP_REWARDS,
+                grantType
+            )
+        // solhint-disable-next-line no-empty-blocks
+        {
+
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 

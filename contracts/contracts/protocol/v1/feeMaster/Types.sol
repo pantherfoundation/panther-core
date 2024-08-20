@@ -2,6 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+struct Providers {
+    address pantherPool;
+    address pantherBusTree;
+    address paymaster;
+    address trustProvider;
+}
+
 struct FeeParams {
     // Min zkp per utxo, divided by 1e12
     uint32 scPerUtxoReward;

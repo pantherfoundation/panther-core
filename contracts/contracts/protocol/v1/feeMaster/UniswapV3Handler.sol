@@ -9,7 +9,6 @@ import "../DeFi/UniswapV3FlashSwap.sol";
 import "../../../common/interfaces/IWETH.sol";
 import "../../../common/TransferHelper.sol";
 import "../../../common/Math.sol";
-import { NATIVE_TOKEN } from "../../../common/Constants.sol";
 
 abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
     using UniswapV3PriceFeed for address;
@@ -19,8 +18,6 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
     address public immutable WETH;
 
     uint256 public twapPeriod;
-
-    event TwapPeriodUpdated(uint256 twapPeriod);
 
     constructor(address weth) {
         require(weth != address(0), "zero address");
@@ -33,13 +30,6 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         address quoteToken,
         uint256 baseAmount
     ) public view returns (uint256) {
-        if (baseToken == NATIVE_TOKEN) {
-            baseToken = WETH;
-        }
-        if (quoteToken == NATIVE_TOKEN) {
-            quoteToken = WETH;
-        }
-
         return
             pool.getQuoteAmount(baseToken, quoteToken, baseAmount, twapPeriod);
     }
@@ -62,8 +52,14 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
     function _updateTwapPeriod(uint256 _twapPeriod) internal {
         require(_twapPeriod > 0, "zero twap");
         twapPeriod = _twapPeriod;
+    }
 
-        emit TwapPeriodUpdated(twapPeriod);
+    function convertNativeToWNative(uint256 nativeAmount) internal {
+        WETH.safeTransferETH(nativeAmount);
+    }
+
+    function convertWNativeToNative(uint256 wNativeAmount) internal {
+        IWETH(WETH).withdraw(wNativeAmount);
     }
 
     function _flashSwap(
@@ -72,25 +68,15 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         address outputToken,
         uint256 swapAmount
     ) internal returns (uint256 outputAmount) {
-        // TODO: maybe storing WETH9 as storage
+        // uint256 exchangeRate = getQuoteAmount(
+        //     pool,
+        //     inputToken,
+        //     outputToken,
+        //     swapAmount
+        // );
 
-        if (inputToken == NATIVE_TOKEN) {
-            inputToken = WETH;
-            IWETH(inputToken).deposit{ value: uint256(swapAmount) }();
-        }
-
-        if (outputToken == NATIVE_TOKEN) {
-            outputToken = WETH;
-        }
-
-        uint256 exchangeRate = getQuoteAmount(
-            pool,
-            inputToken,
-            outputToken,
-            swapAmount
-        );
-
-        uint160 sqrtPriceLimitX96 = uint160(Math.sqrt(exchangeRate << 192));
+        // uint160 sqrtPriceLimitX96 = uint160(Math.sqrt(exchangeRate << 192));
+        uint160 sqrtPriceLimitX96 = 0;
 
         outputAmount = pool.swapExactInput(
             inputToken,

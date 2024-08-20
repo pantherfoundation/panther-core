@@ -2,19 +2,21 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import { FeeParams, FeeData, AssetData, ChargedFeesPerTx } from "./Types.sol";
+import { Providers, FeeParams, FeeData, AssetData, ChargedFeesPerTx } from "./Types.sol";
 
 import "../../../common/UtilsLib.sol";
 import { HUNDRED_PERCENT, NATIVE_TOKEN } from "../../../common/Constants.sol";
 
 abstract contract FeeAccountant {
     using UtilsLib for uint256;
+    using UtilsLib for uint96;
     using UtilsLib for uint40;
     using UtilsLib for uint32;
 
     address public immutable PANTHER_POOL;
     address public immutable PANTHER_BUS_TREE;
     address public immutable PAYMASTER;
+    address public immutable TRUST_PROVIDER;
     address public immutable ZKP_TOKEN;
 
     FeeParams public feeParams;
@@ -23,17 +25,12 @@ abstract contract FeeAccountant {
     mapping(address => mapping(address => uint256)) public debts;
 
     event DebtsUpdated(address provider, address token, uint256 updatedDebt);
-    event FeeParamsUpdated(FeeParams feeParams);
 
-    constructor(
-        address pantherPool,
-        address pantherBusTree,
-        address paymaster,
-        address zkpToken
-    ) {
-        PANTHER_POOL = pantherPool;
-        PANTHER_BUS_TREE = pantherBusTree;
-        PAYMASTER = paymaster;
+    constructor(Providers memory provider, address zkpToken) {
+        PANTHER_POOL = provider.pantherPool;
+        PANTHER_BUS_TREE = provider.pantherBusTree;
+        PAYMASTER = provider.paymaster;
+        TRUST_PROVIDER = provider.trustProvider;
         ZKP_TOKEN = zkpToken;
     }
 
@@ -59,11 +56,11 @@ abstract contract FeeAccountant {
     }
 
     function _updateFeeParams(
-        uint256 perUtxoReward,
-        uint256 perKytFee,
-        uint256 kycFee,
+        uint96 perUtxoReward,
+        uint96 perKytFee,
+        uint96 kycFee,
         uint16 protocolFeePercentage
-    ) internal {
+    ) internal returns (FeeParams memory _feeParams) {
         require(perUtxoReward > 0, "Zero per utxo reward");
         require(perKytFee > 0, "Zero per kyt fee");
         require(kycFee > 0, "Zero kyc fee");
@@ -73,7 +70,7 @@ abstract contract FeeAccountant {
             "Invalid protocol fee percentage"
         );
 
-        FeeParams memory _feeParams = FeeParams({
+        _feeParams = FeeParams({
             scPerUtxoReward: perUtxoReward.scaleDownBy1e12().safe32(),
             scPerKytFee: perKytFee.scaleDownBy1e12().safe32(),
             scKycFee: kycFee.scaleDownBy1e12().safe32(),
@@ -81,8 +78,6 @@ abstract contract FeeAccountant {
         });
 
         feeParams = _feeParams;
-
-        emit FeeParamsUpdated(_feeParams);
     }
 
     function _accountActivationFees(
@@ -99,6 +94,7 @@ abstract contract FeeAccountant {
         uint256 paymasterCompensationInNative = _accountDebtForPaymaster(
             paymasterZkpFee
         );
+        _accountKycFees(kycFee);
 
         uint256 paymasterAndKycFees = paymasterZkpFee + kycFee;
 
@@ -165,7 +161,7 @@ abstract contract FeeAccountant {
         uint256 paymasterCompensationInNative = _accountDebtForPaymaster(
             paymasterZkpFee
         );
-        uint256 kytFees = _calculateKytFees(
+        uint256 kytFees = _accountKytFees(
             perKytFee,
             assetData.depositAmount,
             assetData.withdrawAmount
@@ -250,11 +246,11 @@ abstract contract FeeAccountant {
         }
     }
 
-    function _calculateKytFees(
+    function _accountKytFees(
         uint256 perKytFee,
         uint256 depositAmount,
         uint256 withdrawAmount
-    ) private pure returns (uint256 kytFees) {
+    ) private returns (uint256 kytFees) {
         if (depositAmount > 0) {
             kytFees += perKytFee;
         }
@@ -262,6 +258,12 @@ abstract contract FeeAccountant {
         if (withdrawAmount > 0) {
             kytFees += perKytFee;
         }
+
+        _updateDebts(TRUST_PROVIDER, ZKP_TOKEN, int256(kytFees));
+    }
+
+    function _accountKycFees(uint256 kycFee) private {
+        _updateDebts(TRUST_PROVIDER, ZKP_TOKEN, int256(kycFee));
     }
 
     function _accountDebtForBusTree(

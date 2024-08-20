@@ -48,9 +48,18 @@ bytes4 constant GT_ONBOARDING = 0x93b212ae;
 // The "prp grant type" for the "release and bridge" ZKPs
 // bytes4(keccak256("panther-zkp-release"))
 bytes4 constant GT_ZKP_RELEASE = 0x53a1eb85;
+// The "prp grant type" for the "distributing" ZKPs
+// bytes4(keccak256("panther-zkp-distribute"))
+bytes4 constant GT_ZKP_DISTRIBUTE = 0xd48cb9c0;
+// The "prp grant type" for the "distributing" ZKPs
+// bytes4(keccak256("panther-fee-exchange"))
+bytes4 constant GT_FEE_EXCHANGE = 0x1d91a712;
 // The "prp grant type" for the refilling the PayMaster's EntryPoint deposit
 // bytes4(keccak256('panther-paymaster-refund-grantor'))
 bytes4 constant GT_PAYMASTER_REFUND = 0x3002a002;
+
+// The default value that should be used
+uint64 constant DEFAULT_GRANT_TYPE_PRP_REWARDS = 0;
 
 // Number of 32-bit words of the CiphertextMsg for UTXO_DATA_TYPE1
 // (ephemeral key (packed) - 32 bytes, encrypted `random` - 32 bytes)
