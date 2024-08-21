@@ -13,3 +13,6 @@ export const BUS_TREE_BATCH_DEPTH = 6;
 export const BUS_TREE_DEPTH = 26;
 export const FOREST_TREE_DEPTH = 2;
 export const TAXI_TREE_DEPTH = 8;
+export const TAXI_SUBTREE_DEPTH = 7;
+export const ABSTRACTED_TAXI_TREE_DEPTH = 0;
+export const TAXI_TREE_DEPTH_WITH_SUBTREE = 1;
