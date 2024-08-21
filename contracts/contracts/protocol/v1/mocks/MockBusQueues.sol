@@ -5,7 +5,33 @@ pragma solidity ^0.8.19;
 import "../pantherTrees/busTree/BusQueues.sol";
 
 contract MockBusQueues is BusQueues {
-    event logComputedReward(uint256 reward);
+    event LogComputedReward(uint256 reward);
+    event LogQueueIdAndFirstIndex(uint32 id, uint8 firstIndexInFirstQueue);
+    event LogNewBusQueue(BusQueue queue);
+
+    function getNextQueueId() external view returns (uint256) {
+        return _nextQueueId;
+    }
+
+    function getRewardReserve() external view returns (int256) {
+        return _netRewardReserve;
+    }
+
+    function getNumPendingQueues() external view returns (uint256) {
+        return _numPendingQueues;
+    }
+
+    function getOldestPendingQueueLink() external view returns (uint256) {
+        return _oldestPendingQueueLink;
+    }
+
+    function mockSetRewardReserve(int192 netRewardReserve) external {
+        _netRewardReserve = netRewardReserve;
+    }
+
+    function mockAddQueue(BusQueue calldata queue, uint32 id) external {
+        _busQueues[id] = queue;
+    }
 
     function internalUpdateBusQueueRewardParams(
         uint16 reservationRate,
@@ -27,6 +53,8 @@ contract MockBusQueues is BusQueues {
             utxos,
             reward
         );
+
+        emit LogQueueIdAndFirstIndex(firstQueueId, firstIndexInFirstQueue);
     }
 
     function internalSetBusQueueAsProcessed(
@@ -47,6 +75,8 @@ contract MockBusQueues is BusQueues {
         returns (uint32 newQueueId, BusQueue memory queue, bytes32 commitment)
     {
         (newQueueId, queue, commitment) = _createNewBusQueue();
+
+        emit LogNewBusQueue(queue);
     }
 
     function internalGetQueueRemainingBlocks(
@@ -59,7 +89,7 @@ contract MockBusQueues is BusQueues {
         BusQueue memory queue
     ) external returns (uint256 actReward) {
         actReward = _computeReward(queue);
-        emit logComputedReward(actReward);
+        emit LogComputedReward(actReward);
     }
 
     function internalEstimateRewarding(
@@ -70,13 +100,5 @@ contract MockBusQueues is BusQueues {
         returns (uint256 reward, uint256 premium, int256 netReserveChange)
     {
         (reward, premium, netReserveChange) = _estimateRewarding(queue);
-    }
-
-    function setRewardReserve(uint96 rewardReserve) external {
-        _rewardReserve = rewardReserve;
-    }
-
-    function getRewardReserve() external view returns (uint256) {
-        return _rewardReserve;
     }
 }

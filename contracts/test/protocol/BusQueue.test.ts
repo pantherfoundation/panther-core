@@ -1,29 +1,28 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {MerkleTree} from '@zk-kit/merkle-tree';
 import {expect} from 'chai';
 import {poseidon} from 'circomlibjs';
+// eslint-disable-next-line import/named
+import {BigNumber, BigNumberish, ContractFactory} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {getPoseidonT3Contract} from '../../lib/poseidonBuilder';
-import {zeroLeaf} from '../../lib/utilities';
+import {getBlockNumber} from '../../lib/provider';
 import {MockBusQueues} from '../../types/contracts';
 import {BusQueues} from '../../types/contracts/MockBusQueues';
 
 import {randomInputGenerator} from './helpers/randomSnarkFriendlyInputGenerator';
-import {BigNumber, BigNumberish, ContractFactory} from 'ethers';
-import {mineBlock} from '../../lib/hardhat';
-import {getBlockNumber} from '../../lib/provider';
 
 const BigNumber = ethers.BigNumber;
 
-describe.only('BusQueue contract', function () {
+describe('BusQueue contract', function () {
     let busQueueFactory: ContractFactory;
     let busQueues: MockBusQueues;
 
     const hundredPercent = 100_00;
     const maxQueueSize = 64;
+    const zeroByte = ethers.constants.HashZero;
 
     before(async () => {
         const PoseidonT3 = await getPoseidonT3Contract();
@@ -62,9 +61,11 @@ describe.only('BusQueue contract', function () {
             .withArgs(reservationRate, premiumRate, minEmptyQueueAge);
     }
 
-    function generateQueue(params: {
-        [key: string]: BigNumberish;
-    }): BusQueues.BusQueueStruct {
+    function generateQueue(
+        params: {
+            [key: string]: BigNumberish;
+        } = {},
+    ): BusQueues.BusQueueStruct {
         const queue: any = {
             nUtxos: 0,
             reward: 0,
@@ -123,29 +124,6 @@ describe.only('BusQueue contract', function () {
             });
         });
     });
-
-    async function estimateRewards(
-        busQueues: MockBusQueues,
-        queueReward: number,
-        queuePendingBlocks: number,
-    ) {
-        const {reservationRate, premiumRate} = await busQueues.getParams();
-
-        const contrib = BigNumber.from(queueReward)
-            .mul(reservationRate)
-            .div(hundredPercent);
-
-        const reward = BigNumber.from(queueReward).sub(contrib);
-
-        const premium = BigNumber.from(queueReward)
-            .mul(queuePendingBlocks)
-            .mul(premiumRate)
-            .div(hundredPercent);
-
-        const netReserveChange = contrib.sub(premium);
-
-        return {contrib, reward, premium, netReserveChange};
-    }
 
     describe('_estimateRewarding and _computeReward', () => {
         let queue: BusQueues.BusQueueStruct;
@@ -238,7 +216,7 @@ describe.only('BusQueue contract', function () {
                     });
                 });
 
-                describe('when miner demands from the reward reserves', () => {
+                describe.only('when miner demands from the reward reserves', () => {
                     let estimatedReward: {
                         contrib: BigNumber;
                         reward: BigNumber;
@@ -272,7 +250,7 @@ describe.only('BusQueue contract', function () {
                         const rewardReserve = BigNumber.from(10);
 
                         beforeEach(async () => {
-                            await busQueues.setRewardReserve(rewardReserve);
+                            await busQueues.mockSetRewardReserve(rewardReserve);
                         });
 
                         it('should decrease the reward reserves', async () => {
@@ -280,7 +258,7 @@ describe.only('BusQueue contract', function () {
 
                             await expect(busQueues.internalComputeReward(queue))
                                 .to.emit(busQueues, 'BusQueueRewardReserveUsed')
-                                .withArgs(netReserveChange.abs());
+                                .withArgs(netReserveChange);
 
                             expect(await busQueues.getRewardReserve()).to.be.eq(
                                 rewardReserve.add(netReserveChange), // rewardReserve + (-netReserveChange)
@@ -292,16 +270,18 @@ describe.only('BusQueue contract', function () {
                         const rewardReserve = BigNumber.from(5);
 
                         beforeEach(async () => {
-                            await busQueues.setRewardReserve(rewardReserve);
+                            await busQueues.mockSetRewardReserve(rewardReserve);
                         });
 
                         it('should decrease both the miner premium reward and the reward reserves', async () => {
+                            const {netReserveChange} = estimatedReward;
+
                             await expect(busQueues.internalComputeReward(queue))
                                 .to.emit(busQueues, 'BusQueueRewardReserveUsed')
-                                .withArgs(rewardReserve);
+                                .withArgs(netReserveChange);
 
                             expect(await busQueues.getRewardReserve()).to.be.eq(
-                                0,
+                                rewardReserve.add(netReserveChange), // -4
                             );
                         });
                     });
@@ -310,12 +290,22 @@ describe.only('BusQueue contract', function () {
         });
     });
 
-    describe.only('_getQueueRemainingBlocks', () => {
+    function calculateMinQueueAge(
+        emptySeats: number,
+        minEmptyQueueAge: number,
+    ): number {
+        return BigNumber.from(emptySeats)
+            .mul(minEmptyQueueAge)
+            .div(maxQueueSize)
+            .toNumber();
+    }
+
+    describe('_getQueueRemainingBlocks', () => {
         let queue: BusQueues.BusQueueStruct;
         let currentBlockNumber: number;
         const reservationRate = 5_00; // 5%
         const premiumRate = 1_00; // 1%
-        const minEmptyQueueAge = 50; // min number of blocks
+        const minEmptyQueueAge = 256; // min number of blocks
 
         beforeEach(async () => {
             currentBlockNumber = await getBlockNumber();
@@ -335,21 +325,270 @@ describe.only('BusQueue contract', function () {
             expect(blocks).to.be.eq(0);
         });
 
-        it('should calculate the remaining block for empty queue', async () => {
-            const pendingBlock = 0;
+        it('should calculate the remaining block for queue with 1 empty utxo', async () => {
+            const numberOfEmptyUtxos = 1;
+            const numberOfUtxos = 63;
+            const pendingBlock = 1;
             const firstUtxoBlock = currentBlockNumber - pendingBlock;
 
-            queue = generateQueue({nUtxos: 0, firstUtxoBlock});
+            queue = generateQueue({nUtxos: numberOfUtxos, firstUtxoBlock});
 
-            const expectedRemainingBlocks =
-                (maxQueueSize * minEmptyQueueAge) / maxQueueSize;
+            const minAge = calculateMinQueueAge(
+                numberOfEmptyUtxos,
+                minEmptyQueueAge,
+            );
+            expect(minAge).to.be.eq(4);
 
-            const maturityBlock = minEmptyQueueAge + firstUtxoBlock;
+            const maturityBlock = minAge + firstUtxoBlock;
 
             const blocks =
                 await busQueues.internalGetQueueRemainingBlocks(queue);
 
-            console.log(blocks);
+            currentBlockNumber = await getBlockNumber();
+            expect(blocks).to.be.eq(maturityBlock - currentBlockNumber);
         });
     });
+
+    async function createNewBusQueue(queue: BusQueues.BusQueueStruct) {
+        await expect(busQueues.internalCreateNewBusQueue())
+            .to.emit(busQueues, 'LogNewBusQueue')
+            .withArgs(Object.values(queue));
+    }
+
+    describe('_createNewBusQueue', () => {
+        it('should return the created queues', async () => {
+            const queue = generateQueue({});
+
+            await createNewBusQueue(queue);
+            expect(await busQueues.getNextQueueId()).to.be.eq(1);
+
+            await createNewBusQueue(queue);
+            expect(await busQueues.getNextQueueId()).to.be.eq(2);
+        });
+    });
+
+    async function addQueue(queue: BusQueues.BusQueueStruct, id: number) {
+        await busQueues.mockAddQueue(queue, id);
+    }
+
+    describe('_addBusQueueReward', () => {
+        let queue: BusQueues.BusQueueStruct;
+        let queueId = 1;
+        const queueReward = 1;
+        const extraQueueReward = 10;
+
+        beforeEach(async () => {
+            queue = generateQueue({reward: queueReward, nUtxos: 1});
+            await addQueue(queue, queueId);
+        });
+
+        describe('when the queue exists', () => {
+            it('should increase the queue reward', async () => {
+                const accumReward = queueReward + extraQueueReward;
+                await expect(
+                    busQueues.internalAddBusQueueReward(
+                        queueId,
+                        extraQueueReward,
+                    ),
+                )
+                    .to.emit(busQueues, 'BusQueueRewardAdded')
+                    .withArgs(queueId, accumReward);
+            });
+        });
+
+        describe('when the queue is empty', () => {
+            it('should revert', async () => {
+                queueId = 99;
+
+                await expect(
+                    busQueues.internalAddBusQueueReward(
+                        queueId,
+                        extraQueueReward,
+                    ),
+                ).to.revertedWith('BQ:EMPTY_QUEUE');
+            });
+        });
+    });
+
+    function createUtxoBatch(length: number): string[] {
+        return Array.from(Array(length).keys()).map(() =>
+            randomInputGenerator(),
+        );
+    }
+
+    describe('_addUtxosToBusQueue', () => {
+        let utxos: string[];
+        const rewards = 99;
+
+        describe('Failure', () => {
+            beforeEach(() => {
+                utxos = createUtxoBatch(maxQueueSize + 1);
+            });
+
+            it('should revert when length is too high', async () => {
+                await expect(
+                    busQueues.internalAddUtxosToBusQueue(utxos, 1),
+                ).to.revertedWith('BQ:TOO_MANY_UTXOS');
+            });
+        });
+
+        describe('success', () => {
+            const firstBatch = createUtxoBatch(12);
+            const secondBatch = createUtxoBatch(61);
+            const thirdBatch = createUtxoBatch(30);
+            const forthBatch = createUtxoBatch(23);
+            const fifthBatch = createUtxoBatch(4);
+
+            const batches = [
+                firstBatch,
+                secondBatch,
+                thirdBatch,
+                forthBatch,
+                fifthBatch,
+            ];
+
+            const queues = generateQueues(batches);
+
+            it('should add utxos to queue', async () => {
+                for (let index = 0; index < batches.length; index++) {
+                    const batch = batches[index];
+                    await expect(
+                        busQueues.internalAddUtxosToBusQueue(batch, rewards),
+                    ).to.emit(busQueues, 'LogQueueIdAndFirstIndex');
+                }
+
+                for (let index = 0; index < queues.length; index++) {
+                    const queue = queues[index];
+                    const expectedQueue = await busQueues.getBusQueue(index);
+
+                    expect(expectedQueue.commitment).to.be.eq(queue.commitment);
+                }
+
+                expect(await busQueues.getNextQueueId()).to.be.eq(
+                    queues.length,
+                );
+                expect(await busQueues.getNumPendingQueues()).to.be.eq(
+                    queues.length,
+                );
+                expect(await busQueues.getOldestPendingQueueLink()).to.be.eq(1);
+            });
+        });
+    });
+
+    describe('getOldestPendingQueues', () => {
+        const rewards = 99;
+        const utxos = Array.from(Array(maxQueueSize - 1).keys()).map(() =>
+            randomInputGenerator(),
+        );
+
+        beforeEach(async () => {
+            await busQueues.internalAddUtxosToBusQueue(utxos, rewards);
+        });
+
+        describe('when the queue is non empty', async () => {
+            it('should set queue as processed', async () => {
+                const numberOfPendingQueues =
+                    await busQueues.getNumPendingQueues();
+
+                const queues = await busQueues.getOldestPendingQueues(
+                    numberOfPendingQueues,
+                );
+
+                expect(queues.length).to.be.eq(1);
+                expect(queues[0].nUtxos).to.be.eq(maxQueueSize - 1);
+            });
+        });
+    });
+
+    describe('_setBusQueueAsProcessed', () => {
+        const rewards = 99;
+        const utxos = createUtxoBatch(maxQueueSize - 1);
+
+        beforeEach(async () => {
+            await busQueues.internalAddUtxosToBusQueue(utxos, rewards);
+        });
+
+        it('should add utxos', async () => {
+            await expect(busQueues.internalSetBusQueueAsProcessed(0))
+                .to.emit(busQueues, 'BusQueueProcessed')
+                .withArgs(0);
+        });
+    });
+
+    function generateQueues(utxoBatches: string[][]) {
+        const queues: {
+            utxos: string[];
+            queueId?: number;
+            reward?: number;
+            premium?: number;
+            commitment?: string;
+            nextLink?: number;
+        }[] = [];
+        let numberOfQueues = 0;
+
+        for (let index = 0; index < utxoBatches.length; index++) {
+            const utxos = utxoBatches[index];
+
+            utxos.forEach(utxo => {
+                let currentQueue = queues[numberOfQueues];
+
+                if (!currentQueue) {
+                    currentQueue = {utxos: []};
+                }
+
+                currentQueue.queueId = numberOfQueues;
+                currentQueue.reward = 100;
+
+                if (currentQueue.utxos.length < maxQueueSize) {
+                } else {
+                    currentQueue = {utxos: []};
+                    numberOfQueues++;
+                }
+
+                currentQueue.utxos.push(utxo);
+                queues[numberOfQueues] = currentQueue;
+            });
+        }
+
+        queues.forEach(queue => {
+            queue.commitment = getCommitment(queue.utxos);
+        });
+
+        return queues;
+    }
+
+    function getCommitment(utxos: string[]) {
+        let commitment = zeroByte;
+        let isFirstLeaf = true;
+
+        utxos.forEach(utxo => {
+            commitment = isFirstLeaf ? utxo : poseidon([commitment, utxo]);
+            isFirstLeaf = false;
+        });
+
+        return commitment;
+    }
+
+    async function estimateRewards(
+        busQueues: MockBusQueues,
+        queueReward: number,
+        queuePendingBlocks: number,
+    ) {
+        const {reservationRate, premiumRate} = await busQueues.getParams();
+
+        const contrib = BigNumber.from(queueReward)
+            .mul(reservationRate)
+            .div(hundredPercent);
+
+        const reward = BigNumber.from(queueReward).sub(contrib);
+
+        const premium = BigNumber.from(queueReward)
+            .mul(queuePendingBlocks)
+            .mul(premiumRate)
+            .div(hundredPercent);
+
+        const netReserveChange = contrib.sub(premium);
+
+        return {contrib, reward, premium, netReserveChange};
+    }
 });
