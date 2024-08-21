@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import "../pantherForest/interfaces/ITreeRootUpdater.sol";
-import "../pantherForest/interfaces/ITreeRootGetter.sol";
+import "../pantherTrees/interfaces/ITreeRootUpdater.sol";
+import "../pantherTrees/interfaces/ITreeRootGetter.sol";
 
 contract MockTreeRootGetterAndUpdater is ITreeRootUpdater {
     address public immutable STATIC_TREE;

@@ -127,7 +127,7 @@ contract PantherTrees is
     }
 
     function addUtxosToBusQueue(
-        bytes32[] memory utxos,
+        bytes32[] calldata utxos,
         uint96 reward
     )
         external
@@ -152,10 +152,6 @@ contract PantherTrees is
         nonZeroUtxosLength(utxos)
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
-        // The pool cannot execute this method before this contract is initialized
-
-        require(numTaxiUtxos <= 3, ERR_INVALID_TAXI_UTXOS_COUNT);
-
         (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
             utxos,
             reward
@@ -164,21 +160,21 @@ contract PantherTrees is
         bytes32 taxiTreeNewRoot;
 
         if (numTaxiUtxos == 1) {
-            taxiTreeNewRoot = _addUtxoToTaxiTree(utxos[0]);
-        }
-        if (numTaxiUtxos == 2) {
-            taxiTreeNewRoot = _addThreeUtxosToTaxiTree(
-                utxos[0],
-                utxos[1],
-                bytes32(0)
-            );
-        }
-        if (numTaxiUtxos == 3) {
-            taxiTreeNewRoot = _addThreeUtxosToTaxiTree(
-                utxos[0],
-                utxos[1],
-                utxos[2]
-            );
+            taxiTreeNewRoot = _addUtxo(utxos[0]);
+        } else {
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                // Load the length of the `arr` array
+                let arrLength := mload(utxos)
+
+                // Check if we need to modify the length
+                if gt(arrLength, numTaxiUtxos) {
+                    // Set the new length of the array
+                    mstore(utxos, numTaxiUtxos)
+                }
+            }
+
+            taxiTreeNewRoot = _addUtxos(utxos);
         }
 
         _updateForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);

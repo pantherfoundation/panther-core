@@ -80,9 +80,9 @@ abstract contract TaxiTree is EightLevelZeroTree {
         // leaves level
         bytes32 nodeHash;
         if (isLeftLeaf) {
-            nodeHash = hash(leaf, getZeroNodeAtLevel(0));
+            nodeHash = _hash(leaf, getZeroNodeAtLevel(0));
             _filledSubtrees[0] = leaf;
-        } else nodeHash = hash(_filledSubtrees[0], leaf);
+        } else nodeHash = _hash(_filledSubtrees[0], leaf);
 
         uint256 nodeIndex = leafIndex >> 1;
 
@@ -107,7 +107,7 @@ abstract contract TaxiTree is EightLevelZeroTree {
                 right = nodeHash;
             }
 
-            nodeHash = hash(left, right);
+            nodeHash = _hash(left, right);
 
             // equivalent to `nodeIndex /= 2`
             nodeIndex >>= 1;
@@ -118,11 +118,11 @@ abstract contract TaxiTree is EightLevelZeroTree {
 
         if (primarySubtreeIndicator == 0) {
             // left subtree
-            newRoot = hash(nodeHash, getCachedPrimarySubtreeRoot());
+            newRoot = _hash(nodeHash, getCachedPrimarySubtreeRoot());
         }
         if (primarySubtreeIndicator == 1) {
             // right subtree
-            newRoot = hash(getCachedPrimarySubtreeRoot(), nodeHash);
+            newRoot = _hash(getCachedPrimarySubtreeRoot(), nodeHash);
         }
 
         // update the root of primary subtree if it's full
@@ -132,10 +132,10 @@ abstract contract TaxiTree is EightLevelZeroTree {
         }
     }
 
-    function hash(
+    function _hash(
         bytes32 leftLeaf,
         bytes32 rightLeaf
-    ) internal pure returns (bytes32) {
+    ) private pure returns (bytes32) {
         return PoseidonHashers.poseidonT3([leftLeaf, rightLeaf]);
     }
 }

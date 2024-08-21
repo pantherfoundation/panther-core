@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import ".//taxiTree/TaxiTree.sol";
+import "./taxiTree/TaxiTree.sol";
 import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
 
 /**
@@ -10,7 +10,7 @@ import { EIGHT_LEVEL_EMPTY_TREE_ROOT } from "./zeroTrees/Constants.sol";
  * @author Pantherprotocol Contributors
  * @dev It enables the direct insertion of an array of UTXOs into the TaxiTree.
  */
-abstract contract PantherTaxiTree is TaxiTree {
+contract PantherTaxiTree is TaxiTree {
     bytes32 private _currentRoot;
 
     event TaxiRootUpdated(bytes32 updatedRoot, uint256 numLeaves);
@@ -23,27 +23,31 @@ abstract contract PantherTaxiTree is TaxiTree {
                 : _currentRoot;
     }
 
-    function addUtxos(bytes32[] calldata utxos) external {
-        bytes32 newRoot;
+    function _addUtxos(
+        bytes32[] memory utxos
+    ) internal returns (bytes32 newRoot) {
+        newRoot;
 
         for (uint256 i = 0; i < utxos.length; ) {
-            newRoot = _addUtxo(utxos[i]);
+            newRoot = _addUtxoToTaxiTree(utxos[i]);
 
             unchecked {
                 ++i;
             }
         }
 
-        _currentRoot = newRoot;
+        _updateTaxiTreeRoot(newRoot, utxos.length);
     }
 
-    function addUtxo(bytes32 utxo) external {
-        _currentRoot = _addUtxo(utxo);
+    function _addUtxo(bytes32 utxo) internal returns (bytes32 newRoot) {
+        newRoot = _addUtxoToTaxiTree(utxo);
 
-        // _updateTaxiAndForestRoots(newRoot, 1);
+        _updateTaxiTreeRoot(newRoot, 1);
     }
 
-    function _addUtxo(bytes32 utxo) private returns (bytes32 newRoot) {
+    function _addUtxoToTaxiTree(
+        bytes32 utxo
+    ) private returns (bytes32 newRoot) {
         uint256 _totalLeavesInsertions = totalLeavesInsertions;
         uint256 leafIndex;
 
@@ -57,12 +61,12 @@ abstract contract PantherTaxiTree is TaxiTree {
         emit TaxiUtxoAdded(utxo, _totalLeavesInsertions);
     }
 
-    // function _updateTaxiRootAndEmitEvent(
-    //     bytes32 taxiTreeNewRoot,
-    //     uint256 numLeaves
-    // ) private {
-    //     _currentRoot = taxiTreeNewRoot;
+    function _updateTaxiTreeRoot(
+        bytes32 taxiTreeNewRoot,
+        uint256 numLeaves
+    ) private {
+        _currentRoot = taxiTreeNewRoot;
 
-    //     emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
-    // }
+        emit TaxiRootUpdated(taxiTreeNewRoot, numLeaves);
+    }
 }
