@@ -112,9 +112,9 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint256 minEmptyQueueAge
     );
     // Emitted when new reward "reserves" added
-    event BusQueueRewardReserved(uint256 extraReseve);
+    event BusQueueRewardReserved(int256 extraReseve);
     // Emitted when (part of) reward "reserves" used
-    event BusQueueRewardReserveUsed(uint256 usage);
+    event BusQueueRewardReserveUsed(int256 usage);
 
     // Emitted when queue reward increased w/o adding UTXOs
     event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
@@ -441,11 +441,11 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
 
         if (netReserveChange > 0) {
             _netRewardReserve = int96(reserve + netReserveChange);
-            emit BusQueueRewardReserved(uint256(netReserveChange));
+            emit BusQueueRewardReserved(netReserveChange);
         }
         if (netReserveChange < 0) {
             _netRewardReserve = int96(reserve + netReserveChange);
-            emit BusQueueRewardReserveUsed(uint256(netReserveChange));
+            emit BusQueueRewardReserveUsed(netReserveChange);
         }
 
         actReward = reward + premium;
