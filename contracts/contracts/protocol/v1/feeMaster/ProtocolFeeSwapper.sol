@@ -17,11 +17,15 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         internal
         returns (uint256 newNativeTokenReserves, uint256 newProtocolFeeInZkp)
     {
-        // Converting sellToken for Native
+        // Converting sellToken for weth
+        // solhint-disable no-unused-vars
         uint256 receivedNative = _convertTokenToNative(sellToken, sellAmount);
 
-        uint256 nativeBalance = address(this).balance;
-        assert(nativeBalance >= receivedNative);
+        uint256 nativeBalance = TransferHelper.safeBalanceOf(
+            WETH,
+            address(this)
+        );
+        assert(nativeBalance > 0);
 
         newNativeTokenReserves = nativeTokenReserves + nativeBalance;
 
@@ -35,6 +39,9 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
 
             newNativeTokenReserves = nativeTokenReservesTarget;
         }
+        // converting weth to Native
+        uint256 wethBalance = TransferHelper.safeBalanceOf(WETH, address(this));
+        convertWNativeToNative(wethBalance);
     }
 
     function _convertTokenToNative(

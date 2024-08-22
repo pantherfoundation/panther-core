@@ -10,6 +10,8 @@ import "../../../common/interfaces/IWETH.sol";
 import "../../../common/TransferHelper.sol";
 import "../../../common/Math.sol";
 
+import { NATIVE_TOKEN } from "../../../common/Constants.sol";
+
 abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
     using UniswapV3PriceFeed for address;
     using UniswapV3FlashSwap for address;
@@ -68,6 +70,13 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         address outputToken,
         uint256 swapAmount
     ) internal returns (uint256 outputAmount) {
+        if (inputToken == NATIVE_TOKEN) {
+            inputToken = WETH;
+        }
+        if (outputToken == NATIVE_TOKEN) {
+            outputToken = WETH;
+        }
+
         // uint256 exchangeRate = getQuoteAmount(
         //     pool,
         //     inputToken,
@@ -75,7 +84,6 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         //     swapAmount
         // );
 
-        // uint160 sqrtPriceLimitX96 = uint160(Math.sqrt(exchangeRate << 192));
         uint160 sqrtPriceLimitX96 = 0;
 
         outputAmount = pool.swapExactInput(

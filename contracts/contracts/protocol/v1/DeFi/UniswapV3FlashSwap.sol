@@ -42,11 +42,19 @@ library UniswapV3FlashSwap {
         );
         bytes memory data = abi.encode(pool, tokenA, tokenB);
 
+        bool zeroForOne = inputToken == tokenA;
+
         (int256 amount0, int256 amount1) = IUniswapV3Pool(pool).swap(
             address(this),
-            inputToken == tokenA, // The direction of the swap, true for tokenA to tokenB
+            zeroForOne, // The direction of the swap, true for tokenA to tokenB
             int256(swapAmount), //  positive means swap as exact input
-            sqrtPriceLimitX96,
+            sqrtPriceLimitX96 == 0
+                ? (
+                    zeroForOne
+                        ? TickMath.MIN_SQRT_RATIO + 1
+                        : TickMath.MAX_SQRT_RATIO - 1
+                )
+                : sqrtPriceLimitX96,
             data
         );
 
