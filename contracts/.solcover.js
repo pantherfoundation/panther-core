@@ -1,7 +1,7 @@
 const shell = require('shelljs');
 
 module.exports = {
-    istanbulReporter: ['html', 'lcov'],
+    istanbulReporter: ['html', 'lcov', 'cobertura'],
     onCompileComplete: async function (_config) {
         await run('typechain');
     },
@@ -10,5 +10,13 @@ module.exports = {
         shell.rm('-rf', './artifacts');
         shell.rm('-rf', './typechain');
     },
-    skipFiles: ['mocks', 'test'],
+    skipFiles: [
+        'staking',
+        'common',
+        'protocol/v0',
+        'protocol/v1/mocks',
+        'protocol/v1/interfaces',
+        'protocol/v1/errMsgs',
+        'protocol/v1/DeFi',
+    ],
 };
