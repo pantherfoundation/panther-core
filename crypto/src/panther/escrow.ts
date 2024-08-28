@@ -107,6 +107,7 @@ export function convertDataEscrowToScalars(data: DataEscrowData): bigint[] {
     const {
         zAccountID,
         zAccountZoneId,
+        zAccountNonce,
         zAssetID,
         utxoInAmounts,
         utxoOutAmounts,
@@ -123,7 +124,8 @@ export function convertDataEscrowToScalars(data: DataEscrowData): bigint[] {
 
     return [
         zAssetID,
-        combineAccountInfo(treeSelectors, zAccountID, zAccountZoneId),
+        combineZAccountInfo(treeSelectors, zAccountID, zAccountZoneId),
+        zAccountNonce,
         ...utxoInAmounts,
         ...utxoOutAmounts,
         ...combineUtxoInfo(
@@ -150,7 +152,7 @@ function convertToLittleEndianBigInts(arrays: bigint[][]): bigint[] {
  * @param zAccountZoneId - Account zone ID.
  * @returns A bigint combining all the information.
  */
-function combineAccountInfo(
+function combineZAccountInfo(
     treeSelectors: bigint[],
     zAccountID: bigint,
     zAccountZoneId: bigint,
