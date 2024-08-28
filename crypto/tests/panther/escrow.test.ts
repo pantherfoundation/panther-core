@@ -16,6 +16,7 @@ const data: CommonEscrowData = {
     zAssetID: 0n,
     zAccountID: 33n,
     zAccountZoneId: 1n,
+    zAccountNonce: 1n,
     utxoInMerkleTreeSelector: Array(2).fill(Array(32).fill(0n)),
     utxoInPathIndices: Array(2).fill(Array(32).fill(0n)),
     utxoInAmounts: [0, 0].map(BigInt),
@@ -49,7 +50,7 @@ function testEncryptDataForEscrow(
 describe('Encrypt Points for Data Escrow', () => {
     describe('data length check', () => {
         it('EscrowType.Data', () => {
-            testEncryptDataForEscrow(EscrowType.Data, 10);
+            testEncryptDataForEscrow(EscrowType.Data, 11);
         });
 
         it('EscrowType.DAO', () => {
@@ -64,7 +65,7 @@ describe('Encrypt Points for Data Escrow', () => {
     describe('Convert scalars', () => {
         it('EscrowType.Data', () => {
             const output = convertDataEscrowToScalars(data as DataEscrowData);
-            expect(output).toEqual([0n, 2162689n, 0n, 0n, 10n, 0n, 1n, 0n]);
+            expect(output).toEqual([0n, 2162689n, 1n, 0n, 0n, 10n, 0n, 1n, 0n]);
         });
     });
 });

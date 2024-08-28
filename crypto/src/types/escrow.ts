@@ -12,6 +12,7 @@ export enum EscrowType {
 export type CommonEscrowData = {
     zAccountID?: bigint;
     zAccountZoneId?: bigint;
+    zAccountNonce?: bigint;
     utxoInOriginZoneIds?: bigint[];
     utxoOutTargetZoneIds?: bigint[];
     zAssetID?: bigint;
@@ -34,6 +35,7 @@ export type DataEscrowData = {
     // scalar values
     zAccountID: bigint;
     zAccountZoneId: bigint;
+    zAccountNonce: bigint;
     utxoInOriginZoneIds: bigint[];
     utxoOutTargetZoneIds: bigint[];
     zAssetID: bigint;
@@ -41,7 +43,6 @@ export type DataEscrowData = {
     utxoOutAmounts: bigint[];
     utxoInMerkleTreeSelector: bigint[][];
     utxoInPathIndices: bigint[][];
-
     // point values
     utxoOutSpendingPublicKeys: PublicKey[];
 };
