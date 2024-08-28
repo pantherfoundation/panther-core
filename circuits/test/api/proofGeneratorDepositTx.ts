@@ -58,15 +58,12 @@ const zeroInput = {
     extraInputsHash: 0,
 
     depositAmount: 0,
-    depositChange: 0,
     withdrawAmount: 0,
-    withdrawChange: 0,
     addedAmountZkp: 0,
     token: 0,
     tokenId: 0,
     utxoZAsset: 0,
 
-    // zAsset
     zAssetId: 0,
     zAssetToken: 0,
     zAssetTokenId: 0,
@@ -94,17 +91,6 @@ const zeroInput = {
 
     spendTime: 0,
 
-    // input 'zAsset UTXOs'
-    // to switch-off:
-    //      1) utxoInAmount = 0
-    //      2) utxoInSpendPrivKey = 0
-    //      3) utxoInSpendKeyRandom = 0
-    // switch-off control is used for:
-    //      1) deposit only tx
-    //      2) deposit & zAccount::zkpAmount
-    //      3) deposit & zAccount::zkpAmount & withdraw
-    //      4) deposit & withrdaw
-
     utxoInSpendPrivKey: [0, 0],
     utxoInSpendKeyRandom: [0, 0],
     utxoInAmount: [0, 0],
@@ -120,27 +106,30 @@ const zeroInput = {
     ],
     utxoInPathIndices: [
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
     ],
     utxoInPathElements: [
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
     ],
     utxoInNullifier: [0, 0],
+    utxoInDataEscrowPubKey: [
+        [0, 0],
+        [0, 0],
+    ],
 
-    // input 'zAccount UTXO'
     zAccountUtxoInId: 0,
     zAccountUtxoInZkpAmount: 0,
     zAccountUtxoInPrpAmount: 0,
@@ -159,12 +148,12 @@ const zeroInput = {
     zAccountUtxoInNullifierPrivKey: 0,
     zAccountUtxoInMerkleTreeSelector: [0, 0],
     zAccountUtxoInPathIndices: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInPathElements: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInNullifier: 0,
 
@@ -174,7 +163,6 @@ const zeroInput = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
 
-    // zZone
     zZoneOriginZoneIDs: 0,
     zZoneTargetZoneIDs: 0,
     zZoneNetworkIDsBitMap: 0,
@@ -182,20 +170,20 @@ const zeroInput = {
     zZoneKycExpiryTime: 0,
     zZoneKytExpiryTime: 0,
     zZoneDepositMaxAmount: 0,
-    zZoneWithrawMaxAmount: 0,
+    zZoneWithdrawMaxAmount: 0,
     zZoneInternalMaxAmount: 0,
     zZoneMerkleRoot: 0,
     zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     zZonePathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     zZoneEdDsaPubKey: [0, 0],
-    zZoneDataEscrowEphimeralRandom: 0,
-    zZoneDataEscrowEphimeralPubKeyAx: 0,
-    zZoneDataEscrowEphimeralPubKeyAy: 1,
+    zZoneDataEscrowEphemeralRandom: 0,
+    zZoneDataEscrowEphemeralPubKeyAx: 0,
+    zZoneDataEscrowEphemeralPubKeyAy: 1,
     zZoneZAccountIDsBlackList:
         '1766847064778384329583297500742918515827483896875618958121606201292619775',
-
     zZoneMaximumAmountPerTimePeriod: 0,
     zZoneTimePeriodPerMaximumAmount: 0,
+    zZoneSealing: 0,
 
     zZoneDataEscrowEncryptedMessageAx: [0],
     zZoneDataEscrowEncryptedMessageAy: [1],
@@ -215,6 +203,7 @@ const zeroInput = {
     kytDepositSignedMessageSessionId: 0,
     kytDepositSignedMessageRuleId: 0,
     kytDepositSignedMessageAmount: 0,
+    kytDepositSignedMessageChargedAmountZkp: 0,
     kytDepositSignedMessageSigner: 0,
     kytDepositSignedMessageHash: 0,
     kytDepositSignature: [0, 0, 0],
@@ -227,27 +216,40 @@ const zeroInput = {
     kytWithdrawSignedMessageSessionId: 0,
     kytWithdrawSignedMessageRuleId: 0,
     kytWithdrawSignedMessageAmount: 0,
+    kytWithdrawSignedMessageChargedAmountZkp: 0,
     kytWithdrawSignedMessageSigner: 0,
     kytWithdrawSignedMessageHash: 0,
     kytWithdrawSignature: [0, 0, 0],
 
+    kytSignedMessagePackageType: 253,
+    kytSignedMessageTimestamp: 0,
+    kytSignedMessageSessionId: 0,
+    kytSignedMessageChargedAmountZkp: 0,
+    kytSignedMessageSigner: 0,
+    kytSignedMessageDataEscrowHash: 0,
+    kytSignedMessageHash: 0,
+    kytSignature: [0, 0, 0],
+
     dataEscrowPubKey: [0, 0],
     dataEscrowPubKeyExpiryTime: 0,
-    dataEscrowEphimeralRandom: 0,
-    dataEscrowEphimeralPubKeyAx: 0,
-    dataEscrowEphimeralPubKeyAy: 1,
-    dataEscrowPathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    dataEscrowEphemeralRandom: 0,
+    dataEscrowEphemeralPubKeyAx: 0,
+    dataEscrowEphemeralPubKeyAy: 1,
+    dataEscrowPathElements: [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ],
     dataEscrowPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
-    dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    daoDataEscrowPubKey: [0, 0],
-    daoDataEscrowEphimeralRandom: 0,
-    daoDataEscrowEphimeralPubKeyAx: 0,
-    daoDataEscrowEphimeralPubKeyAy: 1,
+    dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
-    daoDataEscrowEncryptedMessageAx: [0, 0, 0],
-    daoDataEscrowEncryptedMessageAy: [1, 1, 1],
+    daoDataEscrowPubKey: [0, 0],
+    daoDataEscrowEphemeralRandom: 0,
+    daoDataEscrowEphemeralPubKeyAx: 0,
+    daoDataEscrowEphemeralPubKeyAy: 1,
+
+    daoDataEscrowEncryptedMessageAx: [0],
+    daoDataEscrowEncryptedMessageAy: [1],
 
     utxoOutCreateTime: 0,
     utxoOutAmount: [0, 0],
@@ -257,8 +259,8 @@ const zeroInput = {
     utxoOutTargetZoneIdOffset: [0, 0],
     utxoOutSpendPubKeyRandom: [0, 0],
     utxoOutRootSpendPubKey: [
-        [0, 0],
-        [0, 0],
+        [0, 1],
+        [0, 1],
     ],
     utxoOutCommitment: [0, 0],
 
@@ -283,7 +285,6 @@ const zeroInput = {
     busMerkleRoot: 0,
     ferryMerkleRoot: 0,
 
-    // salt
     salt: 0,
     saltHash: 0,
 
@@ -309,8 +310,6 @@ const nonZeroInput = {
     utxoInAmount: [0, 0], // will be 0 for deposit-only-tx
     utxoOutAmount: [10, 0], // 1 valid utxo got created as part of deposit-only-tx
 
-    depositChange: 0n,
-    withdrawChange: 0n,
     chargedAmountZkp: 10 ** 15, // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
     addedAmountZkp: 10 ** 14,
     zAccountUtxoInZkpAmount: 9999990000,
@@ -397,25 +396,29 @@ const nonZeroInput = {
     ],
     utxoInPathIndices: [
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
     ],
     utxoInPathElements: [
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
         [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
     ],
     utxoInNullifier: [0, 0],
+    utxoInDataEscrowPubKey: [
+        [0, 1],
+        [0, 1],
+    ],
 
     // input 'zAccount UTXO'
     zAccountUtxoInId: 33,
@@ -438,7 +441,8 @@ const nonZeroInput = {
         18636161575160505712724711689946435964943204943778681265331835661113836693938n,
         21369418187085352831313188453068285816400064790476280656092869887652115165947n,
     ],
-    zAccountUtxoInMasterEOA: 407487970930055136132864974074225519407787604125n,
+    zAccountUtxoInMasterEOA:
+        407487970930055136132864974074225519407787604125n,
     zAccountUtxoInSpendPrivKey:
         862427069656991966059708194449869313346312152472849770815560202542548015678n,
 
@@ -450,11 +454,11 @@ const nonZeroInput = {
 
     zAccountUtxoInMerkleTreeSelector: [1, 0],
     zAccountUtxoInPathIndices: [
-        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
     zAccountUtxoInPathElements: [
-        10737878881523789962798210406551165807070922751876233837797923419039556051321n,
+        4559544338383536858093880749891621006674827955225789850199360281325186909499n,
         9728728322509746395652389243978665656438734693550117139438068940776719151145n,
         3378776220260879286502089033253596247983977280165117209776494090180287943112n,
         13332607562825133358947880930907706925768730553195841232963500270946125500492n,
@@ -520,10 +524,10 @@ const nonZeroInput = {
     zZoneKycExpiryTime: 10368000,
     zZoneKytExpiryTime: 86400,
     zZoneDepositMaxAmount: 1 * 10 ** 12,
-    zZoneWithrawMaxAmount: 1 * 10 ** 12,
+    zZoneWithdrawMaxAmount: 1 * 10 ** 12,
     zZoneInternalMaxAmount: 1 * 10 ** 12,
     zZoneMerkleRoot:
-        9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+        14189511324259672403799169204478898082389936563693111126414306380356116434465n,
 
     zZonePathElements: [
         2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -549,13 +553,13 @@ const nonZeroInput = {
         11069452135192839850369824221357904553346382352990372044246668947825855305207n,
     ],
 
-    zZoneDataEscrowEphimeralRandom:
+    zZoneDataEscrowEphemeralRandom:
         790122152066676684676093302872898287841903882354339429497975929636832086290n,
 
-    zZoneDataEscrowEphimeralPubKeyAx:
+    zZoneDataEscrowEphemeralPubKeyAx:
         8203289148254703516772267706874329469330087297928457772489392227653451244213n,
 
-    zZoneDataEscrowEphimeralPubKeyAy:
+    zZoneDataEscrowEphemeralPubKeyAy:
         19998992060707539017877331634603765261877243592349009808298088607668947098216n,
 
     zZoneZAccountIDsBlackList:
@@ -563,12 +567,13 @@ const nonZeroInput = {
 
     zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
     zZoneTimePeriodPerMaximumAmount: 86400,
+    zZoneSealing: 1,
 
     zZoneDataEscrowEncryptedMessageAx: [
-        14433679800089192794526753505084268005561937068124366984972480412899006274217n,
+        2468338014121331792444587249698692818014762050360212301429643474146750905863n,
     ],
     zZoneDataEscrowEncryptedMessageAy: [
-        5568466615559831776527692612070933424060694016326396459267543199030780173053n,
+        16996420608431036321409292371827871642706083345802290766905570404093710249010n,
     ],
 
     kytEdDsaPubKey: [
@@ -611,15 +616,16 @@ const nonZeroInput = {
     kytDepositSignedMessageSessionId: 3906,
     kytDepositSignedMessageRuleId: 94,
     kytDepositSignedMessageAmount: 10 ** 13,
+    kytDepositSignedMessageChargedAmountZkp: 0, // check for a non - zero value
     kytDepositSignedMessageSigner:
         407487970930055136132864974074225519407787604125n,
     kytDepositSignedMessageHash:
-        11414055436252469190302359091033835024927400459109861183593842730825233492110n,
+        9581538173025490251658987151140584879008193796301899299563845735569037355425n,
 
     kytDepositSignature: [
-        228519168819850535888269245438180975823377305571674917848861106312767793014n,
-        4353440918973062733960013422674371466955029547032484043442674801197101759743n,
-        16857710248851335426527318000586828936537419385345595521592380210664119712140n,
+        2533390636479498585744099889196167755697706581270514318078841290898832215218n,
+        11239838155996497166033691627865567489993777775685992677132625009522287724578n,
+        14510617602388021472674652955785805966364810670742667002261764888488275245217n,
     ],
 
     kytWithdrawSignedMessagePackageType: 2,
@@ -630,22 +636,38 @@ const nonZeroInput = {
     kytWithdrawSignedMessageSessionId: 0,
     kytWithdrawSignedMessageRuleId: 0,
     kytWithdrawSignedMessageAmount: 0,
+    kytWithdrawSignedMessageChargedAmountZkp: 0,
     kytWithdrawSignedMessageSigner: 0,
     kytWithdrawSignedMessageHash: 0,
     kytWithdrawSignature: [0, 0, 0],
+
+    kytSignedMessagePackageType: 253,
+    kytSignedMessageTimestamp: 1735689600,
+    kytSignedMessageSessionId: 0,
+    kytSignedMessageChargedAmountZkp: 0,
+    kytSignedMessageSigner:
+        407487970930055136132864974074225519407787604125n,
+    kytSignedMessageDataEscrowHash: 0,
+    kytSignedMessageHash:
+        18981526756899465325206326650193467437762085425553894451258894422982999678825n,
+    kytSignature: [
+        1945041683538987202659487309004822889330339439680685175116952967193385514030n,
+        12800757587707355716562725335004255361134175679890177450990936308856294760936n,
+        13700546727952230383815469278703222011620770961258019981026161088921480100046n,
+    ],
 
     dataEscrowPubKey: [
         6461944716578528228684977568060282675957977975225218900939908264185798821478n,
         6315516704806822012759516718356378665240592543978605015143731597167737293922n,
     ],
     dataEscrowPubKeyExpiryTime: 1735689600,
-    dataEscrowEphimeralRandom:
+    dataEscrowEphemeralRandom:
         2508770261742365048726528579942226801565607871885423400214068953869627805520n,
 
-    dataEscrowEphimeralPubKeyAx:
+    dataEscrowEphemeralPubKeyAx:
         4301916310975298895721162797900971043392040643140207582177965168853046592976n,
 
-    dataEscrowEphimeralPubKeyAy:
+    dataEscrowEphemeralPubKeyAy:
         815388028464849479935447593762613752978886104243152067307597626016673798528n,
 
     dataEscrowPathElements: [
@@ -669,51 +691,49 @@ const nonZeroInput = {
     dataEscrowPathIndices: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
     dataEscrowEncryptedMessageAx: [
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        12611085460501643703188077029833801403988234956815000632774128739398821073630n,
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        10753713096839992465425594579541973318667011803673769960189202532150955695299n,
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        15973033780862990911894184396943537293044842235087158652403930007130216963563n,
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        17078950562559053244427911673754433695828777211102295906512000829758156791625n,
-        0,
+        4466207087396908530538027508480327289709135098369366605035498754018548098580n,
+        273074978062481213664850189152101320277724757435031910618470992057413125749n,
+        3221881113978258341351905607022453683468074110539600327144632860643312043607n,
+        6385720989959316442888186252300422065905111644716791543232066803264608411643n,
+        19481776160681562933683231160237503115470387605976263433224989106147562447425n,
+        16063003973509268587369077687850423627809939628320499612404676550495072514110n,
+        21566146839273838550739020905682209904771181834353214903291684782216436330590n,
+        8519267136277463825745824815461272821853226998548930937779596463704159990950n,
+        221587156352960568833477715860467505765088050847549918946361730170783196336n,
+        2968714453246211896005611797264008792287473229252515375565227354980763726284n,
+        4931415214415797016210444707986521039263270801914587984123419292259499277160n,
     ],
     dataEscrowEncryptedMessageAy: [
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
-        14897666083598157282681480789564813458233045934717547580847967751767915888565n,
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
-        5765065508291422419277961368688514678285916196225251683528451342886755731043n,
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
-        5693832783094960223661498611585398692719602058883271283044674224937494596214n,
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
-        17955039764546101694996599018249453721535412990526575327945965148929698301159n,
-        0,
+        2206378257592766967667444778490995501001254338204335097462312906524713313893n,
+        3333160868102876910995378449615424584834191665884607534873759487264725242723n,
+        8234487486561785093301815874679075174968982285316177860525130662867034203225n,
+        1536289756199432030510151465306154455153333141586487083330688676636024498143n,
+        4418840501277900235948807656537418162878623322725443058555029157941160468861n,
+        8283809066088154732664292412535519471257859888299500970909114628636257843398n,
+        14209394576476591299961251260489532744973900798931789373358600111270609092544n,
+        15133860638344272965838177823352282544348692353440495231643111403641673471151n,
+        5241658287428607961362615607434330957330063744475866285584509561524463161024n,
+        4706539374333453611370871310272906412651633111294392668226252198982372846324n,
+        6988657263078170402537509816874598318402282044107987160758020550057166654636n,
     ],
     daoDataEscrowPubKey: [
         6744227429794550577826885407270460271570870592820358232166093139017217680114n,
         12531080428555376703723008094946927789381711849570844145043392510154357220479n,
     ],
-    daoDataEscrowEphimeralRandom:
+    daoDataEscrowEphemeralRandom:
         2486295975768183987242341265649589729082265459252889119245150374183802141273n,
 
-    daoDataEscrowEphimeralPubKeyAx:
+    daoDataEscrowEphemeralPubKeyAx:
         18172727478723733672122242648004425580927771110712257632781054272274332874233n,
 
-    daoDataEscrowEphimeralPubKeyAy:
+    daoDataEscrowEphemeralPubKeyAy:
         18696859439217809465524370245449396885627295546811556940609392448191776076084n,
 
     daoDataEscrowEncryptedMessageAx: [
-        19431177145564579644645402007094230972953633316034553417567175794889598812718n,
-        8212805903298130704168784347709624481761722564668581984113512819139911358362n,
-        13715319542819033053725524764668495039205583207727432604755257637044067035829n,
+        12032028674386602247606112047856619939984457257499437643949614462266665472292n,
     ],
     daoDataEscrowEncryptedMessageAy: [
-        201397220231726386170040070479111028365016125655118429415687385707171965840n,
-        19021612305549583596574758670997434548526622145509607490911705986204445671791n,
-        11581561341765082553491028981889175415385375492244621840510004970440934456100n,
+        10231473684893412031634651500584679273869045480560969585260750474375209497228n,
     ],
 
     // Same timestamp is used for ZAccountUTXOOut as well.
@@ -731,10 +751,10 @@ const nonZeroInput = {
             9665449196631685092819410614052131494364846416353502155560380686439149087040n,
             13931233598534410991314026888239110837992015348186918500560502831191846288865n,
         ],
-        [0, 0],
+        [0, 1],
     ],
     utxoOutCommitment: [
-        19415350603868075586262717582877071671289610526157183329824084311591608122417n,
+        19665494296958373769078652731465008366346638314720836754762203726116490587574n,
         0,
     ],
 
@@ -758,14 +778,14 @@ const nonZeroInput = {
         19603150025355661252212198237607440386334054455687766589389473805115541553727n,
     ],
     staticTreeMerkleRoot:
-        16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+        17931067957218291153823825912158291535579397890455292055678506728658508421915n,
 
     forestMerkleRoot: 0,
     taxiMerkleRoot:
         21078238521337523625806977154031988767929399923323679789427062985634312723305n,
 
     busMerkleRoot:
-        18014148489773751689234619832567817170581653373712250228787308870076317083629n,
+        2464726964450207958327953126426923089730888403582850186370888391526738119515n,
 
     ferryMerkleRoot:
         16585547643065588372010718035675163508420403417446192422307560350739915741648n,
