@@ -12,7 +12,7 @@
     "build:main-z-account-registration-v1-extended": "./scripts/buildMainZaccountRegistrationV1Extended.sh",
     "build:main-z-account-renewal-v1-extended": "./scripts/buildMainZaccountRenewalV1Extended.sh",
     "build:main-z-swap": "./scripts/buildMainZSwap.sh",
-    "build:main-everything": "yarn build:main-amm && yarn build:main-z-transaction && yarn build:main-z-account-registration-v1-extended && yarn build:main-z-account-renewal-v1-extended",
+    "build:main-everything": "yarn build:main-amm && yarn build:main-z-transaction && yarn build:main-z-swap && yarn build:main-z-account-registration-v1-extended && yarn build:main-z-account-renewal-v1-extended",
     "build:types": "./scripts/genTypes.sh",
     "build:ts": "tsc -p tsconfig.json",
     "clean": "rm -rf ./node_modules && rm -rf ./types/* && rm -rf ./lib",
