@@ -675,10 +675,11 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ------------- scalars-size --------------
     // 1) 1 x 64 (zAsset)
-    // 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-    // 3) nUtxoIn x 64 amount
-    // 4) nUtxoOut x 64 amount
-    // 5) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
+    // 2) 1 x 64 (utxoInMerkleTreeSelector[0] << 42 | utxoInMerkleTreeSelector[1] << 40 | zAccountId << 16 | zAccountZoneId << 0)
+    // 3) 1 x 32 (zAccountNonce)
+    // 4) nUtxoIn x 64 amount
+    // 5) nUtxoOut x 64 amount
+    // 6) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
     // ------------- ec-points-size -------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
     component dataEscrow = DataEscrowElGamalEncryption(dataEscrowPaddingSize,dataEscrowScalarSize,dataEscrowPointSize);
