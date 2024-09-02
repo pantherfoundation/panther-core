@@ -309,7 +309,7 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
 
     component withdraw = TrustProvidersDepositWithdrawKyt();
     withdraw.kytToken <== extractedToken;
-    withdraw.kytAmount <== kytDepositAmount;
+    withdraw.kytAmount <== kytWithdrawAmount;
     withdraw.kytPubKey <== kytEdDsaPubKey;
     withdraw.kytPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
     withdraw.zZoneKytExpiryTime <== zZoneKytExpiryTime;
