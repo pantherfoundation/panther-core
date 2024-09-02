@@ -262,6 +262,21 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom10=>', ephemeralRandom10);
 
+    // hidden point computation
+    const hiddenPoint_poseidon = poseidon([sharedPubKey0[0], sharedPubKey0[1]]);
+    const hiddenPoint_lsb252 = BigInt(
+        '0b' + hiddenPoint_poseidon.toString(2).padStart(252, '0').slice(-252),
+    );
+    const hiddenPoint_eMult = babyjub.mulPointEscalar(
+        pubKey,
+        hiddenPoint_lsb252,
+    );
+    // hiddenPoint_eMult=> [
+    //     21758777979755803182538129900028133174295707744114450068664463558509866946614n,
+    //     3383300988664032323093307926408339105249322517803146002338186492453973025540n
+    //   ]
+    // console.log('hiddenPoint_eMult=>', hiddenPoint_eMult);
+
     const input = {
         pubKey: [
             6461944716578528228684977568060282675957977975225218900939908264185798821478n,
@@ -355,6 +370,10 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
                 19422562726954330262366342847200985885831954851878368123062828465738895330962n,
                 12463481783339713254340340992496598380770245140406136963354707869635762047176n,
             ],
+        ],
+        hidingPoint: [
+            21758777979755803182538129900028133174295707744114450068664463558509866946614n,
+            3383300988664032323093307926408339105249322517803146002338186492453973025540n,
         ],
     };
 

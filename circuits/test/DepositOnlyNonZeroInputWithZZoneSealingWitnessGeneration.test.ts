@@ -15,7 +15,7 @@ import {
 } from '@panther-core/crypto/lib/base/keypairs';
 import {bigIntToUint8Array, uint8ArrayToBigInt} from './helpers/utils';
 
-describe('Main z-transaction - Non ZeroInput - Witness computation', async function (this: any) {
+describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness computation', async function (this: any) {
     const poseidon2or3 = (inputs: bigint[]): bigint => {
         assert(inputs.length === 3 || inputs.length === 2);
         return poseidon(inputs);
@@ -47,9 +47,10 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
 
     /* 
         Deposit Transaction
-        . External deposit amount -
+        . External deposit amount - Positive
         . Internal UTXO's created - 1 Valid UTXO, 1 empty UTXO
         . External withdraw amount - 0
+        . zZoneSealing - 1
     */
 
     /* 1. START ===== utxoOutCommitment computation  ===== */
@@ -222,9 +223,8 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         94, // kytDepositSignedMessageRuleId,
         10 ** 13, // kytDepositSignedMessageAmount,
         407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSigner,
-        0, // kytSignedMessageChargedAmountZkp
     ]);
-    // 9581538173025490251658987151140584879008193796301899299563845735569037355425n
+    // 11414055436252469190302359091033835024927400459109861183593842730825233492110n
     // console.log(
     //     'kytDepositSignedMessageHashInternal=>',
     //     kytDepositSignedMessageHashInternal,
@@ -290,11 +290,12 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         1735689600, // GMT: Wednesday, 15 November 2023 09:30:50 // kytDepositSignedMessageTimestamp,
         0, // kytDepositSignedMessageSessionId
         407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSigner,
-        9581538173025490251658987151140584879008193796301899299563845735569037355425n,
+        0, // kytSignedMessageChargedAmountZkp
+        11414055436252469190302359091033835024927400459109861183593842730825233492110n,
         0,
         0,
     ]);
-    // 18981526756899465325206326650193467437762085425553894451258894422982999678825n
+    // 17343381775669547334154555828448003882211749363034312912087105549049669873844n
     // console.log('kytSignedMessageHashInternal=>', kytSignedMessageHashInternal);
 
     const signatureForKyt = eddsa.signPoseidon(
@@ -303,14 +304,13 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
     );
     // signatureForKyt=> {
     //     R8: [
-    //       12800757587707355716562725335004255361134175679890177450990936308856294760936n,
-    //       13700546727952230383815469278703222011620770961258019981026161088921480100046n
+    //       10219847358695369492004840544367110689728432669905401780948462529998244872573n,
+    //       21585094286463689967810469791845641244760397366353081365159817802986532154396n
     //     ],
-    //     S: 1945041683538987202659487309004822889330339439680685175116952967193385514030n
+    //     S: 1274394554768015659590584811063143506078334279263666516573503060655548176515n
     //   }
     // console.log('signatureForKyt=>', signatureForKyt);
     /* 9. END ===== kytSignature computation ===== ===== */
-
     const nonZeroInput = {
         extraInputsHash: 0,
 
@@ -640,12 +640,12 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
         kytDepositSignedMessageSigner:
             407487970930055136132864974074225519407787604125n,
         kytDepositSignedMessageHash:
-            9581538173025490251658987151140584879008193796301899299563845735569037355425n,
+            11414055436252469190302359091033835024927400459109861183593842730825233492110n,
 
         kytDepositSignature: [
-            2533390636479498585744099889196167755697706581270514318078841290898832215218n,
-            11239838155996497166033691627865567489993777775685992677132625009522287724578n,
-            14510617602388021472674652955785805966364810670742667002261764888488275245217n,
+            228519168819850535888269245438180975823377305571674917848861106312767793014n,
+            4353440918973062733960013422674371466955029547032484043442674801197101759743n,
+            16857710248851335426527318000586828936537419385345595521592380210664119712140n,
         ],
 
         kytWithdrawSignedMessagePackageType: 2,
@@ -669,11 +669,11 @@ describe('Main z-transaction - Non ZeroInput - Witness computation', async funct
             407487970930055136132864974074225519407787604125n,
         kytSignedMessageDataEscrowHash: 0,
         kytSignedMessageHash:
-            18981526756899465325206326650193467437762085425553894451258894422982999678825n,
+            17343381775669547334154555828448003882211749363034312912087105549049669873844n,
         kytSignature: [
-            1945041683538987202659487309004822889330339439680685175116952967193385514030n,
-            12800757587707355716562725335004255361134175679890177450990936308856294760936n,
-            13700546727952230383815469278703222011620770961258019981026161088921480100046n,
+            1274394554768015659590584811063143506078334279263666516573503060655548176515n,
+            10219847358695369492004840544367110689728432669905401780948462529998244872573n,
+            21585094286463689967810469791845641244760397366353081365159817802986532154396n,
         ],
 
         dataEscrowPubKey: [
