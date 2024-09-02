@@ -417,14 +417,20 @@ template EphemeralPubKeysBuilder(nPubKeys) {
             ephemeralRandoms[i+1] <== b2n_hash[i].out;
         }
     }
-    // hidden point
-    component hiddenPoint_poseidon = Poseidon(2);
-    hiddenPoint_poseidon.inputs[0] <== sharedPubKey[0][0];
-    hiddenPoint_poseidon.inputs[1] <== sharedPubKey[0][1];
+    // hidden point = Lsb252 ( Poseidon(sharedPubKey.x,y) ) * PubKey
+    component hiddenPoint_poseidon1 = Poseidon(2);
+    hiddenPoint_poseidon1.inputs[0] <== sharedPubKey[0][0];
+    hiddenPoint_poseidon1.inputs[1] <== sharedPubKey[0][1];
+
+    component hiddenPoint_poseidon = Poseidon(1);
+    hiddenPoint_poseidon.inputs[0] <== hiddenPoint_poseidon1.out;
+
     signal hiddenPoint_lsb252 <== ExtractLSBits(252,254)(hiddenPoint_poseidon.out);
+
     component hiddenPoint_eMult = EscalarMulAny(253);
     hiddenPoint_eMult.p[0] <== pubKey[0];
     hiddenPoint_eMult.p[1] <== pubKey[1];
+
     component hiddenPoint_n2b = Num2Bits(253);
     hiddenPoint_n2b.in <== hiddenPoint_lsb252;
     hiddenPoint_eMult.e <== hiddenPoint_n2b.out;
