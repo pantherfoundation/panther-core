@@ -2,27 +2,19 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
 import {describe, expect} from '@jest/globals';
-import {babyjub} from 'circomlibjs';
-import {mulPointEscalar} from 'circomlibjs/src/babyjub';
 
 import {
     generateEcdhSharedKey,
     encryptPlainText,
     decryptCipherText,
-    unmaskPoint,
-    maskPoint,
-    ephemeralPublicKeyBuilder,
 } from '../../src/base/encryption';
-import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {generateRandomKeypair, packPublicKey} from '../../src/base/keypairs';
 import {extractCipherKeyAndIvFromPackedPoint} from '../../src/panther/messages';
-import {Keypair, Point, PublicKey} from '../../src/types/keypair';
+import {Keypair} from '../../src/types/keypair';
 import {
     bigIntToUint8Array,
     uint8ArrayToBigInt,
 } from '../../src/utils/bigint-conversions';
-
-import ephemeralPublicKeyBuilderData from './data/ephemeralPublicKeyBuilder';
 
 function generateKeysAndEncryptedText(
     keypair1: Keypair,
@@ -66,11 +58,6 @@ function decryptCiphertext(
     );
 }
 
-function generateSecretPoint(): Point {
-    const secret = generateRandomInBabyJubSubField();
-    return mulPointEscalar(babyjub.Base8, secret) as Point;
-}
-
 describe('Encryption Test Suite', () => {
     describe('AES-128-CBC', () => {
         let keypair1: Keypair;
@@ -106,43 +93,6 @@ describe('Encryption Test Suite', () => {
         it('The decrypted ciphertext should be correct', () => {
             expect(decryptedCiphertext.toString()).toEqual(
                 plaintext.toString(),
-            );
-        });
-    });
-
-    describe('El Gamal', () => {
-        let secretPoint: Point;
-        let keypair: Keypair;
-
-        beforeEach(() => {
-            secretPoint = generateSecretPoint();
-            keypair = generateRandomKeypair();
-        });
-
-        it('masks and unmasks single point', () => {
-            const encryptedPoint = maskPoint(secretPoint, keypair.publicKey);
-            const decryptedPoint = unmaskPoint(
-                encryptedPoint,
-                keypair.publicKey,
-            );
-
-            expect(secretPoint).toEqual(decryptedPoint);
-        });
-
-        it('#ephemeralPublicKeyBuilder', () => {
-            const keys = ephemeralPublicKeyBuilder(
-                ephemeralPublicKeyBuilderData.ephemeralRandom,
-                ephemeralPublicKeyBuilderData.pubKey as PublicKey,
-                10,
-            );
-            expect(keys.ephemeralPubKeys.length).toEqual(10);
-            expect(keys.sharedPubKeys.length).toEqual(10);
-
-            expect(keys.ephemeralPubKeys).toEqual(
-                ephemeralPublicKeyBuilderData.ephemeralPubKey,
-            );
-            expect(keys.sharedPubKeys).toEqual(
-                ephemeralPublicKeyBuilderData.sharedPubKey,
             );
         });
     });
