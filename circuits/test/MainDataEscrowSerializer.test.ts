@@ -66,7 +66,6 @@ describe('DataEscrowSerializer circuit', function (this: any) {
             finalzAccountIdBits[i] === undefined ? 0 : finalzAccountIdBits[i];
     }
 
-    // @sushma - this also needs to be reveresed for different merkle tree selection - check
     for (var i = 0; i < 2; i++) {
         for (var j = 0; j < 2; j++) {
             out1Computation[16 + 24 + i * 2 + j] =

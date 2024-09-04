@@ -6,7 +6,7 @@ const wasm_tester = cicom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {babyjub, poseidon} from 'circomlibjs';
 
-describe('EphemeralPubKeysBuilder circuit', function (this: any) {
+describe('DAO DataEscrow - EphemeralPubKeysBuilder circuit', function (this: any) {
     let ephemeralPubKeysBuilder: any;
 
     this.timeout(10_000_000);
@@ -45,18 +45,22 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     // console.log('ephemeralPubKey0=>', ephemeralPubKey0);
 
     // hidden point computation
-    const hiddenPoint_poseidon_out = poseidon([
+    const hiddenPoint_poseidon1 = poseidon([
         sharedPubKey0[0],
         sharedPubKey0[1],
     ]);
-
+    const hiddenPoint_poseidon = poseidon([hiddenPoint_poseidon1]);
     let mask = (BigInt(1) << BigInt(252)) - BigInt(1);
-    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon_out) & mask;
+    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon) & mask;
 
     const hiddenPoint_eMult = babyjub.mulPointEscalar(
         pubKey,
         hiddenPoint252Bits,
     );
+    // hiddenPoint_eMult=> [
+    //     21766969157293173109696548600547868329008480468314353375481116030202645714574n,
+    //     14170566993523714956664006432117637614208911899318146403393618728345804921043n
+    //   ]
     // console.log('hiddenPoint_eMult=>', hiddenPoint_eMult);
 
     const input = {
@@ -82,8 +86,8 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
             ],
         ],
         hidingPoint: [
-            7837537477801095879520439572942173219514831830643764560925331456186676726807n,
-            19073186060657841909220319139802990623418587721671395108608781299288560825063n,
+            21766969157293173109696548600547868329008480468314353375481116030202645714574n,
+            14170566993523714956664006432117637614208911899318146403393618728345804921043n,
         ],
     };
 

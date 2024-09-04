@@ -72,7 +72,6 @@ describe('DAO Data Escrow ElGamalEncryption', function (this: any) {
                 true,
             );
 
-            // Explain - If needed - @sushma
             const wtnsFormattedOutput = [
                 0,
                 wtns[261],
