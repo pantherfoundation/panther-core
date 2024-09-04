@@ -6,7 +6,7 @@ const wasm_tester = cicom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {babyjub, poseidon} from 'circomlibjs';
 
-describe('ZZone EphemeralPubKeysBuilder circuit', function (this: any) {
+describe('ZZone DataEscrow - EphemeralPubKeysBuilder circuit', function (this: any) {
     let ephemeralPubKeysBuilder: any;
 
     this.timeout(10_000_000);
@@ -45,18 +45,22 @@ describe('ZZone EphemeralPubKeysBuilder circuit', function (this: any) {
     // console.log('ephemeralPubKey0=>', ephemeralPubKey0);
 
     // hidden point computation
-    const hiddenPoint_poseidon_out = poseidon([
+    const hiddenPoint_poseidon1 = poseidon([
         sharedPubKey0[0],
         sharedPubKey0[1],
     ]);
-
+    const hiddenPoint_poseidon = poseidon([hiddenPoint_poseidon1]);
     let mask = (BigInt(1) << BigInt(252)) - BigInt(1);
-    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon_out) & mask;
+    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon) & mask;
 
     const hiddenPoint_eMult = babyjub.mulPointEscalar(
         pubKey,
         hiddenPoint252Bits,
     );
+    // hiddenPoint_eMult=> [
+    //     3285643778013373851751435147704859609182820956390679408406396837095210775191n,
+    //     19488993062119338329039070493533050536743750381173930389742335045938707033749n
+    //   ]
     // console.log('hiddenPoint_eMult=>', hiddenPoint_eMult);
 
     const input = {
@@ -82,8 +86,8 @@ describe('ZZone EphemeralPubKeysBuilder circuit', function (this: any) {
             ],
         ],
         hidingPoint: [
-            20496237874406574195594615138110627467559091225348087957279583225235951633825n,
-            350589532111323623916475970628844166327316882120908185439315526555548459561n,
+            3285643778013373851751435147704859609182820956390679408406396837095210775191n,
+            19488993062119338329039070493533050536743750381173930389742335045938707033749n,
         ],
     };
 

@@ -99,7 +99,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // ]
         // console.log('rootPublicKeys=>', rootPublicKeys);
 
-        /* yet to use - @sushma
+        /*
         Derive child spending private key from root spending private key
         const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
             rootPrivateKey,

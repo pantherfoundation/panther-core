@@ -6,7 +6,7 @@ const wasm_tester = cicom_wasm_tester.wasm;
 import {getOptions} from './helpers/circomTester';
 import {babyjub, poseidon} from 'circomlibjs';
 
-describe('EphemeralPubKeysBuilder circuit', function (this: any) {
+describe('Main DataEscrow - EphemeralPubKeysBuilder circuit', function (this: any) {
     let ephemeralPubKeysBuilder: any;
 
     this.timeout(10_000_000);
@@ -21,7 +21,6 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     });
 
     // Taking this value ephemeralRandom and pubKey to be in sync with the integration tests
-    // ephemeralRandom0
     const ephemeralRandom =
         2508770261742365048726528579942226801565607871885423400214068953869627805520n;
 
@@ -30,48 +29,42 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
         6315516704806822012759516718356378665240592543978605015143731597167737293922n,
     ];
 
-    // ephemeralRandom0 is the given input ephemeralRandom - 0
-
-    // sharedPubKey0 - [0,0] & [0,1]
+    // sharedPubKey0 and ephemeralRandom1 computation
     const sharedPubKey0 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom.toString(),
     );
     // console.log('sharedPubKey0=>', sharedPubKey0);
 
-    // ephemeralPubKey0 - [0,0] & [0,1]
     const ephemeralPubKey0 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom,
     );
     // console.log('ephemeralPubKey0=>', ephemeralPubKey0);
 
-    // ephemeralRandom1 - 1
     const ephemeralRandom1Poseidon = poseidon([
         sharedPubKey0[0],
         sharedPubKey0[1],
     ]);
-    const ephemeralRandom1 = BigInt(
+    let ephemeralRandom1 = BigInt(
         '0b' +
             ephemeralRandom1Poseidon.toString(2).padStart(252, '0').slice(-252),
     );
     // console.log('ephemeralRandom1=>', ephemeralRandom1);
 
-    // sharedPubKey1 - [1,0] & [1,1]
+    // sharedPubKey1 and ephemeralRandom2 computation
     const sharedPubKey1 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom1.toString(),
     );
     // console.log('sharedPubKey1=>', sharedPubKey1);
 
-    // ephemeralPubKey1 - [1,0] & [1,1]
     const ephemeralPubKey1 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom1,
     );
     // console.log('ephemeralPubKey1=>', ephemeralPubKey1);
 
-    // ephemeralRandom2 - 2
     const ephemeralRandom2Poseidon = poseidon([
         sharedPubKey1[0],
         sharedPubKey1[1],
@@ -82,21 +75,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom2=>', ephemeralRandom2);
 
-    // sharedPubKey2 - [2,0] & [2,1]
+    // sharedPubKey2 and ephemeralRandom3 computation
     const sharedPubKey2 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom2.toString(),
     );
     // console.log('sharedPubKey2=>', sharedPubKey2);
 
-    // ephemeralPubKey2 - [2,0] & [2,1]
     const ephemeralPubKey2 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom2,
     );
     // console.log('ephemeralPubKey2=>', ephemeralPubKey2);
 
-    // ephemeralRandom3 - 3
     const ephemeralRandom3Poseidon = poseidon([
         sharedPubKey2[0],
         sharedPubKey2[1],
@@ -107,21 +98,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom3=>', ephemeralRandom3);
 
-    // sharedPubKey3 - [3,0] & [3,1]
+    // sharedPubKey3 and ephemeralRandom4 computation
     const sharedPubKey3 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom3.toString(),
     );
     // console.log('sharedPubKey3=>', sharedPubKey3);
 
-    // ephemeralPubKey3 - [3,0] & [3,1]
     const ephemeralPubKey3 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom3,
     );
     // console.log('ephemeralPubKey3=>', ephemeralPubKey3);
 
-    // ephemeralRandom4 - 4
     const ephemeralRandom4Poseidon = poseidon([
         sharedPubKey3[0],
         sharedPubKey3[1],
@@ -132,21 +121,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom4=>', ephemeralRandom4);
 
-    // sharedPubKey4 - [4,0] & [4,1]
+    // sharedPubKey4 and ephemeralRandom5 computation
     const sharedPubKey4 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom4.toString(),
     );
     // console.log('sharedPubKey4=>', sharedPubKey4);
 
-    // ephemeralPubKey4 - [4,0] & [4,1]
     const ephemeralPubKey4 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom4,
     );
     // console.log('ephemeralPubKey4=>', ephemeralPubKey4);
 
-    // ephemeralRandom5 - 5
     const ephemeralRandom5Poseidon = poseidon([
         sharedPubKey4[0],
         sharedPubKey4[1],
@@ -157,21 +144,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom5=>', ephemeralRandom5);
 
-    // sharedPubKey5 - [5,0] & [5,1]
+    // sharedPubKey5 and ephemeralRandom6 computation
     const sharedPubKey5 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom5.toString(),
     );
     // console.log('sharedPubKey5=>', sharedPubKey5);
 
-    // ephemeralPubKey4 - [5,0] & [5,1]
     const ephemeralPubKey5 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom5,
     );
     // console.log('ephemeralPubKey5=>', ephemeralPubKey5);
 
-    // ephemeralRandom6 - 6
     const ephemeralRandom6Poseidon = poseidon([
         sharedPubKey5[0],
         sharedPubKey5[1],
@@ -182,21 +167,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom6=>', ephemeralRandom6);
 
-    // sharedPubKey6 - [6,0] & [6,1]
+    // sharedPubKey6 and ephemeralRandom7 computation
     const sharedPubKey6 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom6.toString(),
     );
     // console.log('sharedPubKey6=>', sharedPubKey6);
 
-    // ephemeralPubKey6 - [6,0] & [6,1]
     const ephemeralPubKey6 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom6,
     );
     // console.log('ephemeralPubKey6=>', ephemeralPubKey6);
 
-    // ephemeralRandom7 - 7
     const ephemeralRandom7Poseidon = poseidon([
         sharedPubKey6[0],
         sharedPubKey6[1],
@@ -207,21 +190,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom7=>', ephemeralRandom7);
 
-    // sharedPubKey7 - [7,0] & [7,1]
+    // sharedPubKey7 and ephemeralRandom8 computation
     const sharedPubKey7 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom7.toString(),
     );
     // console.log('sharedPubKey7=>', sharedPubKey7);
 
-    // ephemeralPubKey7 - [7,0] & [7,1]
     const ephemeralPubKey7 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom7,
     );
     // console.log('ephemeralPubKey7=>', ephemeralPubKey7);
 
-    // ephemeralRandom8 - 8
     const ephemeralRandom8Poseidon = poseidon([
         sharedPubKey7[0],
         sharedPubKey7[1],
@@ -232,21 +213,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom8=>', ephemeralRandom8);
 
-    // sharedPubKey8 - [8,0] & [8,1]
+    // sharedPubKey8 and ephemeralRandom9 computation
     const sharedPubKey8 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom8.toString(),
     );
     // console.log('sharedPubKey8=>', sharedPubKey8);
 
-    // ephemeralPubKey8 - [8,0] & [8,1]
     const ephemeralPubKey8 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom8,
     );
     // console.log('ephemeralPubKey8=>', ephemeralPubKey8);
 
-    // ephemeralRandom9 - 9
     const ephemeralRandom9Poseidon = poseidon([
         sharedPubKey8[0],
         sharedPubKey8[1],
@@ -257,21 +236,19 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom9=>', ephemeralRandom9);
 
-    // sharedPubKey9 - [9,0] & [9,1]
+    // sharedPubKey9 and ephemeralRandom10 computation
     const sharedPubKey9 = babyjub.mulPointEscalar(
         pubKey,
         ephemeralRandom9.toString(),
     );
     // console.log('sharedPubKey9=>', sharedPubKey9);
 
-    // ephemeralPubKey9 - [9,0] & [9,1]
     const ephemeralPubKey9 = babyjub.mulPointEscalar(
         babyjub.Base8,
         ephemeralRandom9,
     );
     // console.log('ephemeralPubKey9=>', ephemeralPubKey9);
 
-    // ephemeralRandom10 - 10
     const ephemeralRandom10Poseidon = poseidon([
         sharedPubKey9[0],
         sharedPubKey9[1],
@@ -285,33 +262,23 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
     );
     // console.log('ephemeralRandom10=>', ephemeralRandom10);
 
-    // sharedPubKey10 - [10,0] & [10,1]
-    const sharedPubKey10 = babyjub.mulPointEscalar(
-        pubKey,
-        ephemeralRandom10.toString(),
-    );
-    // console.log('sharedPubKey10=>', sharedPubKey10);
-
-    // ephemeralPubKey10 - [10,0] & [10,1]
-    const ephemeralPubKey10 = babyjub.mulPointEscalar(
-        babyjub.Base8,
-        ephemeralRandom10,
-    );
-    // console.log('ephemeralPubKey10=>', ephemeralPubKey10);
-
     // hidden point computation
-    const hiddenPoint_poseidon_out = poseidon([
-        12871439135712262058001002684440962908819002983015508623206745248194094676428n,
-        17114886397516225242214463605558970802516242403903915116207133292790211059315n,
+    const hiddenPoint_poseidon1 = poseidon([
+        sharedPubKey0[0],
+        sharedPubKey0[1],
     ]);
+    const hiddenPoint_poseidon = poseidon([hiddenPoint_poseidon1]);
 
     let mask = (BigInt(1) << BigInt(252)) - BigInt(1);
-    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon_out) & mask;
-
+    let hiddenPoint252Bits = BigInt(hiddenPoint_poseidon) & mask;
     const hiddenPoint_eMult = babyjub.mulPointEscalar(
         pubKey,
         hiddenPoint252Bits,
     );
+    // hiddenPoint_eMult=> [
+    //     20272187331257067730312283674886235862380792715978757885894576729734646287595n,
+    //     19572432596710438943526974929308114285457955803650387518123908035938551377040n
+    //   ]
     // console.log('hiddenPoint_eMult=>', hiddenPoint_eMult);
 
     const input = {
@@ -365,10 +332,6 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
                 7199903909075988357358243084402367162009278159850550718945324356639738668426n,
                 7577412086959893072342057579116887385280813589739427103433580293145793641479n,
             ],
-            [
-                11861630361391895079238566928173864464016475399753492116009099739090318996468n,
-                13119895310368360937633802331629602908321224595237611469001534844907122241884n,
-            ],
         ],
         sharedPubKey: [
             [
@@ -411,14 +374,10 @@ describe('EphemeralPubKeysBuilder circuit', function (this: any) {
                 19422562726954330262366342847200985885831954851878368123062828465738895330962n,
                 12463481783339713254340340992496598380770245140406136963354707869635762047176n,
             ],
-            [
-                10109339424773877492804669208682365416568345295837959627067555123981613599187n,
-                814517807069776295169446144150391725539459863450894144762894033002333230827n,
-            ],
         ],
         hidingPoint: [
-            21758777979755803182538129900028133174295707744114450068664463558509866946614n,
-            3383300988664032323093307926408339105249322517803146002338186492453973025540n,
+            20272187331257067730312283674886235862380792715978757885894576729734646287595n,
+            19572432596710438943526974929308114285457955803650387518123908035938551377040n,
         ],
     };
 

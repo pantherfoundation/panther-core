@@ -75,7 +75,6 @@ describe('ZZone Data Escrow ElGamal Encryption', function (this: any) {
             // await zZoneDataEscrowElGamalEncryption.assertOut(wtns, output);
 
             // console.log('wtns=>', wtns[261], wtns[262], wtns[263], wtns[264]);
-            // Explain - If needed - @sushma
             const wtnsFormattedOutput = [
                 0,
                 wtns[261],
