@@ -35,6 +35,8 @@ template ZAssetChecker() {
     signal output {binary} isZkpToken;
 
     var ACTIVE = Active();
+    var NON_ACTIVE = NonActive();
+
     assert(depositAmount < 2**96);
     assert(withdrawAmount < 2**96);
 
@@ -53,7 +55,7 @@ template ZAssetChecker() {
     component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
     isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
     isZAssetIdEqualToUtxoZAssetId.utxoZAssetId <== utxoZAssetId;
-    isZAssetIdEqualToUtxoZAssetId.offset <== Uint6Tag(ACTIVE)(32);
+    isZAssetIdEqualToUtxoZAssetId.offset <== Uint6Tag(NON_ACTIVE)(32);
     isZAssetIdEqualToUtxoZAssetId.enabled <== BinaryOne()(); // always enabled
 
     // [2] - zAsset::tokenId == tokenId with respect to offset
@@ -69,7 +71,7 @@ template ZAssetChecker() {
     component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
     isUtxoTokenIdEqualToTokenId.utxoZAssetId <== utxoZAssetId;
     isUtxoTokenIdEqualToTokenId.tokenId <== tokenIdDiff;
-    isUtxoTokenIdEqualToTokenId.offset <== Uint6Tag(ACTIVE)(32);
+    isUtxoTokenIdEqualToTokenId.offset <== Uint6Tag(NON_ACTIVE)(32);
     isUtxoTokenIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
 
     // [4] - token == 0 for internal tx

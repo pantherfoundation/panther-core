@@ -30,7 +30,7 @@ template BalanceChecker() {
     signal input {uint64}          zAccountUtxoOutZkpAmount;
     signal input {uint70}          totalUtxoInAmount;
     signal input {uint70}          totalUtxoOutAmount;
-    signal input {non_zero_uint32} zAssetWeight;
+    signal input {non_zero_uint48} zAssetWeight;
     signal input {non_zero_uint64} zAssetScale;
     signal input {non_zero_uint64} zAssetScaleZkp;
     signal input {uint96}          kytDepositChargedAmountZkp;
@@ -54,7 +54,7 @@ template BalanceChecker() {
     assert(0 <= zAccountUtxoOutZkpAmount < 2**64);
     assert(0 <= totalUtxoInAmount < 2**70);
     assert(0 <= totalUtxoOutAmount < 2**70);
-    assert(0 <= zAssetWeight < 2**32);
+    assert(0 <= zAssetWeight < 2**48);
     assert(0 <= zAssetScale < 2**64);
     assert(0 <= zAssetScaleZkp < 2**64);
     assert(0 <= kytDepositChargedAmountZkp < 2**96);

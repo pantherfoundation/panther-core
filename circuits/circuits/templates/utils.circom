@@ -757,11 +757,27 @@ template NonZeroUint32Tag(isActive) {
     out <== p.out;
 }
 
+template NonZeroUint48Tag(isActive) {
+    signal input in;
+    signal output {non_zero_uint48} out;
+
+    component p = NonZeroUintTag(isActive, 48);
+    p.in <== in;
+    out <== p.out;
+}
+
 template NonZeroUint32TagArray(isActive,N) {
     signal input in[N];
     signal output {non_zero_uint32} out[N];
 
     out <== NonZeroUintTagArray(isActive,N,32)(in);
+}
+
+template NonZeroUint48TagArray(isActive,N) {
+    signal input in[N];
+    signal output {non_zero_uint48} out[N];
+
+    out <== NonZeroUintTagArray(isActive,N,48)(in);
 }
 
 template NonZeroUint40Tag(isActive) {
