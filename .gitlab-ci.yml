@@ -50,6 +50,7 @@ job-on-MR:
     reports:
       junit:
         - dapp/junit.xml
+  timeout: 30m
 
 .ipfs_unpin_script: &ipfs_unpin_script
   - time yarn deploy:dapp:ci:ipfs --unpin
@@ -67,6 +68,7 @@ job-on-merge:
     reports:
       junit:
         - dapp/junit.xml
+  timeout: 30m
 
 build-cache:
   interruptible: true
@@ -85,3 +87,4 @@ build-cache:
     - time yarn install --frozen-lockfile --check-files --cache-folder .yarn-cache
   allow_failure:
     exit_codes: 10
+  timeout: 30m
