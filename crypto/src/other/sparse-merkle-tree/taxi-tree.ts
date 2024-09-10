@@ -2,18 +2,17 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
 import {
-    AbstractedSubtreeProofError,
-    LeafIndexOutOfBound,
-    InvalidSubtreeIndex,
-} from '../../error/tree';
-
-import {
     TAXI_SUBTREE_DEPTH,
     TAXI_TREE_DEPTH,
     TAXI_TREE_DEPTH_WITH_SUBTREE,
     TREE_ZERO_LEAF,
     ABSTRACTED_TAXI_TREE_DEPTH,
 } from './constants';
+import {
+    AbstractedSubtreeProofError,
+    LeafIndexOutOfBound,
+    InvalidSubtreeIndex,
+} from './errors';
 import {SparseMerkleTree} from './sparse-merkle-tree';
 
 /**
