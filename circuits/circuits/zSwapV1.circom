@@ -89,7 +89,7 @@ template ZSwapV1( nUtxoIn,
     signal input {uint252}         zAssetTokenId[zAssetArraySize];
     signal input {uint6}           zAssetNetwork[zAssetArraySize];
     signal input {uint32}          zAssetOffset[zAssetArraySize];
-    signal input {non_zero_uint32} zAssetWeight[zAssetArraySize];
+    signal input {non_zero_uint48} zAssetWeight[zAssetArraySize];
     signal input {non_zero_uint64} zAssetScale[zAssetArraySize];    // public - only in zSwap case
     signal input                   zAssetMerkleRoot;
     signal input {binary}          zAssetPathIndices[zAssetArraySize][ZAssetMerkleTreeDepth];
@@ -394,7 +394,7 @@ template ZSwapV1( nUtxoIn,
 
     // [4] - Pass values for computing rewards
     component rewards = RewardsExtended(nUtxoIn);
-    rewards.depositAmount <== totalBalanceChecker.depositWeightedScaledAmount;
+    rewards.depositScaledAmount <== totalBalanceChecker.depositScaledAmount;
     rewards.forTxReward <== forTxReward;
     rewards.forUtxoReward <== forUtxoReward;
     rewards.forDepositReward <== forDepositReward;

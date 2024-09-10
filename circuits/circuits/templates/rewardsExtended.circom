@@ -18,12 +18,12 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // * R = S1 + S5
 // */
 template RewardsExtended(nUtxoIn) {
-    signal input {uint96}          depositAmount;
+    signal input {uint64}          depositScaledAmount;
     signal input {uint40}          forTxReward;
     signal input {uint40}          forUtxoReward;
     signal input {uint40}          forDepositReward;
     signal input {uint32}          spendTime;
-    signal input {non_zero_uint32} assetWeight;
+    signal input {non_zero_uint48} assetWeight;
     signal input {uint64}          utxoInAmount[nUtxoIn];
     signal input {uint32}          utxoInCreateTime[nUtxoIn];
 
@@ -36,37 +36,36 @@ template RewardsExtended(nUtxoIn) {
     signal S5;
     signal R;
 
-    assert(spendTime <= 2**32);
-    assert(utxoInCreateTime[0] <= 2**32);
-
     var prpScaleFactor = 60;
-    S1 <== forTxReward * (2 ** prpScaleFactor); // 2^40 x 2^60 = 2^100
-    S2 <== forDepositReward * depositAmount;    // 2^40 x 2^96 = 2^136
+    // forTxReward is already expressed in PRPs and does not require division by the prpScaleFactor
+    // --> and we can not "scale" the input value, instead of correcting the code, as the input value becomes beyond the {uint40}
+    S1 <== forTxReward; // 2^40
+    S2 <== forDepositReward * depositScaledAmount;    // 2^40 x 2^64 = 2^104
+
     signal sum[nUtxoIn];
     component lessThen[nUtxoIn];
-    lessThen[0] = LessThan(32);
-    lessThen[0].in[0] <== utxoInCreateTime[0];
-    lessThen[0].in[1] <== spendTime;
     signal mult[nUtxoIn];
-    mult[0] <== lessThen[0].out * (spendTime - utxoInCreateTime[0]); // 2^32
-    sum[0] <==  mult[0] * utxoInAmount[0]; // 2^32 x 2^64 = 2^96
-    for (var i = 1; i < nUtxoIn; i++) {
+    for (var i = 0; i < nUtxoIn; i++) {
         // if spendTime < createTime --> spendTime - createTime = 0
         // so sum[i] <== sum[i-1];
 
-        assert(utxoInCreateTime[i] <= 2**32);
+        assert(0 <= utxoInCreateTime[i] < 2**32);
         lessThen[i] = LessThan(32);
         lessThen[i].in[0] <== utxoInCreateTime[i];
         lessThen[i].in[1] <== spendTime;
         // can't be negative
-        mult[i] <== lessThen[i].out * (spendTime - utxoInCreateTime[i]);
-        // can't overflow
-        sum[i] <== sum[i-1] + mult[i] * utxoInAmount[i]; // nUtxoIn x 2^96 + 2^96
+        mult[i] <== lessThen[i].out * (spendTime - utxoInCreateTime[i]); // 2^32
+        if( i == 0 ) {
+            sum[i] <==  mult[i] * utxoInAmount[i]; // 2^32 x 2^64 = 2^96
+        } else {
+            // can't overflow
+            sum[i] <== sum[i-1] + mult[i] * utxoInAmount[i]; // nUtxoIn x 2^96 + 2^96
+        }
     }
     S3 <== sum[nUtxoIn-1]; // ~ 2^100
     S4 <== forUtxoReward * S3; // 2^40 x 2^100 = 2^140
-    S5 <== (S4 + S2) * assetWeight; // 2^141 x 2^32 = 2^173
-    R <== S1 + S5; // 2^100 + 2^173 = 2^174 (at most)
+    S5 <== (S4 + S2) * assetWeight; // 2^104 x 2^48 = 2^152
+    R <== S1 + S5; // 2^40 + 2^152 = 2^153 (at most)
 
     component n2b = Num2Bits(253);
     n2b.in <== R;
