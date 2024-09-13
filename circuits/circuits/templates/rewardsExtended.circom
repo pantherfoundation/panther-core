@@ -18,16 +18,16 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 // * R = S1 + S5
 // */
 template RewardsExtended(nUtxoIn) {
-    signal input {uint64}          depositScaledAmount;
-    signal input {uint40}          forTxReward;
-    signal input {uint40}          forUtxoReward;
-    signal input {uint40}          forDepositReward;
-    signal input {uint32}          spendTime;
-    signal input {non_zero_uint48} assetWeight;
-    signal input {uint64}          utxoInAmount[nUtxoIn];
-    signal input {uint32}          utxoInCreateTime[nUtxoIn];
+    signal input {uint64}   depositScaledAmount;
+    signal input {uint40}   forTxReward;
+    signal input {uint40}   forUtxoReward;
+    signal input {uint40}   forDepositReward;
+    signal input {uint32}   spendTime;
+    signal input {uint48}   assetWeight;
+    signal input {uint64}   utxoInAmount[nUtxoIn];
+    signal input {uint32}   utxoInCreateTime[nUtxoIn];
 
-    signal output {uint196}        amountPrp;
+    signal output {uint196} amountPrp;
 
     signal S1;
     signal S2;
