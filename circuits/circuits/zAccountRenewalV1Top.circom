@@ -174,7 +174,7 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
     signal rc_zAssetTokenId <== Uint252Tag(IGNORE_ANCHORED)(zAssetTokenId);
     signal rc_zAssetNetwork <== Uint6Tag(IGNORE_ANCHORED)(zAssetNetwork);
     signal rc_zAssetOffset <== Uint32Tag(IGNORE_ANCHORED)(zAssetOffset);
-    signal rc_zAssetWeight <== NonZeroUint48Tag(IGNORE_ANCHORED)(zAssetWeight);
+    signal rc_zAssetWeight <== Uint48Tag(IGNORE_ANCHORED)(zAssetWeight);
     signal rc_zAssetScale <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScale);
     signal rc_zAssetMerkleRoot <== SnarkFieldTag()(zAssetMerkleRoot);
     signal rc_zAssetPathIndices[ZAssetMerkleTreeDepth] <== BinaryTagArray(ACTIVE,ZAssetMerkleTreeDepth)(zAssetPathIndices);
