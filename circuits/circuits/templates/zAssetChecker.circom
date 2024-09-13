@@ -7,20 +7,64 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
 ///*
-// This template checks for the pre-requisite equalities for all types of transactions.
+// This template matches the ID of a zAsset a transaction operates with, as well as params of the
+// token represented by the ZAsset, against ID and other params of the ZAsset's Batch (Leaf).
+// The template is used across all transaction types.
 //
+// The file './zAssetNoteInclusionProver.circom' provides more comments on ZAssets, Batches, the
+// ZAssetsTree and its Leafs.
+//
+// ZAsset's ID
+// -----------
+// It is an id that uniquely identifies a ZAsset.
+// This ID is a parameter of every ZAsset UTXO (unlike ZAccount UTXO) which specifies the ZAsset
+// a UTXO represents. Circuits treat UTXOs with distinct ZAsset ID's as UTXOs of different ZAssets.
+//
+// The ZAsset ID is is a 64-bit number.
+// Its 32 most significant bits link the ZAsset to the ZAssetsTree Leaf/Batch the ZAsset belongs to:
+// these bits in the ZAsset ID should be the same as the 32 MSBs of the Batch ID. If they are, then
+// parameters of the Batch must be applied for handling the ZAsset.
+// The 32 less significant bits specify the external ID of a token represented by the ZAsset:
+// the 'uint' number in these bits, when added to the Batch parameter 'startTokenId', yields the
+// external ID.
+//
+// For ERC-20 tokens, the 32 LSBs MUST be 0, and smart contracts enforce it on ZAssets registration.
+//
+// The ID of the ZAsset representing the ZKP token (from the Batch with ID 0), MUST be 0.
+//
+// In most cases, a ZAsset is supposed to be "contained" by a single Batch only. However, for tokens
+// circulating on multiple supported networks, multiple Batches may contain the same ZAsset - the ID
+// of a ZAsset then will match to IDs of all these Batches (parameters of a transaction will define
+// then which one of these Batches must be taken into account).
+//
+// Examples
+// - ERC-20 token from a Batch with ID of 9*2^32 will have the ZAsset's ID 9*2^32+0.
+// - NFT with external token ID 56 from the Batch with ID 10*2^32, where this NFT is the only
+//   token in the Batch (startTokenId = 56, offset = 0), will have the ZAsset's ID
+//   10*2^32+0.
+// - NFT with external token ID 173 from the Batch with ID of 11*2^32, containing 33 NFTs with
+//   external IDs ranging from 167 to 199 (startTokenId = 167, offset = 32), will
+//   have a the ZAsset's ID 11*2^32+6.
+//
+// This circuit code names the signal for ZAsset's ID as 'utxoZAssetId'.
+// Other circuits name this signal as 'zAsset'.
+// */
+
+///*
 // @input signals -
-// 1. token - external token address
-// 2. tokenId - tokenId associated with the token
-// 3. zAssetId - ID generated for adding a ZAsset to ZAsset Registry
-// 4. zAssetToken - tokenId associated with the ZAsset
-// 5. zAssetOffset - specific number of bits
-// 6. depositAmount - external amount for deposit
-// 7. withdrawAmount - external amount for withdrawal
-// 8. utxoZAssetId - zAssetId associated with the UTXO
+// 1. token - the token contract type and address, or 0 for internal transactions
+//    (i.e., if both depositAmount and withdrawAmount are zero).
+// 2. tokenId - token's external ID, or 0 for internal transactions.
+// 3. zAssetId -  ZAsset Batch's ID (recorded in the ZAssetsTree Leaf).
+// 4. zAssetToken - token contract type and address (recorded in the ZAssetsTree Leaf).
+// 5. zAssetTokenId - starting value of the range for external IDs (recorded in the Leaf).
+// 6. zAssetOffset - offset for the the external ID range's end value (recorded in the Leaf).
+// 7. depositAmount - amount deposited in the tx.
+// 8. withdrawAmount - amount withdrawn in the tx.
+// 9. utxoZAssetId - ZAsset ID recorded in the transaction's UTXOs.
 //
 // @output signal -
-// 1. isZkpToken - 1 if ZAsset is ZKP, 0 otherwise
+// 1. isZkpToken - 1 if ZAsset represents the ZKP token (from the Batch with ID 0), 0 otherwise.
 // */
 template ZAssetChecker() {
     signal input {uint168} token;
@@ -45,27 +89,27 @@ template ZAssetChecker() {
     var enable_If_ExternalAmountsAre_Zero = isZeroExternalAmounts.out;
     var enable_If_ExternalAmountsAre_NOT_Zero = 1 - isZeroExternalAmounts.out;
 
-    // [0] - zAsset::token == token
+    // [0] - if NOT internal tx, force `zAssetToken == token`
     component isZAssetTokenEqualToToken = ForceEqualIfEnabled();
     isZAssetTokenEqualToToken.in[0] <== zAssetToken;
     isZAssetTokenEqualToToken.in[1] <== token;
     isZAssetTokenEqualToToken.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
 
-    // [1] - zAsset::ID == UTXO:zAssetID with respect to offset
+    // [1] - force `zAssetId[63:32] == utxoZAssetId[63:32]`
     component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
     isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
     isZAssetIdEqualToUtxoZAssetId.utxoZAssetId <== utxoZAssetId;
     isZAssetIdEqualToUtxoZAssetId.offset <== Uint6Tag(NON_ACTIVE)(32);
     isZAssetIdEqualToUtxoZAssetId.enabled <== BinaryOne()(); // always enabled
 
-    // [2] - zAsset::tokenId == tokenId with respect to offset
+    // [2] - if NOT internal tx, force `zAssetTokenId ≤ tokenId ≤ zAssetTokenId+zAssetOffset`
     component isZAssetIdEqualToTokenId = IsTokenIdInZAssetTokenIdRange();
     isZAssetIdEqualToTokenId.zAssetTokenId <== zAssetTokenId;
     isZAssetIdEqualToTokenId.tokenId <== tokenId;
     isZAssetIdEqualToTokenId.offset <== zAssetOffset;
     isZAssetIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
 
-    // [3] - UTXO::tokenId == tokenId with respect to offset
+    // [3] - if NOT internal tx, force `tokenId == zAssetTokenId + uint(utxoZAssetId[31..0])`
     signal tokenIdDiff <== Uint252Tag(ACTIVE)(tokenId - zAssetTokenId);
 
     component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
@@ -74,13 +118,13 @@ template ZAssetChecker() {
     isUtxoTokenIdEqualToTokenId.offset <== Uint6Tag(NON_ACTIVE)(32);
     isUtxoTokenIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
 
-    // [4] - token == 0 for internal tx
+    // [4] - if internal tx, force `token == 0`
     component isTokenEqualToZeroForInternalTx = ForceEqualIfEnabled();
     isTokenEqualToZeroForInternalTx.in[0] <== 0;
     isTokenEqualToZeroForInternalTx.in[1] <== token;
     isTokenEqualToZeroForInternalTx.enabled <== enable_If_ExternalAmountsAre_Zero;
 
-    // [5] - tokenId == 0 for internal tx
+    // [5] - if internal tx, force `tokenId == 0`
     component isTokenIdEqualToZeroForInternalTx = ForceEqualIfEnabled();
     isTokenIdEqualToZeroForInternalTx.in[0] <== 0;
     isTokenIdEqualToZeroForInternalTx.in[1] <== tokenId;
@@ -96,20 +140,10 @@ template ZAssetChecker() {
     isZkpToken <== isZkpTokenEqual.out;
 }
 
-// /*
-// Checks 'zAssetId' is equal to the 'utxoZAssetId' with respect to the 'offset'
-//
-// This will be checked for the following transactions -
-//    1. Deposit Transaction
-//    2. Withdraw Transaction
-//    3. Internal transfer of ZAssets
-//
-// with respect to offset - `offset` address the LSB bit number
-// for example offset = 32 means: zAsset[63:32] == utxoZAsset[63:32]
-// and LSBs [31:0] or LSBs[offset-1:0] are not involved in equality check
-// offset = 0 means: zAsset[63:0] == utxoZAsset[63:0]
-// tokenId is LSBs
-// */
+// If enabled, checks 'offset' number of MSBs in 'zAssetId' and 'utxoZAssetId' are the same
+// Examples:
+// offset = 32: zAsset[63:32] == utxoZAsset[63:32], bits [31:0] (31=offset-1) are ignored.
+// offset = 0: zAsset[63:0] == utxoZAsset[63:0]
 template IsZAssetIdEqualToUtxoZAssetId() {
     signal input {uint64} zAssetId;
     signal input {uint64} utxoZAssetId;
@@ -126,13 +160,7 @@ template IsZAssetIdEqualToUtxoZAssetId() {
     p.enabled <== enabled;
 }
 
-// /*
-// Checks 'tokenId' is equal to the 'zAssetTokenId' with respect to the 'offset'
-//
-// This will be checked for the following transactions -
-//     1. Deposit Transaction
-//     2. Withdraw Transaction
-// */
+// If enabled, checks 'tokenId' is in the range '[zAssetTokenId .. zAssetTokenId + offset]'
 template IsTokenIdInZAssetTokenIdRange() {
     signal input {uint252} zAssetTokenId;
     signal input {uint252} tokenId;
@@ -146,16 +174,9 @@ template IsTokenIdInZAssetTokenIdRange() {
     p.enabled <== enabled;
 }
 
-// /*
-// Checks 'tokenId' is equal to the 'utxoZAssetId' with respect to the 'offset'
-//
-// This will be checked for the following transactions -
-//     1. Deposit Transaction
-//     2. Withdraw Transaction
-//
-// // lsb_mask = 2^offset - 1
-// // utxoZAssetId & lsb_mask === tokenId & lsb_mask
-// */
+// If enabled, checks 'offset' number of LSBs in 'tokenId' and 'utxoZAssetId' are the same
+// Examples:
+// offset = 32: tokenId[31:0] == utxoZAsset[31:0], bits [63:32] are ignored.
 template IsUtxoTokenIdEqualToTokenId() {
     signal input {uint64}  utxoZAssetId;
     signal input {uint252} tokenId;
