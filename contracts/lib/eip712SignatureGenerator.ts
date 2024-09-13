@@ -196,7 +196,7 @@ export async function genSignatureForupdateKeyRingOperator(
     return fromRpcSig(signature); // does nothing other that splitting the signature string
 }
 
-function generateleaf(): BigNumberish {
+export function generateleaf(): BigNumberish {
     const leaf = ethers.BigNumber.from(
         ethers.utils.formatBytes32String('random-leaf'),
     ).mod(SNARK_FIELD_SIZE)._hex;
