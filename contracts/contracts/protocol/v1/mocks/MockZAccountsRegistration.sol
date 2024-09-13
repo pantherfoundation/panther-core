@@ -4,8 +4,12 @@ pragma solidity ^0.8.19;
 
 import "../core/facets/ZAccountsRegistration.sol";
 
+//import "../core/facets/AppConfiguration.sol";
+
 contract MockZAccountsRegistration is ZAccountsRegistration {
     uint256 public nextId;
+
+    address public owner;
 
     constructor(
         uint8 _zAccountVersion,
@@ -21,7 +25,9 @@ contract MockZAccountsRegistration is ZAccountsRegistration {
             feeMaster,
             zkpToken
         )
-    {} // solhint-disable-line no-empty-blocks
+    {
+        owner = msg.sender;
+    }
 
     function mockZAccountIdTracker(uint256 _zAccountIdTracker) external {
         zAccountIdTracker = _zAccountIdTracker;
@@ -36,4 +42,13 @@ contract MockZAccountsRegistration is ZAccountsRegistration {
         uint256[] memory input,
         SnarkProof memory proof
     ) public view override {} // solhint-disable-line no-empty-blocks
+
+    modifier onlyOwner() override {
+        require(msg.sender == owner, "LibDiamond: Must be contract owner");
+        _;
+    }
+
+    function updateMaxTimeOffset(uint32 _maxBlockTimeOffset) public {
+        maxBlockTimeOffset = _maxBlockTimeOffset;
+    }
 }

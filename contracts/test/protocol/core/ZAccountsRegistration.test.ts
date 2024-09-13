@@ -5,8 +5,10 @@
 /* eslint-disable */
 
 import {smock, FakeContract} from '@defi-wonderland/smock';
-// eslint-disable-next-line
+// eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
+// eslint-disable-next-line import/named
+import {Bytes} from '@ethersproject/bytes';
 import {Provider} from '@ethersproject/providers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
@@ -16,26 +18,29 @@ import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {packPublicKey} from '../../../../crypto/src/base/keypairs';
-import {getPoseidonT3Contract} from '../../../lib/poseidonBuilder';
+import {
+    generateleaf,
+    generateProof,
+} from '../../../lib/eip712SignatureGenerator';
+import {getBlockNumber} from '../../../lib/provider';
 import {
     MockZAccountsRegistration,
-    IPantherPoolV1,
     PrpVoucherController,
-    PantherStaticTree,
-    PoseidonT3,
     IUtxoInserter,
     FeeMaster,
     IERC20,
+    IBlacklistedZAccountIdRegistry,
 } from '../../../types/contracts';
 import {SnarkProofStruct} from '../../../types/contracts/IPantherPoolV1';
-
+import {
+    generatePrivateMessage,
+    TransactionTypes,
+} from '../data/samples/transactionNote.data';
 import {
     getBlockTimestamp,
     revertSnapshot,
     takeSnapshot,
 } from '../helpers/hardhat';
-import {getBlockNumber} from '../../../lib/provider';
-import {randomInputGenerator} from '../helpers/randomSnarkFriendlyInputGenerator';
 
 describe.skip('ZAccountsRegistry', function () {
     let zAccountsRegistry: MockZAccountsRegistration;
@@ -44,12 +49,16 @@ describe.skip('ZAccountsRegistry', function () {
     let feeMaster: FakeContract<FeeMaster>;
     let pantherTrees: FakeContract<IUtxoInserter>;
     let prpVoucherController: FakeContract<PrpVoucherController>;
+    let blackListRegistry: FakeContract<IBlacklistedZAccountIdRegistry>;
 
     let owner: SignerWithAddress,
         notOwner: SignerWithAddress,
         user: SignerWithAddress;
     let provider: Provider;
     let snapshot: number;
+    let leaf: Bytes;
+    let proof: Bytes[];
+
     const zAccountVersion = 1;
 
     enum Status {
@@ -71,6 +80,7 @@ describe.skip('ZAccountsRegistry', function () {
         feeMaster = await smock.fake('FeeMaster');
         pantherTrees = await smock.fake('IUtxoInserter');
         prpVoucherController = await smock.fake('PrpVoucherController');
+        blackListRegistry = await smock.fake('IBlacklistedZAccountIdRegistry');
     });
 
     beforeEach(async () => {
@@ -207,10 +217,11 @@ describe.skip('ZAccountsRegistry', function () {
         const addedAmountZkp = options.addedAmountZkp || 0;
         const chargedAmountZkp = options.chargedAmountZkp || 0;
         const zAccountId = options.zAccountId || 0;
-        const privateMessages =
-            ethers.utils.formatBytes32String('privateMessages');
+        const privateMessages = generatePrivateMessage(
+            TransactionTypes.zAccountActivation,
+        );
         const zAccountCreateTime =
-            options.zAccountCreateTime || BigNumber.from(0);
+            options.zAccountCreateTime || (await getBlockTimestamp()) + 10;
         const zAccountRootSpendPubKeyX =
             options.zAccountRootSpendPubKeyX || examplePubKeys.x;
         const zAccountRootSpendPubKeyY =
@@ -221,7 +232,7 @@ describe.skip('ZAccountsRegistry', function () {
             options.zAccountPubReadKeyY || examplePubKeys.y;
         const zAccountMasterEOA = options.zAccountMasterEOA || user.address;
         const zAccountNullifierZone =
-            options.zAccountNullifierZone || BigNumber.from(0);
+            options.zAccountNullifierZone || BigNumber.from(1);
         const zAccountNullifierPubKeyX =
             options.zAccountNullifierPubKeyX || ethers.utils.id('nullifier');
         const zAccountNullifierPubKeyY =
@@ -345,15 +356,22 @@ describe.skip('ZAccountsRegistry', function () {
         prpVoucherController.generateRewards.returns(100);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function mockFeeAccountant() {
         feeMaster['accountFees((uint16,uint8,uint40,uint40,uint40))'].returns(
             99,
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function mockUtxoInsertion() {
         pantherTrees.addUtxosToBusQueue.returns(1);
         pantherTrees.addUtxosToBusQueueAndTaxiTree.returns(1);
+    }
+
+    function mockzAcctIdBlackList() {
+        blackListRegistry.addZAccountIdToBlacklist.returns(1);
+        blackListRegistry.removeZAccountIdFromBlacklist.returns(1);
     }
 
     describe('#deployment', () => {
@@ -418,6 +436,7 @@ describe.skip('ZAccountsRegistry', function () {
 
                 await expect(registerZAccount({})).to.be.revertedWith('ZAR:E4');
             });
+
             it(`should revert if a masterEOA is blacklisted`, async () => {
                 zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
                     [user.address],
@@ -579,6 +598,8 @@ describe.skip('ZAccountsRegistry', function () {
     describe('#activateZAccount', () => {
         describe('Success', () => {
             it('should activate zAccount if registered', async () => {
+                await zAccountsRegistry.updateMaxTimeOffset(1000);
+
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
                     'ZAccountRegistered',
@@ -589,12 +610,12 @@ describe.skip('ZAccountsRegistry', function () {
                 expect(
                     await activateZAccount({
                         zAccountMasterEOA: user.address,
-                        zAccountNullifierPubKeyX: gene,
                     }),
                 ).to.emit(zAccountsRegistry, 'ZAccountActivated');
             });
         });
-        describe.skip('Failure', () => {
+
+        describe('Failure', () => {
             it('should revert when user has not registered the zAccount', async () => {
                 await registerZAccount({});
                 const wallet = ethers.Wallet.createRandom();
@@ -603,14 +624,16 @@ describe.skip('ZAccountsRegistry', function () {
                     activateZAccount({zAccountMasterEOA: fauxUser}),
                 ).to.be.revertedWith('ZAR:E6');
             });
+
             it('should revert if the extraInputsHash is larger than FIELD_SIZE', async () => {
                 await registerZAccount({});
                 const invalidInputsHash =
                     ethers.BigNumber.from('12345').toString();
                 await expect(
                     activateZAccount({extraInputsHash: invalidInputsHash}),
-                ).to.be.revertedWith('ZAR:E11');
+                ).to.be.revertedWith('PIG:E1');
             });
+
             it('should revert if a nullifier is already registered', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -619,10 +642,12 @@ describe.skip('ZAccountsRegistry', function () {
                 expect(
                     await activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.emit(zAccountsRegistry, 'ZAccountActivated');
+
                 await expect(
                     activateZAccount({zAccountMasterEOA: user.address}),
-                ).to.be.revertedWith('ZAR:E5');
+                ).to.be.revertedWith('SN:E2');
             });
+
             it('should revert if public read key is not matching', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -635,6 +660,7 @@ describe.skip('ZAccountsRegistry', function () {
                     }),
                 ).to.be.revertedWith('ZAR:E19');
             });
+
             it('should revert if public root spending key is not matching', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -647,6 +673,7 @@ describe.skip('ZAccountsRegistry', function () {
                     }),
                 ).to.be.revertedWith('ZAR:E18');
             });
+
             it('should revert if Master EOA address is blacklisted', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -662,6 +689,7 @@ describe.skip('ZAccountsRegistry', function () {
                     }),
                 ).to.be.revertedWith('ZAR:E2');
             });
+
             it('should revert if public root spending key is blacklisted', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -685,16 +713,19 @@ describe.skip('ZAccountsRegistry', function () {
             it(`should update blacklist for a set of EOAs`, async () => {
                 const [blacklistedEoas, isBlacklisted] =
                     await generateRandomMasterEoas();
-                await zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
-                    blacklistedEoas,
-                    isBlacklisted,
-                );
+                await zAccountsRegistry
+                    .connect(owner)
+                    .batchUpdateBlacklistForMasterEoa(
+                        blacklistedEoas,
+                        isBlacklisted,
+                    );
                 const randomEOA = blacklistedEoas[4];
                 expect(
                     await zAccountsRegistry.isMasterEoaBlacklisted(randomEOA),
                 ).to.be.true;
             });
         });
+
         describe('Failure', () => {
             it(`should revert if a blacklisted EOA attempts to register a zAccount`, async () => {
                 const blacklistedEoaSigners = [];
@@ -715,6 +746,7 @@ describe.skip('ZAccountsRegistry', function () {
                     registerZAccount({user: blacklistedEoa}),
                 ).to.be.revertedWith('ZAR:E2');
             });
+
             it('should pass account registration if the EOA is not blacklisted, and fail activation if blacklisted afterwards', async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -728,6 +760,7 @@ describe.skip('ZAccountsRegistry', function () {
                     activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.be.revertedWith('ZAR:E2');
             });
+
             it('should revert if batchUpdate is executed by non owner', async () => {
                 const [blacklistedEoas, isBlacklisted] =
                     await generateRandomMasterEoas();
@@ -738,8 +771,9 @@ describe.skip('ZAccountsRegistry', function () {
                             blacklistedEoas,
                             isBlacklisted,
                         ),
-                ).to.be.revertedWith('ImmOwn: unauthorized');
+                ).to.be.revertedWith('LibDiamond: Must be contract owner');
             });
+
             it('should revert if the array length does not match', async () => {
                 const [blacklistedEoas, isBlacklisted] =
                     await generateRandomMasterEoas();
@@ -751,6 +785,7 @@ describe.skip('ZAccountsRegistry', function () {
                     ),
                 ).to.be.revertedWith('ZAR:E7');
             });
+
             it('should revert when setting the same blacklist status', async () => {
                 await zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
                     [user.address],
@@ -782,6 +817,7 @@ describe.skip('ZAccountsRegistry', function () {
                 );
             });
         });
+
         describe('Failure', () => {
             it(`should revert if a blacklisted pubRootSpendingKey attempts to register a zAccount`, async () => {
                 await zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
@@ -794,6 +830,7 @@ describe.skip('ZAccountsRegistry', function () {
                     }),
                 ).to.be.revertedWith('ZAR:E3');
             });
+
             it(`should pass account registration if the pubRootSpendingKey is not blacklisted, and fail activation if blacklisted afterwards`, async () => {
                 expect(await registerZAccount({})).to.emit(
                     zAccountsRegistry,
@@ -807,6 +844,7 @@ describe.skip('ZAccountsRegistry', function () {
                     activateZAccount({zAccountMasterEOA: user.address}),
                 ).to.be.revertedWith('ZAR:E3');
             });
+
             it('should revert if executed by non owner', async () => {
                 const [blacklistedPubRootSpendingKeys, , isBlacklisted] =
                     await generateRandomPubRootSpendingKeys();
@@ -817,8 +855,9 @@ describe.skip('ZAccountsRegistry', function () {
                             blacklistedPubRootSpendingKeys,
                             isBlacklisted,
                         ),
-                ).to.revertedWith('ImmOwn: unauthorized');
+                ).to.revertedWith('LibDiamond: Must be contract owner');
             });
+
             it('should revert if the array length does not match', async () => {
                 const [blacklistedPubRootSpendingKeys, , isBlacklisted] =
                     await generateRandomPubRootSpendingKeys();
@@ -832,6 +871,7 @@ describe.skip('ZAccountsRegistry', function () {
                     ),
                 ).to.be.revertedWith('ZAR:E7');
             });
+
             it('should revert when setting the same blacklist status', async () => {
                 await zAccountsRegistry.batchUpdateBlacklistForPubRootSpendingKey(
                     [await pointPack(examplePubKeys)],
@@ -847,12 +887,73 @@ describe.skip('ZAccountsRegistry', function () {
         });
     });
 
+    describe('#updateBlacklistForZAccountId', () => {
+        before(async () => {
+            mockzAcctIdBlackList();
+
+            leaf = await generateleaf();
+            proof = await generateProof(0);
+        });
+
+        describe.skip('Success', () => {
+            it(`should update blacklist for ZAccountId`, async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+
+                await expect(
+                    zAccountsRegistry
+                        .connect(owner)
+                        .updateBlacklistForZAccountId(0, leaf, proof, true),
+                ).to.emit(zAccountsRegistry, 'BlacklistForZAccountIdUpdated');
+            });
+        });
+
+        describe('Failure', () => {
+            it('should revert if executed by non owner', async () => {
+                await expect(
+                    zAccountsRegistry
+                        .connect(notOwner)
+                        .updateBlacklistForZAccountId(0, leaf, proof, true),
+                ).to.be.revertedWith('LibDiamond: Must be contract owner');
+            });
+
+            it('should revert for unknown zAccountId', async () => {
+                await expect(
+                    zAccountsRegistry.updateBlacklistForZAccountId(
+                        0,
+                        leaf,
+                        proof,
+                        false,
+                    ),
+                ).to.be.revertedWith('ZAR:E6');
+            });
+
+            it('should revert for repitive status', async () => {
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+                await expect(
+                    zAccountsRegistry.updateBlacklistForZAccountId(
+                        0,
+                        leaf,
+                        proof,
+                        false,
+                    ),
+                ).to.be.revertedWith('ZAR:E8');
+            });
+        });
+    });
+
     describe('#View Functions', () => {
         it(`should return true if zAccount is not blacklisted`, async () => {
             await registerZAccount({});
             expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
                 .to.be.true;
         });
+
         it(`should return false if zAccount is blacklisted`, async () => {
             zAccountsRegistry.batchUpdateBlacklistForMasterEoa(
                 [user.address],
@@ -861,10 +962,12 @@ describe.skip('ZAccountsRegistry', function () {
             expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
                 .to.be.false;
         });
+
         it(`should return false if zAccount does not exist`, async () => {
             expect(await zAccountsRegistry.isZAccountWhitelisted(user.address))
                 .to.be.false;
         });
+
         it(`should check if the public key is acceptable`, async () => {
             expect(await zAccountsRegistry.isAcceptablePubKey(examplePubKeys))
                 .to.be.true;
