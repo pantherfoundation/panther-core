@@ -216,7 +216,7 @@ describe('BusQueue contract', function () {
                     });
                 });
 
-                describe.only('when miner demands from the reward reserves', () => {
+                describe('when miner demands from the reward reserves', () => {
                     let estimatedReward: {
                         contrib: BigNumber;
                         reward: BigNumber;
