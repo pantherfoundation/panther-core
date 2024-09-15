@@ -14,14 +14,15 @@ pragma solidity ^0.8.19;
  * the transaction process.
  */
 
-import "../../common/ImmutableOwnable.sol";
-import "../../common/interfaces/IFeeMaster.sol";
-import "./erc4337/contracts/interfaces/IPaymaster.sol";
-import "./erc4337/contracts/interfaces/IEntryPoint.sol";
-import "./erc4337/contracts/interfaces/UserOperation.sol";
-import "./interfaces/IPrpVoucherGrantor.sol";
-import "../../common/Utils.sol";
 import "./errMsgs/PayMasterErrMsgs.sol";
+
+import "./core/interfaces/IPrpVoucherController.sol";
+import "../../common/interfaces/IFeeMaster.sol";
+import "../../common/Utils.sol";
+import "../../common/ImmutableOwnable.sol";
+import "../../common/erc4337/contracts/interfaces/IPaymaster.sol";
+import "../../common/erc4337/contracts/interfaces/IEntryPoint.sol";
+import "../../common/erc4337/contracts/interfaces/UserOperation.sol";
 import "../../common/misc/RevertMsgGetter.sol";
 // solhint-disable-next-line max-line-length
 import { GT_PAYMASTER_REFUND, HUNDRED_PERCENT, NATIVE_TOKEN, PROTOCOL_TOKEN_DECIMALS } from "../../common/Constants.sol";
@@ -271,7 +272,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster, Utils, RevertMsgGetter {
      */
     function _requestRewardsFromPrpVoucherGrantor(bytes32 saltHash) internal {
         try
-            IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+            IPrpVoucherController(PRP_VOUCHER_GRANTOR).generateRewards(
                 saltHash,
                 0,
                 GT_PAYMASTER_REFUND

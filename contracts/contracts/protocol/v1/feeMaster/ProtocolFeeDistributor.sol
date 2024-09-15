@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import "../interfaces/IPrpConverter.sol";
-import "../interfaces/IPrpVoucherGrantor.sol";
+import "../core/interfaces/IPrpConversion.sol";
+import "../core/interfaces/IPrpVoucherController.sol";
 import "../../../common/TransferHelper.sol";
 import { HUNDRED_PERCENT } from "../../../common/Constants.sol";
 
@@ -58,6 +58,6 @@ abstract contract ProtocolFeeDistributor {
 
         uint256 remainingZkps = availableZkps - treasuryAmount;
         zkpToken.safeTransfer(PRP_CONVERTER, remainingZkps);
-        IPrpConverter(PRP_CONVERTER).increaseZkpReserve();
+        IPrpConversion(PRP_CONVERTER).increaseZkpReserve();
     }
 }
