@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../pantherTrees/forestTree/CachedRoots.sol";
+import "../trees/facets/forestTrees/CachedRoots.sol";
 
 contract MockCachedRoots is CachedRoots {
     function internalCacheNewRoot(

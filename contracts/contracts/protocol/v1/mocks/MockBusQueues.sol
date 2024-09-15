@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import "../pantherTrees/busTree/BusQueues.sol";
+import "../trees/facets/forestTrees/busTree/BusQueues.sol";
 
 contract MockBusQueues is BusQueues {
     event LogComputedReward(uint256 reward);
