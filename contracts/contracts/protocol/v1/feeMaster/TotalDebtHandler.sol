@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
-import "../interfaces/ITransactionChargesHandler.sol";
+import "../core/interfaces/IFeeMasterTotalDebtController.sol";
 import { NATIVE_TOKEN } from "../../../common/Constants.sol";
 
 library TotalDebtHandler {
@@ -15,7 +15,7 @@ library TotalDebtHandler {
         uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
 
         try
-            ITransactionChargesHandler(pantherPool)
+            IFeeMasterTotalDebtController(pantherPool)
                 .adjustVaultAssetsAndUpdateTotalFeeMasterDebt{
                 value: msgValue
             }(token, netAmount, extAccount)
@@ -27,3 +27,5 @@ library TotalDebtHandler {
         }
     }
 }
+
+//

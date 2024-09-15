@@ -4,7 +4,6 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IFeeMaster.sol";
-import "./interfaces/ITransactionChargesHandler.sol";
 
 import "./feeMaster/PoolKey.sol";
 import "./feeMaster/FeeAccountant.sol";
@@ -13,9 +12,9 @@ import "./feeMaster/TotalDebtHandler.sol";
 import "./feeMaster/ProtocolFeeDistributor.sol";
 import { ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
 
-import "./pantherPool/Types.sol";
+import "./core/utils/Types.sol";
 
-import "./pantherPool/TransactionTypes.sol";
+import "./core/libraries/TransactionTypes.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/TransferHelper.sol";
 import "../../common/ImmutableOwnable.sol";
@@ -315,7 +314,7 @@ contract FeeMaster is
         ) {
             return chargedFeesPerTx = _accountActivationFees(feeData);
         }
-        if (feeData.txType == TT_PRP_CLAIM) {
+        if (feeData.txType == TT_PRP_ACCOUNTING) {
             return chargedFeesPerTx = _accountPrpConversionOrClaimFees(feeData);
         }
         if (feeData.txType == TT_PRP_CONVERSION) {
@@ -465,7 +464,7 @@ contract FeeMaster is
         bytes4 grantType
     ) private {
         try
-            IPrpVoucherGrantor(PRP_VOUCHER_GRANTOR).generateRewards(
+            IPrpVoucherController(PRP_VOUCHER_GRANTOR).generateRewards(
                 secretHash,
                 DEFAULT_GRANT_TYPE_PRP_REWARDS,
                 grantType

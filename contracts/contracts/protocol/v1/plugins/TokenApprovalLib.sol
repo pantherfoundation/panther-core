@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../../common/Constants.sol";
-import "../../../common/TransferHelper.sol";
+import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "./../../../common/Constants.sol";
+import "./../../../common/TransferHelper.sol";
 
 library TokenApprovalLib {
     using TransferHelper for address;

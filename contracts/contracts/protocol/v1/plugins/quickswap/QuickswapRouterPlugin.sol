@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import "../../DeFi/uniswap/interfaces/IUniswapV2Router.sol";
-import "../../DeFi/uniswap/interfaces/IUniswapV2Factory.sol";
-import "../../DeFi/uniswap/interfaces/IUniswapV2Pair.sol";
-import "../../interfaces/IPlugin.sol";
+import "./../../DeFi/uniswap/interfaces/IUniswapV2Router.sol";
+import "./../../DeFi/uniswap/interfaces/IUniswapV2Factory.sol";
+import "./../../DeFi/uniswap/interfaces/IUniswapV2Pair.sol";
+import "./../../interfaces/IPlugin.sol";
 
 import "../TokenPairResolverLib.sol";
 import "../PluginDataDecoderLib.sol";
