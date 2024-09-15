@@ -3,9 +3,8 @@
 pragma solidity ^0.8.19;
 
 import { VerifyingKey } from "../../../common/Types.sol";
-import "./IVerifier.sol";
 
-interface IPantherVerifier is IVerifier {
+interface IVerifyingKeyProvider {
     /**
      * @notice Get the verifying key for the specified circuits
      * @param circuitId ID of the circuit
