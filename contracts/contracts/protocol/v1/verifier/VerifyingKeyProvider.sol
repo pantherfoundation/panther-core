@@ -2,23 +2,23 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../../common/Bytecode.sol";
-import { VerifyingKey } from "../../common/Types.sol";
-import "./pantherVerifier/Verifier.sol";
-import "./interfaces/IPantherVerifier.sol";
+import "../interfaces/IVerifyingKeyProvider.sol";
 
-contract PantherVerifier is Verifier, IPantherVerifier {
-    /// @inheritdoc IPantherVerifier
+import "../../../common/Bytecode.sol";
+import { VerifyingKey } from "../../../common/Types.sol";
+
+abstract contract VerifyingKeyProvider is IVerifyingKeyProvider {
+    /// @inheritdoc IVerifyingKeyProvider
     function getVerifyingKey(
         uint160 circuitId
-    ) external view override returns (VerifyingKey memory) {
-        return loadVerifyingKey(circuitId);
+    ) external view returns (VerifyingKey memory) {
+        return _loadVerifyingKey(circuitId);
     }
 
     /// @dev It reads the verifying key from bytecode at `address(circuitId)`
-    function loadVerifyingKey(
+    function _loadVerifyingKey(
         uint160 circuitId
-    ) internal view virtual override returns (VerifyingKey memory) {
+    ) internal view virtual returns (VerifyingKey memory) {
         return
             // Stored key MUST be `abi.encode`d and prepended by 0x00
             abi.decode(

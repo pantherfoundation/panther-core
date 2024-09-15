@@ -10,11 +10,10 @@ interface IVerifier {
      * @param circuitId ID of the circuit (it tells which verifying key to use)
      * @param input Public input signals
      * @param proof SNARK proof
-     * @return isVerified bool true if proof is valid
      */
-    function verify(
+    function verifyOrRevert(
         uint160 circuitId,
         uint256[] memory input,
         SnarkProof memory proof
-    ) external view returns (bool isVerified);
+    ) external view;
 }
