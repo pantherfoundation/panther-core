@@ -1,6 +1,5 @@
 import * as path from 'path';
 import {toBeHex} from 'ethers';
-import assert from 'assert';
 import {wtns} from 'snarkjs';
 import {poseidon, eddsa, babyjub} from 'circomlibjs';
 import {MerkleTree} from '@zk-kit/merkle-tree';
@@ -16,11 +15,6 @@ import {
 import {bigIntToUint8Array, uint8ArrayToBigInt} from './helpers/utils';
 
 describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness computation', async function (this: any) {
-    const poseidon2or3 = (inputs: bigint[]): bigint => {
-        assert(inputs.length === 3 || inputs.length === 2);
-        return poseidon(inputs);
-    };
-
     let circuit: any;
     let mainTxWasm: any;
     let mainTxWitness: any;
@@ -160,7 +154,7 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
         407487970930055136132864974074225519407787604125n, // zAccountUtxoInMasterEOA
         33, // zAccountUtxoInId
         9999989100, // zAccountUtxoOutZkpAmount
-        10, // zAccountUtxoInPrpAmount + rewards.amountPrp
+        0, // zAccountUtxoInPrpAmount + rewards.amountPrp
         1, // utxoOutTargetZoneId
         1702652400, // zAccountUtxoInExpiryTime
         3, // zAccountUtxoInNonce + 1
@@ -341,7 +335,7 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
         // zAsset
         zAssetNetwork: 2n,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -782,7 +776,7 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
             1215795509656177802870041674430711702496004716229829094660171184836034819583n,
 
         zAccountUtxoOutCommitment:
-            186692839770280082029534744794227910179413518867095586852939524001158859102n,
+            15769996609534038445427710675910781776917540318211506091184793859301090328581n,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,
@@ -798,7 +792,7 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
             19603150025355661252212198237607440386334054455687766589389473805115541553727n,
         ],
         staticTreeMerkleRoot:
-            17931067957218291153823825912158291535579397890455292055678506728658508421915n,
+            15348222720660628311446592885548915884577953917057577776988845594265385226543n,
 
         forestMerkleRoot: 0,
         taxiMerkleRoot:

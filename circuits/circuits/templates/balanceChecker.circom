@@ -146,7 +146,7 @@ template BalanceChecker() {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [4] - Verify total balances /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    signal kytChargedScaledAmountZkp <== UintTag(ACTIVE,99)(kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalChargedAmountZkp); // 96 + 3
+    signal kytChargedScaledAmountZkp <== UintTag(ACTIVE,99)(kytDepositScaledChargedAmountZkp + kytWithdrawScaledChargedAmountZkp + kytInternalScaledChargedAmountZkp); // 96 + 3
 
     // depositScaledAmount is RCed, together with zAccountUtxoInZkpAmount & addedScaledAmountZkp, 64 + 64 + 96
     signal totalBalanceIn <== depositScaledAmount + totalUtxoInAmount + isZkpToken * ( zAccountUtxoInZkpAmount + addedScaledAmountZkp );

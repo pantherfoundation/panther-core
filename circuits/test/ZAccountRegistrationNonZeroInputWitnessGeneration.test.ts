@@ -421,7 +421,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         zAssetWeight: 20,
         zAssetScale: 10 ** 12,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
@@ -639,7 +639,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 4) zZoneMerkleRoot
         // 5) kycKytMerkleRoot
         staticTreeMerkleRoot:
-            17931067957218291153823825912158291535579397890455292055678506728658508421915n,
+            15348222720660628311446592885548915884577953917057577776988845594265385226543n,
         // forest root
         // Poseidon of:
         // 1) UTXO-Taxi-Tree   - 6 levels MT

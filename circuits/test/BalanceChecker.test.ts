@@ -15,7 +15,7 @@ describe('BalanceChecker circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/balanceChecker.circom',
+            './test/circuits/balanceCheckerMain.circom',
         );
         balanceChecker = await wasm_tester(input, opts);
     });
@@ -23,20 +23,21 @@ describe('BalanceChecker circuit', async function (this: any) {
     let balanceCheckerSignals: any;
     beforeEach(async function () {
         balanceCheckerSignals = {
-            isZkpToken: BigInt(0n),
-            depositAmount: BigInt(0n),
-            depositChange: BigInt(0n),
-            withdrawAmount: BigInt(0n),
-            withdrawChange: BigInt(0n),
-            chargedAmountZkp: BigInt(0n),
-            addedAmountZkp: BigInt(0n),
-            zAccountUtxoInZkpAmount: BigInt(0n),
-            zAccountUtxoOutZkpAmount: BigInt(0n),
-            totalUtxoInAmount: BigInt(0n),
-            totalUtxoOutAmount: BigInt(0n),
-            zAssetWeight: BigInt(0n),
-            zAssetScale: BigInt(0n),
-            zAssetScaleZkp: BigInt(0n),
+            isZkpToken: BigInt(0),
+            depositAmount: BigInt(0),
+            withdrawAmount: BigInt(0),
+            chargedAmountZkp: BigInt(0),
+            addedAmountZkp: BigInt(0),
+            zAccountUtxoInZkpAmount: BigInt(0),
+            zAccountUtxoOutZkpAmount: BigInt(0),
+            totalUtxoInAmount: BigInt(0),
+            totalUtxoOutAmount: BigInt(0),
+            zAssetWeight: BigInt(0),
+            zAssetScale: BigInt(0),
+            zAssetScaleZkp: BigInt(0),
+            kytDepositChargedAmountZkp: BigInt(0),
+            kytWithdrawChargedAmountZkp: BigInt(0),
+            kytInternalChargedAmountZkp: BigInt(0),
         };
     });
 
@@ -64,47 +65,483 @@ describe('BalanceChecker circuit', async function (this: any) {
     };
 
     describe('Valid input signals', async function () {
-        it('balance should tally before and after the transaction for ZKP ZAsset', async () => {
-            balanceCheckerSignals.isZkpToken = 1;
-            balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
+        it('balance should tally for native token deposit transaction without kytDepositChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // zZKP tokenId
+            balanceCheckerSignals.depositAmount = BigInt(10 ** 13); // deposit tx
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
             balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
             balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
-            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999000n);
-            balanceCheckerSignals.totalUtxoInAmount = 0;
-            balanceCheckerSignals.totalUtxoOutAmount = 110;
-            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
-            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
-            balanceCheckerSignals.zAssetWeight = 1;
-
-            let totalScaled = 100000110n - 99999000n;
-            let totalWeighted = totalScaled;
-            await checkWitness({
-                depositScaledAmount: 10,
-                depositWeightedScaledAmount: 10,
-                withdrawWeightedScaledAmount: 0,
-                withdrawScaledAmount: 0,
-                totalScaled: totalScaled,
-                totalWeighted: totalWeighted,
-            });
-        });
-
-        it('balance should tally before and after the transaction for Non ZKP ZAsset', async () => {
-            balanceCheckerSignals.isZkpToken = 0;
-            balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
-            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
-            balanceCheckerSignals.addedAmountZkp = 0;
-            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
-            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
             balanceCheckerSignals.totalUtxoInAmount = 0;
             balanceCheckerSignals.totalUtxoOutAmount = 10;
             balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetWeight = 1;
 
-            await checkWitness({
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
                 depositScaledAmount: 10,
                 depositWeightedScaledAmount: 10,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 1010,
+                totalWeighted: 1010,
+            });
+        });
+
+        it('balance should tally for native token deposit transaction with kytDepositChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // zZKP tokenId
+            balanceCheckerSignals.depositAmount = BigInt(10 ** 13); // deposit tx
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 0;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytDepositChargedAmountZkp = BigInt(10 ** 13);
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 10,
+                depositWeightedScaledAmount: 10,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 1020,
+                totalWeighted: 1020,
+            });
+        });
+
+        it('balance should tally for ERC20 token deposit transaction without kytDepositChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
+            balanceCheckerSignals.totalUtxoInAmount = 0;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 10,
+                depositWeightedScaledAmount: 10,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 10,
+                totalWeighted: 10,
+            });
+        });
+
+        it('balance should tally for ERC20 token deposit transaction with kytDepositChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 0;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytDepositChargedAmountZkp = BigInt(10 ** 13);
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 10,
+                depositWeightedScaledAmount: 10,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 10,
+                totalWeighted: 10,
+            });
+        });
+
+        it('balance should tally for native token withdraw transaction without kytWithdrawChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // Native token
+            balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 0;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 10,
+                withdrawScaledAmount: 10,
+                totalScaled: 1010,
+                totalWeighted: 1010,
+            });
+        });
+
+        it('balance should tally for native token withdraw transaction with kytWithdrawChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // zZKP tokenId
+            balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 0;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytWithdrawChargedAmountZkp = BigInt(
+                10 ** 13,
+            );
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 10,
+                withdrawScaledAmount: 10,
+                totalScaled: 1020,
+                totalWeighted: 1020,
+            });
+        });
+
+        it('balance should tally for ERC20 token withdraw transaction without kytWithdrawChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 0;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 10,
+                withdrawScaledAmount: 10,
+                totalScaled: 10,
+                totalWeighted: 10,
+            });
+        });
+
+        it('balance should tally for ERC20 token withdraw transaction with kytWithdrawChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 0;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytWithdrawChargedAmountZkp = BigInt(
+                10 ** 13,
+            );
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 10,
+                withdrawScaledAmount: 10,
+                totalScaled: 10,
+                totalWeighted: 10,
+            });
+        });
+
+        it('balance should tally for native token internal transaction without kytInternalChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // Native token
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+
+            // Inferred - no external deposit amount, no external withdraw amount
+            // balanceCheckerSignals.depositAmount = 0;
+            // balanceCheckerSignals.withdrawAmount = 0;
+            // balanceCheckerSignals.kytInternalChargedAmountZkp = 0;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 1010,
+                totalWeighted: 1010,
+            });
+        });
+
+        it('balance should tally for native token internal transaction with kytInternalChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 1; // Native token
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytInternalChargedAmountZkp = BigInt(
+                10 ** 13,
+            );
+
+            // Inferred - no external deposit amount, no external withdraw amount
+            // balanceCheckerSignals.depositAmount = 0;
+            // balanceCheckerSignals.withdrawAmount = 0;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 1020,
+                totalWeighted: 1020,
+            });
+        });
+
+        it('balance should tally for ERC20 token internal transaction without kytInternalChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999100n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+
+            // Inferred - no external deposit amount, no external withdraw amount
+            // balanceCheckerSignals.depositAmount = 0;
+            // balanceCheckerSignals.withdrawAmount = 0;
+            // balanceCheckerSignals.kytInternalChargedAmountZkp = 0;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
+                withdrawWeightedScaledAmount: 0,
+                withdrawScaledAmount: 0,
+                totalScaled: 10,
+                totalWeighted: 10,
+            });
+        });
+
+        it('balance should tally for ERC20 token internal transaction with kytInternalChargedAmountZkp', async () => {
+            balanceCheckerSignals.isZkpToken = 0;
+            balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
+            balanceCheckerSignals.addedAmountZkp = BigInt(10 ** 14);
+            balanceCheckerSignals.zAccountUtxoInZkpAmount = BigInt(100000000n);
+            balanceCheckerSignals.zAccountUtxoOutZkpAmount = BigInt(99999090n);
+            balanceCheckerSignals.totalUtxoInAmount = 10;
+            balanceCheckerSignals.totalUtxoOutAmount = 10;
+            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
+            balanceCheckerSignals.zAssetWeight = 1;
+            balanceCheckerSignals.kytInternalChargedAmountZkp = BigInt(
+                10 ** 13,
+            );
+
+            // Inferred - no external deposit amount, no external withdraw amount
+            // balanceCheckerSignals.depositAmount = 0;
+            // balanceCheckerSignals.withdrawAmount = 0;
+
+            const wtns = await balanceChecker.calculateWitness(
+                balanceCheckerSignals,
+                true,
+            );
+
+            const wtnsFormattedOutput = [
+                0,
+                wtns[22],
+                wtns[23],
+                wtns[24],
+                wtns[25],
+                wtns[26],
+                wtns[27],
+            ];
+
+            await balanceChecker.assertOut(wtnsFormattedOutput, {
+                depositScaledAmount: 0,
+                depositWeightedScaledAmount: 0,
                 withdrawWeightedScaledAmount: 0,
                 withdrawScaledAmount: 0,
                 totalScaled: 10,
@@ -114,34 +551,6 @@ describe('BalanceChecker circuit', async function (this: any) {
     });
 
     describe('Invalid input signals', async function () {
-        it('should fail when deposit amount is 0 and deposit change is a non 0', async () => {
-            balanceCheckerSignals.depositChange = 1;
-
-            await checkWitnessError(balanceCheckerSignals);
-        });
-
-        it('should fail when withdraw amount is 0 and withdraw change is a non 0', async () => {
-            balanceCheckerSignals.withdrawChange = 1;
-
-            await checkWitnessError(balanceCheckerSignals);
-        });
-
-        it('should fail when deposit amount is not equal to "(deposit scaled amount * zAsset scale) + deposit change"', async () => {
-            balanceCheckerSignals.depositAmount = BigInt(10 ** 13);
-            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
-            balanceCheckerSignals.depositChange = BigInt(1n);
-
-            await checkWitnessError(balanceCheckerSignals);
-        });
-
-        it('should fail when withdraw amount is not equal to "(withdraw scaled amount * zAsset scale) + withdraw change"', async () => {
-            balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
-            balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
-            balanceCheckerSignals.withdrawChange = BigInt(1n);
-
-            await checkWitnessError(balanceCheckerSignals);
-        });
-
         it('should fail when zAssetScale <= 0', async () => {
             balanceCheckerSignals.zAssetScale = 0;
 

@@ -240,7 +240,7 @@ const zAccountUtxoOutCommitment = poseidon([
     407487970930055136132864974074225519407787604125n, // zAccountUtxoInMasterEOA
     33, // zAccountUtxoInId
     9999988200, // zAccountUtxoOutZkpAmount
-    20, // zAccountUtxoInPrpAmount + rewards.amountPrp
+    10, // zAccountUtxoInPrpAmount + rewards.amountPrp
     1, // utxoOutTargetZoneId
     1702652400, // zAccountUtxoInExpiryTime
     4, // zAccountUtxoInNonce + 1
@@ -248,7 +248,7 @@ const zAccountUtxoOutCommitment = poseidon([
     1700902800, // utxoOutCreateTime - same time as zAssetUTXO got created
     2, // zAccountUtxoInNetworkId
 ]);
-// zAccountUtxoOutCommitment=> 6991129837942447437106224885480484531511792005929733215807835310816105473510n
+// zAccountUtxoOutCommitment=> 17772171969746842192747351848673717488532684081090564459852534364824511477658
 // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
 /* 6. END ===== zAccountUtxoOutCommitment computation  ===== */
 
@@ -345,7 +345,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - With ZZoneSealing - Witness
         zAssetScale: 10 ** 12,
         zAssetScaleZkp: 10 ** 12,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -808,7 +808,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - With ZZoneSealing - Witness
             928974505793416890028255163642163633941110568617692085076073897724890512527n,
 
         zAccountUtxoOutCommitment:
-            6991129837942447437106224885480484531511792005929733215807835310816105473510n,
+            17772171969746842192747351848673717488532684081090564459852534364824511477658n,
         // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
         chargedAmountZkp: 10 ** 15,
 
@@ -828,7 +828,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - With ZZoneSealing - Witness
         ],
 
         staticTreeMerkleRoot:
-            17931067957218291153823825912158291535579397890455292055678506728658508421915n,
+            15348222720660628311446592885548915884577953917057577776988845594265385226543n,
 
         forestMerkleRoot: 0,
         taxiMerkleRoot:
