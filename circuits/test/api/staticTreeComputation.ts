@@ -91,19 +91,14 @@ const addLeafToZAssetMerkleTree = async (
     token: BigInt,
     tokenId: BigInt,
     network: BigInt,
-    offset: BigInt,
+    offset: any,
     weight: BigInt,
-    scale: BigInt,
+    scale: any,
 ) => {
     // ZAsset Merkle tree leaf computation
     const zAssetLeafHash = poseidon([
-        zAsset,
-        token,
-        tokenId,
-        network,
-        offset,
+        poseidon([zAsset, token, tokenId, network, offset * 2n ** 64n + scale]),
         weight,
-        scale,
     ]);
 
     zAssetMerkleTreeLeaf = zAssetLeafHash;
@@ -202,9 +197,11 @@ const addLeafToZZoneRecordMerkleTree = async (
     zAccountIDsBlackList: BigInt,
     maximumAmountPerTimePeriod: BigInt,
     timePeriodPerMaximumAmount: BigInt,
+    dataEscrowPubKey: [BigInt, BigInt],
+    sealing: Boolean,
 ) => {
     // ZZone Merkle tree leaf computation
-    const zZoneLeafHash = poseidon([
+    const zZoneLeafHashTmp = poseidon([
         zoneId,
         edDsaPubKey0,
         edDsaPubKey1,
@@ -220,6 +217,13 @@ const addLeafToZZoneRecordMerkleTree = async (
         zAccountIDsBlackList,
         maximumAmountPerTimePeriod,
         timePeriodPerMaximumAmount,
+    ]);
+
+    const zZoneLeafHash = poseidon([
+        dataEscrowPubKey[0],
+        dataEscrowPubKey[1],
+        sealing,
+        zZoneLeafHashTmp,
     ]);
 
     zZoneRecordMerkleTreeLeaf = zZoneLeafHash;
@@ -294,7 +298,7 @@ async function main() {
         '================== START - Trust Provider Merkle Tree ==================',
     );
     // Adding First leaf - PureFi attestation
-    const trustProviderCommitment0 = await addLeafToTrustProviderMerkleTree(
+    await addLeafToTrustProviderMerkleTree(
         BigInt(
             9487832625653172027749782479736182284968410276712116765581383594391603612850n,
         ),
@@ -302,9 +306,6 @@ async function main() {
             20341243520484112812812126668555427080517815150392255522033438580038266039458n,
         ),
         BigInt(1735689600n),
-    );
-    console.log(
-        `Computed commitment for leaf 0 is ${trustProviderCommitment0}`,
     );
 
     // get the proof for leaf at position 0
@@ -316,7 +317,7 @@ async function main() {
     );
 
     // Adding Second leaf - Safe Operator's public key (for encryption)
-    const trustProviderCommitment1 = await addLeafToTrustProviderMerkleTree(
+    await addLeafToTrustProviderMerkleTree(
         BigInt(
             6461944716578528228684977568060282675957977975225218900939908264185798821478n,
         ),
@@ -324,9 +325,6 @@ async function main() {
             6315516704806822012759516718356378665240592543978605015143731597167737293922n,
         ),
         BigInt(1735689600n),
-    );
-    console.log(
-        `Computed commitment for leaf 1 is ${trustProviderCommitment1}`,
     );
 
     // get the proof for leaf at position 1
@@ -346,7 +344,7 @@ async function main() {
         'START - ================== ZAsset Merkle Tree ==================',
     );
     // Adding First leaf to ZAssetMerkleTree at position 0 - testZKP token on Mumbai
-    const zAssetCommitment0 = await addLeafToZAssetMerkleTree(
+    await addLeafToZAssetMerkleTree(
         0n,
         362235805296134286480704068378271723420643984799n,
         0n,
@@ -355,7 +353,6 @@ async function main() {
         20n,
         BigInt(10 ** 12), // 1 ZKP = 1 * 10^18 unscaled units / 1 * 10^6 scaled units
     );
-    console.log(`Computed commitment for leaf 0 is ${zAssetCommitment0}`);
 
     // get the proof for leaf at position 0
     const ZAssetMerkleProofAfterLeaf0 = await getPOEOfLeafInZAssetMerkleTree(0);
@@ -365,16 +362,7 @@ async function main() {
     );
 
     // Adding First leaf to ZAssetMerkleTree at position 1 - Matic token on Mumbai
-    const zAssetCommitment1 = await addLeafToZAssetMerkleTree(
-        2n,
-        0n,
-        0n,
-        2n,
-        0n,
-        700n,
-        BigInt(10 ** 12),
-    );
-    console.log(`Computed commitment for leaf 1 is ${zAssetCommitment1}`);
+    await addLeafToZAssetMerkleTree(2n, 0n, 0n, 2n, 0n, 700n, BigInt(10 ** 12));
 
     // get the proof for leaf at position 0
     const ZAssetMerkleProofAfterLeaf1 = await getPOEOfLeafInZAssetMerkleTree(1);
@@ -392,7 +380,7 @@ async function main() {
         'START - ================== ZNetwork Merkle Tree ==================',
     );
     // Adding First leaf to zNetworkMerkleTree at position 0 - Goerli
-    const zNetworkCommitment0 = await addLeafTozNetworkMerkleTree(
+    await addLeafTozNetworkMerkleTree(
         1,
         5n,
         1,
@@ -408,8 +396,6 @@ async function main() {
         ),
     );
 
-    console.log(`Computed commitment for leaf 0 is ${zNetworkCommitment0}`);
-
     // get the proof for leaf at position 0
     const ZNetworkMerkleProofAfterLeaf0 =
         await getPOEOfLeafInzNetworkMerkleTree(0);
@@ -419,7 +405,7 @@ async function main() {
     );
 
     // Adding Second leaf to zNetworkMerkleTree at position 1 - Polygon Mumbai
-    const zNetworkCommitment1 = await addLeafTozNetworkMerkleTree(
+    await addLeafTozNetworkMerkleTree(
         1,
         80001n,
         2,
@@ -434,8 +420,6 @@ async function main() {
             12531080428555376703723008094946927789381711849570844145043392510154357220479n,
         ),
     );
-
-    console.log(`Computed commitment for leaf 1 is ${zNetworkCommitment1}`);
 
     // get the proof for leaf at position 1
     const ZNetworkMerkleProofAfterLeaf1 =
@@ -455,7 +439,7 @@ async function main() {
         'START - ================== ZZone Merkle Tree ==================',
     );
     // Adding First leaf to zZoneMerkleTree at position 0
-    const zZoneCommitment0 = await addLeafToZZoneRecordMerkleTree(
+    await addLeafToZZoneRecordMerkleTree(
         1n,
         BigInt(
             13969057660566717294144404716327056489877917779406382026042873403164748884885n,
@@ -477,9 +461,9 @@ async function main() {
         ),
         BigInt(1 * 10 ** 13),
         86400n,
+        [BigInt(0), BigInt(1)], // dataEscrowPubKey: [BigInt, BigInt]
+        Boolean(0),
     );
-
-    console.log(`Computed commitment for leaf 0 is ${zZoneCommitment0}`);
 
     // get the proof for leaf at position 1
     const ZZoneMerkleProofAfterLeaf0 = await getPOEOfLeafInZZoneMerkleTree(0);
@@ -541,5 +525,5 @@ main()
     .catch(err => {
         console.log(err);
         process.exit(1);
-    }); 
+    });
 */

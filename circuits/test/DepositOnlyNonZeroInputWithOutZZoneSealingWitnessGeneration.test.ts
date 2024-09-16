@@ -160,7 +160,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
         407487970930055136132864974074225519407787604125n, // zAccountUtxoInMasterEOA
         33, // zAccountUtxoInId
         9999989100, // zAccountUtxoOutZkpAmount
-        10, // zAccountUtxoInPrpAmount + rewards.amountPrp
+        0, // zAccountUtxoInPrpAmount + rewards.amountPrp
         1, // utxoOutTargetZoneId
         1702652400, // zAccountUtxoInExpiryTime
         3, // zAccountUtxoInNonce + 1
@@ -168,7 +168,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
         1700020032, // utxoOutCreateTime - same time as zAssetUTXO got created
         2,
     ]);
-    // 186692839770280082029534744794227910179413518867095586852939524001158859102n
+    // 15769996609534038445427710675910781776917540318211506091184793859301090328581n
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
     /* 4. END ===== zAccountUtxoOutCommitment commitment  ===== */
 
@@ -341,7 +341,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
         // zAsset
         zAssetNetwork: 2n,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -777,7 +777,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
             1215795509656177802870041674430711702496004716229829094660171184836034819583n,
 
         zAccountUtxoOutCommitment:
-            186692839770280082029534744794227910179413518867095586852939524001158859102n,
+            15769996609534038445427710675910781776917540318211506091184793859301090328581n,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,
@@ -793,7 +793,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
             19603150025355661252212198237607440386334054455687766589389473805115541553727n,
         ],
         staticTreeMerkleRoot:
-            3743452957370818579489590324725789028092525166358496959953216146299978620427n,
+            21092413213066006621628228651658479594343183462051871671379153212878330466663n,
 
         forestMerkleRoot: 0,
         taxiMerkleRoot:
