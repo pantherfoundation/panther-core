@@ -71,7 +71,7 @@ abstract contract PrpVoucherHandler {
 
         require(
             rewardAmount > ZERO_VALUE,
-            "PrpVoucherGrantor: No reward to claim"
+            "PrpVoucherController: No reward to claim"
         );
 
         {
@@ -80,7 +80,7 @@ abstract contract PrpVoucherHandler {
             ];
             require(
                 withdrawAmountPrp == 0,
-                "PrpVoucherGrantor: Non zero withdraw amount prp"
+                "PrpVoucherController: Non zero withdraw amount prp"
             );
         }
 
@@ -90,11 +90,11 @@ abstract contract PrpVoucherHandler {
             ];
             require(
                 depositAmountPrp <= MAX_PRP_AMOUNT,
-                "PrpVoucherGrantor: Too large prp amount"
+                "PrpVoucherController: Too large prp amount"
             );
             require(
                 rewardAmount == depositAmountPrp,
-                "PrpVoucherGrantor: Incorrect reward balance"
+                "PrpVoucherController: Incorrect reward balance"
             );
         }
 
@@ -115,7 +115,7 @@ abstract contract PrpVoucherHandler {
 
         require(
             _limit + _amount >= rewardsGenerated,
-            "PrpVoucherGrantor: Limit cannot be less than rewards generated"
+            "PrpVoucherController: Limit cannot be less than rewards generated"
         );
 
         voucherTerms[_allowedContract][_voucherType] = VoucherTerms(
