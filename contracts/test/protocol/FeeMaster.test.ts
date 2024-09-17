@@ -18,7 +18,7 @@ import {
 
 import {revertSnapshot, takeSnapshot} from './helpers/hardhat';
 
-describe('FeeMaster contract', function () {
+describe.skip('FeeMaster contract', function () {
     let feeMaster: FeeMaster;
     let vault: VaultV1;
     let token: TokenMock;

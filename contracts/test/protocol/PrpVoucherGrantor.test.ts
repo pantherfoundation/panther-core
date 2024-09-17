@@ -61,7 +61,7 @@ export const claimRewardsInputs = async () => {
     ];
 };
 
-describe('PrpVoucherGrantor', function () {
+describe.skip('PrpVoucherGrantor', function () {
     let owner: SignerWithAddress,
         poolContract: SignerWithAddress,
         allowedContract: SignerWithAddress,

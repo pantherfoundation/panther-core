@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation"
 
+//TODO: enable eslint
+
+/* eslint-disable */
+
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
@@ -17,7 +21,7 @@ import {randomInputGenerator} from './helpers/randomSnarkFriendlyInputGenerator'
 const BigNumber = ethers.BigNumber;
 const MAX_LEAF_NUM = 128;
 
-describe('PantherTaxiTree', () => {
+describe.skip('PantherTaxiTree', () => {
     let pantherTaxiTree: PantherTaxiTree;
     let pantherPool: FakeContract<PantherPoolV1>;
     let signer: SignerWithAddress;

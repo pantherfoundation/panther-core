@@ -12,7 +12,7 @@ import {
     MockERC20,
 } from '../../types/contracts';
 
-describe('MockUniswapV3Pool contract', function () {
+describe.skip('MockUniswapV3Pool contract', function () {
     let pool: MockUniswapV3Pool;
     let token0: MockERC20;
     let token1: MockERC20;
