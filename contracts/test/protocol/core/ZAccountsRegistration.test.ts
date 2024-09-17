@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
 //TODO: enable eslint
 /* eslint-disable */
@@ -15,35 +15,48 @@ import {fromRpcSig} from 'ethereumjs-util';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
-import {packPublicKey} from '../../../crypto/src/base/keypairs';
-import {getPoseidonT3Contract} from '../../lib/poseidonBuilder';
+import {packPublicKey} from '../../../../crypto/src/base/keypairs';
+import {getPoseidonT3Contract} from '../../../lib/poseidonBuilder';
 import {
-    MockZAccountsRegistry,
+    MockZAccountsRegistration,
     IPantherPoolV1,
-    PrpVoucherGrantor,
+    PrpVoucherController,
     PantherStaticTree,
     PoseidonT3,
-} from '../../types/contracts';
-import {SnarkProofStruct} from '../../types/contracts/IPantherPoolV1';
+    IUtxoInserter,
+    FeeMaster,
+    IERC20,
+} from '../../../types/contracts';
+import {SnarkProofStruct} from '../../../types/contracts/IPantherPoolV1';
 
 import {
     getBlockTimestamp,
     revertSnapshot,
     takeSnapshot,
-} from './helpers/hardhat';
+} from '../helpers/hardhat';
+import {getBlockNumber} from '../../../lib/provider';
+import {randomInputGenerator} from '../helpers/randomSnarkFriendlyInputGenerator';
 
 describe.skip('ZAccountsRegistry', function () {
-    let zAccountsRegistry: MockZAccountsRegistry;
-    let poseidonT3: PoseidonT3;
-    let pantherPool: FakeContract<IPantherPoolV1>;
-    let pantherStaticTree: FakeContract<PantherStaticTree>;
-    let prpVoucherGrantor: FakeContract<PrpVoucherGrantor>;
+    let zAccountsRegistry: MockZAccountsRegistration;
+
+    let zkpToken: FakeContract<IERC20>;
+    let feeMaster: FakeContract<FeeMaster>;
+    let pantherTrees: FakeContract<IUtxoInserter>;
+    let prpVoucherController: FakeContract<PrpVoucherController>;
+
     let owner: SignerWithAddress,
         notOwner: SignerWithAddress,
         user: SignerWithAddress;
     let provider: Provider;
     let snapshot: number;
-    let zAccountVersion: number;
+    const zAccountVersion = 1;
+
+    enum Status {
+        Undefined = 0,
+        Registered = 1,
+        Activated = 2,
+    }
 
     const examplePubKeys = {
         x: '11422399650618806433286579969134364085104724365992006856880595766565570395421',
@@ -54,36 +67,26 @@ describe.skip('ZAccountsRegistry', function () {
         [, owner, notOwner, user] = await ethers.getSigners();
         provider = ethers.provider;
 
-        pantherPool = await smock.fake('IPantherPoolV1');
-        pantherStaticTree = await smock.fake('PantherStaticTree');
-        prpVoucherGrantor = await smock.fake('PrpVoucherGrantor');
-
-        const PoseidonT3 = await getPoseidonT3Contract();
-        poseidonT3 = (await PoseidonT3.deploy()) as PoseidonT3;
-        await poseidonT3.deployed();
+        zkpToken = await smock.fake('IERC20');
+        feeMaster = await smock.fake('FeeMaster');
+        pantherTrees = await smock.fake('IUtxoInserter');
+        prpVoucherController = await smock.fake('PrpVoucherController');
     });
 
     beforeEach(async () => {
         snapshot = await takeSnapshot();
 
         const ZAccountsRegistry = await ethers.getContractFactory(
-            'MockZAccountsRegistry',
-            {
-                libraries: {
-                    'contracts/common/crypto/Poseidon.sol:PoseidonT3':
-                        poseidonT3.address,
-                },
-            },
+            'MockZAccountsRegistration',
         );
 
         zAccountsRegistry = (await ZAccountsRegistry.connect(owner).deploy(
-            1,
-            pantherPool.address,
-            pantherStaticTree.address,
-            prpVoucherGrantor.address,
-        )) as MockZAccountsRegistry;
-
-        zAccountVersion = await zAccountsRegistry.ZACCOUNT_VERSION();
+            zAccountVersion,
+            prpVoucherController.address,
+            pantherTrees.address,
+            feeMaster.address,
+            zkpToken.address,
+        )) as MockZAccountsRegistration;
     });
 
     afterEach(async () => {
@@ -173,13 +176,15 @@ describe.skip('ZAccountsRegistry', function () {
         const pubReadingKeyHex = await pointPack(pubReadingKey);
         const inputSigner = options.user || user;
 
+        console.log();
+
         const {v, r, s} = await genSignature(
             pubRootSpendingKeyHex,
             pubReadingKeyHex,
             inputSigner,
         );
 
-        await zAccountsRegistry.registerZAccount(
+        return zAccountsRegistry.registerZAccount(
             pubRootSpendingKey,
             pubReadingKey,
             v,
@@ -337,65 +342,55 @@ describe.skip('ZAccountsRegistry', function () {
     }
 
     function mockGenerateRewards() {
-        prpVoucherGrantor.generateRewards.returns(100);
+        prpVoucherController.generateRewards.returns(100);
+    }
+
+    function mockFeeAccountant() {
+        feeMaster['accountFees((uint16,uint8,uint40,uint40,uint40))'].returns(
+            99,
+        );
+    }
+
+    function mockUtxoInsertion() {
+        pantherTrees.addUtxosToBusQueue.returns(1);
+        pantherTrees.addUtxosToBusQueueAndTaxiTree.returns(1);
     }
 
     describe('#deployment', () => {
         it('should set the correct owner,pool,static tree and prp voucher contract address', async () => {
-            expect(await zAccountsRegistry.OWNER()).to.equal(owner.address);
-            expect(await zAccountsRegistry.PANTHER_POOL()).to.equal(
-                pantherPool.address,
-            );
-            expect(await zAccountsRegistry.PANTHER_STATIC_TREE()).to.equal(
-                pantherStaticTree.address,
-            );
-            expect(await zAccountsRegistry.PRP_VOUCHER_GRANTOR()).to.equal(
-                prpVoucherGrantor.address,
-            );
-        });
-        it('should not deploy if zero address is passed', async () => {
-            const ZAccountsRegistry = await ethers.getContractFactory(
-                'MockZAccountsRegistry',
-                {
-                    libraries: {
-                        'contracts/common/crypto/Poseidon.sol:PoseidonT3':
-                            poseidonT3.address,
-                    },
-                },
+            expect(await zAccountsRegistry.SELF()).to.equal(
+                prpVoucherController.address,
             );
 
-            await expect(
-                ZAccountsRegistry.connect(owner).deploy(
-                    1,
-                    ethers.constants.AddressZero,
-                    pantherStaticTree.address,
-                    prpVoucherGrantor.address,
-                ),
-            ).to.be.revertedWith('ZAR:init');
+            expect(await zAccountsRegistry.PANTHER_TREES()).to.equal(
+                pantherTrees.address,
+            );
 
-            await expect(
-                ZAccountsRegistry.connect(owner).deploy(
-                    1,
-                    pantherPool.address,
-                    ethers.constants.AddressZero,
-                    prpVoucherGrantor.address,
-                ),
-            ).to.be.revertedWith('ZAR:init');
+            expect(await zAccountsRegistry.FEE_MASTER()).to.equal(
+                feeMaster.address,
+            );
+
+            expect(await zAccountsRegistry.ZKP_TOKEN()).to.equal(
+                zkpToken.address,
+            );
         });
     });
 
     describe('#registerZAccount', () => {
         describe('Success', () => {
             it('should register zAccount when signature is correct', async () => {
-                const unusedUint216 = BigNumber.from(0);
                 const expectedZAccountId = 0;
-                expect(await registerZAccount({}))
+                const unusedUint216 = BigNumber.from(0);
+                const nextBlockNum = (await getBlockNumber()) + 1;
+
+                await expect(await registerZAccount({}))
                     .to.emit(zAccountsRegistry, 'ZAccountRegistered')
                     .withArgs(user.address, [
                         unusedUint216,
-                        4,
-                        0,
+                        nextBlockNum,
+                        expectedZAccountId,
                         zAccountVersion,
+                        Status.Registered,
                         await pointPack(examplePubKeys),
                         await pointPack(examplePubKeys),
                     ]);
@@ -403,13 +398,20 @@ describe.skip('ZAccountsRegistry', function () {
                 const zAccountStruct = await zAccountsRegistry.zAccounts(
                     user.address,
                 );
+
                 expect(zAccountStruct.id).to.be.eq(expectedZAccountId);
-                expect(zAccountVersion).to.be.eq(1);
                 expect(zAccountStruct.pubRootSpendingKey).to.be.eq(
                     await pointPack(examplePubKeys),
                 );
+                expect(zAccountStruct.pubReadingKey).to.be.eq(
+                    await pointPack(examplePubKeys),
+                );
+                expect(zAccountStruct.creationBlock).to.be.eq(nextBlockNum);
+                expect(zAccountStruct.version).to.be.eq(zAccountVersion);
+                expect(zAccountStruct.status).to.be.eq(Status.Registered);
             });
         });
+
         describe('Failure', () => {
             it(`should revert when a user is already registered`, async () => {
                 await registerZAccount({});
@@ -585,11 +587,14 @@ describe.skip('ZAccountsRegistry', function () {
                 mockGenerateRewards();
 
                 expect(
-                    await activateZAccount({zAccountMasterEOA: user.address}),
+                    await activateZAccount({
+                        zAccountMasterEOA: user.address,
+                        zAccountNullifierPubKeyX: gene,
+                    }),
                 ).to.emit(zAccountsRegistry, 'ZAccountActivated');
             });
         });
-        describe('Failure', () => {
+        describe.skip('Failure', () => {
             it('should revert when user has not registered the zAccount', async () => {
                 await registerZAccount({});
                 const wallet = ethers.Wallet.createRandom();

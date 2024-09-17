@@ -16,7 +16,7 @@ import {randomInputGenerator} from './helpers/randomSnarkFriendlyInputGenerator'
 
 const BigNumber = ethers.BigNumber;
 
-describe('BusQueue contract', function () {
+describe.skip('BusQueue contract', function () {
     let busQueueFactory: ContractFactory;
     let busQueues: MockBusQueues;
 

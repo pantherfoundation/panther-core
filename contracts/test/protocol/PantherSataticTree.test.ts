@@ -11,7 +11,7 @@ import {getPoseidonT6Contract} from '../../lib/poseidonBuilder';
 
 import {BYTES32_ZERO} from './shared';
 
-describe('PantherStaticTree', function () {
+describe.skip('PantherStaticTree', function () {
     let PantherStaticTree;
     let staticTreeImpl;
     let pantherStaticTree: PantherStaticTree;

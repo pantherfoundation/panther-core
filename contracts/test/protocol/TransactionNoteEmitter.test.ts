@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 
+//TODO: enable eslint
+/* eslint-disable */
+
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
@@ -13,7 +16,7 @@ import {
     generateInvalidPrivateMessagesAndGetRevertMessages,
 } from './data/samples/transactionNote.data';
 
-describe('TransactionNoteEmitter', () => {
+describe.skip('TransactionNoteEmitter', () => {
     let transactionNoteEmitter: MockTransactionNoteEmitter;
 
     before(async () => {

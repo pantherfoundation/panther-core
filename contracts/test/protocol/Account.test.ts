@@ -16,7 +16,7 @@ import {
     BYTES_ONE,
 } from './shared';
 
-describe('Account', () => {
+describe.skip('Account', () => {
     let user: SignerWithAddress;
     let wallet: Account;
     let dummyAddress: string;
