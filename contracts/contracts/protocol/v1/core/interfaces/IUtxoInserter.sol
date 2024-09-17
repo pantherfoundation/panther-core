@@ -19,4 +19,19 @@ interface IUtxoInserter {
         bytes32 staticRoot,
         uint96 reward
     ) external returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue);
+
+
+    function insertPrpClaimUtxo(
+        address pantherTrees,
+        uint256[] calldata inputs,
+        uint32 transactionOptions,
+        uint96 miningRewards
+    )
+    external
+    returns (
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        uint256 zAccountUtxoBusQueuePos
+    );
+
 }
