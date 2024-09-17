@@ -24,7 +24,7 @@ import {
 import {revertSnapshot, takeSnapshot} from '../helpers/hardhat';
 import {getMainInputs} from '../helpers/pantherPoolV1Inputs';
 
-describe.only('ZTransactions', function () {
+describe('ZTransactions', function () {
     let zTransaction: MockZTransaction;
 
     let zkpToken: TokenMock;
