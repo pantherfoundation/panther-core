@@ -10,7 +10,7 @@ import {ethers} from 'hardhat';
 
 import {getPoseidonT3Contract} from '../../../lib/poseidonBuilder';
 import {
-    MockzSwap,
+    MockZSwap,
     VaultV1,
     IUtxoInserter,
     FeeMaster,
@@ -26,7 +26,7 @@ import {revertSnapshot, takeSnapshot} from '../helpers/hardhat';
 import {getSwapInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe.only('ZSwap', function () {
-    let zSwap: MockzSwap;
+    let zSwap: MockZSwap;
 
     let zkpToken: TokenMock;
     let linkToken: TokenMock;
@@ -73,7 +73,7 @@ describe.only('ZSwap', function () {
         const poseidonT3 = await PoseidonT3.deploy();
         await poseidonT3.deployed();
 
-        const ZSwap = await ethers.getContractFactory('MockzSwap', {
+        const ZSwap = await ethers.getContractFactory('MockZSwap', {
             libraries: {
                 PoseidonT3: poseidonT3.address,
             },
@@ -84,7 +84,7 @@ describe.only('ZSwap', function () {
             vault.address,
             feeMaster.address,
             zkpToken.address,
-        )) as MockzSwap;
+        )) as MockZSwap;
     });
 
     afterEach(async () => {

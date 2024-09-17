@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import "../core/facets/ZSwap.sol";
 
-contract MockzSwap is ZSwap {
+contract MockZSwap is ZSwap {
     address public owner;
 
     constructor(
