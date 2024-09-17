@@ -27,7 +27,7 @@ import {
     takeSnapshot,
 } from '../helpers/hardhat';
 
-describe.only('PrpConversion', function () {
+describe('PrpConversion', function () {
     let prpConversion: MockPrpConversion;
 
     let zkpToken: TokenMock;

@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-//TODO: enable eslint
-/* eslint-disable */
-
 import {smock, FakeContract} from '@defi-wonderland/smock';
 // eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
@@ -42,7 +39,7 @@ import {
     takeSnapshot,
 } from '../helpers/hardhat';
 
-describe.skip('ZAccountsRegistry', function () {
+describe('ZAccountsRegistry', function () {
     let zAccountsRegistry: MockZAccountsRegistration;
 
     let zkpToken: FakeContract<IERC20>;
