@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "../../../../common/interfaces/IWETH.sol";
 import "../../DeFi/uniswap/interfaces/IQuoterV2.sol";
 import "../../DeFi/uniswap/interfaces/ISwapRouter.sol";
-import "../../interfaces/IPlugin.sol";
+import "../../core/interfaces/IPlugin.sol";
 
 import "../TokenPairResolverLib.sol";
 import "../PluginDataDecoderLib.sol";

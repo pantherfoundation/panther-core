@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import "../../interfaces/IPlugin.sol";
+import "../../core/interfaces/IPlugin.sol";
 
 import "../../../../common/TransferHelper.sol";
 import "../../DeFi/UniswapV3FlashSwap.sol";
