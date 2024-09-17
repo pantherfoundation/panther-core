@@ -29,8 +29,8 @@ const amount = BigNumber.from('1000');
 const zeroValue = BigNumber.from('1');
 const disabledVoucherType = '0xdeadbeef';
 
-const transactionOptions: number = 0; // uint32, all zeros
-const paymasterCompensation: number = 0; // uint96, all zeros
+const transactionOptions: number = 0;
+const paymasterCompensation: number = 0;
 const privateMessages: string = generatePrivateMessage(
     TransactionTypes.prpClaim,
 );
@@ -71,24 +71,25 @@ export const claimRewardsInputs = async () => {
 
 describe('PrpVoucherController', function () {
     let owner: SignerWithAddress,
-        poolContract: SignerWithAddress,
         allowedContract: SignerWithAddress,
         user: SignerWithAddress;
     let prpVoucherController: PrpVoucherControllerType;
     let PrpVoucherController: ContractFactory;
     let inputs;
     let secretHash;
+    let fakePantherTrees: FakeContract,
+        feeMaster: FakeContract,
+        fakeToken: FakeContract;
 
     beforeEach(async function () {
         secretHash = ethers.utils.id('test_secret');
-        [owner, poolContract, allowedContract, user] =
-            await ethers.getSigners();
+        [owner, allowedContract, user] = await ethers.getSigners();
 
         PrpVoucherController = await ethers.getContractFactory(
             'MockPrpVoucherController',
         );
 
-        const fakePantherTrees = await smock.fake('IUtxoInserter');
+        fakePantherTrees = await smock.fake('IUtxoInserter');
 
         // Set up the function return values
         fakePantherTrees.insertPrpClaimUtxo.returns({
@@ -97,8 +98,8 @@ describe('PrpVoucherController', function () {
             zAccountUtxoBusQueuePos: 0,
         });
 
-        const feeMaster = await smock.fake('FeeMaster');
-        const fakeToken = await smock.fake('ERC20');
+        feeMaster = await smock.fake('FeeMaster');
+        fakeToken = await smock.fake('ERC20');
 
         prpVoucherController = (await PrpVoucherController.deploy(
             fakePantherTrees.address,
@@ -107,20 +108,18 @@ describe('PrpVoucherController', function () {
         )) as PrpVoucherControllerType;
 
         await prpVoucherController.deployed();
-
-        // // Set up the function return values
-        // fakePantherTrees.insertPrpClaimUtxo.returns({
-        //     zAccountUtxoQueueId: 0,
-        //     zAccountUtxoIndexInQueue: 0,
-        //     zAccountUtxoBusQueuePos: 0
-        // });
     });
 
-    describe.skip('Deployment', function () {
+    describe('Deployment', function () {
         it('sets the correct owner, pool contract, and verifier addresses', async function () {
-            expect(await prpVoucherController.OWNER()).to.equal(owner.address);
-            expect(await prpVoucherController.PANTHER_POOL_V1()).to.equal(
-                poolContract.address,
+            expect(await prpVoucherController.PANTHER_TREES()).to.equal(
+                fakePantherTrees.address,
+            );
+            expect(await prpVoucherController.FEE_MASTER()).to.equal(
+                feeMaster.address,
+            );
+            expect(await prpVoucherController.ZKP_TOKEN()).to.equal(
+                fakeToken.address,
             );
         });
 
@@ -132,34 +131,34 @@ describe('PrpVoucherController', function () {
             await expect(
                 PrpVoucherController.deploy(
                     ethers.constants.AddressZero,
-                    poolContract.address,
+                    feeMaster.address,
+                    fakeToken.address,
                 ),
-            ).to.be.revertedWith('ImmOwn: zero owner address');
+            ).to.be.revertedWith('init::PrpVoucherController:zero address');
 
             await expect(
                 PrpVoucherController.deploy(
-                    owner.address,
+                    fakePantherTrees.address,
+                    ethers.constants.AddressZero,
+                    fakeToken.address,
+                ),
+            ).to.be.revertedWith(
+                'init::TransactionChargesHandler:zero address',
+            );
+
+            await expect(
+                PrpVoucherController.deploy(
+                    fakePantherTrees.address,
+                    feeMaster.address,
                     ethers.constants.AddressZero,
                 ),
-            ).to.be.revertedWith('UNEXPECTED_ZERO_ADDRESS');
+            ).to.be.revertedWith(
+                'init::TransactionChargesHandler:zero address',
+            );
         });
     });
 
     describe('Setting reward terms', function () {
-        it.skip('only allows the owner to set voucher reward terms', async function () {
-            await expect(
-                prpVoucherController
-                    .connect(user)
-                    .updateVoucherTerms(
-                        allowedContract.address,
-                        VOUCHER_WITH_PREDEFINED_REWARD,
-                        amount,
-                        amount,
-                        true,
-                    ),
-            ).to.be.revertedWith('ImmOwn: unauthorized');
-        });
-
         it('sets voucher reward terms with valid voucher types', async function () {
             await prpVoucherController
                 .connect(owner)
@@ -276,7 +275,7 @@ describe('PrpVoucherController', function () {
                         VOUCHER_WITH_PREDEFINED_REWARD,
                     ),
             ).to.be.revertedWith(
-                'PrpVoucherGrantor: Inactive or invalid voucher type',
+                'PrpVoucherController: Inactive or invalid voucher type',
             );
         });
 
@@ -369,7 +368,7 @@ describe('PrpVoucherController', function () {
                     .connect(allowedContract)
                     .generateRewards(secretHash, amount, disabledVoucherType),
             ).to.be.revertedWith(
-                'PrpVoucherGrantor: Inactive or invalid voucher type',
+                'PrpVoucherController: Inactive or invalid voucher type',
             );
         });
 
@@ -535,7 +534,7 @@ describe('PrpVoucherController', function () {
                         paymasterCompensation,
                         privateMessages,
                     ),
-            ).to.be.revertedWith('PrpVoucherGrantor: No reward to claim');
+            ).to.be.revertedWith('PrpVoucherController: No reward to claim');
         });
     });
 
