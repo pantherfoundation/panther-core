@@ -11,7 +11,7 @@ library NullifierSpender {
         mapping(bytes32 => uint256) storage isSpent,
         uint256[3] memory nullifiers
     ) internal {
-        for (uint nullifier = 0; nullifier < nullifiers.length; ) {
+        for (uint256 nullifier = 0; nullifier < nullifiers.length; ) {
             validateAndSpendNullifier(isSpent, nullifiers[nullifier]);
             unchecked {
                 ++nullifier;
