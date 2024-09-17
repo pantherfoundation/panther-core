@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+// solhint-disable explicit-types
 pragma solidity ^0.8.19;
 
 string constant ERR_ZERO_NULLIFIER = "SN:E1";
@@ -10,8 +11,8 @@ library NullifierSpender {
         mapping(bytes32 => uint256) storage isSpent,
         uint256[3] memory nullifiers
     ) internal {
-        for (uint256 nullifier = 0; nullifier < nullifiers.length; ) {
-            validateAndSpendNullifier(isSpent, nullifier);
+        for (uint nullifier = 0; nullifier < nullifiers.length; ) {
+            validateAndSpendNullifier(isSpent, nullifiers[nullifier]);
             unchecked {
                 ++nullifier;
             }
