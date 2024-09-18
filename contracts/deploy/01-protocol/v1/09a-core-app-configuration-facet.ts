@@ -4,29 +4,22 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {getNamedAccount} from '../../lib/deploymentHelpers';
+import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
         deployments: {deploy},
-        ethers,
     } = hre;
 
-    await deploy('Paymaster_Proxy', {
-        contract: 'EIP173ProxyWithReceive',
+    await deploy('AppConfiguration', {
         from: deployer,
-        args: [
-            ethers.constants.AddressZero, // implementation will be changed
-            deployer, // owner will be changed
-            [], // data
-        ],
         log: true,
         autoMine: true,
+        gasPrice: 30000000000,
     });
 };
 export default func;
 
-func.tags = ['erc4337', 'paymaster-proxy'];
-func.dependencies = ['check-params', 'deployment-consent'];
+func.tags = ['app-configuration', 'core', 'core-facet', 'protocol-v1'];

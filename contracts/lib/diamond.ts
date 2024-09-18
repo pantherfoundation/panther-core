@@ -13,6 +13,7 @@ export function getSelectors(contract: ethers.Contract) {
     const selectors = signatures.reduce((acc: string[], val: string) => {
         if (val !== 'init(bytes)') {
             acc.push(contract.interface.getSighash(val));
+            // console.log(val, contract.interface.getSighash(val));
         }
         return acc;
     }, []);
@@ -51,5 +52,5 @@ export async function cutDiamond(
 
     return await diamond
         .connect(signer)
-        .diamondCut(cuts, initAddress, initData);
+        .diamondCut(cuts, initAddress, initData, {gasPrice: 30000000000});
 }

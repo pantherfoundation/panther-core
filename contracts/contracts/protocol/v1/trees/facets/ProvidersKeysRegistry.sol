@@ -38,21 +38,17 @@ import "../../../../common/crypto/PoseidonHashers.sol";
  * algorithm is not applied ("incremental tree" is easier for operators since
  * `proofSiblings` unneeded as input params on tree leafs insertions/updates).
  */
-abstract contract ProvidersKeysRegistry is
+contract ProvidersKeysRegistry is
     ProvidersKeysSignatureVerifier,
     StaticRootUpdater,
     Ownable,
     BinaryUpdatableTree
 {
-    // solhint-disable var-name-mixedcase
-    // TODO add `constant` label to these variables
-    uint256 private KEYS_TREE_DEPTH = SIXTEEN_LEVELS;
+    uint256 private constant KEYS_TREE_DEPTH = SIXTEEN_LEVELS;
     uint16 private constant MAX_KEYS = uint16(2 ** SIXTEEN_LEVELS - 1);
 
-    uint32 private REVOKED_KEY_EXPIRY = 0;
-    uint256 private MAX_TREE_LOCK_PERIOD = 30 days;
-
-    // solhint-enable var-name-mixedcase
+    uint32 private constant REVOKED_KEY_EXPIRY = 0;
+    uint256 private constant MAX_TREE_LOCK_PERIOD = 30 days;
 
     /// @notice keyring status
     enum STATUS {
@@ -512,7 +508,6 @@ abstract contract ProvidersKeysRegistry is
         keyIndex = _totalNumRegisteredKeys;
         keyringIds[keyIndex] = keyringId;
 
-        // Trusted contract - no reentrancy guard needed
         _updateProvidersKeysAndStaticTreeRoots(
             ZERO_VALUE,
             commitment,

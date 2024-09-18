@@ -4,10 +4,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    abi,
-    bytecode,
-} from '../../deployments/ARCHIVE/externalAbis/PZkpToken.json';
 import {isProd} from '../../lib/checkNetwork';
 import {getNamedAccount} from '../../lib/deploymentHelpers';
 
@@ -20,11 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployments: {deploy},
     } = hre;
 
-    await deploy('PZkp_token', {
-        contract: {
-            abi,
-            bytecode,
-        },
+    await deploy('MockPZkp', {
         proxy: {
             proxyContract: 'EIP173Proxy',
             owner: multisig,
@@ -38,4 +30,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['pzkp-token', 'protocol-token', 'dev-dependency'];
+func.tags = ['pzkp-token', 'dev-dependency'];

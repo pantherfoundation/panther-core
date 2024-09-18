@@ -29,11 +29,6 @@ import { TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT } from "../../utils/zeroTrees/Constant
  * contract to trigger updates of that contract state (see PantherForest).
  */
 abstract contract BusTree is BusQueues, MiningRewards, Verifier {
-    // The contract is supposed to run behind a proxy DELEGATECALLing it.
-    // On upgrades, adjust `__gap` to match changes of the storage layout.
-    // slither-disable-next-line shadowing-state unused-state
-    bytes32[50] private _startGap;
-
     bytes32 internal constant EMPTY_BUS_TREE_ROOT =
         TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT;
 
@@ -49,7 +44,9 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
     // timestamp to start adding utxo
     uint32 public busTreeStartTime;
 
-    bytes32 internal _busTreeRoot;
+    // keeps track of number of the added utxos
+    uint32 public utxoCounter;
+
     // Number of Batches in the Bus Tree
     uint32 internal _numBatchesInBusTree;
     // Number of UTXOs (excluding empty leafs) in the tree
@@ -59,8 +56,8 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
     // Block when the latest Batch inserted in the Bus Tree
     uint40 internal _latestBatchBlock;
 
-    // keeps track of number of the added utxos
-    uint32 public utxoCounter;
+    bytes32 internal _busTreeRoot;
+
     // address of circuitId
     uint160 public onboardingQueueCircuitId;
 
@@ -114,6 +111,20 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
         return _busTreeRoot == bytes32(0) ? EMPTY_BUS_TREE_ROOT : _busTreeRoot;
     }
 
+    function _onboardQueueAndAccountReward(
+        address miner,
+        uint32 queueId,
+        uint256[] memory inputs,
+        SnarkProof memory proof
+    ) internal returns (bytes32 busTreeNewRoot) {
+        uint96 reward;
+        (busTreeNewRoot, reward) = _onboardQueue(miner, queueId, inputs, proof);
+
+        _busTreeRoot = busTreeNewRoot;
+
+        _accountMinerRewards(queueId, miner, reward);
+    }
+
     function _initializeBusTree(
         uint160 _onboardingQueueCircuitId,
         uint16 reservationRate,
@@ -131,22 +142,7 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
     }
 
     function _updateCircuitId(uint160 _circuitId) internal {
-        require(_loadVerifyingKey(_circuitId).ic.length >= 1, ERR_INVALID_VK);
         onboardingQueueCircuitId = _circuitId;
-    }
-
-    function _onboardQueueAndAccountReward(
-        address miner,
-        uint32 queueId,
-        uint256[] memory inputs,
-        SnarkProof memory proof
-    ) internal returns (bytes32 busTreeNewRoot) {
-        uint96 reward;
-        (busTreeNewRoot, reward) = _onboardQueue(miner, queueId, inputs, proof);
-
-        _busTreeRoot = busTreeNewRoot;
-
-        _accountMinerRewards(queueId, miner, reward);
     }
 
     /// @dev ZK-circuit public signals:
@@ -165,7 +161,7 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
         uint256[] memory inputs,
         SnarkProof memory proof
     )
-        internal
+        private
         nonEmptyBusQueue(queueId)
         returns (bytes32 busTreeNewRoot, uint96 reward)
     {

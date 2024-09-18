@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 import "../../interfaces/IStaticTreeRootUpdater.sol";
 
 abstract contract StaticRootUpdater {
-    address public immutable SELF;
+    address private immutable SELF;
 
     constructor(address self) {
         SELF = self;

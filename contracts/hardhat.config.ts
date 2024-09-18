@@ -255,27 +255,92 @@ function getNamedAccounts() {
             amoy: 0,
         },
 
+        trustProvider: {
+            localhost: 0,
+            hardhat: 0,
+            mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
+            sepolia: 0,
+
+            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0', // TODO: replace
+            amoy: 0,
+        },
+
+        pantherTreasury: {
+            localhost: 0,
+            hardhat: 0,
+            mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
+            sepolia: 0,
+
+            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0', // TODO: replace
+            amoy: 0,
+        },
+
         zkp: {
+            localhost: 0,
+            hardhat: 0,
             mainnet: '0x909E34d3f6124C324ac83DccA84b74398a6fa173',
         },
-        pzk: {
+
+        pzkp: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x9C56E89D8Aa0d4A1fB769DfbEa80D6C29e5A2893',
             polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
         },
+
         weth9: {
+            localhost: 0,
+            hardhat: 0,
             sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
             amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
         },
-        swapRouter: {
+
+        link: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60',
+        },
+
+        uniswapRouter: {
+            localhost: 0,
+            hardhat: 0,
             amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
         },
-        quoterV2: {
+
+        uniswapQuoterV2: {
+            localhost: 0,
+            hardhat: 0,
             amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
         },
+
         quickswapRouter02: {
+            localhost: 0,
+            hardhat: 0,
             amoy: '0xf253c47dcD36Ab80BAB5731f548fd818551f1c16',
         },
+
         quickswapFactory: {
+            localhost: 0,
+            hardhat: 0,
             amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
+        },
+
+        pZkp_native_pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x7a37f4a561514feb762d5301d0a25631e5faf30a',
+        },
+
+        pZkp_link_pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x39150aF61A33E0d97878D26e1b7eDFbd3ca2d505',
+        },
+
+        link_native_pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xd61679A9cD1152bdfA9Ce2ff78ebd8bE67314935',
         },
     };
 
