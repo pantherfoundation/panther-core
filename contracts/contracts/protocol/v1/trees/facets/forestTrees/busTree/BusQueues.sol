@@ -36,7 +36,6 @@ abstract contract BusQueues is
 {
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
     uint256 private constant QUEUE_MAX_SIZE = 2 ** QUEUE_MAX_LEVELS;
-    // solhint-enable var-name-mixedcase
 
     address public immutable REWARD_RESERVE_ALLOCATOR;
 

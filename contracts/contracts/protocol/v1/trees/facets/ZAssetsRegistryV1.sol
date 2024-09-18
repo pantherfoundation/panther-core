@@ -25,11 +25,7 @@ import "../../../../common/UtilsLib.sol";
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
 
-abstract contract ZAssetsRegistryV1 is
-    StaticRootUpdater,
-    Ownable,
-    BinaryUpdatableTree
-{
+contract ZAssetsRegistryV1 is StaticRootUpdater, Ownable, BinaryUpdatableTree {
     using UtilsLib for address;
 
     // the next leaf index
@@ -54,8 +50,11 @@ abstract contract ZAssetsRegistryV1 is
 
     constructor(address self) StaticRootUpdater(self) {}
 
-    function getZAssetsRoot() external view returns (bytes32) {
-        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+    function getZAssetsRoot() external pure returns (bytes32) {
+        // return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+        // TODO:
+        return
+            0x1c61b7f877aeafe396b55ada9d181e9620ef89ac19273b00b8655c9cf52d6aa5;
     }
 
     function addZAsset(

@@ -16,8 +16,6 @@ import "./forestTrees/TaxiTree.sol";
 import "./forestTrees/BusTree.sol";
 import "./forestTrees/FerryTree.sol";
 
-import "../../../../common/crypto/PoseidonHashers.sol";
-
 /**
  * @title PantherForest
  * @notice It stores and updates leafs and the root of the Panther Forest Tree.

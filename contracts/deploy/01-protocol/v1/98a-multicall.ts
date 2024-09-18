@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {DeployFunction} from 'hardhat-deploy/types';
+
+import {getNamedAccount} from '../../../lib/deploymentHelpers';
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const deployer = await getNamedAccount(hre, 'deployer');
+
+    const {
+        deployments: {deploy, get},
+    } = hre;
+
+    await deploy('Multicall', {
+        from: deployer,
+        log: true,
+        autoMine: true,
+    });
+};
+export default func;
+
+func.tags = ['multicall', 'core', 'protocol-v1'];

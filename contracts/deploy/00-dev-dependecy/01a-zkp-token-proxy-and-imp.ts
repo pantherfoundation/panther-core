@@ -4,10 +4,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {
-    abi,
-    bytecode,
-} from '../../deployments/ARCHIVE/externalAbis/ZKPToken.json';
 import {isProd} from '../../lib/checkNetwork';
 import {getNamedAccount} from '../../lib/deploymentHelpers';
 
@@ -20,17 +16,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployments: {deploy},
     } = hre;
 
-    await deploy('Zkp_token', {
-        contract: {
-            abi,
-            bytecode,
-        },
+    await deploy('MockZkp', {
         proxy: {
             proxyContract: 'EIP173Proxy',
             owner: multisig,
         },
         from: deployer,
-        args: [multisig],
+        args: [multisig, 'MOCK-ZKP', 'ZKP'],
         log: true,
         autoMine: true,
     });

@@ -38,12 +38,8 @@ import "../../../../../common/crypto/PoseidonHashers.sol";
  * the latest root, but on former roots cached in the history.
  */
 abstract contract CachedRoots is RingBufferRootCache {
-    bytes32[50] private _startGap;
-
     uint256 private constant NUM_FOREST_LEAFS = 3;
     bytes32[NUM_FOREST_LEAFS] public forestLeafs;
-
-    bytes32[50] private _endGap;
 
     event ForestRootUpdated(
         uint256 indexed leafIndex,
