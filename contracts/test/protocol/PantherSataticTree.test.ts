@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+//TODO: enable eslint
+/* eslint-disable */
+
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/lib/utils/constants';
 import {expect} from 'chai';

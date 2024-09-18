@@ -10,7 +10,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
-        deployments: {deploy, get},
+        deployments: {deploy},
     } = hre;
 
     await deploy('DelegateCaller', {
