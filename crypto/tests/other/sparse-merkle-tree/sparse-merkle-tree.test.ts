@@ -246,6 +246,14 @@ describe('SparseMerkleTree', () => {
             });
         });
 
+        it('should generate proof for zero leaves', () => {
+            const testProof = testTree.getProof(100);
+            const honestProof = honestTree
+                .getProof(bigIntToBuffer(testTree.zeroValue), 100)
+                .map(leaf => bufferToBigInt(leaf.data));
+            expect(testProof).to.be.deep.eq(honestProof);
+        });
+
         it('should throw error of invlaid leaf index/id', () => {
             expect(() => {
                 testTree.getProof(2_000);
