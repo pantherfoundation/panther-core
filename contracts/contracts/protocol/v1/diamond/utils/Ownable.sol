@@ -6,7 +6,7 @@ import { LibDiamond } from "../libraries/LibDiamond.sol";
 
 abstract contract Ownable {
     /// @dev Throws if called by any account other than the {OWNER}.
-    modifier onlyOwner() {
+    modifier onlyOwner() virtual {
         LibDiamond.enforceOwner();
         _;
     }
