@@ -393,14 +393,14 @@ abstract contract TransactionNoteEmitter {
                     LMT_UTXO_ZASSET +
                     LMT_UTXO_ZASSET_PRIV +
                     LMT_SPENT_2UTXO,
-            "ERR_LOW_MESSAGE_LENGTH"
+            ERR_LOW_MESSAGE_LENGTH
         );
 
         // privateMessages for zSwap is expected to containd
         // `MT_UTXO_ZASSET` at index 97
         require(
             uint8(privateMessages[mtUtxoZAssetIndex]) == MT_UTXO_ZASSET,
-            "ERR_INVALID_MT_UTXO_ZASSET"
+            ERR_INVALID_MT_UTXO_ZASSET
         );
 
         // privateMessages for zSwap is expected to containd
@@ -408,13 +408,13 @@ abstract contract TransactionNoteEmitter {
         require(
             uint8(privateMessages[mtUtxoZAssetPrivIndex]) ==
                 MT_UTXO_ZASSET_PRIV,
-            "ERR_INVALID_MT_UTXO_ZASSET_PRIV"
+            ERR_INVALID_MT_UTXO_ZASSET_PRIV
         );
 
         // It is also expected to contain `MT_SPENT_2UTXO` started at index 291
         require(
             uint8(privateMessages[mtSpend2UtxoIndex]) == MT_SPENT_2UTXO,
-            "ERR_INVALID_MT_UTXO_SPEND_2UTXO"
+            ERR_INVALID_MT_UTXO_SPEND_2UTXO
         );
     }
 
