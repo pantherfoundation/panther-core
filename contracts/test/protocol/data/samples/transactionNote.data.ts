@@ -147,5 +147,40 @@ export function generateInvalidPrivateMessagesAndGetRevertMessages(
         revertMessages[3] = RevertMessages.invalidMtSpend2Utxo;
     }
 
+    if (txType === TransactionTypes.swapZAsset) {
+        //  zAccountMessage + zAssetMessage + zAssetPrivateMessage + spend2UtxoMessage;
+        privateMessages[0] =
+            '0x' +
+            spend2UtxoMessage + // should be zAccount type
+            zAssetMessage +
+            zAssetPrivateMessage +
+            zAccountMessage;
+        revertMessages[0] = RevertMessages.invalidMtZAccount;
+
+        privateMessages[1] =
+            '0x' +
+            zAccountMessage +
+            zAccountMessage + // should be zAsset type
+            zAssetPrivateMessage +
+            spend2UtxoMessage;
+        revertMessages[1] = RevertMessages.invalidMtZAsset;
+
+        privateMessages[2] =
+            '0x' +
+            zAccountMessage +
+            zAssetMessage +
+            zAccountMessage + // should be zAssetPrivateMessage type
+            spend2UtxoMessage;
+        revertMessages[2] = RevertMessages.invalidMtZAssetPriv;
+
+        privateMessages[3] =
+            '0x' +
+            zAccountMessage +
+            zAssetMessage +
+            zAssetPrivateMessage +
+            zAssetMessage; // should be spend2Utxo type
+        revertMessages[3] = RevertMessages.invalidMtSpend2Utxo;
+    }
+
     return {privateMessages, revertMessages};
 }
