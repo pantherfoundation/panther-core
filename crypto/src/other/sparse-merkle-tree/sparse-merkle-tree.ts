@@ -88,19 +88,23 @@ export class SparseMerkleTree {
     }
 
     public getProof(leafIdx: number): bigint[] {
-        if (!this.isValidLeafIdx(leafIdx))
-            throw new Error('[getProof] invalid leaf index');
+        assert(this.isValidLeafIdx(leafIdx), '[getProof] invalid leaf index');
 
         const path: bigint[] = [];
 
         let index = leafIdx;
-        for (let layerIdx = 0; layerIdx < this.layers.length - 1; layerIdx++) {
+        for (let layerIdx = 0; layerIdx < this.depth; layerIdx++) {
             const layer = this.layers[layerIdx];
             const isRightNode = index % 2 === 1;
             const pairIdx = isRightNode ? index - 1 : index + 1;
 
-            path.push(layer[pairIdx] || this.defaultHashes[layerIdx]);
-            index = (index / 2) | 0;
+            if (pairIdx < layer.length) {
+                path.push(layer[pairIdx]);
+            } else {
+                path.push(this.defaultHashes[layerIdx]);
+            }
+
+            index = Math.floor(index / 2);
         }
 
         return path;
@@ -111,13 +115,15 @@ export class SparseMerkleTree {
         leafIdx: number,
         merklePath: bigint[],
     ): boolean {
-        if (!this.isValidLeafIdx(leafIdx))
-            throw new Error('[verifyProof] invalid leaf index');
+        assert(
+            this.isValidLeafIdx(leafIdx),
+            '[verifyProof] invalid leaf index',
+        );
 
         let currentLeaf: bigint = leaf;
         let index = leafIdx;
 
-        for (let i = 0; i < merklePath.length; i++) {
+        for (let i = 0; i < this.depth; i++) {
             const isRight = index % 2 === 1;
             currentLeaf = this.hash(
                 isRight
@@ -125,7 +131,7 @@ export class SparseMerkleTree {
                     : [currentLeaf, merklePath[i]],
             );
 
-            index = (index / 2) | 0;
+            index = Math.floor(index / 2);
         }
 
         return currentLeaf === this.getRoot();
