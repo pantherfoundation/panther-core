@@ -4,6 +4,11 @@
 pragma solidity ^0.8.16;
 
 library UtilsLib {
+    function safe8(uint256 n) internal pure returns (uint8) {
+        require(n < 2 ** 8, "UNSAFE24");
+        return uint8(n);
+    }
+
     function safe24(uint256 n) internal pure returns (uint24) {
         require(n < 2 ** 24, "UNSAFE24");
         return uint24(n);
