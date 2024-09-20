@@ -19,6 +19,7 @@
     "artifacts/**/*.json",
     "deploy/**/*",
     "lib/**/*",
+    "scripts/**/*.ts",
     "tasks/**/*",
     "test/**/*",
     "testing/**/*",
