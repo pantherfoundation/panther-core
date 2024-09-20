@@ -7,6 +7,7 @@ import "../../../interfaces/IBalanceViewer.sol";
 
 import "../../libraries/VaultExecutor.sol";
 import "../../libraries/ZAssetUtxoGenerator.sol";
+import "../../libraries/TokenTypeAndAddressDecoder.sol";
 import "../../publicSignals/ZSwapPublicSignals.sol";
 
 import "../../../plugins/PluginDataDecoderLib.sol";
@@ -22,6 +23,7 @@ library SwapHandler {
     using PluginDataDecoderLib for bytes;
     using ZAssetUtxoGenerator for uint256;
     using TransferHelper for address;
+    using TokenTypeAndAddressDecoder for uint256;
 
     function processSwap(
         address plugin,
@@ -35,17 +37,14 @@ library SwapHandler {
         address vault = inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
             .safeAddress();
 
-        uint8 existingTokenType = _getTokenType(
-            inputs[ZSWAP_EXISTING_TOKEN_IND]
-        );
-        uint8 incomingTokenType = _getTokenType(
-            inputs[ZSWAP_INCOMING_TOKEN_IND]
-        );
+        (uint8 existingTokenType, address existingTokenAddress) = inputs[
+            ZSWAP_EXISTING_TOKEN_IND
+        ].getTokenTypeAndAddress();
 
         vault.unlockAsset(
             LockData(
                 existingTokenType,
-                inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress(),
+                existingTokenAddress,
                 inputs[ZSWAP_EXISTING_TOKEN_ID_IND],
                 plugin,
                 inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96()
@@ -55,8 +54,6 @@ library SwapHandler {
         uint96 outputAmount = _executeSwapAndVerifyOutput(
             plugin,
             vault,
-            existingTokenType,
-            incomingTokenType,
             inputs,
             data
         );
@@ -77,17 +74,20 @@ library SwapHandler {
     function _executeSwapAndVerifyOutput(
         address plugin,
         address vault,
-        uint8 existingTokenType,
-        uint8 incomingTokenType,
         uint256[] memory inputs,
         bytes memory swapData
     ) private returns (uint96 _outputAmount) {
-        address existingToken = inputs[ZSWAP_EXISTING_TOKEN_IND].safeAddress();
-        address incomingToken = inputs[ZSWAP_INCOMING_TOKEN_IND].safeAddress();
+        (uint8 existingTokenType, address existingTokenAddress) = inputs[
+            ZSWAP_EXISTING_TOKEN_IND
+        ].getTokenTypeAndAddress();
+
+        (uint8 incomingTokenType, address incomingTokenAddress) = inputs[
+            ZSWAP_EXISTING_TOKEN_IND
+        ].getTokenTypeAndAddress();
 
         PluginData memory pluginData = PluginData({
-            tokenIn: existingToken,
-            tokenOut: incomingToken,
+            tokenIn: existingTokenAddress,
+            tokenOut: incomingTokenAddress,
             amountIn: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96(),
             tokenType: existingTokenType,
             data: swapData
@@ -95,7 +95,7 @@ library SwapHandler {
 
         uint256 vaultInitialBalance = IBalanceViewer(vault).getBalance(
             incomingTokenType,
-            incomingToken,
+            incomingTokenAddress,
             inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
 
@@ -107,7 +107,7 @@ library SwapHandler {
 
         uint256 vaultUpdatedBalance = IBalanceViewer(vault).getBalance(
             incomingTokenType,
-            incomingToken,
+            incomingTokenAddress,
             inputs[ZSWAP_INCOMING_TOKEN_ID_IND]
         );
 
@@ -120,16 +120,5 @@ library SwapHandler {
             _outputAmount == receivedAmountInVault,
             "Unexpected vault balance"
         );
-    }
-
-    function _getTokenType(
-        uint256 token
-    ) private pure returns (uint8 tokenType) {
-        // TODO: get TokenType from MSB of token
-        address tokenAddress = token.safeAddress();
-
-        tokenType = tokenAddress == NATIVE_TOKEN
-            ? NATIVE_TOKEN_TYPE
-            : ERC20_TOKEN_TYPE;
     }
 }
