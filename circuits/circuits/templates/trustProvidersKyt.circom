@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.9;
 
-include "./trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./trustProvidersMerkleTreeLeafIDAndRuleInclusionProver.circom";
 include "./trustProvidersNoteInclusionProver.circom";
 include "./utils.circom";
 

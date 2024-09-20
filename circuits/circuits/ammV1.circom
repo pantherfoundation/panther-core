@@ -3,7 +3,7 @@ pragma circom 2.1.9;
 
 // project deps
 include "./templates/balanceChecker.circom";
-include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./templates/trustProvidersMerkleTreeLeafIDAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountNoteInclusionProver.circom";
