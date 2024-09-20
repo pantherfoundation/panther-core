@@ -86,20 +86,20 @@ template ZAssetChecker() {
 
     component isZeroExternalAmounts = IsZero();
     isZeroExternalAmounts.in <== depositAmount + withdrawAmount;
-    var enable_If_ExternalAmountsAre_Zero = isZeroExternalAmounts.out;
-    var enable_If_ExternalAmountsAre_NOT_Zero = 1 - isZeroExternalAmounts.out;
+    var isInternalTx = isZeroExternalAmounts.out;
+    var isNotInternalTx = 1 - isZeroExternalAmounts.out;
 
     // [0] - if NOT internal tx, force `zAssetToken == token`
     component isZAssetTokenEqualToToken = ForceEqualIfEnabled();
     isZAssetTokenEqualToToken.in[0] <== zAssetToken;
     isZAssetTokenEqualToToken.in[1] <== token;
-    isZAssetTokenEqualToToken.enabled <== enable_If_ExternalAmountsAre_NOT_Zero;
+    isZAssetTokenEqualToToken.enabled <== isNotInternalTx;
 
     // [1] - force `zAssetId[63:32] == utxoZAssetId[63:32]`
     component isZAssetIdEqualToUtxoZAssetId = IsZAssetIdEqualToUtxoZAssetId();
     isZAssetIdEqualToUtxoZAssetId.zAssetId <== zAssetId;
     isZAssetIdEqualToUtxoZAssetId.utxoZAssetId <== utxoZAssetId;
-    isZAssetIdEqualToUtxoZAssetId.offset <== Uint6Tag(NON_ACTIVE)(32);
+    isZAssetIdEqualToUtxoZAssetId.nMSBs <== Uint6Tag(NON_ACTIVE)(32);
     isZAssetIdEqualToUtxoZAssetId.enabled <== BinaryOne()(); // always enabled
 
     // [2] - if NOT internal tx, force `zAssetTokenId ≤ tokenId ≤ zAssetTokenId+zAssetOffset`
@@ -107,7 +107,7 @@ template ZAssetChecker() {
     isZAssetIdEqualToTokenId.zAssetTokenId <== zAssetTokenId;
     isZAssetIdEqualToTokenId.tokenId <== tokenId;
     isZAssetIdEqualToTokenId.offset <== zAssetOffset;
-    isZAssetIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
+    isZAssetIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(isNotInternalTx);
 
     // [3] - if NOT internal tx, force `tokenId == zAssetTokenId + uint(utxoZAssetId[31..0])`
     signal tokenIdDiff <== Uint252Tag(ACTIVE)(tokenId - zAssetTokenId);
@@ -115,20 +115,20 @@ template ZAssetChecker() {
     component isUtxoTokenIdEqualToTokenId = IsUtxoTokenIdEqualToTokenId();
     isUtxoTokenIdEqualToTokenId.utxoZAssetId <== utxoZAssetId;
     isUtxoTokenIdEqualToTokenId.tokenId <== tokenIdDiff;
-    isUtxoTokenIdEqualToTokenId.offset <== Uint6Tag(NON_ACTIVE)(32);
-    isUtxoTokenIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_NOT_Zero);
+    isUtxoTokenIdEqualToTokenId.nLSBs <== Uint6Tag(NON_ACTIVE)(32);
+    isUtxoTokenIdEqualToTokenId.enabled <== BinaryTag(ACTIVE)(isNotInternalTx);
 
     // [4] - if internal tx, force `token == 0`
     component isTokenEqualToZeroForInternalTx = ForceEqualIfEnabled();
     isTokenEqualToZeroForInternalTx.in[0] <== 0;
     isTokenEqualToZeroForInternalTx.in[1] <== token;
-    isTokenEqualToZeroForInternalTx.enabled <== enable_If_ExternalAmountsAre_Zero;
+    isTokenEqualToZeroForInternalTx.enabled <== isInternalTx;
 
     // [5] - if internal tx, force `tokenId == 0`
     component isTokenIdEqualToZeroForInternalTx = ForceEqualIfEnabled();
     isTokenIdEqualToZeroForInternalTx.in[0] <== 0;
     isTokenIdEqualToZeroForInternalTx.in[1] <== tokenId;
-    isTokenIdEqualToZeroForInternalTx.enabled <== BinaryTag(ACTIVE)(enable_If_ExternalAmountsAre_Zero);
+    isTokenIdEqualToZeroForInternalTx.enabled <== BinaryTag(ACTIVE)(isInternalTx);
 
     // NOTE: zZKP zAssetID is always zero
     var zZKP = ZkpToken();
@@ -140,14 +140,14 @@ template ZAssetChecker() {
     isZkpToken <== isZkpTokenEqual.out;
 }
 
-// If enabled, checks 'offset' number of MSBs in 'zAssetId' and 'utxoZAssetId' are the same
+// If enabled, checks 'nMSBs' number of MSBs in 'zAssetId' and 'utxoZAssetId' are the same
 // Examples:
-// offset = 32: zAsset[63:32] == utxoZAsset[63:32], bits [31:0] (31=offset-1) are ignored.
-// offset = 0: zAsset[63:0] == utxoZAsset[63:0]
+// nMSBs = 32: zAsset[63:32] == utxoZAsset[63:32], bits [31:0] (31=nMSBs-1) are ignored.
+// nMSBs = 0: zAsset[63:0] == utxoZAsset[63:0]
 template IsZAssetIdEqualToUtxoZAssetId() {
     signal input {uint64} zAssetId;
     signal input {uint64} utxoZAssetId;
-    signal input {uint6}  offset;
+    signal input {uint6}  nMSBs;
     signal input {binary} enabled;
 
     var isLSB = 1;
@@ -156,7 +156,7 @@ template IsZAssetIdEqualToUtxoZAssetId() {
     component p = IsIdEqualToId(64,64,isMSB);
     p.id[0] <== zAssetId;       // 64
     p.id[1] <== utxoZAssetId;   // 64
-    p.offset <== offset;
+    p.nBits <== nMSBs;
     p.enabled <== enabled;
 }
 
@@ -174,30 +174,30 @@ template IsTokenIdInZAssetTokenIdRange() {
     p.enabled <== enabled;
 }
 
-// If enabled, checks 'offset' number of LSBs in 'tokenId' and 'utxoZAssetId' are the same
+// If enabled, checks 'nLSBs' number of LSBs in 'tokenId' and 'utxoZAssetId' are the same
 // Examples:
-// offset = 32: tokenId[31:0] == utxoZAsset[31:0], bits [63:32] are ignored.
+// nLSBs = 32: tokenId[31:0] == utxoZAsset[31:0], bits [63:32] are ignored.
 template IsUtxoTokenIdEqualToTokenId() {
     signal input {uint64}  utxoZAssetId;
     signal input {uint252} tokenId;
-    signal input {uint6}   offset;
+    signal input {uint6}   nLSBs;
     signal input {binary}  enabled;
 
     var isLSB = 1;
     component p = IsIdEqualToId(64,252,isLSB);
     p.id[0] <== utxoZAssetId; // 64
     p.id[1] <== tokenId;      // 252
-    p.offset <== offset;
+    p.nBits <== nLSBs;
     p.enabled <== enabled;
 }
 
 // - IF isLSB == TRUE:
-// - THEN: id[0][offset..0]   == id[1][offset..0]
-// - ELSE: id[0][MSB..offset] == id[1][MSB..offset]
-// - offset - 0..32
+// - THEN: id[0][nBits..0]   == id[1][nBits..0]
+// - ELSE: id[0][MSB..nBits] == id[1][MSB..nBits]
+// - nBits - 0..32
 template IsIdEqualToId(N,M,isLSB) {
     signal input           id[2];
-    signal input {uint6}   offset;
+    signal input {uint6}   nBits;
     signal input {binary}  enabled;
 
     assert(N < 254);
@@ -205,7 +205,7 @@ template IsIdEqualToId(N,M,isLSB) {
     assert(id[0] < 2**N);
     assert(id[1] < 2**M);
     assert(N <= M);
-    assert(0 <= offset <= 32);
+    assert(0 <= nBits <= 32);
     assert(0 <= isLSB <= 1);
 
     component n2b_0;
@@ -221,18 +221,18 @@ template IsIdEqualToId(N,M,isLSB) {
     for(var i = 0; i < N; i++) {
         lessThen[i] = LessThan(32);
         lessThen[i].in[0] <== i;
-        lessThen[i].in[1] <== offset;
+        lessThen[i].in[1] <== nBits;
 
         isEqual[i] = ForceEqualIfEnabled();
         isEqual[i].in[0] <== n2b_0.out[i];
         isEqual[i].in[1] <== n2b_1.out[i];
         if( isLSB ) {
-            // if i < offset --> check is enabled
-            // i = 32, offset = 32: i < 32 --> lessThen[i].out = 0
+            // if i < nBits --> check is enabled
+            // i = 32, nBits = 32: i < 32 --> lessThen[i].out = 0
             isEqual[i].enabled <== enabled * ( lessThen[i].out );
         } else {
-            // if i >= offset --> check is enabled
-            // i = 32, offset = 32: i < 32 --> ( 1 - lessThen[i].out ) = 1
+            // if i >= nBits --> check is enabled
+            // i = 32, nBits = 32: i < 32 --> ( 1 - lessThen[i].out ) = 1
             isEqual[i].enabled <== enabled * ( 1 - lessThen[i].out );
         }
     }
