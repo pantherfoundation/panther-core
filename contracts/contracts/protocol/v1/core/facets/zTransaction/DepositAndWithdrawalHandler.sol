@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import "../../libraries/VaultExecutor.sol";
 import "../../libraries/TransactionTypes.sol";
+import "../../libraries/TokenTypeAndAddressDecoder.sol";
 import "../../publicSignals/MainPublicSignals.sol";
 
 import "../../errMsgs/ZTransactionErrMsgs.sol";
@@ -19,6 +20,7 @@ abstract contract DepositAndWithdrawalHandler {
     using UtilsLib for uint256;
     using VaultExecutor for address;
     using TransactionTypes for uint16;
+    using TokenTypeAndAddressDecoder for uint256;
 
     address public immutable VAULT;
 
@@ -34,26 +36,26 @@ abstract contract DepositAndWithdrawalHandler {
     /**
      * @dev Processes deposit and withdrawal transactions based on provided inputs.
      * @param inputs Public input parameters for the transaction.
-     * @param tokenType Type of the token being transacted (native, ERC20, ERC721 or, ERC1155).
      * @param transactionType Type of the transaction (deposit or withdrawal).
      * @param protocolFee Fee deducted for protocol operations, if any.
      */
     function _processDepositAndWithdraw(
         uint256[] calldata inputs,
-        uint8 tokenType,
         uint16 transactionType,
         uint96 protocolFee
     ) internal {
         uint96 depositAmount = inputs[MAIN_DEPOSIT_AMOUNT_IND].safe96();
         uint96 withdrawAmount = inputs[MAIN_WITHDRAW_AMOUNT_IND].safe96();
-        address token = inputs[MAIN_TOKEN_IND].safeAddress();
+        (uint8 tokenType, address tokenAddress) = inputs[MAIN_TOKEN_IND]
+            .getTokenTypeAndAddress();
+
         uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
         if (transactionType.isDeposit()) {
             _processDeposit(
                 inputs,
                 SaltedLockData(
                     tokenType,
-                    token,
+                    tokenAddress,
                     tokenId,
                     bytes32(inputs[MAIN_SALT_HASH_IND]),
                     inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER_IND]
@@ -69,7 +71,7 @@ abstract contract DepositAndWithdrawalHandler {
                 inputs,
                 LockData(
                     tokenType,
-                    token,
+                    tokenAddress,
                     tokenId,
                     inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND]
                         .safeAddress(),

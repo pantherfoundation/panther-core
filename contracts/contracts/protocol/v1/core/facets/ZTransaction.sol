@@ -54,8 +54,6 @@ contract ZTransaction is
     /// @param proof A proof associated with the zAccount and a secret.
     /// @param privateMessages the private message that contains zAccount and zAssets utxo
     /// data.
-    /// @param tokenType One of the numbers 0, 1, 2, 255 which determines ERC20, ERC721,
-    /// ERC1155, and Native token respectively.
     /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
     /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
     /// the taxi tree. Other bits are reserved.
@@ -63,7 +61,6 @@ contract ZTransaction is
         uint256[] calldata inputs,
         SnarkProof calldata proof,
         uint32 transactionOptions,
-        uint8 tokenType,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
@@ -72,7 +69,6 @@ contract ZTransaction is
         _validateExtraInputs(
             inputs[MAIN_EXTRA_INPUT_HASH_IND],
             transactionOptions,
-            tokenType,
             paymasterCompensation,
             privateMessages
         );
@@ -125,7 +121,6 @@ contract ZTransaction is
                 // be non-zero only if the tokenType is not native.
                 _processDepositAndWithdraw(
                     inputs,
-                    tokenType,
                     transactionType,
                     protocolFee
                 );
@@ -178,13 +173,11 @@ contract ZTransaction is
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
-        uint8 tokenType,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) private pure {
         bytes memory extraInp = abi.encodePacked(
             transactionOptions,
-            tokenType,
             paymasterCompensation,
             privateMessages
         );
