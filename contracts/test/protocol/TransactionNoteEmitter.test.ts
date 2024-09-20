@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 
-//TODO: enable eslint
-/* eslint-disable */
-
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
