@@ -13,6 +13,7 @@ import "../publicSignals/PrpConversionPublicSignals.sol";
 import "../publicSignals/ZSwapPublicSignals.sol";
 import "../../../../common/UtilsLib.sol";
 import "../libraries/TransactionTypes.sol";
+import "../libraries/TokenTypeAndAddressDecoder.sol";
 
 /**
  * @title TransactionChargesHandler
@@ -20,8 +21,8 @@ import "../libraries/TransactionTypes.sol";
  * and handling various transaction types with specific fee calculations.
  */
 abstract contract TransactionChargesHandler {
+    using TokenTypeAndAddressDecoder for uint256;
     using TransactionTypes for uint16;
-    // using VaultLib for address;
     using UtilsLib for uint256;
     using UtilsLib for uint96;
     using UtilsLib for uint40;
@@ -83,8 +84,11 @@ abstract contract TransactionChargesHandler {
                 .scaleDownBy1e12()
                 .safe40();
 
+            (, address tokenAddress) = inputs[MAIN_TOKEN_IND]
+                .getTokenTypeAndAddress();
+
             assetData = AssetData({
-                tokenAddress: address(inputs[MAIN_TOKEN_IND].safe160()),
+                tokenAddress: tokenAddress,
                 depositAmount: inputs[MAIN_DEPOSIT_AMOUNT_IND].safe128(),
                 withdrawAmount: inputs[MAIN_WITHDRAW_AMOUNT_IND].safe128()
             });
