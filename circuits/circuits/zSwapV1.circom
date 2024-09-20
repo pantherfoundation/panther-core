@@ -3,7 +3,7 @@ pragma circom 2.1.9;
 
 // project deps
 include "./templates/balanceChecker.circom";
-include "./templates/dataEscrowElgamalEncryption.circom";
+include "./templates/dataEscrowElGamalEncryption.circom";
 include "./templates/trustProvidersKyt.circom";
 include "./templates/networkIdInclusionProver.circom";
 include "./templates/nullifierHasher.circom";
