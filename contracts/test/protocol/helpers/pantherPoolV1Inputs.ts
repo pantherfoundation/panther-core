@@ -23,6 +23,10 @@ const getSnarkFriendlyBytes = (length = 32) => {
         .toString();
 };
 
+export const encodeTokenTypeAndAddress = (type: number, address: number) => {
+    return BigNumber.from(type).shl(160).add(address);
+};
+
 export type ForestTreesStruct = {
     taxiTree: string;
     busTree: string;
