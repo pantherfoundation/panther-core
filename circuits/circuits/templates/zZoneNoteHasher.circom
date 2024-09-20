@@ -7,8 +7,8 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 template ZZoneNoteHasher(){
     signal input {uint16}           zoneId;                                        // 16
     signal input {sub_order_bj_p}   edDsaPubKey[2];                                // 256
-    signal input {uint16}           originZoneIDs;                                 // 256
-    signal input {uint16}           targetZoneIDs;                                 // 256
+    signal input {uint240}          originZoneIDs;                                 // 240
+    signal input {uint240}          targetZoneIDs;                                 // 240
     signal input {uint64}           networkIDsBitMap;                              // 64
     signal input {uint240}          trustProvidersMerkleTreeLeafIDsAndRulesList;   // 240
     signal input {uint32}           kycExpiryTime;                                 // 32
