@@ -99,8 +99,8 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
 
     // zZone
-    signal input {uint16}          zZoneOriginZoneIDs;
-    signal input {uint16}          zZoneTargetZoneIDs;
+    signal input {uint240}         zZoneOriginZoneIDs;
+    signal input {uint240}         zZoneTargetZoneIDs;
     signal input {uint64}          zZoneNetworkIDsBitMap;
     signal input {uint240}         zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     signal input {uint32}          zZoneKycExpiryTime;

@@ -184,8 +184,8 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
     signal rc_zAccountBlackListMerkleRoot <== SnarkFieldTag()(zAccountBlackListMerkleRoot);
     signal rc_zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth] <== SnarkFieldTagArray(ZAccountBlackListMerkleTreeDepth)(zAccountBlackListPathElements);
 
-    signal rc_zZoneOriginZoneIDs <== Uint16Tag(IGNORE_ANCHORED)(zZoneOriginZoneIDs);
-    signal rc_zZoneTargetZoneIDs <== Uint16Tag(IGNORE_ANCHORED)(zZoneTargetZoneIDs);
+    signal rc_zZoneOriginZoneIDs <== Uint240Tag(IGNORE_ANCHORED)(zZoneOriginZoneIDs);
+    signal rc_zZoneTargetZoneIDs <== Uint240Tag(IGNORE_ANCHORED)(zZoneTargetZoneIDs);
     signal rc_zZoneNetworkIDsBitMap <== Uint64Tag(IGNORE_ANCHORED)(zZoneNetworkIDsBitMap);
     signal rc_zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== Uint240Tag(ACTIVE)(zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList);
     signal rc_zZoneKycExpiryTime <== Uint32Tag(IGNORE_ANCHORED)(zZoneKycExpiryTime);
