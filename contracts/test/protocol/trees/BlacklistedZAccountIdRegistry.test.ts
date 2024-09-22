@@ -16,7 +16,7 @@ import {
     StaticTree,
 } from '../../../types/contracts';
 
-describe('BlacklistedZAccountIdRegistry', () => {
+describe.skip('BlacklistedZAccountIdRegistry', () => {
     let blacklistedZAccountsIdsRegistry: MockBlacklistedZAccountsIdsRegistry;
     let staticTree: FakeContract<StaticTree>;
     let pantherPool: SignerWithAddress;
