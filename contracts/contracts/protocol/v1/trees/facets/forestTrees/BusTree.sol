@@ -85,7 +85,10 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
         address feeMaster,
         address rewardToken,
         uint8 miningRewardVersion
-    ) MiningRewards(feeMaster, rewardToken, miningRewardVersion) {}
+    )
+        BusQueues(feeMaster)
+        MiningRewards(feeMaster, rewardToken, miningRewardVersion)
+    {}
 
     function getBusTreeStats()
         external

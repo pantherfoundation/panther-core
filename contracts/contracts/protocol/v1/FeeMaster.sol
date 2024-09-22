@@ -74,20 +74,22 @@ contract FeeMaster is
         Providers memory providers,
         address zkpToken,
         address wethToken,
-        address prpConverter,
-        address prpVoucherGrantor,
         address vault,
         address treasury
     )
         ImmutableOwnable(owner)
         UniswapV3Handler(wethToken)
         FeeAccountant(providers, zkpToken)
-        ProtocolFeeDistributor(treasury, prpConverter)
+        ProtocolFeeDistributor(
+            treasury,
+            providers.pantherTrees,
+            providers.pantherPool
+        )
     {
         require(vault != address(0), "init: zero address");
 
         VAULT = vault;
-        PRP_VOUCHER_GRANTOR = prpVoucherGrantor;
+        PRP_VOUCHER_GRANTOR = providers.pantherPool;
     }
 
     /* ========== VIEW FUNCTIONS ========== */

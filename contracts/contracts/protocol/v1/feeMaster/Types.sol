@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 struct Providers {
     address pantherPool;
-    address pantherBusTree;
+    address pantherTrees;
     address paymaster;
     address trustProvider;
 }

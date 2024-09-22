@@ -9,12 +9,14 @@ contract MockBusQueues is BusQueues {
     event LogQueueIdAndFirstIndex(uint32 id, uint8 firstIndexInFirstQueue);
     event LogNewBusQueue(BusQueue queue);
 
+    constructor(address feeMaster) BusQueues(feeMaster) {}
+
     function getNextQueueId() external view returns (uint256) {
         return _nextQueueId;
     }
 
     function getRewardReserve() external view returns (int256) {
-        return _netRewardReserve;
+        return netRewardReserve;
     }
 
     function getNumPendingQueues() external view returns (uint256) {
@@ -25,8 +27,8 @@ contract MockBusQueues is BusQueues {
         return _oldestPendingQueueLink;
     }
 
-    function mockSetRewardReserve(int192 netRewardReserve) external {
-        _netRewardReserve = netRewardReserve;
+    function mockSetRewardReserve(int112 netRewardReserve) external pure {
+        netRewardReserve = netRewardReserve;
     }
 
     function mockAddQueue(BusQueue calldata queue, uint32 id) external {
