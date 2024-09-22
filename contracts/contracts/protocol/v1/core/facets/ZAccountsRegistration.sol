@@ -42,7 +42,7 @@ contract ZAccountsRegistration is
     using UtxosInserter for address;
     using NullifierSpender for mapping(bytes32 => uint256);
 
-    uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 2;
+    uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 3;
 
     address public immutable SELF;
     address public immutable PANTHER_TREES;
@@ -371,7 +371,7 @@ contract ZAccountsRegistration is
 
     function _getNextZAccountId() internal returns (uint256 curId) {
         curId = zAccountIdTracker;
-        zAccountIdTracker = curId & 0xFF < 254
+        zAccountIdTracker = curId & 0xFF < 253
             ? curId + 1
             : curId + ZACCOUNT_ID_COUNTER_JUMP;
     }
