@@ -28,7 +28,7 @@ abstract contract FeeAccountant {
 
     constructor(Providers memory provider, address zkpToken) {
         PANTHER_POOL = provider.pantherPool;
-        PANTHER_BUS_TREE = provider.pantherBusTree;
+        PANTHER_BUS_TREE = provider.pantherTrees;
         PAYMASTER = provider.paymaster;
         TRUST_PROVIDER = provider.trustProvider;
         ZKP_TOKEN = zkpToken;

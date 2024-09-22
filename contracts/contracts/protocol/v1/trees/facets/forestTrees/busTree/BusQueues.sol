@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
+import "../../../interfaces/IMinersNetRewardReserves.sol";
+
 import "../../../utils/merkleTrees/DegenerateIncrementalBinaryTree.sol";
 
 import "../../../../../../common/crypto/PoseidonHashers.sol";
@@ -28,12 +30,15 @@ import { HUNDRED_PERCENT } from "../../../../../../common/Constants.sol";
  * The queue lifecycle is:
  * "Opened -> (optionally) Closed -> Processed (and deleted)."
  */
-abstract contract BusQueues is DegenerateIncrementalBinaryTree {
-    bytes32[50] private _startGap;
-
+abstract contract BusQueues is
+    DegenerateIncrementalBinaryTree,
+    IMinersNetRewardReserves
+{
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
     uint256 private constant QUEUE_MAX_SIZE = 2 ** QUEUE_MAX_LEVELS;
     // solhint-enable var-name-mixedcase
+
+    address public immutable REWARD_RESERVE_ALLOCATOR;
 
     /**
      * @param nUtxos Number of UTXOs in the queue
@@ -90,7 +95,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     uint16 private _minEmptyQueueAge;
 
     // Unused yet part of queue rewards which were reserved for premiums
-    int192 internal _netRewardReserve;
+    int112 public netRewardReserve;
 
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
@@ -111,15 +116,22 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint256 premiumRate,
         uint256 minEmptyQueueAge
     );
-    // Emitted when new reward "reserves" added
-    event BusQueueRewardReserved(int256 extraReseve);
-    // Emitted when (part of) reward "reserves" used
-    event BusQueueRewardReserveUsed(int256 usage);
+
+    // Emitted when the reward reserves are either increased or decreased
+    event BusQueueRewardReserveUpdated(int112 updatedNetRewardReserve);
+
+    // Emitted when the reward reserves are allocated by FeeMaster
+    event BusQueueRewardReserveAllocated(
+        int112 updatedNetRewardReserve,
+        uint112 allocated
+    );
 
     // Emitted when queue reward increased w/o adding UTXOs
     event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
 
-    bytes32[50] private _endGap;
+    constructor(address rewardReserveAllocator) {
+        REWARD_RESERVE_ALLOCATOR = rewardReserveAllocator;
+    }
 
     modifier nonEmptyBusQueue(uint32 queueId) {
         require(_busQueues[queueId].nUtxos > 0, "BQ:EMPTY_QUEUE");
@@ -158,8 +170,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         returns (
             uint32 curQueueId,
             uint32 numPendingQueues,
-            uint32 oldestPendingQueueId,
-            int192 newRewardReserve
+            uint32 oldestPendingQueueId
         )
     {
         uint32 nextQueueId = _nextQueueId;
@@ -169,7 +180,6 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         oldestPendingQueueId = numPendingQueues == 0
             ? 0
             : _oldestPendingQueueLink - 1;
-        newRewardReserve = _netRewardReserve;
     }
 
     function getBusQueue(
@@ -221,6 +231,18 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         }
 
         return queues;
+    }
+
+    function allocateRewardReserve(uint112 allocated) external {
+        require(
+            msg.sender == REWARD_RESERVE_ALLOCATOR,
+            "unauthorized reward allocator"
+        );
+
+        int112 _netRewardReserve = netRewardReserve + int112(allocated);
+        netRewardReserve = _netRewardReserve;
+
+        emit BusQueueRewardReserveAllocated(_netRewardReserve, allocated);
     }
 
     // @dev Refer to return values of the `getParam` function
@@ -413,7 +435,6 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     function _getQueueRemainingBlocks(
         BusQueue memory queue
     ) internal view returns (uint40) {
-        //! shouldn't be queue.nUtxos == QUEUE_MAX_SIZE ?
         if (queue.nUtxos >= QUEUE_MAX_SIZE) return 0;
 
         // Minimum "age" declines linearly to the number of UTXOs in the queue
@@ -437,18 +458,15 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
             int256 netReserveChange
         ) = _estimateRewarding(queue);
 
-        int192 reserve = _netRewardReserve;
+        int112 updatedNetRewardReserve = int112(
+            netRewardReserve + netReserveChange
+        );
 
-        if (netReserveChange > 0) {
-            _netRewardReserve = int96(reserve + netReserveChange);
-            emit BusQueueRewardReserved(netReserveChange);
-        }
-        if (netReserveChange < 0) {
-            _netRewardReserve = int96(reserve + netReserveChange);
-            emit BusQueueRewardReserveUsed(netReserveChange);
-        }
+        netRewardReserve = updatedNetRewardReserve;
 
         actReward = reward + premium;
+
+        emit BusQueueRewardReserveUpdated(updatedNetRewardReserve);
     }
 
     function _estimateRewarding(
