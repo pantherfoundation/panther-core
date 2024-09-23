@@ -28,7 +28,6 @@ contract StaticTree is AppStorage, Ownable, IStaticTreeRootUpdater {
 
     address private immutable SELF;
 
-    bytes32 private _staticTreeRoot;
     bytes32[NUM_LEAFS] public leafs;
 
     // mapping from leaf index to leaf owner
@@ -62,20 +61,16 @@ contract StaticTree is AppStorage, Ownable, IStaticTreeRootUpdater {
             SELF
         ).getProvidersKeysRoot();
 
-        _staticTreeRoot = hash(leafs);
-    }
-
-    function getStaicRoot() external view returns (bytes32) {
-        return _staticTreeRoot;
+        staticRoot = hash(leafs);
     }
 
     function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
         require(msg.sender == SELF, "unauthorized");
 
         leafs[leafIndex] = updatedLeaf;
-        _staticTreeRoot = hash(leafs);
+        staticRoot = hash(leafs);
 
-        emit RootUpdated(leafIndex, updatedLeaf, _staticTreeRoot);
+        emit RootUpdated(leafIndex, updatedLeaf, staticRoot);
     }
 
     function hash(bytes32[5] memory input) private pure returns (bytes32) {
