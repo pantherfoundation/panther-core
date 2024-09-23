@@ -382,6 +382,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     utxoNoteHasher.amount <== Uint64Tag(IGNORE_CONSTANT)(0); // not in use since hidden hash does not have it
     utxoNoteHasher.spendPk[0] <== utxoSpendPubKey[0];
     utxoNoteHasher.spendPk[1] <== utxoSpendPubKey[1];
+    utxoNoteHasher.random <== utxoSpendKeyRandom;
     utxoNoteHasher.originNetworkId <== zNetworkId;
     utxoNoteHasher.targetNetworkId <== zNetworkId;
     utxoNoteHasher.createTime <== createTime;

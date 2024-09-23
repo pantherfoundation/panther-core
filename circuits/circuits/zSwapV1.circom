@@ -441,6 +441,7 @@ template ZSwapV1( nUtxoIn,
         // compute commitment
         utxoInNoteHashers[i] = UtxoNoteHasher(0);
         utxoInNoteHashers[i].spendPk <== utxoInSpendPubKeyVerifier[i].out;
+        utxoInNoteHashers[i].random <== utxoInSpendKeyRandom[i];
         utxoInNoteHashers[i].zAsset <== utxoZAsset[transactedToken];
         utxoInNoteHashers[i].amount <== utxoInAmount[i];
         utxoInNoteHashers[i].originNetworkId <== utxoInOriginNetworkId[i];
@@ -547,6 +548,7 @@ template ZSwapV1( nUtxoIn,
         // verify commitment
         utxoOutNoteHasher[i] = UtxoNoteHasher(isSwapUtxo);
         utxoOutNoteHasher[i].spendPk <== utxoOutSpendPubKeySubOrderVerifier[i].out;
+        utxoOutNoteHasher[i].random <== utxoOutSpendPubKeyRandom[i];
         if  ( isSwapUtxo ) {
             utxoOutNoteHasher[i].zAsset <== utxoZAsset[swapToken];
             // require zero utxo-out amounts in case of swap

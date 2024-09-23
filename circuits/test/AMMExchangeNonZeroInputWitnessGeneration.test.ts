@@ -121,9 +121,11 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
     // console.log('utxoDerivedPublicKeys=>', utxoDerivedPublicKeys);
 
     // utxoNoteHasher Calculation
+    const random_hash = poseidon([utxoSpendKeyRandom]);
     const hiden_hash = poseidon([
         16242144124999549881001750798061860694310000906329588094216364089104708054049n,
         10560487167730454196440910098054184596052350463925947689880260088216647168026n,
+        random_hash,
         0,
         33,
         2,
@@ -136,7 +138,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
     ]);
 
     const UtxoNoteLeafHasher = hiden_hash;
-    // Updated - 4559544338383536858093880749891621006674827955225789850199360281325186909499n
+    // 9848159934633945213815166899374997597482648646636678651521985478275117087002n
     // console.log('UtxoNoteLeafHasher=>', UtxoNoteLeafHasher);
     /* START ===== AMM Exchange ZAccountUTXO computation ===== */
 
@@ -381,7 +383,7 @@ describe('Automated Market Maker - Non Zero Input AMM Exchange - Witness computa
         createTime: 1695282515,
 
         utxoCommitment:
-            4559544338383536858093880749891621006674827955225789850199360281325186909499n,
+            9848159934633945213815166899374997597482648646636678651521985478275117087002n,
 
         // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
         utxoSpendPubKey: [
