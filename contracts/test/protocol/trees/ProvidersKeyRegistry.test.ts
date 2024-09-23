@@ -32,7 +32,7 @@ import {
     getBlockTimestamp,
 } from '.././helpers/hardhat';
 
-describe.only('ProvidersKeys contract', function () {
+describe('ProvidersKeys contract', function () {
     this.timeout('100000000000');
     let providersKeys: MockProvidersKeysRegistry;
     let staticTree: FakeContract<StaticTree>;

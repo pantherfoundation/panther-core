@@ -65,6 +65,7 @@ contract StaticTree is AppStorage, Ownable, IStaticTreeRootUpdater {
     }
 
     function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
+        require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
         require(msg.sender == SELF, "unauthorized");
 
         leafs[leafIndex] = updatedLeaf;
