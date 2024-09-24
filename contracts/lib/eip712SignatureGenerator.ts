@@ -4,6 +4,8 @@
 // eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
 import {BigNumberish} from '@ethersproject/bignumber/src.ts';
+// eslint-disable-next-line import/named
+import {BytesLike} from '@ethersproject/bytes';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {poseidon2or3} from '@panther-core/crypto/lib/base/hashes';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
@@ -17,10 +19,11 @@ import {ProvidersKeys, G1PointStruct} from '../types/contracts/ProvidersKeys';
 const getDomain = async (
     providersKeys: ProvidersKeys,
 ): Promise<TypedDataDomain> => {
-    const name = await providersKeys.EIP712_NAME();
-    const version = await providersKeys.EIP712_VERSION();
+    const name = 'Panther Protocol';
+    const version = '1';
     const chainId = (await ethers.provider.getNetwork()).chainId;
-    const salt = await providersKeys.EIP712_SALT();
+    const salt: BytesLike =
+        '0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b';
     const verifyingContract = providersKeys.address;
 
     return {

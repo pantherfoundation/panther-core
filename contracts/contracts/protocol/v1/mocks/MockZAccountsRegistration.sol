@@ -4,8 +4,6 @@ pragma solidity ^0.8.19;
 
 import "../core/facets/ZAccountsRegistration.sol";
 
-//import "../core/facets/AppConfiguration.sol";
-
 contract MockZAccountsRegistration is ZAccountsRegistration {
     uint256 public nextId;
 
@@ -50,5 +48,13 @@ contract MockZAccountsRegistration is ZAccountsRegistration {
 
     function updateMaxTimeOffset(uint32 _maxBlockTimeOffset) public {
         maxBlockTimeOffset = _maxBlockTimeOffset;
+    }
+
+    function getSelfAndPantherTreeAddr()
+        external
+        view
+        returns (address self, address pantherTree)
+    {
+        return (SELF, PANTHER_TREES);
     }
 }

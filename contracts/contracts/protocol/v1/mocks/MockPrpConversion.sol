@@ -26,4 +26,8 @@ contract MockPrpConversion is PrpConversion {
         require(msg.sender == owner, "LibDiamond: Must be contract owner");
         _;
     }
+
+    function getPantherTree() external view returns (address) {
+        return PANTHER_TREES;
+    }
 }

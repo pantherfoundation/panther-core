@@ -17,4 +17,8 @@ contract MockZTransaction is ZTransaction {
         uint256[] memory input,
         SnarkProof memory proof
     ) internal view override {} // solhint-disable-line no-empty-blocks
+
+    function getPantherTree() external view returns (address) {
+        return PANTHER_TREES;
+    }
 }

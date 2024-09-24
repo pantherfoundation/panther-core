@@ -199,7 +199,7 @@ describe('PrpConversion', function () {
 
     describe('#deployment', () => {
         it('should set the correct panther tree address', async () => {
-            expect(await prpConversion.PANTHER_TREES()).to.equal(
+            expect(await prpConversion.getPantherTree()).to.equal(
                 pantherTrees.address,
             );
         });

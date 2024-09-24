@@ -74,7 +74,7 @@ describe('PantherStaticTree', function () {
                 NonZeroRoot,
             ]);
 
-            expect(await pantherStaticTree.staticRoot()).to.equal(root);
+            expect(await pantherStaticTree.getStaticRoot()).to.equal(root);
         });
 
         it('Should show correct leafs', async function () {

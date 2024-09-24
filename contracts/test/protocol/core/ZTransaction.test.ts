@@ -81,7 +81,7 @@ describe('ZTransactions', function () {
 
     describe('#deployment', () => {
         it('should set the correct panther tree address', async () => {
-            expect(await zTransaction.PANTHER_TREES()).to.equal(
+            expect(await zTransaction.getPantherTree()).to.equal(
                 pantherTrees.address,
             );
         });

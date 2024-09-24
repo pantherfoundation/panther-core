@@ -34,4 +34,12 @@ contract MockZSwap is ZSwap {
     ) external view returns (uint8 tokenType, address tokenAddress) {
         return tokenTypeAndAddress.getTokenTypeAndAddress();
     }
+
+    function getPantherTreeAndVaultAddr()
+        external
+        view
+        returns (address pantherTree, address vault)
+    {
+        return (PANTHER_TREES, VAULT);
+    }
 }
