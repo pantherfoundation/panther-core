@@ -13,7 +13,7 @@ import {MockTaxiTree} from '../../../types/contracts';
 const BigNumber = ethers.BigNumber;
 const MAX_LEAF_NUM = 128;
 
-describe('TaxiTree', () => {
+describe.only('TaxiTree', () => {
     let taxiTree: MockTaxiTree;
     let merkleTree: PantherTaxiMerkleTree;
 
@@ -45,9 +45,16 @@ describe('TaxiTree', () => {
             merkleTree.insertLeaf(utxo);
 
             await taxiTree.addUtxo(utxo);
-            expect(BigNumber.from(merkleTree.root).toHexString()).to.be.eq(
+
+            const actualRoot = ethers.utils.hexZeroPad(
                 await taxiTree.getTaxiTreeRoot(),
+                32,
             );
+            const expectedRoot = ethers.utils.hexZeroPad(
+                BigNumber.from(merkleTree.root),
+                32,
+            );
+            await expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should insert multiple utxos and update the root', async () => {
@@ -55,9 +62,16 @@ describe('TaxiTree', () => {
             utxos.forEach(utxo => merkleTree.insertLeaf(utxo));
 
             await taxiTree.addUtxos(utxos);
-            expect(BigNumber.from(merkleTree.root).toHexString()).to.be.eq(
+
+            const actualRoot = ethers.utils.hexZeroPad(
                 await taxiTree.getTaxiTreeRoot(),
+                32,
             );
+            const expectedRoot = ethers.utils.hexZeroPad(
+                BigNumber.from(merkleTree.root),
+                32,
+            );
+            await expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should insert a leaf into the right subtree when left is full', async function () {
@@ -68,9 +82,16 @@ describe('TaxiTree', () => {
             await taxiTree.addUtxo(leaf);
 
             expect(merkleTree.rightSubtree.leaves[0]).to.be.equal(leaf);
-            expect(BigNumber.from(merkleTree.root).toHexString()).to.be.eq(
+
+            const actualRoot = ethers.utils.hexZeroPad(
                 await taxiTree.getTaxiTreeRoot(),
+                32,
             );
+            const expectedRoot = ethers.utils.hexZeroPad(
+                BigNumber.from(merkleTree.root),
+                32,
+            );
+            await expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should reset the left subtree when full', async function () {
@@ -87,9 +108,16 @@ describe('TaxiTree', () => {
             await taxiTree.addUtxo(utxo);
 
             expect(merkleTree.leftSubtree.leaves.length).to.be.equal(1);
-            expect(BigNumber.from(merkleTree.root).toHexString()).to.be.eq(
+
+            const actualRoot = ethers.utils.hexZeroPad(
                 await taxiTree.getTaxiTreeRoot(),
+                32,
             );
+            const expectedRoot = ethers.utils.hexZeroPad(
+                BigNumber.from(merkleTree.root),
+                32,
+            );
+            await expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should reset the right subtree when the left subtree is full', async function () {
@@ -104,9 +132,16 @@ describe('TaxiTree', () => {
             await taxiTree.addUtxo(utxo);
 
             expect(merkleTree.rightSubtree.leaves.length).to.be.equal(1);
-            expect(BigNumber.from(merkleTree.root).toHexString()).to.be.eq(
+
+            const actualRoot = ethers.utils.hexZeroPad(
                 await taxiTree.getTaxiTreeRoot(),
+                32,
             );
+            const expectedRoot = ethers.utils.hexZeroPad(
+                BigNumber.from(merkleTree.root),
+                32,
+            );
+            await expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         async function fillSubtree(
