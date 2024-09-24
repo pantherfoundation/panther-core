@@ -37,7 +37,7 @@ contract PrpConversion is
     using ZAssetUtxoGenerator for uint256;
     using NullifierSpender for mapping(bytes32 => uint256);
 
-    address public immutable PANTHER_TREES;
+    address internal immutable PANTHER_TREES;
 
     bool public initialized;
 

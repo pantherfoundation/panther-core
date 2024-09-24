@@ -5,11 +5,11 @@ pragma solidity ^0.8.19;
 abstract contract EIP712SignatureVerifier {
     bytes private constant EIP191_VERSION = "\x19\x01";
 
-    string public constant EIP712_NAME = "Panther Protocol";
-    string public constant EIP712_VERSION = "1";
+    string internal constant EIP712_NAME = "Panther Protocol";
+    string internal constant EIP712_VERSION = "1";
 
     // keccak256(bytes("PANTHER_EIP712_DOMAIN_SALT"));
-    bytes32 public constant EIP712_SALT =
+    bytes32 internal constant EIP712_SALT =
         0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b;
 
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
@@ -19,7 +19,7 @@ abstract contract EIP712SignatureVerifier {
             )
         );
 
-    function getDomainSeperator() public view returns (bytes32) {
+    function getDomainSeperator() internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(

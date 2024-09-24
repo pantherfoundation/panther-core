@@ -45,6 +45,10 @@ contract StaticTree is AppStorage, Ownable, IStaticTreeRootUpdater {
         SELF = _self;
     }
 
+    function getStaticRoot() external view returns (bytes32) {
+        return staticRoot;
+    }
+
     function initializeStaticTree() external onlyOwner {
         require(staticRoot == bytes32(0), "PF: Already initialized");
 

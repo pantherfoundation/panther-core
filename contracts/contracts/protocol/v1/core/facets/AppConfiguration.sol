@@ -26,4 +26,16 @@ contract AppConfiguration is AppStorage, Ownable {
 
         emit MaxBlockTimeOffsetUpdated(_maxBlockTimeOffset);
     }
+
+    function getCircuitIds(uint16 pointer) external view returns (uint160) {
+        return circuitIds[pointer];
+    }
+
+    function getMaxBlockTimeOffset() external view returns (uint32) {
+        return maxBlockTimeOffset;
+    }
+
+    function getIsSpent(bytes32 nullifier) external view returns (uint256) {
+        return isSpent[nullifier];
+    }
 }

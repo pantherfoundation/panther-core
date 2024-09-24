@@ -49,7 +49,7 @@ contract PrpVoucherController is
     using UtxosInserter for address;
     using NullifierSpender for mapping(bytes32 => uint256);
 
-    address public immutable PANTHER_TREES;
+    address internal immutable PANTHER_TREES;
 
     event RewardVoucherGenerated(bytes32 indexed secretHash, uint256 prpAmount);
     event RewardAccounted(bytes32 indexed secretHash);

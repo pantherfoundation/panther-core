@@ -28,8 +28,8 @@ abstract contract TransactionChargesHandler {
     using UtilsLib for uint40;
 
     // Immutable state variables
-    address public immutable ZKP_TOKEN;
-    address public immutable FEE_MASTER;
+    address internal immutable ZKP_TOKEN;
+    address internal immutable FEE_MASTER;
 
     event FeesAccounted(ChargedFeesPerTx chargedFeesPerTx);
 

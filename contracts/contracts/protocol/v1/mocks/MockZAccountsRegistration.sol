@@ -41,7 +41,7 @@ contract MockZAccountsRegistration is ZAccountsRegistration {
         uint160 circuitId,
         uint256[] memory input,
         SnarkProof memory proof
-    ) public view override {} // solhint-disable-line no-empty-blocks
+    ) internal view override {} // solhint-disable-line no-empty-blocks
 
     modifier onlyOwner() override {
         require(msg.sender == owner, "LibDiamond: Must be contract owner");

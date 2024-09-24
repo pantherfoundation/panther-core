@@ -23,8 +23,8 @@ contract FeeMasterTotalDebtController is
     using VaultExecutor for address;
     using UtilsLib for uint256;
 
-    address public immutable VAULT;
-    address public immutable FEE_MASTER;
+    address internal immutable VAULT;
+    address internal immutable FEE_MASTER;
 
     /**
      * @dev Constructor sets vault and fee master contract addresses.
@@ -39,6 +39,10 @@ contract FeeMasterTotalDebtController is
 
         VAULT = vault;
         FEE_MASTER = feeMaster;
+    }
+
+    function getFeeMasterDebt(address token) external view returns (uint256) {
+        return feeMasterDebt[token];
     }
 
     /**
