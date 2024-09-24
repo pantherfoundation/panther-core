@@ -14,7 +14,8 @@ import {TokenType} from '../../lib/token';
 import {toBigNum} from '../../lib/utilities';
 import {VaultV1, IERC20, IERC721, IERC1155} from '../../types/contracts';
 
-import {ADDRESS_ZERO, composeERC20SenderStealthAddress} from './shared';
+import {ADDRESS_ZERO} from './helpers/constants';
+import {composeERC20SenderStealthAddress} from './helpers/vault';
 
 chai.use(smock.matchers);
 
