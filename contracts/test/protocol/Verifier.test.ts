@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-//TODO: enable eslint
-/* eslint-disable */
-
 import fs from 'fs';
 import path from 'path';
 
@@ -20,9 +17,9 @@ import {
     deployContentDeterministically,
 } from '../../lib/deploymentHelpers';
 import {encodeVerificationKey} from '../../lib/encodeVerificationKey';
-import {PantherVerifier} from '../../types/contracts';
+import {MockVerifier} from '../../types/contracts';
 
-describe.skip('PantherVerifier', function () {
+describe('Verifier', function () {
     const provider = ethers.provider;
 
     const {deployerAddr} = getDeterministicDeploymentProxyAddressAndCode();
@@ -36,7 +33,7 @@ describe.skip('PantherVerifier', function () {
         ),
     );
 
-    let verifier: PantherVerifier;
+    let verifier: MockVerifier;
     let cirquitId: string;
 
     let encodedVerificationKey2: string;
@@ -62,16 +59,15 @@ describe.skip('PantherVerifier', function () {
         expect((await provider.getCode(pointer)).length).to.be.gt(2);
     });
 
-    it('should deploy PantherVerifier', async function () {
-        const PantherVerifier =
-            await ethers.getContractFactory('PantherVerifier');
+    it('should deploy MockVerifier', async function () {
+        const MockVerifier = await ethers.getContractFactory('MockVerifier');
 
-        verifier = await PantherVerifier.deploy();
+        verifier = await MockVerifier.deploy();
 
         expect((await provider.getCode(verifier.address)).length).to.be.gt(2);
     });
 
-    it('should getkeys from PantherVerifier', async function () {
+    it('should getkeys from MockVerifier', async function () {
         const onchainVerifyingKey = await verifier.getVerifyingKey(cirquitId);
 
         const keyAsBigNumber = BigNumber.from(onchainVerifyingKey[0][0]);
@@ -94,9 +90,9 @@ describe.skip('PantherVerifier', function () {
 
         const inputArray: number[] = [7];
 
-        const good = await verifier.verify(cirquitId, inputArray, proof);
-
-        expect(good).to.be.false;
+        await expect(
+            verifier.verifyOrRevert(cirquitId, inputArray, proof),
+        ).to.be.revertedWith('verification-failed');
     });
 
     it('should verify inputs and proof', async function () {
@@ -120,9 +116,8 @@ describe.skip('PantherVerifier', function () {
 
         const seven = BigNumber.from('5');
 
-        const good = await verifier.verify(cirquitId, [seven], proof);
-
-        expect(good).to.be.true;
+        await expect(verifier.verifyOrRevert(cirquitId, [seven], proof)).to.be
+            .not.reverted;
     });
 
     it('should verify groth16 from file', async function () {
