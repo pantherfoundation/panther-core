@@ -51,7 +51,6 @@ export const verifyProof = async (proof: any, publicSignals: any) => {
 let data = {};
 
 const zeroInput = {
-    // external data anchoring
     extraInputsHash: 0,
 
     addedAmountZkp: 0,
@@ -64,7 +63,6 @@ const zeroInput = {
     utxoSpendPubKey: [0, 1],
     utxoSpendKeyRandom: 0,
 
-    // zAsset
     zAssetId: 0,
     zAssetToken: 0,
     zAssetTokenId: 0,
@@ -109,14 +107,12 @@ const zeroInput = {
     zAccountUtxoOutSpendKeyRandom: 0,
     zAccountUtxoOutCommitment: 0,
 
-    // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     zAccountBlackListLeaf: 0,
     zAccountBlackListMerkleRoot: 0,
     zAccountBlackListPathElements: [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
 
-    // zZone
     zZoneOriginZoneIDs: 0,
     zZoneTargetZoneIDs: 0,
     zZoneNetworkIDsBitMap: 0,
@@ -124,7 +120,7 @@ const zeroInput = {
     zZoneKycExpiryTime: 0,
     zZoneKytExpiryTime: 0,
     zZoneDepositMaxAmount: 0,
-    zZoneWithrawMaxAmount: 0,
+    zZoneWithdrawMaxAmount: 0,
     zZoneInternalMaxAmount: 0,
     zZoneMerkleRoot: 0,
     zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -132,9 +128,10 @@ const zeroInput = {
     zZoneEdDsaPubKey: [0, 0],
     zZoneZAccountIDsBlackList:
         '1766847064778384329583297500742918515827483896875618958121606201292619775',
-
     zZoneMaximumAmountPerTimePeriod: 0,
     zZoneTimePeriodPerMaximumAmount: 0,
+    zZoneDataEscrowPubKey: [0, 1],
+    zZoneSealing: 0,
 
     zNetworkId: 0,
     zNetworkChainId: 0,
@@ -142,6 +139,7 @@ const zeroInput = {
     zNetworkTreeMerkleRoot: 0,
     zNetworkTreePathElements: [0, 0, 0, 0, 0, 0],
     zNetworkTreePathIndices: [0, 0, 0, 0, 0, 0],
+
     daoDataEscrowPubKey: [0, 0],
     forTxReward: 0,
     forUtxoReward: 0,
@@ -149,16 +147,15 @@ const zeroInput = {
 
     trustProvidersMerkleRoot: 0,
     staticTreeMerkleRoot: 0,
+
     forestMerkleRoot: 0,
     taxiMerkleRoot: 0,
     busMerkleRoot: 0,
     ferryMerkleRoot: 0,
 
-    // salt
     salt: 0,
     saltHash: 0,
 
-    // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
     magicalConstraint: 0,
 };
 
@@ -175,7 +172,7 @@ const nonZeroInputVoucherExchange = {
     zAssetWeight: 20,
     zAssetScale: 10 ** 12,
     zAssetMerkleRoot:
-        19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+        3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
     zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     zAssetPathElements: [
@@ -331,10 +328,10 @@ const nonZeroInputVoucherExchange = {
     zZoneKycExpiryTime: 10368000, // 1 week epoch time
     zZoneKytExpiryTime: 86400,
     zZoneDepositMaxAmount: 1 * 10 ** 12,
-    zZoneWithrawMaxAmount: 1 * 10 ** 12,
+    zZoneWithdrawMaxAmount: 1 * 10 ** 12,
     zZoneInternalMaxAmount: 1 * 10 ** 12,
     zZoneMerkleRoot:
-        9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+        14189511324259672403799169204478898082389936563693111126414306380356116434465n,
 
     zZonePathElements: [
         2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -364,6 +361,11 @@ const nonZeroInputVoucherExchange = {
 
     zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
     zZoneTimePeriodPerMaximumAmount: 86400,
+    zZoneDataEscrowPubKey: [
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+    ],
+    zZoneSealing: 1,
 
     zNetworkChainId: 80001,
     zNetworkIDsBitMap: 5,
@@ -391,7 +393,7 @@ const nonZeroInputVoucherExchange = {
         675413191976636849763056983375622181122390331630387511499559599588194530856n,
 
     staticTreeMerkleRoot:
-        16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+        15348222720660628311446592885548915884577953917057577776988845594265385226543n,
 
     forestMerkleRoot:
         21797104496963892262884335320223742656647321711420251344379316478709925639367n,
@@ -427,7 +429,7 @@ const nonZeroInputAMMExchange = {
     zAssetWeight: 20,
     zAssetScale: 10 ** 12,
     zAssetMerkleRoot:
-        19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+        3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
     zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     zAssetPathElements: [
@@ -572,7 +574,7 @@ const nonZeroInputAMMExchange = {
     createTime: 1695282515,
 
     utxoCommitment:
-        10737878881523789962798210406551165807070922751876233837797923419039556051321n,
+        9848159934633945213815166899374997597482648646636678651521985478275117087002n,
 
     // Will be 0 as no ZAssetUTXO gets created during AMM voucher exchange tx
     utxoSpendPubKey: [
@@ -589,10 +591,10 @@ const nonZeroInputAMMExchange = {
     zZoneKycExpiryTime: 10368000, // 1 week epoch time
     zZoneKytExpiryTime: 86400,
     zZoneDepositMaxAmount: 1 * 10 ** 12,
-    zZoneWithrawMaxAmount: 1 * 10 ** 12,
+    zZoneWithdrawMaxAmount: 1 * 10 ** 12,
     zZoneInternalMaxAmount: 1 * 10 ** 12,
     zZoneMerkleRoot:
-        9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+        14189511324259672403799169204478898082389936563693111126414306380356116434465n,
 
     zZonePathElements: [
         2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -622,6 +624,11 @@ const nonZeroInputAMMExchange = {
 
     zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
     zZoneTimePeriodPerMaximumAmount: 86400,
+    zZoneDataEscrowPubKey: [
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+    ],
+    zZoneSealing: 1,
 
     zNetworkChainId: 80001,
     zNetworkIDsBitMap: 5,
@@ -649,7 +656,7 @@ const nonZeroInputAMMExchange = {
         675413191976636849763056983375622181122390331630387511499559599588194530856n,
 
     staticTreeMerkleRoot:
-        16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+        15348222720660628311446592885548915884577953917057577776988845594265385226543n,
 
     forestMerkleRoot:
         15148756497956328799489825370048035661060906623943489854820045117891566644365n,
