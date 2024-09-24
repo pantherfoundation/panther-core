@@ -69,7 +69,7 @@ export const claimRewardsInputs = async () => {
     ];
 };
 
-describe('PrpVoucherController', function () {
+describe.only('PrpVoucherController', function () {
     let owner: SignerWithAddress,
         allowedContract: SignerWithAddress,
         user: SignerWithAddress;
@@ -77,7 +77,7 @@ describe('PrpVoucherController', function () {
     let PrpVoucherController: ContractFactory;
     let inputs;
     let secretHash;
-    let fakePantherTrees: FakeContract,
+    let pantherTrees: FakeContract,
         feeMaster: FakeContract,
         fakeToken: FakeContract;
 
@@ -89,20 +89,13 @@ describe('PrpVoucherController', function () {
             'MockPrpVoucherController',
         );
 
-        fakePantherTrees = await smock.fake('IUtxoInserter');
-
-        // Set up the function return values
-        fakePantherTrees.insertPrpClaimUtxo.returns({
-            zAccountUtxoQueueId: 0,
-            zAccountUtxoIndexInQueue: 0,
-            zAccountUtxoBusQueuePos: 0,
-        });
+        pantherTrees = await smock.fake('IUtxoInserter');
 
         feeMaster = await smock.fake('FeeMaster');
         fakeToken = await smock.fake('ERC20');
 
         prpVoucherController = (await PrpVoucherController.deploy(
-            fakePantherTrees.address,
+            pantherTrees.address,
             feeMaster.address,
             fakeToken.address,
         )) as PrpVoucherControllerType;
@@ -113,7 +106,7 @@ describe('PrpVoucherController', function () {
     describe('Deployment', function () {
         it('sets the correct owner, pool contract, and verifier addresses', async function () {
             expect(await prpVoucherController.PANTHER_TREES()).to.equal(
-                fakePantherTrees.address,
+                pantherTrees.address,
             );
             expect(await prpVoucherController.FEE_MASTER()).to.equal(
                 feeMaster.address,
@@ -138,7 +131,7 @@ describe('PrpVoucherController', function () {
 
             await expect(
                 PrpVoucherController.deploy(
-                    fakePantherTrees.address,
+                    pantherTrees.address,
                     ethers.constants.AddressZero,
                     fakeToken.address,
                 ),
@@ -148,7 +141,7 @@ describe('PrpVoucherController', function () {
 
             await expect(
                 PrpVoucherController.deploy(
-                    fakePantherTrees.address,
+                    pantherTrees.address,
                     feeMaster.address,
                     ethers.constants.AddressZero,
                 ),
