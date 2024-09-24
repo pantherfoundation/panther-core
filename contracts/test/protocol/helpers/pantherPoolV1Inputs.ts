@@ -5,7 +5,6 @@ import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
-import {TokenType} from '../../../lib/token';
 import {
     generatePrivateMessage,
     TransactionTypes,
@@ -82,10 +81,11 @@ interface MainOptions {
     addedAmountZkp?: number;
     token?: string;
     tokenId?: number;
+    tokenType: number;
     spendTime?: number;
     zAssetUtxoInNullifier1?: string;
     zAssetUtxoInNullifier2?: string;
-    zAccountUtxoInNullifier?: string;
+    zAccountUtxoInNullifier?: BigNumber;
     ZoneDataEscrowEphimeralPubKeyAx?: string;
     zZoneDataEscrowEncryptedMessageAx?: string;
     kytDepositSignedMessageSender?: string;
@@ -127,6 +127,8 @@ interface SwapOptions {
     incomingToken?: string;
     existingTokenId?: number;
     incomingTokenId?: number;
+    existingTokenType: number;
+    incomingTokenType: number;
     existingZassetScale?: BigNumber;
     incomingZassetScale?: BigNumber;
     zzkpScale?: BigNumber;
@@ -291,13 +293,8 @@ export async function getMainInputs(options: MainOptions) {
     const transactionOptions = 0;
     const paymasterCompensation = ethers.BigNumber.from('10');
     const extraInput = ethers.utils.solidityPack(
-        ['uint32', 'uint8', 'uint96', 'bytes'],
-        [
-            transactionOptions,
-            TokenType.Erc20,
-            paymasterCompensation,
-            privateMessages,
-        ],
+        ['uint32', 'uint96', 'bytes'],
+        [transactionOptions, paymasterCompensation, privateMessages],
     );
     const calculatedExtraInputHash = BigNumber.from(
         ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
@@ -321,7 +318,9 @@ export async function getMainInputs(options: MainOptions) {
         ethers.utils.id('zAccountUtxoOutCommitment');
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const token = options.token || ethers.Wallet.createRandom().address;
+    const token = BigNumber.from(options.tokenType)
+        .shl(160)
+        .or(BigNumber.from(options.token));
     const tokenId = options.tokenId || 0;
     const zNetworkChainId = options.zNetworkChainId || 31337;
     const ZoneDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
@@ -341,6 +340,7 @@ export async function getMainInputs(options: MainOptions) {
         ethers.Wallet.createRandom().address; // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND
     const kytWithdrawSignedMessageHash =
         options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes(); // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND
+    const kytInternalSignedMessageHash = getSnarkFriendlyBytes();
     const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
     const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX0_IND
     const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX1_IND
@@ -350,6 +350,7 @@ export async function getMainInputs(options: MainOptions) {
     const dataEscrowEncryptedMessageAx6 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX5_IND
     const dataEscrowEncryptedMessageAx7 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX6_IND
     const dataEscrowEncryptedMessageAx8 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX7_IND
+    const dataEscrowEncryptedMessageAx10 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx9 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX8_IND
     const daoDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
     const daoDataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes(); // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_1
@@ -382,6 +383,7 @@ export async function getMainInputs(options: MainOptions) {
         kytWithdrawSignedMessageSender,
         kytWithdrawSignedMessageReceiver,
         kytWithdrawSignedMessageHash,
+        kytInternalSignedMessageHash,
         dataEscrowEphimeralPubKeyAx,
         dataEscrowEncryptedMessageAx1,
         dataEscrowEncryptedMessageAx2,
@@ -392,6 +394,7 @@ export async function getMainInputs(options: MainOptions) {
         dataEscrowEncryptedMessageAx7,
         dataEscrowEncryptedMessageAx8,
         dataEscrowEncryptedMessageAx9,
+        dataEscrowEncryptedMessageAx10,
         daoDataEscrowEphimeralPubKeyAx,
         daoDataEscrowEncryptedMessageAx1,
         zAccountCreateTime,
@@ -453,10 +456,13 @@ export async function getSwapInputs(options: SwapOptions) {
     const zAccountUtxoOutCommitmentPvrt = getSnarkFriendlyBytes();
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const existingToken =
-        options.existingToken || ethers.Wallet.createRandom().address;
-    const incomingToken =
-        options.incomingToken || ethers.Wallet.createRandom().address;
+    const existingToken = BigNumber.from(options.existingTokenType)
+        .shl(160)
+        .or(BigNumber.from(options.incomingToken));
+    const incomingToken = BigNumber.from(options.incomingTokenType)
+        .shl(160)
+        .or(BigNumber.from(options.incomingToken));
+    options.incomingToken || ethers.Wallet.createRandom().address;
     const existingTokenId = options.existingTokenId || 0;
     const incomingTokenId = options.incomingTokenId || 0;
     const zNetworkChainId = options.zNetworkChainId || 31337;
@@ -482,6 +488,7 @@ export async function getSwapInputs(options: SwapOptions) {
         ethers.Wallet.createRandom().address;
     const kytWithdrawSignedMessageHash =
         options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes();
+    const kytInternalSignedMessageHash = getSnarkFriendlyBytes();
     const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes();
@@ -527,7 +534,7 @@ export async function getSwapInputs(options: SwapOptions) {
         kytWithdrawSignedMessageSender, //20
         kytWithdrawSignedMessageReceiver, //21
         kytWithdrawSignedMessageHash, //22
-        dataEscrowEphimeralPubKeyAx, //23
+        kytInternalSignedMessageHash, //23
         dataEscrowEncryptedMessageAx1, //24
         dataEscrowEncryptedMessageAx2, //25
         dataEscrowEncryptedMessageAx3, //26
@@ -539,6 +546,7 @@ export async function getSwapInputs(options: SwapOptions) {
         daoDataEscrowEphimeralPubKeyAx, //32
         daoDataEscrowEncryptedMessageAx1, //33
         daoDataEscrowEncryptedMessageAx1, //34
+        dataEscrowEphimeralPubKeyAx,
         daoDataEscrowEncryptedMessageAx1, //35
         (await getBlockTimestamp()) + 10, //36 // Assuming zAccountCreateTime is calculated like this
         zAccountUtxoOutCommitment, //37

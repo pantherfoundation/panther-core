@@ -167,6 +167,8 @@ describe('ZSwap', function () {
                 extraInputsHash: calculatedExtraInputHash,
                 existingToken: zkpToken.address,
                 incomingToken: linkToken.address,
+                existingTokenType: 0,
+                incomingTokenType: 0,
                 withdrawPrpAmount: ethers.utils.parseEther('10'),
                 incomingZassetScale: BigNumber.from('1000000'),
                 existingZassetScale: BigNumber.from('1000000'),
@@ -197,6 +199,8 @@ describe('ZSwap', function () {
                 extraInputsHash: calculatedExtraInputHash,
                 existingToken: zkpToken.address,
                 incomingToken: linkToken.address,
+                existingTokenType: 0,
+                incomingTokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
                 kytDepositSignedMessageReceiver: vault.address,
             });
@@ -223,6 +227,8 @@ describe('ZSwap', function () {
                 extraInputsHash: calculatedExtraInputHash,
                 existingToken: zkpToken.address,
                 incomingToken: linkToken.address,
+                existingTokenType: 0,
+                incomingTokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
                 kytDepositSignedMessageReceiver: vault.address,
             });
@@ -251,6 +257,8 @@ describe('ZSwap', function () {
                 extraInputsHash: calculatedExtraInputHash,
                 existingToken: zkpToken.address,
                 incomingToken: linkToken.address,
+                existingTokenType: 0,
+                incomingTokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
                 kytDepositSignedMessageReceiver: vault.address,
             });
@@ -268,6 +276,48 @@ describe('ZSwap', function () {
                     privateMessage,
                 ),
             ).to.revertedWith('Unexpected vault balance');
+        });
+
+        it('should revert if the nullifier is already spent', async function () {
+            const {swapData, calculatedExtraInputHash} =
+                await getSwapDataAndHash();
+
+            const inputs = await getSwapInputs({
+                extraInputsHash: calculatedExtraInputHash,
+                existingToken: zkpToken.address,
+                incomingToken: linkToken.address,
+                existingTokenType: 0,
+                incomingTokenType: 0,
+                zAccountUtxoInNullifier: BigNumber.from('1'),
+                kytWithdrawSignedMessageSender: vault.address,
+                kytDepositSignedMessageReceiver: vault.address,
+            });
+
+            await expect(
+                zSwap.swapZAsset(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    swapData,
+                    privateMessage,
+                ),
+            ).to.revertedWith('SN:E2');
+        });
+    });
+
+    describe('#_getTokenTypeAndAddress', async function () {
+        it('should decode token type and address', async function () {
+            const erc20token =
+                '1107971845733491151633663588461822472338118381199';
+            const Nativetoken =
+                '372682917519380244141939632342652170012262798458880';
+            expect(
+                (await zSwap._getTokenTypeAndAddress(erc20token)).tokenType,
+            ).to.be.equal(0);
+            expect(
+                (await zSwap._getTokenTypeAndAddress(Nativetoken)).tokenType,
+            ).to.be.equal(255);
         });
     });
 });

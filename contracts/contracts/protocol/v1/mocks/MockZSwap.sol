@@ -3,8 +3,10 @@
 pragma solidity ^0.8.19;
 
 import "../core/facets/ZSwap.sol";
+import "../core/libraries/TokenTypeAndAddressDecoder.sol";
 
 contract MockZSwap is ZSwap {
+    using TokenTypeAndAddressDecoder for uint256;
     address public owner;
 
     constructor(
@@ -25,5 +27,11 @@ contract MockZSwap is ZSwap {
     modifier onlyOwner() override {
         require(msg.sender == owner, "LibDiamond: Must be contract owner");
         _;
+    }
+
+    function _getTokenTypeAndAddress(
+        uint256 tokenTypeAndAddress
+    ) external view returns (uint8 tokenType, address tokenAddress) {
+        return tokenTypeAndAddress.getTokenTypeAndAddress();
     }
 }

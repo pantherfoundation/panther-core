@@ -6,11 +6,11 @@ pragma solidity ^0.8.19;
 import "../../../../common/UtilsLib.sol";
 
 string constant ERR_INVALID_CREATE_TIME = "PIG:E1";
-string constant ERR_INVALID_CHAIN_ID = "PIG:E1";
-string constant ERR_INVALID_SPEND_TIME = "PIG:E1";
-string constant ERR_INVALID_EXTRA_INPUT_HASH = "PIG:E1";
-string constant ERR_INVALID_PANTHER_TREES_ROOT = "PIG:E1";
-string constant ERR_INVALID_VAULT_ADDRESS = "PIG:E1";
+string constant ERR_INVALID_CHAIN_ID = "PIG:E2";
+string constant ERR_INVALID_SPEND_TIME = "PIG:E3";
+string constant ERR_INVALID_EXTRA_INPUT_HASH = "PIG:E4";
+string constant ERR_INVALID_PANTHER_TREES_ROOT = "PIG:E5";
+string constant ERR_INVALID_VAULT_ADDRESS = "PIG:E6";
 
 import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
 
