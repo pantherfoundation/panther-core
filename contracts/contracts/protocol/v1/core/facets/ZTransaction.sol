@@ -16,6 +16,7 @@ import "../libraries/TransactionTypes.sol";
 import "../libraries/UtxosInserter.sol";
 import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
+import "../libraries/TokenTypeAndAddressDecoder.sol";
 
 import "../../../../common/NonReentrant.sol";
 
@@ -34,6 +35,7 @@ contract ZTransaction is
     using TransactionTypes for uint16;
     using TransactionOptions for uint32;
     using NullifierSpender for mapping(bytes32 => uint256);
+    using TokenTypeAndAddressDecoder for uint256;
 
     address public immutable PANTHER_TREES;
 
@@ -114,7 +116,9 @@ contract ZTransaction is
             );
 
             if (transactionType.isInternal()) {
-                require(inputs[MAIN_TOKEN_IND] == 0, ERR_NON_ZERO_TOKEN);
+                (, address tokenAddress) = inputs[MAIN_TOKEN_IND]
+                    .getTokenTypeAndAddress();
+                require(tokenAddress == address(0), ERR_NON_ZERO_TOKEN);
             } else {
                 // depost and/or withdraw tx
                 // NOTE: This contract expects the Vault will check the token (inputs[4]) to

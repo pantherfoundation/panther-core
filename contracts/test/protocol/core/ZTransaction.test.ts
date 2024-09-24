@@ -88,7 +88,7 @@ describe('ZTransactions', function () {
     });
 
     describe('#main', function () {
-        it.skip('should execute Internal main transaction ', async function () {
+        it('should execute Internal main transaction ', async function () {
             const inputs = await getMainInputs({
                 depositPrpAmount: BigNumber.from('0'),
                 withdrawPrpAmount: BigNumber.from('0'),
@@ -96,7 +96,6 @@ describe('ZTransactions', function () {
                 tokenType: 255,
                 kytWithdrawSignedMessageSender: vault.address,
             });
-            console.log(inputs[4]);
 
             await zTransaction.main(
                 inputs,
@@ -126,7 +125,7 @@ describe('ZTransactions', function () {
             ).to.be.revertedWith('PP:E31');
         });
 
-        it.skip('should withdraw native token from vault', async function () {
+        it('should withdraw native token from vault', async function () {
             const inputs = await getMainInputs({
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: ethers.constants.AddressZero,
@@ -135,7 +134,6 @@ describe('ZTransactions', function () {
             });
 
             const withdrawAmount = inputs[2];
-            console.log(inputs[4]);
 
             const balanceOfVault = await ethers.provider.getBalance(
                 vault.address,
