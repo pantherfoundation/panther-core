@@ -628,7 +628,7 @@ describe('ZAccountsRegistry', function () {
                     ethers.BigNumber.from('12345').toString();
                 await expect(
                     activateZAccount({extraInputsHash: invalidInputsHash}),
-                ).to.be.revertedWith('PIG:E1');
+                ).to.be.revertedWith('PIG:E4');
             });
 
             it('should revert if a nullifier is already registered', async () => {

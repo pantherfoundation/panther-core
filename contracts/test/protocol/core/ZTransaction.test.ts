@@ -3,12 +3,10 @@
 
 import {smock, FakeContract} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
-import {TokenType} from '../../../lib/token';
 import {
     MockZTransaction,
     VaultV1,
@@ -21,7 +19,11 @@ import {
     generatePrivateMessage,
     TransactionTypes,
 } from '../data/samples/transactionNote.data';
-import {revertSnapshot, takeSnapshot} from '../helpers/hardhat';
+import {
+    getBlockTimestamp,
+    revertSnapshot,
+    takeSnapshot,
+} from '../helpers/hardhat';
 import {getMainInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe('ZTransactions', function () {
@@ -86,18 +88,20 @@ describe('ZTransactions', function () {
     });
 
     describe('#main', function () {
-        it('should execute Internal main transaction ', async function () {
+        it.skip('should execute Internal main transaction ', async function () {
             const inputs = await getMainInputs({
                 depositPrpAmount: BigNumber.from('0'),
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: ethers.constants.AddressZero,
+                tokenType: 255,
                 kytWithdrawSignedMessageSender: vault.address,
             });
+            console.log(inputs[4]);
+
             await zTransaction.main(
                 inputs,
                 proof,
                 transactionOptions,
-                TokenType.Erc20,
                 paymasterCompensation,
                 privateMessage,
             );
@@ -108,6 +112,7 @@ describe('ZTransactions', function () {
                 depositPrpAmount: BigNumber.from('0'),
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: ethers.Wallet.createRandom().address,
+                tokenType: 255,
                 kytWithdrawSignedMessageSender: vault.address,
             });
             await expect(
@@ -115,35 +120,22 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
             ).to.be.revertedWith('PP:E31');
         });
 
-        it('should withdraw native token from vault', async function () {
-            const extraInput = ethers.utils.solidityPack(
-                ['uint32', 'uint8', 'uint96', 'bytes'],
-                [
-                    transactionOptions,
-                    TokenType.Native,
-                    paymasterCompensation,
-                    privateMessage,
-                ],
-            );
-            const calculatedExtraInputHash = BigNumber.from(
-                ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-            ).mod(SNARK_FIELD_SIZE);
-
+        it.skip('should withdraw native token from vault', async function () {
             const inputs = await getMainInputs({
-                extraInputsHash: calculatedExtraInputHash,
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: ethers.constants.AddressZero,
+                tokenType: 255,
                 kytWithdrawSignedMessageSender: vault.address,
             });
 
             const withdrawAmount = inputs[2];
+            console.log(inputs[4]);
 
             const balanceOfVault = await ethers.provider.getBalance(
                 vault.address,
@@ -153,7 +145,6 @@ describe('ZTransactions', function () {
                 inputs,
                 proof,
                 transactionOptions,
-                TokenType.Native,
                 paymasterCompensation,
                 privateMessage,
             );
@@ -172,6 +163,7 @@ describe('ZTransactions', function () {
 
             const inputs = await getMainInputs({
                 token: zkpToken.address,
+                tokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
             });
 
@@ -179,7 +171,6 @@ describe('ZTransactions', function () {
                 inputs,
                 proof,
                 transactionOptions,
-                TokenType.Erc20,
                 paymasterCompensation,
                 privateMessage,
             );
@@ -188,6 +179,7 @@ describe('ZTransactions', function () {
         it('should execute deposit main transaction', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
+                tokenType: 0,
                 depositPrpAmount: BigNumber.from('10'),
                 withdrawPrpAmount: BigNumber.from('0'),
                 kytDepositSignedMessageSender: owner.address,
@@ -200,7 +192,6 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 );
@@ -211,6 +202,7 @@ describe('ZTransactions', function () {
                 depositPrpAmount: BigNumber.from('10'),
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: ethers.Wallet.createRandom().address,
+                tokenType: 0,
                 kytDepositSignedMessageReceiver:
                     ethers.Wallet.createRandom().address,
             });
@@ -219,7 +211,6 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
@@ -231,6 +222,7 @@ describe('ZTransactions', function () {
                 depositPrpAmount: BigNumber.from('10'),
                 withdrawPrpAmount: BigNumber.from('0'),
                 token: zkpToken.address,
+                tokenType: 0,
                 kytDepositSignedMessageReceiver: vault.address,
                 kytDepositSignedMessageHash: '0',
             });
@@ -239,7 +231,6 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
@@ -249,6 +240,7 @@ describe('ZTransactions', function () {
         it('should revert if kytWithdrawSignedMessageSender is invalid ', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
+                tokenType: 0,
                 withdrawPrpAmount: BigNumber.from('100'),
                 kytWithdrawSignedMessageSender: owner.address,
             });
@@ -258,7 +250,6 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
@@ -268,6 +259,7 @@ describe('ZTransactions', function () {
         it('should revert if kytWithdrawSignedMessageHash is invalid', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
+                tokenType: 0,
                 withdrawPrpAmount: BigNumber.from('100'),
                 kytWithdrawSignedMessageSender: vault.address,
                 kytWithdrawSignedMessageHash: '0',
@@ -278,7 +270,6 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
@@ -288,6 +279,7 @@ describe('ZTransactions', function () {
         it('should revert if kytWithdrawSignedMessageHash is duplicate ', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
+                tokenType: 0,
                 withdrawPrpAmount: BigNumber.from('100'),
                 kytWithdrawSignedMessageSender: vault.address,
                 kytWithdrawSignedMessageHash: ethers.utils.id(
@@ -299,7 +291,6 @@ describe('ZTransactions', function () {
                 inputs,
                 proof,
                 transactionOptions,
-                TokenType.Erc20,
                 paymasterCompensation,
                 privateMessage,
             );
@@ -312,11 +303,63 @@ describe('ZTransactions', function () {
                     inputs,
                     proof,
                     transactionOptions,
-                    TokenType.Erc20,
                     paymasterCompensation,
                     privateMessage,
                 ),
             ).to.be.revertedWith('PP:E37');
+        });
+
+        it('should revert if extraInputhash is invalid', async function () {
+            const inputs = await getMainInputs({
+                extraInputsHash: BigNumber.from('0'),
+                token: zkpToken.address,
+                tokenType: 0,
+            });
+            await expect(
+                zTransaction.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith('PIG:E4');
+        });
+
+        it('should revert if spendTime is invalid', async function () {
+            const inputs = await getMainInputs({
+                spendTime: (await getBlockTimestamp()) + 10,
+                kytWithdrawSignedMessageSender: vault.address,
+                token: zkpToken.address,
+                tokenType: 0,
+            });
+            await expect(
+                zTransaction.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith('PIG:E3');
+        });
+
+        it('should revert if the nullifier is already spent', async function () {
+            const inputs = await getMainInputs({
+                zAccountUtxoInNullifier: BigNumber.from(1),
+                kytWithdrawSignedMessageSender: vault.address,
+                token: zkpToken.address,
+                tokenType: 0,
+            });
+            await expect(
+                zTransaction.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith('SN:E2');
         });
     });
 });

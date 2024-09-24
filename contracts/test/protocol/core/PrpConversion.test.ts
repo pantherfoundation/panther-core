@@ -311,7 +311,7 @@ describe('PrpConversion', function () {
             const invalidInputsHash = ethers.BigNumber.from('12345').toString();
             await expect(
                 convert({extraInputsHash: invalidInputsHash}),
-            ).to.be.revertedWith('PIG:E1');
+            ).to.be.revertedWith('PIG:E4');
         });
 
         it('should revert if the depositPrpAmount is non zero ', async function () {
