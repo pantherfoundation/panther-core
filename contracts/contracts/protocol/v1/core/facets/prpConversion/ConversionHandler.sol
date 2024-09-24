@@ -19,7 +19,7 @@ abstract contract ConversionHandler {
     using TransferHelper for uint256;
     using TransferHelper for address;
 
-    address public immutable VAULT;
+    address internal immutable VAULT;
 
     uint64 private prpReserve;
     uint96 private zkpReserve;

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 abstract contract PantherPoolAuth {
-    address public immutable PANTHER_POOL;
+    address internal immutable PANTHER_POOL;
 
     constructor(address pantherPool) {
         PANTHER_POOL = pantherPool;

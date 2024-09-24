@@ -22,10 +22,10 @@ abstract contract DepositAndWithdrawalHandler {
     using TransactionTypes for uint16;
     using TokenTypeAndAddressDecoder for uint256;
 
-    address public immutable VAULT;
+    address internal immutable VAULT;
 
     // Mapping of KYT message hashes to block numbers when they were seen
-    mapping(bytes32 => uint256) public seenKytMessageHashes;
+    mapping(bytes32 => uint256) internal seenKytMessageHashes;
     // Events
     event SeenKytMessageHash(bytes32 indexed kytMessageHash);
 

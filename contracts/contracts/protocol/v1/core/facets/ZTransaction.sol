@@ -37,7 +37,7 @@ contract ZTransaction is
     using NullifierSpender for mapping(bytes32 => uint256);
     using TokenTypeAndAddressDecoder for uint256;
 
-    address public immutable PANTHER_TREES;
+    address internal immutable PANTHER_TREES;
 
     constructor(
         address pantherTrees,

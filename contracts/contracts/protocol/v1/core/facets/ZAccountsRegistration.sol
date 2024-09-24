@@ -44,8 +44,8 @@ contract ZAccountsRegistration is
 
     uint256 private constant ZACCOUNT_ID_COUNTER_JUMP = 3;
 
-    address public immutable SELF;
-    address public immutable PANTHER_TREES;
+    address internal immutable SELF;
+    address internal immutable PANTHER_TREES;
 
     struct ZAccount {
         uint184 _unused; // reserved

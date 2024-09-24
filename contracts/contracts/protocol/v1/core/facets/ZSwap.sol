@@ -38,8 +38,8 @@ contract ZSwap is
     using ZAssetUtxoGenerator for uint256;
     using NullifierSpender for mapping(bytes32 => uint256);
 
-    address public immutable VAULT;
-    address public immutable PANTHER_TREES;
+    address internal immutable VAULT;
+    address internal immutable PANTHER_TREES;
 
     // plugin address to boolean
     mapping(address => bool) public zSwapPlugins;

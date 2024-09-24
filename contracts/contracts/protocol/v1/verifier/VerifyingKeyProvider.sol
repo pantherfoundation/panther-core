@@ -2,16 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../interfaces/IVerifyingKeyProvider.sol";
-
 import "../../../common/Bytecode.sol";
 import { VerifyingKey } from "../../../common/Types.sol";
 
-abstract contract VerifyingKeyProvider is IVerifyingKeyProvider {
-    /// @inheritdoc IVerifyingKeyProvider
+abstract contract VerifyingKeyProvider {
     function getVerifyingKey(
         uint160 circuitId
-    ) external view returns (VerifyingKey memory) {
+    ) internal view returns (VerifyingKey memory) {
         return _loadVerifyingKey(circuitId);
     }
 

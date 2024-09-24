@@ -5,7 +5,6 @@ pragma solidity ^0.8.19;
 import "./busTree//BusQueues.sol";
 import "./busTree/MiningRewards.sol";
 import "../../../verifier/Verifier.sol";
-import "../../../interfaces/IVerifyingKeyProvider.sol";
 
 import "../../errMsgs/BusTreeErrMsgs.sol";
 import "../../errMsgs/PantherBusTreeErrMsgs.sol";

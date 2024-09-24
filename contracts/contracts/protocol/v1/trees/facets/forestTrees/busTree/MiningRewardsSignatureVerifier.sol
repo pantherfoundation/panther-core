@@ -9,10 +9,10 @@ abstract contract MiningRewardsSignatureVerifier is EIP712SignatureVerifier {
     bytes32 internal constant CLAIM_MINING_REWARD_TYPEHASH =
         keccak256(bytes("ClaimMiningReward(address receiver,uint256 version)"));
 
-    uint8 public immutable KEYRING_VERSION;
+    uint8 public immutable CLAIM_MINING_REWARD_VERSION;
 
-    constructor(uint8 keyringVersion) {
-        KEYRING_VERSION = keyringVersion;
+    constructor(uint8 claimMiningRewardVersion) {
+        CLAIM_MINING_REWARD_VERSION = claimMiningRewardVersion;
     }
 
     function recoverOperator(
@@ -38,7 +38,7 @@ abstract contract MiningRewardsSignatureVerifier is EIP712SignatureVerifier {
                 abi.encode(
                     CLAIM_MINING_REWARD_TYPEHASH,
                     _receiver,
-                    uint256(KEYRING_VERSION)
+                    uint256(CLAIM_MINING_REWARD_VERSION)
                 )
             );
     }
