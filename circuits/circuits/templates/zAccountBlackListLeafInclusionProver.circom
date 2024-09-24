@@ -55,15 +55,14 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     n2b_leaf.in <== leaf;
 
     component is_zero[254];
-    signal enabled_bit_check[254];
+
     for(var i = 0; i < 254; i++) {
-        // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out (
+        // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out
         is_zero[i] = IsZero();
         is_zero[i].in <== i - b2n_zAccountIdInsideLeaf.out;
-
-        // enabled_bit_check will be something only when is_zero[i].out == 1
-        enabled_bit_check[i] <== is_zero[i].out * n2b_leaf.out[i];
-        // make sure that is is_zero[i].out == 1 --> is_zero[i].out * ( 1 - is_zero[i].out ) == 0
-        enabled_bit_check[i] === is_zero[i].out * ( 1 - is_zero[i].out );
+        // make sure that for our zAccountId LSB inside leaf, the bit is zero,
+        // for example: zAccountId LSB = 200, for i = 200, is_zero[i].out == 1 --> if n2b_leaf.out[i] == 1, then the assertion will fail
+        // which means that our zAccountId is blacklisted !
+        is_zero[i].out * n2b_leaf.out[i] === 0;
     }
 }
