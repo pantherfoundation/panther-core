@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {smock, FakeContract} from '@defi-wonderland/smock';
 import {expect} from 'chai';
-import {BigNumber} from 'ethers';
+import {BigNumber, Contract} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {abi, bytecode} from '../../external/abi/EntryPoint.json';
 import {callculateAndGetNonce} from '../../lib/calcAndGetNonce';
 import {toBytes32} from '../../lib/utilities';
-import {PayMaster} from '../../types/contracts';
+import {PayMaster, IFeeMasterHelper} from '../../types/contracts';
 import {UserOperationStruct} from '../../types/contracts/Account';
 
-import {ADDRESS_ONE, ADDRESS_ZERO, PluginFixture} from './shared';
+import {ADDRESS_ONE, ADDRESS_ZERO} from './helpers/constants';
 
 const oneToken = ethers.constants.WeiPerEther;
 
-describe.skip('Paymaster contract', function () {
+describe('Paymaster contract', function () {
     const testCallGasCost = 499210n;
     const verificationGasCost = 88000n;
     const preVerificationGasCost = 73720n;
     const maspMainGasCost = 900000n;
 
-    let fixture: PluginFixture;
     let feeData;
     let zeroBytesCallData: string;
     let signature: string;
@@ -35,33 +35,69 @@ describe.skip('Paymaster contract', function () {
     let paymasterCompensation: BigNumber;
 
     let requiredPrefund: BigNumber;
+    let feeMaster: FakeContract<IFeeMasterHelper>;
+    let paymaster: Contract,
+        entryPoint: Contract,
+        smartAccount: Contract,
+        prpVoucherGrantor: Contract;
+    let ethersSigner!: JsonRpcSigner;
+
+    before(async function () {
+        [ethersSigner] = await hre.ethers.getSigners();
+
+        feeMaster = await smock.fake('IFeeMasterHelper');
+        feeMaster.cachedNativeRateInZkp.returns(
+            '240749478694512898077317062222',
+        );
+
+        feeData = await ethers.provider.getFeeData();
+
+        const entryPointFactory = new ethers.ContractFactory(
+            abi,
+            bytecode,
+            ethersSigner,
+        );
+
+        entryPoint = await entryPointFactory.deploy();
+        await entryPoint.deployed();
+
+        smartAccount = await smock.fake('Account');
+        prpVoucherGrantor = await smock.fake('PrpVoucherController');
+    });
 
     context('function validatePaymasterUserOp', () => {
         before(async function () {
-            fixture = new PluginFixture();
-            await fixture.initFixture();
-            feeData = await ethers.provider.getFeeData();
             zeroBytesCallData = toBytes32(0);
+
+            const PayMasterFactory =
+                await ethers.getContractFactory('PayMaster');
+
+            paymaster = await PayMasterFactory.deploy(
+                entryPoint.address,
+                smartAccount.address,
+                feeMaster.address,
+                prpVoucherGrantor.address,
+            );
         });
 
         beforeEach(async function () {
             feeData = await ethers.provider.getFeeData();
 
-            zkpPrice = await fixture.feeMaster.cachedNativeRateInZkp();
+            zkpPrice = await feeMaster.cachedNativeRateInZkp();
 
             nonce = await callculateAndGetNonce(
                 zeroBytesCallData,
-                fixture.smartAccount.address,
-                fixture.entryPoint.address,
+                smartAccount.address,
+                entryPoint.address,
             );
 
             paymasterAndData = ethers.utils.solidityPack(
                 ['address'],
-                [fixture.paymasterProxy.address],
+                [paymaster.address],
             );
 
             depositOp = {
-                sender: fixture.smartAccount.address,
+                sender: smartAccount.address,
                 callData: zeroBytesCallData,
                 verificationGasLimit: BigNumber.from(verificationGasCost),
                 callGasLimit: testCallGasCost,
@@ -82,7 +118,7 @@ describe.skip('Paymaster contract', function () {
             );
         });
 
-        it('should fail wth 0 paymasterCompensation', async () => {
+        it('should fail with zero paymasterCompensation', async () => {
             paymasterCompensation = BigNumber.from(0);
             depositOp.signature = ethers.utils.defaultAbiCoder.encode(
                 ['uint256', 'uint256'],
@@ -90,7 +126,7 @@ describe.skip('Paymaster contract', function () {
             );
 
             await expect(
-                fixture.paymaster.validatePaymasterUserOp(
+                paymaster.validatePaymasterUserOp(
                     depositOp,
                     ethers.utils.hexZeroPad(ethers.utils.hexlify(0), 32),
                     requiredPrefund,
@@ -107,13 +143,13 @@ describe.skip('Paymaster contract', function () {
             );
 
             await expect(
-                fixture.paymaster.validatePaymasterUserOp(
+                paymaster.validatePaymasterUserOp(
                     depositOp,
                     ethers.utils.hexZeroPad(ethers.utils.hexlify(0), 32),
                     requiredPrefund,
                 ),
             )
-                .to.emit(fixture.paymaster, 'ValidatePaymasterUserOpRequested')
+                .to.emit(paymaster, 'ValidatePaymasterUserOpRequested')
                 .withArgs(
                     requiredPrefund,
                     requiredPrefund.mul(zkpPrice).div(zkpScale),
@@ -129,54 +165,70 @@ describe.skip('Paymaster contract', function () {
                 ['uint256', 'uint256'],
                 [100, 150],
             );
-            await expect(fixture.paymaster.postOp(0, context, 200))
-                .to.emit(fixture.paymaster, 'UserOperationSponsored')
+            await expect(paymaster.postOp(0, context, 200))
+                .to.emit(paymaster, 'UserOperationSponsored')
                 .withArgs(200, 100, 150);
         });
     });
 
     context('function claimEthAndRefundEntryPoint', () => {
         it('should send FeeMaster debt to EntryPoint', async () => {
-            const before = await fixture.entryPoint.getDepositInfo(
-                fixture.paymasterProxy.address,
-            );
+            const before = await entryPoint.getDepositInfo(paymaster.address);
 
-            const debt = await fixture.feeMaster.debts(
-                ADDRESS_ZERO,
-                ADDRESS_ZERO,
-            );
+            const debt = await feeMaster.debts(ADDRESS_ZERO, ADDRESS_ZERO);
 
-            await fixture.paymaster.claimEthAndRefundEntryPoint(toBytes32(0));
+            await paymaster.claimEthAndRefundEntryPoint(toBytes32(0));
 
-            const after = await fixture.entryPoint.getDepositInfo(
-                fixture.paymasterProxy.address,
-            );
+            const after = await entryPoint.getDepositInfo(paymaster.address);
 
             await expect(before.deposit.add(debt)).to.eq(after.deposit);
         });
     });
 
     context('function depositToEntryPoint via proxy', () => {
-        const oneToken = ethers.constants.WeiPerEther;
+        let paymasterProxy;
+        let paymasterBehindProxy;
 
         before(async function () {
-            fixture = new PluginFixture();
-            await fixture.initFixture();
+            const EIP173ProxyWithReceive = await ethers.getContractFactory(
+                'EIP173ProxyWithReceive',
+            );
+            paymasterProxy = await EIP173ProxyWithReceive.deploy(
+                ethers.constants.AddressZero, // implementation will be changed
+                ethersSigner.address,
+                [],
+            );
+
+            await paymasterProxy.deployed();
+
+            const PayMasterFactory =
+                await ethers.getContractFactory('PayMaster');
+
+            const paymasterImpl = await PayMasterFactory.deploy(
+                entryPoint.address,
+                smartAccount.address,
+                feeMaster.address,
+                prpVoucherGrantor.address,
+            );
+
+            paymasterProxy.upgradeTo(paymasterImpl.address);
+
+            paymasterBehindProxy = PayMasterFactory.attach(
+                paymasterProxy.address,
+            );
         });
 
         it('should receive ETH when user sends funds to comtract', async () => {
-            const before = await ethers.provider.getBalance(
-                fixture.paymaster.address,
-            );
+            const before = await ethers.provider.getBalance(paymaster.address);
 
-            const txData = {to: fixture.paymaster.address, value: oneToken};
+            const txData = {to: paymasterBehindProxy.address, value: oneToken};
 
-            const tx = await fixture.ethersSigner.sendTransaction(txData);
+            const tx = await ethersSigner.sendTransaction(txData);
 
             await tx.wait();
 
             const after = await ethers.provider.getBalance(
-                fixture.paymaster.address,
+                paymasterBehindProxy.address,
             );
 
             await expect(after).to.eq(before.add(oneToken));
@@ -184,21 +236,21 @@ describe.skip('Paymaster contract', function () {
 
         it('should send all balance to EntryPoint when depositToEntryPoint is called', async () => {
             const nativeBalanceBefore = await ethers.provider.getBalance(
-                fixture.paymaster.address,
+                paymasterBehindProxy.address,
             );
 
-            const before = await fixture.entryPoint.getDepositInfo(
-                fixture.paymaster.address,
+            const before = await entryPoint.getDepositInfo(
+                paymasterBehindProxy.address,
             );
 
-            const tx = await fixture.paymaster.depositToEntryPoint({
+            const tx = await paymasterBehindProxy.depositToEntryPoint({
                 value: oneToken,
             });
 
             await tx.wait();
 
-            const after = await fixture.entryPoint.getDepositInfo(
-                fixture.paymaster.address,
+            const after = await entryPoint.getDepositInfo(
+                paymasterBehindProxy.address,
             );
 
             await expect(after.deposit).to.eq(
@@ -208,20 +260,9 @@ describe.skip('Paymaster contract', function () {
     });
 
     context('function depositToEntryPoint without proxy', () => {
-        let entryPoint;
         let paymaster: PayMaster;
 
         beforeEach(async function () {
-            const factory = new ethers.ContractFactory(
-                abi,
-                bytecode,
-                fixture.ethersSigner,
-            );
-
-            entryPoint = await factory.deploy();
-
-            await entryPoint.deployed();
-
             paymaster = await (
                 await ethers.getContractFactory('PayMaster')
             ).deploy(
@@ -237,7 +278,7 @@ describe.skip('Paymaster contract', function () {
 
             const txData = {to: paymaster.address, value: oneToken};
 
-            const tx = await fixture.ethersSigner.sendTransaction(txData);
+            const tx = await ethersSigner.sendTransaction(txData);
 
             await tx.wait();
 
@@ -273,7 +314,7 @@ describe.skip('Paymaster contract', function () {
             const factory = new ethers.ContractFactory(
                 abi,
                 bytecode,
-                fixture.ethersSigner,
+                ethersSigner,
             );
 
             entryPoint = await factory.deploy();
@@ -320,7 +361,7 @@ describe.skip('Paymaster contract', function () {
             // Wait for unlock time
             await ethers.provider.send('evm_increaseTime', [100]);
             await ethers.provider.send('evm_mine', []);
-            await paymaster.withdrawStake(fixture.ethersSigner.address);
+            await paymaster.withdrawStake(ethersSigner.address);
             const depositInfo = await entryPoint.getDepositInfo(
                 paymaster.address,
             );
@@ -336,7 +377,7 @@ describe.skip('Paymaster contract', function () {
             const factory = new ethers.ContractFactory(
                 abi,
                 bytecode,
-                fixture.ethersSigner,
+                ethersSigner,
             );
 
             entryPoint = await factory.deploy();

@@ -17,7 +17,7 @@ pragma solidity ^0.8.19;
 import "./errMsgs/PayMasterErrMsgs.sol";
 
 import "./core/interfaces/IPrpVoucherController.sol";
-import "../../common/interfaces/IFeeMaster.sol";
+import "./interfaces/IFeeMasterHelper.sol";
 import "../../common/Utils.sol";
 import "../../common/ImmutableOwnable.sol";
 import "../../common/erc4337/contracts/interfaces/IPaymaster.sol";
@@ -133,7 +133,8 @@ contract PayMaster is ImmutableOwnable, IPaymaster, Utils, RevertMsgGetter {
         );
 
         // Retrieve the cached ZKP price in its native decimal format
-        uint256 cachedZKPPrice = IFeeMaster(FEE_MASTER).cachedNativeRateInZkp();
+        uint256 cachedZKPPrice = IFeeMasterHelper(FEE_MASTER)
+            .cachedNativeRateInZkp();
 
         // Calculate the total required prefund with postOpGasCost
         uint256 requiredTotal = requiredPreFund +
@@ -216,7 +217,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster, Utils, RevertMsgGetter {
      * @dev Claims the compensation from the FeeMaster contract.
      */
     function _claimCompensationFromFeeMaster() internal {
-        IFeeMaster(FEE_MASTER).payOff(address(this));
+        IFeeMasterHelper(FEE_MASTER).payOff(address(this));
     }
 
     /**
@@ -301,7 +302,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster, Utils, RevertMsgGetter {
     // TODO: change to use FeeMaster's getProtocolDebt view function
     // that will account for both protocol and native tokens FeeMaster debt to PayMaster
     function getFeeMasterNativeTokenDebt() public view returns (uint256) {
-        return IFeeMaster(FEE_MASTER).debts(address(this), NATIVE_TOKEN);
+        return IFeeMasterHelper(FEE_MASTER).debts(address(this), NATIVE_TOKEN);
     }
 
     /**
