@@ -93,9 +93,10 @@ describe('ZSwap', function () {
 
     describe('#deployment', () => {
         it('should set the correct panther tree and vault address', async () => {
-            expect(await zSwap.PANTHER_TREES()).to.equal(pantherTrees.address);
+            const result = await zSwap.getPantherTreeAndVaultAddr();
 
-            expect(await zSwap.VAULT()).to.equal(vault.address);
+            expect(result.vault).to.equal(vault.address);
+            expect(result.pantherTree).to.equal(pantherTrees.address);
         });
     });
 

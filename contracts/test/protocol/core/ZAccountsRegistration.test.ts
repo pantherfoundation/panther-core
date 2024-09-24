@@ -5,7 +5,7 @@ import {smock, FakeContract} from '@defi-wonderland/smock';
 // eslint-disable-next-line import/named
 import {TypedDataDomain} from '@ethersproject/abstract-signer';
 // eslint-disable-next-line import/named
-import {Bytes} from '@ethersproject/bytes';
+import {Bytes, BytesLike} from '@ethersproject/bytes';
 import {Provider} from '@ethersproject/providers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
@@ -133,11 +133,12 @@ describe('ZAccountsRegistry', function () {
         pubReadingKey: string,
         signer: SignerWithAddress,
     ) {
-        const name = await zAccountsRegistry.EIP712_NAME();
-        const version = await zAccountsRegistry.EIP712_VERSION();
+        const name = 'Panther Protocol';
+        const version = '1';
         const chainId = (await provider.getNetwork()).chainId;
 
-        const salt = await zAccountsRegistry.EIP712_SALT();
+        const salt: BytesLike =
+            '0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b';
         const verifyingContract = zAccountsRegistry.address;
         const zAccountVersion = await zAccountsRegistry.ZACCOUNT_VERSION();
 
@@ -372,22 +373,11 @@ describe('ZAccountsRegistry', function () {
     }
 
     describe('#deployment', () => {
-        it('should set the correct owner,pool,static tree and prp voucher contract address', async () => {
-            expect(await zAccountsRegistry.SELF()).to.equal(
-                prpVoucherController.address,
-            );
+        it('should set the correct contract address', async () => {
+            const result = await zAccountsRegistry.getSelfAndPantherTreeAddr();
 
-            expect(await zAccountsRegistry.PANTHER_TREES()).to.equal(
-                pantherTrees.address,
-            );
-
-            expect(await zAccountsRegistry.FEE_MASTER()).to.equal(
-                feeMaster.address,
-            );
-
-            expect(await zAccountsRegistry.ZKP_TOKEN()).to.equal(
-                zkpToken.address,
-            );
+            expect(result.self).to.equal(prpVoucherController.address);
+            expect(result.pantherTree).to.equal(pantherTrees.address);
         });
     });
 
