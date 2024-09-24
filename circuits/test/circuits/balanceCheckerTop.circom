@@ -40,7 +40,7 @@ template BalanceCheckerTop () {
     signal rc_zAccountUtxoOutZkpAmount <== Uint64Tag(IGNORE_CONSTANT)(zAccountUtxoOutZkpAmount);
     signal rc_totalUtxoInAmount <== Uint70Tag(IGNORE_CONSTANT)(totalUtxoInAmount);
     signal rc_totalUtxoOutAmount <== Uint70Tag(IGNORE_CONSTANT)(totalUtxoOutAmount);
-    signal rc_zAssetWeight <== NonZeroUint48Tag(IGNORE_ANCHORED)(zAssetWeight);
+    signal rc_zAssetWeight <== Uint48Tag(IGNORE_ANCHORED)(zAssetWeight);
     signal rc_zAssetScale <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScale);
     signal rc_zAssetScaleZkp <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScaleZkp);
     signal rc_kytDepositChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(kytDepositChargedAmountZkp);
