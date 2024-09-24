@@ -64,267 +64,109 @@ export const verifyProof = async (proof: any, publicSignals: any) => {
 let data = {};
 
 const zeroInputForZAccountRegistration = {
-    // external data anchoring
-    extraInputsHash: BigInt(0n),
+    extraInputsHash: 0,
 
-    // zkp amounts (not scaled)
-    addedAmountZkp: BigInt(0n),
+    addedAmountZkp: 0,
 
-    // protocol + relayer fee in ZKP
-    chargedAmountZkp: BigInt(0n),
+    chargedAmountZkp: 0,
 
-    // zAsset
-    zAssetId: BigInt(0n),
-    zAssetToken: BigInt(0n),
-    zAssetTokenId: BigInt(0n),
-    zAssetNetwork: BigInt(0n),
-    zAssetOffset: BigInt(0n),
-    zAssetWeight: BigInt(0n),
-    zAssetScale: BigInt(1n),
-    zAssetMerkleRoot: BigInt(0n),
-    zAssetPathIndices: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    zAssetPathElements: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
+    zAssetId: 0,
+    zAssetToken: 0,
+    zAssetTokenId: 0,
+    zAssetNetwork: 0,
+    zAssetOffset: 0,
+    zAssetWeight: 0,
+    zAssetScale: 1,
+    zAssetMerkleRoot: 0,
+    zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    zAssetPathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
-    // zAccount
-    zAccountId: BigInt(0n),
-    zAccountZkpAmount: BigInt(0n),
-    zAccountPrpAmount: BigInt(0n),
-    zAccountZoneId: BigInt(0n),
-    zAccountNetworkId: BigInt(0n),
-    zAccountExpiryTime: BigInt(0n),
-    zAccountNonce: BigInt(0n),
-    zAccountTotalAmountPerTimePeriod: BigInt(0n),
-    zAccountCreateTime: BigInt(0n),
-    zAccountRootSpendPubKey: [BigInt(0n), BigInt(1n)],
-    zAccountReadPubKey: [BigInt(0n), BigInt(1n)],
-    zAccountNullifierPubKey: [BigInt(0n), BigInt(1n)],
-    zAccountMasterEOA: BigInt(0n),
-    zAccountRootSpendPrivKey: BigInt(0n),
-    zAccountReadPrivKey: BigInt(0n),
-    zAccountNullifierPrivKey: BigInt(0n),
-    zAccountSpendKeyRandom: BigInt(0n),
-    zAccountNullifier: BigInt(0n),
-    zAccountCommitment: BigInt(0n),
+    zAccountId: 0,
+    zAccountZkpAmount: 0,
+    zAccountPrpAmount: 0,
+    zAccountZoneId: 0,
+    zAccountNetworkId: 0,
+    zAccountExpiryTime: 0,
+    zAccountNonce: 0,
+    zAccountTotalAmountPerTimePeriod: 0,
+    zAccountCreateTime: 0,
+    zAccountRootSpendPubKey: [0, 1],
+    zAccountReadPubKey: [0, 1],
+    zAccountNullifierPubKey: [0, 1],
+    zAccountMasterEOA: 0,
+    zAccountRootSpendPrivKey: 0,
+    zAccountReadPrivKey: 0,
+    zAccountNullifierPrivKey: 0,
+    zAccountSpendKeyRandom: 0,
+    zAccountNullifier: 0,
+    zAccountCommitment: 0,
 
-    // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
-    zAccountBlackListLeaf: BigInt(0n),
-    zAccountBlackListMerkleRoot: BigInt(0n),
+    zAccountBlackListLeaf: 0,
+    zAccountBlackListMerkleRoot: 0,
     zAccountBlackListPathElements: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
 
-    // zZone
-    zZoneOriginZoneIDs: BigInt(0n),
-    zZoneTargetZoneIDs: BigInt(0n),
-    zZoneNetworkIDsBitMap: BigInt(0n),
-    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: BigInt(0n),
-    zZoneKycExpiryTime: BigInt(0n),
-    zZoneKytExpiryTime: BigInt(0n),
-    zZoneDepositMaxAmount: BigInt(0n),
-    zZoneWithrawMaxAmount: BigInt(0n),
-    zZoneInternalMaxAmount: BigInt(0n),
-    zZoneMerkleRoot: BigInt(0n),
-    zZonePathElements: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    zZonePathIndices: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    zZoneEdDsaPubKey: [BigInt(0n), BigInt(0n)],
-    zZoneZAccountIDsBlackList: BigInt(
+    zZoneOriginZoneIDs: 0,
+    zZoneTargetZoneIDs: 0,
+    zZoneNetworkIDsBitMap: 0,
+    zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList: 0,
+    zZoneKycExpiryTime: 0,
+    zZoneKytExpiryTime: 0,
+    zZoneDepositMaxAmount: 0,
+    zZoneWithdrawMaxAmount: 0,
+    zZoneInternalMaxAmount: 0,
+    zZoneMerkleRoot: 0,
+    zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    zZonePathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    zZoneEdDsaPubKey: [0, 0],
+    zZoneZAccountIDsBlackList:
         '1766847064778384329583297500742918515827483896875618958121606201292619775',
-    ),
-    zZoneMaximumAmountPerTimePeriod: BigInt(0n),
-    zZoneTimePeriodPerMaximumAmount: BigInt(0n),
+    zZoneMaximumAmountPerTimePeriod: 0,
+    zZoneTimePeriodPerMaximumAmount: 0,
+    zZoneDataEscrowPubKey: [0, 1],
+    zZoneSealing: 0,
 
-    // KYC
-    kycEdDsaPubKey: [BigInt(0n), BigInt(0n)],
-    kycEdDsaPubKeyExpiryTime: BigInt(0n),
-    trustProvidersMerkleRoot: BigInt(0n),
-    kycPathElements: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    kycPathIndices: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    kycMerkleTreeLeafIDsAndRulesOffset: BigInt(0n),
-    // signed message
-    kycSignedMessagePackageType: BigInt(1n), // MUST be 1 - pkg type of KYC is always 1
-    kycSignedMessageTimestamp: BigInt(0n),
-    kycSignedMessageSender: BigInt(0n),
-    kycSignedMessageReceiver: BigInt(0n),
-    kycSignedMessageSessionId: BigInt(0n),
-    kycSignedMessageRuleId: BigInt(0n),
-    kycSignedMessageSigner: BigInt(0n),
-    kycSignedMessageHash: BigInt(0n),
-    kycSignature: [BigInt(0n), BigInt(0n), BigInt(0n)],
+    kycEdDsaPubKey: [0, 0],
+    kycEdDsaPubKeyExpiryTime: 0,
+    trustProvidersMerkleRoot: 0,
+    kycPathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    kycPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    kycMerkleTreeLeafIDsAndRulesOffset: 0,
 
-    // zNetworks tree
-    // network parameters:
-    // 1) is-active - 1 bit (circuit will set it to TRUE ALWAYS)
-    // 2) network-id - 6 bit
-    // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
-    // 4) daoDataEscrowPubKey[2]
-    zNetworkId: BigInt(0n),
-    zNetworkChainId: BigInt(0n),
-    zNetworkIDsBitMap: BigInt(0n),
-    zNetworkTreeMerkleRoot: BigInt(0n),
-    zNetworkTreePathElements: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    zNetworkTreePathIndices: [
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-        BigInt(0n),
-    ],
-    daoDataEscrowPubKey: [BigInt(0n), BigInt(0n)],
-    forTxReward: BigInt(0n),
-    forUtxoReward: BigInt(0n),
-    forDepositReward: BigInt(0n),
+    kycSignedMessagePackageType: 1,
+    kycSignedMessageTimestamp: 0,
+    kycSignedMessageSender: 0,
+    kycSignedMessageReceiver: 0,
+    kycSignedMessageSessionId: 0,
+    kycSignedMessageRuleId: 0,
+    kycSignedMessageSigner: 0,
+    kycSignedMessageHash: 0,
+    kycSignature: [0, 0, 0],
 
-    // static tree merkle root
-    // Poseidon of:
-    // 1) zAssetMerkleRoot
-    // 2) zAccountBlackListMerkleRoot
-    // 3) zNetworkTreeMerkleRoot
-    // 4) zZoneMerkleRoot
-    // 5) kycKytMerkleRoot
-    staticTreeMerkleRoot: BigInt(0n),
+    zNetworkId: 0,
+    zNetworkChainId: 0,
+    zNetworkIDsBitMap: 0,
+    zNetworkTreeMerkleRoot: 0,
+    zNetworkTreePathElements: [0, 0, 0, 0, 0, 0],
+    zNetworkTreePathIndices: [0, 0, 0, 0, 0, 0],
 
-    // forest root
-    // Poseidon of:
-    // 1) UTXO-Taxi-Tree   - 6 levels MT
-    // 2) UTXO-Bus-Tree    - 26 levels MT
-    // 3) UTXO-Ferry-Tree  - 6 + 26 = 32 levels MT (6 for 16 networks)
-    // 4) Static-Tree
-    forestMerkleRoot: BigInt(0n),
-    taxiMerkleRoot: BigInt(0n),
-    busMerkleRoot: BigInt(0n),
-    ferryMerkleRoot: BigInt(0n),
+    daoDataEscrowPubKey: [0, 0],
+    forTxReward: 0,
+    forUtxoReward: 0,
+    forDepositReward: 0,
 
-    // salt
-    salt: BigInt(0n),
-    saltHash: BigInt(0n),
+    staticTreeMerkleRoot: 0,
 
-    // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
-    magicalConstraint: BigInt(0n),
+    forestMerkleRoot: 0,
+    taxiMerkleRoot: 0,
+    busMerkleRoot: 0,
+    ferryMerkleRoot: 0,
+
+    salt: 0,
+    saltHash: 0,
+
+    magicalConstraint: 0,
 };
 
 const nonZeroInputForZAccountRegistration = {
@@ -344,7 +186,7 @@ const nonZeroInputForZAccountRegistration = {
     zAssetWeight: 20,
     zAssetScale: 10 ** 12,
     zAssetMerkleRoot:
-        19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+        3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
     zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     zAssetPathElements: [
@@ -493,10 +335,10 @@ const nonZeroInputForZAccountRegistration = {
     zZoneKycExpiryTime: 10368000,
     zZoneKytExpiryTime: 86400,
     zZoneDepositMaxAmount: 1 * 10 ** 12,
-    zZoneWithrawMaxAmount: 1 * 10 ** 12,
+    zZoneWithdrawMaxAmount: 1 * 10 ** 12,
     zZoneInternalMaxAmount: 1 * 10 ** 12,
     zZoneMerkleRoot:
-        9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+        14189511324259672403799169204478898082389936563693111126414306380356116434465n,
     zZonePathElements: [
         2896678800030780677881716886212119387589061708732637213728415628433288554509n,
         15915358021544645824948763611506574620607002248967455613245207713011512736724n,
@@ -524,6 +366,11 @@ const nonZeroInputForZAccountRegistration = {
         1766847064778384329583297500742918515827483896875618958121606201292619775n,
     zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
     zZoneTimePeriodPerMaximumAmount: 86400n,
+    zZoneDataEscrowPubKey: [
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+    ],
+    zZoneSealing: 1,
 
     zNetworkChainId: 80001,
     zNetworkIDsBitMap: 5,
@@ -555,7 +402,7 @@ const nonZeroInputForZAccountRegistration = {
     // 4) zZoneMerkleRoot
     // 5) kycKytMerkleRoot
     staticTreeMerkleRoot:
-        16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+        15348222720660628311446592885548915884577953917057577776988845594265385226543n,
     // forest root
     // Poseidon of:
     // 1) UTXO-Taxi-Tree   - 6 levels MT
@@ -578,7 +425,6 @@ const nonZeroInputForZAccountRegistration = {
     // magical constraint - groth16 attack: https://geometry.xyz/notebook/groth16-malleability
     magicalConstraint: 123456789,
 };
-
 // zero input
 // data = zeroInputForZAccountRegistration;
 
