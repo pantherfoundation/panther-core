@@ -28,7 +28,7 @@ import {
     IERC20,
     IBlacklistedZAccountIdRegistry,
 } from '../../../types/contracts';
-import {SnarkProofStruct} from '../../../types/contracts/IPantherPoolV1';
+import {SnarkProofStruct} from '../../../types/contracts/ZAccountsRegistration';
 import {
     generatePrivateMessage,
     TransactionTypes,

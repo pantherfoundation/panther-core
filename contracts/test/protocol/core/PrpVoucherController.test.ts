@@ -4,10 +4,10 @@
 import {smock} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
-import {BigNumber, ContractFactory} from 'ethers';
+import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
-import {PrpVoucherController as PrpVoucherControllerType} from '../../../types/contracts/PrpVoucherController';
+import {MockPrpVoucherController} from '../../../types/contracts';
 import {
     generateExtraInputsHash,
     sampleProof,
@@ -69,12 +69,11 @@ export const claimRewardsInputs = async () => {
     ];
 };
 
-describe.only('PrpVoucherController', function () {
+describe('PrpVoucherController', function () {
     let owner: SignerWithAddress,
         allowedContract: SignerWithAddress,
         user: SignerWithAddress;
-    let prpVoucherController: PrpVoucherControllerType;
-    let PrpVoucherController: ContractFactory;
+    let prpVoucherController: MockPrpVoucherController;
     let inputs;
     let secretHash;
     let pantherTrees: FakeContract,
@@ -85,7 +84,7 @@ describe.only('PrpVoucherController', function () {
         secretHash = ethers.utils.id('test_secret');
         [owner, allowedContract, user] = await ethers.getSigners();
 
-        PrpVoucherController = await ethers.getContractFactory(
+        const prpVoucherControllerFactory = await ethers.getContractFactory(
             'MockPrpVoucherController',
         );
 
@@ -94,26 +93,21 @@ describe.only('PrpVoucherController', function () {
         feeMaster = await smock.fake('FeeMaster');
         fakeToken = await smock.fake('ERC20');
 
-        prpVoucherController = (await PrpVoucherController.deploy(
+        prpVoucherController = (await prpVoucherControllerFactory.deploy(
             pantherTrees.address,
             feeMaster.address,
             fakeToken.address,
-        )) as PrpVoucherControllerType;
-
-        await prpVoucherController.deployed();
+        )) as MockPrpVoucherController;
     });
 
     describe('Deployment', function () {
         it('sets the correct owner, pool contract, and verifier addresses', async function () {
-            expect(await prpVoucherController.PANTHER_TREES()).to.equal(
-                pantherTrees.address,
-            );
-            expect(await prpVoucherController.FEE_MASTER()).to.equal(
-                feeMaster.address,
-            );
-            expect(await prpVoucherController.ZKP_TOKEN()).to.equal(
-                fakeToken.address,
-            );
+            const addresses =
+                await prpVoucherController.getPantherTreesAndFeeMasterAndZkpAddresses();
+
+            expect(addresses.pantherTrees).to.equal(pantherTrees.address);
+            expect(addresses.feeMaster).to.equal(feeMaster.address);
+            expect(addresses.zkpToken).to.equal(fakeToken.address);
         });
 
         it('reverts with zero address', async function () {
