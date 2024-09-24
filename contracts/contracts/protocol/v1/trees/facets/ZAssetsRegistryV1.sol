@@ -25,7 +25,13 @@ import "../../../../common/UtilsLib.sol";
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
 
-contract ZAssetsRegistryV1 is StaticRootUpdater, Ownable, BinaryUpdatableTree {
+contract ZAssetsRegistryV1 is
+    AppStorage,
+    ZAssetsRegistryStorageGap,
+    StaticRootUpdater,
+    Ownable,
+    BinaryUpdatableTree
+{
     using UtilsLib for address;
 
     // the next leaf index

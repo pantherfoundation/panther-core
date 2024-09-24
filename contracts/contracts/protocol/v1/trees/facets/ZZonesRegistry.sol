@@ -22,7 +22,13 @@ import "../../../../common/crypto/PoseidonHashers.sol";
  * Protocol Multi-Asset Shielded Pool (aka "MASP")
  */
 
-contract ZZonesRegistry is StaticRootUpdater, Ownable, BinaryUpdatableTree {
+contract ZZonesRegistry is
+    AppStorage,
+    ZZonesRegistryStorageGap,
+    StaticRootUpdater,
+    Ownable,
+    BinaryUpdatableTree
+{
     // The current root of merkle tree.
     // If it's undefined, the `zeroRoot()` shall be called.
     bytes32 private _currentRoot;

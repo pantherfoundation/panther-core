@@ -39,6 +39,8 @@ import "../../../../common/crypto/PoseidonHashers.sol";
  * `proofSiblings` unneeded as input params on tree leafs insertions/updates).
  */
 contract ProvidersKeysRegistry is
+    AppStorage,
+    ProvidersKeysRegistryStorageGap,
     ProvidersKeysSignatureVerifier,
     StaticRootUpdater,
     Ownable,

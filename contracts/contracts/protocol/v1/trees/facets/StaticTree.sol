@@ -23,7 +23,12 @@ import "../../../../common/crypto/PoseidonHashers.sol";
 //
 // It's supposed to run on the mainnet only.
 // Bridges keepers are expected to propagate its root to other networks
-contract StaticTree is AppStorage, Ownable, IStaticTreeRootUpdater {
+contract StaticTree is
+    AppStorage,
+    StaticTreeStorageGap,
+    Ownable,
+    IStaticTreeRootUpdater
+{
     uint256 private constant NUM_LEAFS = 5;
 
     address private immutable SELF;

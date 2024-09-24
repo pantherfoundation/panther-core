@@ -16,6 +16,8 @@ import { BLACKLISTED_ZACCOUNT_STATIC_LEAF_INDEX } from "../utils/Constants.sol";
 import "../../../../common/crypto/PoseidonHashers.sol";
 
 contract BlacklistedZAccountsIdsRegistry is
+    AppStorage,
+    BlacklistedZAccountsIdsRegistryStorageGap,
     StaticRootUpdater,
     PantherPoolAuth,
     BinaryUpdatableTree
