@@ -8,13 +8,13 @@ import {ethers} from 'hardhat';
 import {Account} from '../../types/contracts';
 import {UserOperationStruct} from '../../types/contracts/Account';
 
+import {buildOp} from './helpers/account';
 import {
     ADDRESS_ONE,
-    buildOp,
     BYTES32_ZERO,
     BYTES64_ZERO,
     BYTES_ONE,
-} from './shared';
+} from './helpers/constants';
 
 describe('Account', () => {
     let user: SignerWithAddress;
