@@ -3,17 +3,28 @@
 
 /**
  * @title Account
- * @author Pantherprotocol Contributors
- * @dev This smart account contract is ERC-4337 compliant and serves as an interface to interact with a protocol
- * using bundlers as third-party executors for on-chain batch transactions.
- * It essentially functions as a MultiCall, facilitating efficient execution of multiple transactions in a single batch.
- * The authorization ensures the following:
- * Offset Matching: The contract verifies that the offset of the allowed call matches as specified in both
- * the user's operation signature and the payload callData.
- * This ensures that the intended transaction within the batch aligns correctly with the provided callData.
- * Paymaster Compensation Alignment: alidates that the paymaster compensation provided
- * matches across both the payload callData and the operation signature. This synchronization ensures that the paymaster
- * is compensated accurately and consistently for the allowed call.
+ * @dev This contract is a singleton and ERC-4337 compliant, designed to interact with bundlers as third-party
+ * executors for on-chain batch transactions. It operates without a proxy and is deployed once per protocol version,
+ * shared by all users.
+ *
+ * Main Features:
+ *
+ * 1. MultiCall Execution: The contract enables efficient execution of multiple transactions in a single batch,
+ *    validating and processing them according to predefined rules.
+ *
+ * 2. Offset Matching: The contract ensures that the offset of the paymaster compensation in the calldata matches the
+ *    predefined value. This is checked against both the user’s operation signature and the calldata. The "offset"
+ *    refers to the position in the calldata where the paymasterCompensation value is located.
+ *
+ * 3. Paymaster Compensation Alignment: The contract validates that the paymaster compensation value is consistent
+ *    between the user’s operation signature and the calldata, ensuring correct compensation for the paymaster.
+ *
+ * 4. Singleton Architecture: Only one instance of the contract is deployed per protocol version, used by all users.
+ *    Allowed calls (target address, function selector, and paymaster compensation) are registered during deployment.
+ *    At execution, the contract checks if the call's address-function selector-offset combination is registered before
+ *    passing the transaction to the paymaster.
+ *
+ * The contract does not use a proxy mechanism.
  */
 
 pragma solidity ^0.8.16;
