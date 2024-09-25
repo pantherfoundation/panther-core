@@ -18,7 +18,6 @@ import "./errMsgs/PayMasterErrMsgs.sol";
 
 import "./core/interfaces/IPrpVoucherController.sol";
 import "./interfaces/IFeeMasterHelper.sol";
-import "../../common/Utils.sol";
 import "../../common/ImmutableOwnable.sol";
 import "../../common/erc4337/contracts/interfaces/IPaymaster.sol";
 import "../../common/erc4337/contracts/interfaces/IEntryPoint.sol";
@@ -27,7 +26,7 @@ import "../../common/misc/RevertMsgGetter.sol";
 // solhint-disable-next-line max-line-length
 import { GT_PAYMASTER_REFUND, HUNDRED_PERCENT, NATIVE_TOKEN, PROTOCOL_TOKEN_DECIMALS } from "../../common/Constants.sol";
 
-contract PayMaster is ImmutableOwnable, IPaymaster, Utils, RevertMsgGetter {
+contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
     event UserOperationSponsored(
         uint256 actualGasCost,
         uint256 requiredPrefundInZKP,
