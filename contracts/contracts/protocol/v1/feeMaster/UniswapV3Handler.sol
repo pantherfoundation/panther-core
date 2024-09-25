@@ -19,7 +19,7 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
 
     address public immutable WETH;
 
-    uint256 public twapPeriod;
+    uint32 public twapPeriod;
 
     constructor(address weth) {
         require(weth != address(0), "zero address");
@@ -51,7 +51,7 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         if (amount1Delta > 0) token1.safeTransfer(pool, uint256(amount1Delta));
     }
 
-    function _updateTwapPeriod(uint256 _twapPeriod) internal {
+    function _updateTwapPeriod(uint32 _twapPeriod) internal {
         require(_twapPeriod > 0, "zero twap");
         twapPeriod = _twapPeriod;
     }
@@ -62,6 +62,30 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
 
     function convertWNativeToNative(uint256 wNativeAmount) internal {
         IWETH(WETH).withdraw(wNativeAmount);
+    }
+
+    // This function calculates sqrtPriceLimitX96 based on TWAP price
+    function getSqrtPriceLimitX96(
+        uint256 twapPrice
+    ) internal pure returns (uint160) {
+        // Step 1: Take the square root of the TWAP price
+        uint256 sqrtPrice = sqrt(twapPrice);
+
+        // Step 2: Convert it to the Q96 format (scaled by 2^96)
+        uint160 sqrtPriceLimitX96 = uint160((sqrtPrice << 96) / (1 << 48));
+
+        return sqrtPriceLimitX96;
+    }
+
+    // Internal pure function to calculate square root of a given value
+    function sqrt(uint256 x) internal pure returns (uint256 y) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
     }
 
     function _flashSwap(
@@ -77,20 +101,18 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
             outputToken = WETH;
         }
 
-        // uint256 exchangeRate = getQuoteAmount(
-        //     pool,
-        //     inputToken,
-        //     outputToken,
-        //     swapAmount
-        // );
-
-        uint160 sqrtPriceLimitX96 = 0;
+        uint256 exchangeRate = getQuoteAmount(
+            pool,
+            inputToken,
+            outputToken,
+            swapAmount
+        );
 
         outputAmount = pool.swapExactInput(
             inputToken,
             outputToken,
             swapAmount,
-            sqrtPriceLimitX96
+            getSqrtPriceLimitX96(exchangeRate)
         );
     }
 

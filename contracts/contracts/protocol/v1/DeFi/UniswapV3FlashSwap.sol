@@ -58,9 +58,7 @@ library UniswapV3FlashSwap {
             data
         );
 
-        outputAmount = outputToken == tokenB
-            ? uint256(amount1)
-            : uint256(amount0);
+        outputAmount = zeroForOne ? uint256(-amount1) : uint256(-amount0);
     }
 
     /**

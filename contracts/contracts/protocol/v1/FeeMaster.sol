@@ -193,7 +193,7 @@ contract FeeMaster is
         emit ZkpTokenDonationsUpdated(_zkpTokenDonation);
     }
 
-    function updateTwapPeriod(uint256 _twapPeriod) external onlyOwner {
+    function updateTwapPeriod(uint32 _twapPeriod) external onlyOwner {
         _updateTwapPeriod(_twapPeriod);
 
         emit TwapPeriodUpdated(twapPeriod);
