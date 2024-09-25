@@ -198,7 +198,7 @@ template ZTransactionV1( nUtxoIn,
     signal input dataEscrowPubKey[2];
     signal input dataEscrowPubKeyExpiryTime;
     signal input dataEscrowEphemeralRandom;
-    signal input dataEscrowEphemeralPubKeyAx; // public
+    signal input dataEscrowEphemeralPubKeyAx;
     signal input dataEscrowEphemeralPubKeyAy;
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
@@ -209,7 +209,7 @@ template ZTransactionV1( nUtxoIn,
     // dao data escrow
     signal input daoDataEscrowPubKey[2];
     signal input daoDataEscrowEphemeralRandom;
-    signal input daoDataEscrowEphemeralPubKeyAx;
+    signal input daoDataEscrowEphemeralPubKeyAx; // public
     signal input daoDataEscrowEphemeralPubKeyAy;
 
     signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
