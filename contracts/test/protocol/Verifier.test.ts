@@ -68,7 +68,8 @@ describe('Verifier', function () {
     });
 
     it('should getkeys from MockVerifier', async function () {
-        const onchainVerifyingKey = await verifier.getVerifyingKey(cirquitId);
+        const onchainVerifyingKey =
+            await verifier.internalGetVerifyingKey(cirquitId);
 
         const keyAsBigNumber = BigNumber.from(onchainVerifyingKey[0][0]);
 
@@ -91,7 +92,7 @@ describe('Verifier', function () {
         const inputArray: number[] = [7];
 
         await expect(
-            verifier.verifyOrRevert(cirquitId, inputArray, proof),
+            verifier.internalVerifyOrRevert(cirquitId, inputArray, proof),
         ).to.be.revertedWith('verification-failed');
     });
 
@@ -116,8 +117,8 @@ describe('Verifier', function () {
 
         const seven = BigNumber.from('5');
 
-        await expect(verifier.verifyOrRevert(cirquitId, [seven], proof)).to.be
-            .not.reverted;
+        await expect(verifier.internalVerifyOrRevert(cirquitId, [seven], proof))
+            .to.be.not.reverted;
     });
 
     it('should verify groth16 from file', async function () {
