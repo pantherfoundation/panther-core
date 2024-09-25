@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {BigNumber} from 'ethers';
+
+import {UserOperationStruct} from '../../types/contracts/Account';
+
+import {ADDRESS_ONE, BYTES64_ZERO} from './constants';
+
 export function buildOp(params?: UserOperationStruct): UserOperationStruct {
     return {
         sender: params?.sender ?? ADDRESS_ONE,
