@@ -13,37 +13,65 @@ library UniswapV3PriceFeed {
         address inputToken,
         address outputToken,
         uint256 inputAmount,
-        uint256 twapPeriod
+        uint32 secondsAgo //e.g., 60 for 1 minute TWAP
     ) internal view returns (uint256 quoteAmount) {
-        uint32[] memory secondsAgo = new uint32[](2);
-        secondsAgo[0] = uint32(twapPeriod); // from (before)
-        secondsAgo[1] = 0; // to (now)
+        // Interface the Uniswap pool
+        IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
-        // Get the historical tick data using the observe() function
-        (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(
-            secondsAgo
-        );
+        // Get the current tick (price) using oracle
+        uint32[] memory secondsAgos = new uint32[](2);
+        secondsAgos[0] = secondsAgo; // TWAP period
+        secondsAgos[1] = 0; // The current block timestamp
 
-        int24 tick = int24(
-            (tickCumulatives[1] - tickCumulatives[0]) /
-                int56(uint56(twapPeriod))
-        );
-        uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick(tick);
+        (int56[] memory tickCumulatives, ) = uniswapPool.observe(secondsAgos);
 
-        if (sqrtPriceX96 <= type(uint128).max) {
-            uint256 ratioX192 = uint256(sqrtPriceX96) * sqrtPriceX96;
-            quoteAmount = inputToken < outputToken
-                ? FullMath.mulDiv(ratioX192, inputAmount, 1 << 192)
-                : FullMath.mulDiv(1 << 192, inputAmount, ratioX192);
-        } else {
-            uint256 ratioX128 = FullMath.mulDiv(
-                sqrtPriceX96,
-                sqrtPriceX96,
-                1 << 64
-            );
-            quoteAmount = inputToken < outputToken
-                ? FullMath.mulDiv(ratioX128, inputAmount, 1 << 128)
-                : FullMath.mulDiv(1 << 128, inputAmount, ratioX128);
+        // Calculate the time-weighted average tick
+        int56 tickCumulativesDelta = tickCumulatives[1] - tickCumulatives[0];
+        int56 timeElapsed = int56(uint56(secondsAgo)); // The time difference
+
+        // Calculate average tick
+        int24 averageTick = int24(tickCumulativesDelta / timeElapsed);
+
+        // Adjust for negative tickCumulativesDelta and remainder issue
+        if (
+            tickCumulativesDelta < 0 && tickCumulativesDelta % timeElapsed != 0
+        ) {
+            averageTick--;
         }
+
+        require(
+            averageTick >= TickMath.MIN_TICK &&
+                averageTick <= TickMath.MAX_TICK,
+            "Invalid tick range"
+        );
+
+        // Convert the average tick to a price (sqrtPriceX96)
+        uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick(averageTick);
+
+        // Calculate the price as a Q96 value
+        uint256 priceX96 = FullMath.mulDiv(
+            sqrtPriceX96,
+            sqrtPriceX96,
+            FixedPoint96.Q96
+        );
+
+        // Quote calculation:
+        if (inputToken < outputToken) {
+            // Input token is token0, output token is token1
+            quoteAmount = FullMath.mulDiv(
+                inputAmount,
+                priceX96,
+                FixedPoint96.Q96
+            );
+        } else {
+            // Input token is token1, output token is token0
+            quoteAmount = FullMath.mulDiv(
+                inputAmount,
+                FixedPoint96.Q96,
+                priceX96
+            );
+        }
+
+        return quoteAmount;
     }
 }
