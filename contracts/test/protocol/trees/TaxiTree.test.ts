@@ -13,7 +13,7 @@ import {MockTaxiTree} from '../../../types/contracts';
 const BigNumber = ethers.BigNumber;
 const MAX_LEAF_NUM = 128;
 
-describe.only('TaxiTree', () => {
+describe('TaxiTree', () => {
     let taxiTree: MockTaxiTree;
     let merkleTree: PantherTaxiMerkleTree;
 
@@ -46,10 +46,7 @@ describe.only('TaxiTree', () => {
 
             await taxiTree.addUtxo(utxo);
 
-            const actualRoot = ethers.utils.hexZeroPad(
-                await taxiTree.getTaxiTreeRoot(),
-                32,
-            );
+            const actualRoot = await taxiTree.getTaxiTreeRoot();
             const expectedRoot = ethers.utils.hexZeroPad(
                 BigNumber.from(merkleTree.root),
                 32,
@@ -63,10 +60,7 @@ describe.only('TaxiTree', () => {
 
             await taxiTree.addUtxos(utxos);
 
-            const actualRoot = ethers.utils.hexZeroPad(
-                await taxiTree.getTaxiTreeRoot(),
-                32,
-            );
+            const actualRoot = await taxiTree.getTaxiTreeRoot();
             const expectedRoot = ethers.utils.hexZeroPad(
                 BigNumber.from(merkleTree.root),
                 32,
@@ -83,10 +77,7 @@ describe.only('TaxiTree', () => {
 
             expect(merkleTree.rightSubtree.leaves[0]).to.be.equal(leaf);
 
-            const actualRoot = ethers.utils.hexZeroPad(
-                await taxiTree.getTaxiTreeRoot(),
-                32,
-            );
+            const actualRoot = await taxiTree.getTaxiTreeRoot();
             const expectedRoot = ethers.utils.hexZeroPad(
                 BigNumber.from(merkleTree.root),
                 32,
@@ -109,10 +100,7 @@ describe.only('TaxiTree', () => {
 
             expect(merkleTree.leftSubtree.leaves.length).to.be.equal(1);
 
-            const actualRoot = ethers.utils.hexZeroPad(
-                await taxiTree.getTaxiTreeRoot(),
-                32,
-            );
+            const actualRoot = await taxiTree.getTaxiTreeRoot();
             const expectedRoot = ethers.utils.hexZeroPad(
                 BigNumber.from(merkleTree.root),
                 32,
@@ -133,10 +121,7 @@ describe.only('TaxiTree', () => {
 
             expect(merkleTree.rightSubtree.leaves.length).to.be.equal(1);
 
-            const actualRoot = ethers.utils.hexZeroPad(
-                await taxiTree.getTaxiTreeRoot(),
-                32,
-            );
+            const actualRoot = await taxiTree.getTaxiTreeRoot();
             const expectedRoot = ethers.utils.hexZeroPad(
                 BigNumber.from(merkleTree.root),
                 32,
