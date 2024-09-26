@@ -14,9 +14,10 @@ import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from "../utils/zeroTrees/Co
 import { ZASSET_STATIC_LEAF_INDEX } from "../utils/Constants.sol";
 
 import "../../../../common/crypto/PoseidonHashers.sol";
-import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE, ERC721_TOKEN_TYPE } from "../../../../common/Constants.sol";
+import { ERC20_TOKEN_TYPE, NATIVE_TOKEN_TYPE, ERC721_TOKEN_TYPE, ERC1155_TOKEN_TYPE } from "../../../../common/Constants.sol";
+import { FIELD_SIZE } from "../../../../common/crypto/SnarkConstants.sol";
 
-import "../../../../common/UtilsLib.sol";
+import "../libraries/ZAssetEncodingUtils.sol";
 
 /**
  * @title ZAssetsRegistryV1
@@ -33,77 +34,136 @@ contract ZAssetsRegistryV1 is
     BinaryUpdatableTree
 {
     using UtilsLib for address;
+    using ZAssetEncodingUtils for uint32;
+    using ZAssetEncodingUtils for address;
 
-    // the next leaf index
-    uint32 public totalLeavesInserted;
+    uint8 private constant UNDEFINED_NETWORK_ID = 63;
+    uint256 private constant TARGET_WEIGHTED_AMOUNT_PER_USD = 1e8;
 
     // The current root of merkle tree.
     // If it's undefined, the `zeroRoot()` shall be called.
     bytes32 private _currentRoot;
 
-    struct ZAsset {
+    // the next leaf index
+    uint32 public totalLeavesInserted;
+
+    address public weightController;
+
+    struct ZAssetInnerParams {
         address token;
-        uint32 tokenId;
-        uint8 networkId;
-        uint32 offset;
-        uint16 weight;
+        uint64 batchId;
+        uint32 startTokenId;
+        uint32 tokenIdsRangeSize;
         uint8 scaleFactor;
+        uint8 networkId;
+        uint8 tokenType;
     }
 
-    mapping(uint256 => ZAsset) public zAssets;
+    struct WeightMetrics {
+        uint48 updatedWeight;
+        uint16 scUsdPrice;
+        uint8 zAssetDecimal;
+        uint64 zAssetScale;
+    }
 
-    event ZAssetRootUpdated(bytes32 newRoot, ZAsset zAsset);
+    // zAsset key to inner hash
+    mapping(uint64 => bytes32) public zAssetsInnerHash;
+
+    // zAsset key to network ID
+    mapping(uint64 => uint8) private previousZAssetsNetwork;
+
+    event ZAssetRootUpdated(
+        bytes32 newRoot,
+        bytes32 zAssetInnerHash,
+        uint48 weight
+    );
+    event WeightControllerUpdated(address weightController);
 
     constructor(address self) StaticRootUpdater(self) {}
 
-    function getZAssetsRoot() external pure returns (bytes32) {
-        // return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
-        // TODO:
-        return
-            0x1c61b7f877aeafe396b55ada9d181e9620ef89ac19273b00b8655c9cf52d6aa5;
+    function getZAssetsRoot() external view returns (bytes32) {
+        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
+    }
+
+    function getZAssetKey(
+        uint64 batchId,
+        uint32 leafIndex
+    ) public pure returns (uint64) {
+        // the 32 LSB of batchId is 0
+        return batchId | leafIndex;
+    }
+
+    function isZAssetEnabled(uint64 zAssetKey) public view returns (bool) {
+        uint8 _previousZAssetNetwork = previousZAssetsNetwork[zAssetKey];
+        return _previousZAssetNetwork == UNDEFINED_NETWORK_ID;
+    }
+
+    function updateWeightController(
+        address _weightController
+    ) external onlyOwner {
+        weightController = _weightController;
+
+        emit WeightControllerUpdated(_weightController);
     }
 
     function addZAsset(
-        uint8 tokenType,
-        ZAsset calldata zAsset,
+        ZAssetInnerParams calldata zAssetInnerParams,
+        uint48 weight,
         bytes32[] calldata proofSiblings
     ) external onlyOwner {
+        _sanitizeZAssetParms(zAssetInnerParams);
+
+        uint64 _batchId = zAssetInnerParams.batchId;
+
         uint32 _leafIndex = totalLeavesInserted;
+        uint64 _zAssetKey = getZAssetKey(_batchId, _leafIndex);
 
-        _sanitizeZAssetParms(tokenType, zAsset);
+        bytes32 _zAssetInnerHash = _generateZAssetInnerHash(zAssetInnerParams);
 
-        uint64 zAssetId = _getZAssetId(_leafIndex);
-        bytes32 newLeaf = _generateLeaf(zAssetId, zAsset);
+        require(!_isZAssetExist(_zAssetKey), "ZAR: already added");
+
+        bytes32 _newLeaf = _generateLeaf(_zAssetInnerHash, weight);
 
         bytes32 zAssetsTreeRoot = update(
             _currentRoot,
             ZERO_VALUE,
-            newLeaf,
+            _newLeaf,
             _leafIndex,
             proofSiblings
         );
 
         totalLeavesInserted = _leafIndex + 1;
 
-        _updateZAsset(_leafIndex, zAsset);
-        _updateZAssetsRegistryAndStaticRoots(zAssetsTreeRoot, zAsset);
+        _updatePreviousZAssetsNetwork(_zAssetKey, UNDEFINED_NETWORK_ID);
+
+        _updateZAssetsInnerHash(_zAssetKey, _zAssetInnerHash);
+
+        _updateZAssetsRegistryAndStaticRoots(
+            zAssetsTreeRoot,
+            _zAssetInnerHash,
+            weight
+        );
     }
 
-    function updateZAssetWeightAndScale(
+    function updateZAssetWeight(
+        WeightMetrics calldata weightMetrics,
+        uint64 batchId,
         uint32 leafIndex,
-        uint16 newWeight,
-        uint8 newScaleFactor,
+        bytes32 currentLeaf,
         bytes32[] calldata proofSiblings
-    ) external onlyOwner {
-        ZAsset memory zAsset = zAssets[leafIndex];
+    ) external {
+        require(msg.sender == weightController, "only weight controller");
+        _checkUpdatedWeight(weightMetrics);
 
-        uint64 zAssetId = _getZAssetId(leafIndex);
+        uint64 zAssetKey = getZAssetKey(batchId, leafIndex);
+        require(isZAssetEnabled(zAssetKey), "ZAR: disabled zAsset");
 
-        bytes32 currentLeaf = _generateLeaf(zAssetId, zAsset);
+        bytes32 zAssetInnerHash = zAssetsInnerHash[zAssetKey];
 
-        zAsset.weight = newWeight;
-        zAsset.scaleFactor = newScaleFactor;
-        bytes32 newLeaf = _generateLeaf(zAssetId, zAsset);
+        bytes32 newLeaf = _generateLeaf(
+            zAssetInnerHash,
+            weightMetrics.updatedWeight
+        );
 
         bytes32 zAssetsTreeRoot = update(
             _currentRoot,
@@ -113,43 +173,168 @@ contract ZAssetsRegistryV1 is
             proofSiblings
         );
 
-        _updateZAsset(leafIndex, zAsset);
-        _updateZAssetsRegistryAndStaticRoots(zAssetsTreeRoot, zAsset);
+        _updateZAssetsRegistryAndStaticRoots(
+            zAssetsTreeRoot,
+            zAssetInnerHash,
+            weightMetrics.updatedWeight
+        );
     }
 
-    function _getZAssetId(uint64 leafIndex) private pure returns (uint64) {
-        return leafIndex << 32;
+    function toggleZAssetStatus(
+        ZAssetInnerParams memory currentZAssetInnerParams,
+        uint48 weight,
+        bool isEnabled,
+        uint32 leafIndex,
+        bytes32[] calldata proofSiblings
+    ) external onlyOwner {
+        uint64 _batchId = currentZAssetInnerParams.batchId;
+        uint64 _zAssetKey = getZAssetKey(_batchId, leafIndex);
+
+        bytes32 _currentZAssetInnerHash = _generateZAssetInnerHash(
+            currentZAssetInnerParams
+        );
+        bytes32 _currentLeaf = _generateLeaf(_currentZAssetInnerHash, weight);
+
+        if (isEnabled) {
+            require(!isZAssetEnabled(_zAssetKey), "ZAR: already enabled");
+
+            currentZAssetInnerParams.networkId = previousZAssetsNetwork[
+                _zAssetKey
+            ];
+            _updatePreviousZAssetsNetwork(_zAssetKey, UNDEFINED_NETWORK_ID);
+        } else {
+            require(isZAssetEnabled(_zAssetKey), "ZAR: already disabled");
+
+            currentZAssetInnerParams.networkId = UNDEFINED_NETWORK_ID;
+
+            _updatePreviousZAssetsNetwork(
+                _zAssetKey,
+                currentZAssetInnerParams.networkId
+            );
+        }
+
+        bytes32 _newZAssetInnerHash = _generateZAssetInnerHash(
+            currentZAssetInnerParams
+        );
+        bytes32 newLeaf = _generateLeaf(_newZAssetInnerHash, weight);
+
+        bytes32 zAssetsTreeRoot = update(
+            _currentRoot,
+            _currentLeaf,
+            newLeaf,
+            leafIndex,
+            proofSiblings
+        );
+
+        _updateZAssetsRegistryAndStaticRoots(
+            zAssetsTreeRoot,
+            _newZAssetInnerHash,
+            weight
+        );
     }
 
-    function _updateZAsset(uint256 leafIndex, ZAsset memory zAsset) private {
-        zAssets[leafIndex] = zAsset;
+    function _isZAssetExist(uint64 key) private view returns (bool) {
+        return zAssetsInnerHash[key] != 0;
+    }
+
+    function _updateZAssetsInnerHash(uint64 key, bytes32 innerHash) private {
+        zAssetsInnerHash[key] = innerHash;
+    }
+
+    function _updatePreviousZAssetsNetwork(
+        uint64 zAssetKey,
+        uint8 networkId
+    ) private {
+        previousZAssetsNetwork[zAssetKey] = networkId;
+    }
+
+    function _updateZAssetsRegistryAndStaticRoots(
+        bytes32 zAssetsTreeRoot,
+        bytes32 zAssetInnerHash,
+        uint48 weight
+    ) private {
+        _currentRoot = zAssetsTreeRoot;
+        _updateStaticRoot(zAssetsTreeRoot, ZASSET_STATIC_LEAF_INDEX);
+
+        emit ZAssetRootUpdated(zAssetsTreeRoot, zAssetInnerHash, weight);
+    }
+
+    function _generateLeaf(
+        bytes32 _zAssetInnerHash,
+        uint48 _weight
+    ) private pure returns (bytes32) {
+        return
+            PoseidonHashers.poseidonT3(
+                [_zAssetInnerHash, bytes32(uint256(_weight))]
+            );
+    }
+
+    function _generateZAssetInnerHash(
+        ZAssetInnerParams memory zAssetInnerParams
+    ) private pure returns (bytes32) {
+        return
+            PoseidonHashers.poseidonT6(
+                [
+                    bytes32(uint256(zAssetInnerParams.batchId)),
+                    bytes32(
+                        uint256(
+                            zAssetInnerParams.token.encodeAddressWithType(
+                                zAssetInnerParams.tokenType
+                            )
+                        )
+                    ),
+                    bytes32(uint256(zAssetInnerParams.startTokenId)),
+                    bytes32(uint256(zAssetInnerParams.networkId)),
+                    bytes32(
+                        uint256(
+                            zAssetInnerParams
+                                .tokenIdsRangeSize
+                                .encodeTokenIdRangeSizeWithScale(
+                                    zAssetInnerParams.scaleFactor
+                                )
+                        )
+                    )
+                ]
+            );
     }
 
     function _sanitizeZAssetParms(
-        uint8 tokenType,
-        ZAsset calldata _zAsset
+        ZAssetInnerParams calldata zAssetInnerParams
     ) private pure {
-        if (tokenType == ERC20_TOKEN_TYPE) _sanitizeErc20Params(_zAsset);
-        if (tokenType == NATIVE_TOKEN_TYPE) _sanitizeNativeParams(_zAsset);
-        if (tokenType == ERC721_TOKEN_TYPE) _sanitizeErc721Params(_zAsset);
+        uint8 tokenType = zAssetInnerParams.tokenType;
+
+        if (tokenType == ERC20_TOKEN_TYPE)
+            _sanitizeErc20Params(zAssetInnerParams);
+        else if (tokenType == NATIVE_TOKEN_TYPE)
+            _sanitizeNativeParams(zAssetInnerParams);
+        else if (tokenType == ERC721_TOKEN_TYPE)
+            _sanitizeErc721Params(zAssetInnerParams);
+        else if (tokenType == ERC1155_TOKEN_TYPE)
+            _sanitizeErc721Params(zAssetInnerParams);
+        else revert("ZAR: invalid token type");
     }
 
-    function _sanitizeErc20Params(ZAsset calldata _zAsset) private pure {
+    function _sanitizeErc20Params(
+        ZAssetInnerParams calldata _zAsset
+    ) private pure {
         _checkNonZeroAddress(_zAsset.token);
-        _checkZeroTokenID(_zAsset.tokenId);
-        _checkZeroOffset(_zAsset.offset);
+        _checkZeroStartTokenID(_zAsset.startTokenId);
+        _checkZeroTokenIdsRangeSize(_zAsset.tokenIdsRangeSize);
     }
 
-    function _sanitizeNativeParams(ZAsset calldata _zAsset) private pure {
+    function _sanitizeNativeParams(
+        ZAssetInnerParams calldata _zAsset
+    ) private pure {
         _checkZeroAddress(_zAsset.token);
-        _checkZeroTokenID(_zAsset.tokenId);
-        _checkZeroOffset(_zAsset.offset);
+        _checkZeroStartTokenID(_zAsset.startTokenId);
+        _checkZeroTokenIdsRangeSize(_zAsset.tokenIdsRangeSize);
     }
 
-    function _sanitizeErc721Params(ZAsset calldata _zAsset) private pure {
+    function _sanitizeErc721Params(
+        ZAssetInnerParams calldata _zAsset
+    ) private pure {
         _checkNonZeroAddress(_zAsset.token);
-
-        //TODO check the tokenID
+        _checkZeroScaleFactor(_zAsset.scaleFactor);
     }
 
     function _checkNonZeroAddress(address token) private pure {
@@ -160,31 +345,48 @@ contract ZAssetsRegistryV1 is
         require(token == address(0), "ZAR: non-zero token address");
     }
 
-    function _checkZeroTokenID(uint256 tokenId) private pure {
-        require(tokenId == 0, "ZAR: non-zero token id");
+    function _checkZeroStartTokenID(uint32 startTokenId) private pure {
+        require(startTokenId == 0, "ZAR: non-zero token id");
     }
 
-    function _checkZeroOffset(uint256 offset) private pure {
-        require(offset == 0, "ZAR: non-zero offset");
+    function _checkZeroTokenIdsRangeSize(
+        uint32 tokenIdsRangeSize
+    ) private pure {
+        require(tokenIdsRangeSize == 0, "ZAR: non-zero offset");
     }
 
-    function _generateLeaf(
-        uint256 zAssetId,
-        ZAsset memory zAsset
-    ) private pure returns (bytes32) {
-        uint256 zAssetScale = 10 ** zAsset.scaleFactor;
-        // return
-        //     PoseidonHashers.poseidonT8(
-        //         [
-        //             bytes32(zAssetId),
-        //             bytes32(uint256(uint160(zAsset.token))),
-        //             bytes32(uint256(zAsset.tokenId)),
-        //             bytes32(uint256(zAsset.networkId)),
-        //             bytes32(uint256(zAsset.offset)),
-        //             bytes32(uint256(zAsset.weight)),
-        //             bytes32(zAssetScale)
-        //         ]
-        //     );
+    function _checkZeroScaleFactor(uint8 scaleFactor) private pure {
+        require(scaleFactor == 0, "ZAR: non-zero scale factor");
+    }
+
+    function _checkScaleFactor(uint8 scaleFactor) private pure {
+        require(scaleFactor <= 32, "ZAR: too high scale factor");
+    }
+
+    function _checkErc20Weight(uint48 weight) private pure {
+        require(weight <= type(uint32).max, "ZAR: too high erc20 weight");
+    }
+
+    function _checkSnarkFriendly(uint256 value) private pure {
+        require(value < FIELD_SIZE, "ZAR: not snark friendly");
+    }
+
+    function _checkZAssetBatchId(uint64 id) private pure {
+        require(id & type(uint32).max == 0, "ZAR: invalid batch id");
+    }
+
+    function _checkUpdatedWeight(
+        WeightMetrics calldata weightMetrics
+    ) private pure {
+        require(weightMetrics.scUsdPrice >= 1e2, "ZAR: invalid usd price");
+
+        require(
+            ((10 ** weightMetrics.zAssetDecimal / weightMetrics.zAssetScale) *
+                weightMetrics.updatedWeight) /
+                weightMetrics.scUsdPrice ==
+                TARGET_WEIGHTED_AMOUNT_PER_USD * 1e2,
+            "ZAR: invalid weight"
+        );
     }
 
     //@dev returns the root of tree with depth 16 where each leaf is ZERO_VALUE
@@ -196,15 +398,5 @@ contract ZAssetsRegistryV1 is
         bytes32[2] memory input
     ) internal pure override returns (bytes32) {
         return PoseidonHashers.poseidonT3(input);
-    }
-
-    function _updateZAssetsRegistryAndStaticRoots(
-        bytes32 zAssetsTreeRoot,
-        ZAsset memory _zAsset
-    ) private {
-        _currentRoot = zAssetsTreeRoot;
-        _updateStaticRoot(zAssetsTreeRoot, ZASSET_STATIC_LEAF_INDEX);
-
-        emit ZAssetRootUpdated(zAssetsTreeRoot, _zAsset);
     }
 }
