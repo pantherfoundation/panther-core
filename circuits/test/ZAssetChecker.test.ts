@@ -15,7 +15,7 @@ describe('ZAssetChecker circuit', async function (this: any) {
         const opts = getOptions();
         const input = path.join(
             opts.basedir,
-            './test/circuits/zAssetChecker.circom',
+            './test/circuits/zAssetCheckerMain.circom',
         );
         zAssetChecker = await wasm_tester(input, opts);
     });
@@ -59,10 +59,10 @@ describe('ZAssetChecker circuit', async function (this: any) {
     };
 
     describe('Valid input signals', async function () {
-        describe('Deposit/Withdraw transaction should pass', async function () {
-            // Case - ERC-20 - ZKP case (zAssetId is 0)
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            it('when ERC20 ZKP ZAsset is deposited/withdrawn', async () => {
+        // enable_If_ExternalAmountsAre_NOT_Zero - Either deposit or withdraw
+        describe('Deposit/Withdraw transaction', async function () {
+            // Native token case
+            it('when Native token is deposited/withdrawn', async () => {
                 zAssetCheckerSignals.depositAmount = 100;
 
                 zAssetCheckerSignals.zAssetToken =
@@ -74,15 +74,25 @@ describe('ZAssetChecker circuit', async function (this: any) {
                 zAssetCheckerSignals.tokenId = 0;
                 zAssetCheckerSignals.zAssetOffset = 0;
 
-                await checkWitness({
+                // Always checked irrespective of the type of transaction
+                // $ZKP (ERC-20). MUST be in the 1st Batch with `zAssetsBatchId` of 0
+                zAssetCheckerSignals.zAssetId = 0;
+                // `zAssetId` for $ZKP MUST be 0.
+                zAssetCheckerSignals.utxoZAssetId = 0;
+
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
+
+                const wtnsFormattedOutput = [0, wtns[11]];
+
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
                     isZkpToken: 1,
                 });
             });
 
-            // Case - ERC-20 - Non ZKP case (zAssetId is !0)
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            // zAssetId must be non-zero
-            it('when ERC20 Non-ZKP ZAsset is deposited/withdrawn', async () => {
+            it('when ERC20 ZAsset is deposited/withdrawn', async () => {
                 zAssetCheckerSignals.depositAmount = 100;
 
                 zAssetCheckerSignals.zAssetToken =
@@ -94,23 +104,24 @@ describe('ZAssetChecker circuit', async function (this: any) {
                 zAssetCheckerSignals.tokenId = 0;
                 zAssetCheckerSignals.zAssetOffset = 0;
 
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = counter << 32;
+                // Always checked irrespective of the type of transaction
+                // ERC-20 token in the 10th Batch with `zAssetsBatchId` being (10-1)*2^32+0
+                zAssetCheckerSignals.zAssetId = (10 - 1) * 2 ** 32 + 0;
+                // The ERC-20 token from Example 3) has the `zAssetId` of (10-1)*2^32+0.
+                zAssetCheckerSignals.utxoZAssetId = (10 - 1) * 2 ** 32 + 0;
 
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (zAssetCheckerSignals.tokenId & lsbMask);
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
 
-                await checkWitness({
+                const wtnsFormattedOutput = [0, wtns[11]];
+
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
                     isZkpToken: 0,
                 });
             });
 
-            // Case - ERC-721 - ZKP case (zAssetId is 0)
-            // This is a valid case atleast from circuit perspective.
-            // This case needs to be checked from the smart contract end.
             it('when ERC-721 ZKP ZAsset is deposited/withdrawn', async () => {
                 zAssetCheckerSignals.depositAmount = 100;
 
@@ -119,199 +130,88 @@ describe('ZAssetChecker circuit', async function (this: any) {
                 zAssetCheckerSignals.token =
                     365481738974395054943628650313028055219811856521n;
 
-                zAssetCheckerSignals.zAssetTokenId =
-                    (0xcc00ffeecc00ffeen >> 0n) << 0n;
-                zAssetCheckerSignals.tokenId = 0xcc00ffeecc00ffeen;
+                // NFT with tokenId 56 in the 11th Batch with `zAssetsBatchId` (11-1)*2^32+0
+                // (`startTokenId` being 56, and `tokenIdsRangeSize` being 0)
+                zAssetCheckerSignals.zAssetTokenId = 56;
+                zAssetCheckerSignals.tokenId = 56;
                 zAssetCheckerSignals.zAssetOffset = 0;
 
-                await checkWitness({
+                // Always checked irrespective of the type of transaction
+                zAssetCheckerSignals.zAssetId = (11 - 1) * 2 ** 32 + 0;
+                zAssetCheckerSignals.utxoZAssetId = (11 - 1) * 2 ** 32 + 0;
+
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
+
+                const wtnsFormattedOutput = [0, wtns[11]];
+
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
+                    isZkpToken: 0,
+                });
+            });
+
+            it('when ERC-1155 deposited/withdrawn', async () => {
+                zAssetCheckerSignals.depositAmount = 100;
+
+                zAssetCheckerSignals.zAssetToken =
+                    0x112233445566778899aabbccddeeff0011223344n;
+                zAssetCheckerSignals.token =
+                    0x112233445566778899aabbccddeeff0011223344n;
+
+                // 33 NFTs with the tokenId's from 167 to 199 in the 12th Batch.
+                // `zAssetsBatchId` is (12-1)*2^32+0
+                // NFT from the Example 4) with `tokenId` 173 has `zAssetId` of 11*2^32+6.
+                zAssetCheckerSignals.zAssetTokenId = 167;
+                zAssetCheckerSignals.tokenId = 173;
+                zAssetCheckerSignals.zAssetOffset = 6; // targeting 173 tokenID with this offset
+
+                // Always checked irrespective of the type of transaction
+                zAssetCheckerSignals.zAssetId = (12 - 1) * 2 ** 32 + 0;
+                zAssetCheckerSignals.utxoZAssetId = (12 - 1) * 2 ** 32 + 6;
+
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
+
+                const wtnsFormattedOutput = [0, wtns[11]];
+
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
+                    isZkpToken: 0,
+                });
+            });
+        });
+
+        // enable_If_ExternalAmountsAre_Zero - No deposit or withdraw
+        describe('Internal transaction should pass', async function () {
+            // Native token internal tx
+            it('when external token and external tokenId is 0', async () => {
+                zAssetCheckerSignals.zAssetId = 0; // zZKP token
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
+
+                const wtnsFormattedOutput = [0, wtns[11]];
+
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
                     isZkpToken: 1,
                 });
             });
 
-            // Case - ERC-721 - Non ZKP case (zAssetId is !0) - with offset 0
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            // zAssetId must be non-zero
-            // utxoZAssetId is computed accordingly
-            it('when ERC-721 Non-ZKP ZAsset with offset 0 is deposited/withdrawn', async () => {
-                zAssetCheckerSignals.depositAmount = 100;
+            // ERC-20 token internal tx
+            it('when external token and external tokenId is 0', async () => {
+                zAssetCheckerSignals.zAssetId = 1; // ERC-20 token
+                const wtns = await zAssetChecker.calculateWitness(
+                    zAssetCheckerSignals,
+                    true,
+                );
 
-                zAssetCheckerSignals.zAssetToken =
-                    365481738974395054943628650313028055219811856521n;
-                zAssetCheckerSignals.token =
-                    365481738974395054943628650313028055219811856521n;
+                const wtnsFormattedOutput = [0, wtns[11]];
 
-                zAssetCheckerSignals.zAssetTokenId =
-                    (0xcc00ffeecc00ffeen >> 0n) << 0n;
-                zAssetCheckerSignals.tokenId = 0xcc00ffeecc00ffeen;
-                zAssetCheckerSignals.zAssetOffset = 0;
-
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = counter << 32;
-
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (Number(zAssetCheckerSignals.tokenId) & lsbMask);
-
-                await checkWitness({
-                    isZkpToken: 0,
-                });
-            });
-
-            // Case - ERC-1155 - Non ZKP case (zAssetId is !0) - with offset 2
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            // zAssetId must be non-zero
-            // utxoZAssetId is computed accordingly
-            it('when ERC-1155 Non-ZKP ZAsset with offset 2 is deposited/withdrawn', async () => {
-                zAssetCheckerSignals.depositAmount = 100;
-
-                zAssetCheckerSignals.zAssetToken =
-                    365481738974395054943628650313028055219811856521n;
-                zAssetCheckerSignals.token =
-                    365481738974395054943628650313028055219811856521n;
-
-                zAssetCheckerSignals.zAssetTokenId =
-                    (0xcc00ffeecc00ffeen >> 2n) << 2n;
-                zAssetCheckerSignals.tokenId = 0xcc00ffeecc00ffeen;
-                zAssetCheckerSignals.zAssetOffset = 2;
-
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = counter << 32;
-
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (Number(zAssetCheckerSignals.tokenId) & lsbMask);
-
-                await checkWitness({
-                    isZkpToken: 0,
-                });
-            });
-
-            // Case - ERC-1155 - Non ZKP case (zAssetId is !0) - with offset 32
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            // zAssetId must be non-zero
-            // utxoZAssetId is computed accordingly
-            it('when ERC-1155 Non-ZKP ZAsset with offset 32 is deposited/withdrawn', async () => {
-                zAssetCheckerSignals.depositAmount = 100;
-
-                zAssetCheckerSignals.zAssetToken =
-                    365481738974395054943628650313028055219811856521n;
-                zAssetCheckerSignals.token =
-                    365481738974395054943628650313028055219811856521n;
-
-                zAssetCheckerSignals.zAssetOffset = 32;
-                zAssetCheckerSignals.zAssetTokenId =
-                    (0xcc00ffeecc00ffeen >> 32n) << 32n;
-                zAssetCheckerSignals.tokenId = 0xcc00ffeecc00ffeen;
-
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = BigInt(counter) << BigInt(32);
-
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (BigInt(zAssetCheckerSignals.tokenId) & BigInt(lsbMask));
-
-                await checkWitness({
-                    isZkpToken: 0,
-                });
-            });
-
-            // ======================Computation from zAsset-Registry doc===================================================
-            /*
-            token AKA Ext.tokenAddr = 0x112233445566778899aabbccddeeff0011223344
-            zAssetToken AKA Leaf.tokenAddr = 0x112233445566778899aabbccddeeff0011223344
-
-            zAssetOffset AKA Leaf.offset = 32
-
-            tokenId AKA Ext.tokenId = 0xcc00ffeecc00ffee - 14700030584827215854
-            zAssetTokenId AKA Leaf.tokenId:
-                Formula = (Ext.tokenId >> Leaf.offset) << Leaf.offset = 
-                        = (0xcc00ffeecc00ffee >> 32) << 32 = 0xcc00ffee00000000
-
-                        = (14700030584827215854 >> 32) << 32 
-                        = (-872349696) << 32
-
-            COUNTER = 0xabba
-            zAssetId AKA Leaf.zAssetId:
-                Formula = COUNTER << 32
-                        = 0xabba << 32 = 0xabba00000000
-            zAssetId - 0xabba00000000 - 188815352266752
-
-            utxoZAssetId AKA Utxo.AssetId:
-            -----------------------------
-            lsbMask = 2**L.offset - 1
-            Utxo.zAssetId = Leaf.zAssetId + (Ext.tokenId & lsbMask)
-
-            lsbMask = 0xffffffff - 4294967295
-            Utxo.AssetId = 0xabba00000000 + 0xcc00ffeecc00ffee & 0xffffffff
-                         = 0xabba00000000 + cc00ffee
-                         = 0xabbacc00ffee
-
-            Utxo.AssetId = 188815352266752 + 14700030584827215854 & 4294967295
-                         = 188815352266752 + 3422617582
-                         = 188818774884334
-
-            */
-            // Case - ERC-1155 - Non ZKP case (zAssetId is !0) - with offset 32
-            // External token address AKA token & Internal token address AKA zAssetToken must be same
-            // zAssetId must be non-zero
-            // utxoZAssetId is computed accordingly
-            it('when ERC-1155 Non-ZKP ZAsset with offset 32 is deposited/withdrawn', async () => {
-                zAssetCheckerSignals.depositAmount = 100;
-
-                zAssetCheckerSignals.zAssetToken =
-                    0x112233445566778899aabbccddeeff0011223344n;
-                zAssetCheckerSignals.token =
-                    0x112233445566778899aabbccddeeff0011223344n;
-
-                zAssetCheckerSignals.zAssetTokenId =
-                    (0xcc00ffeecc00ffeen >> 32n) << 32n;
-                zAssetCheckerSignals.tokenId = 0xcc00ffeecc00ffeen;
-                zAssetCheckerSignals.zAssetOffset = 32;
-
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = BigInt(counter) << BigInt(32);
-
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (BigInt(zAssetCheckerSignals.tokenId) & BigInt(lsbMask));
-
-                await checkWitness({
-                    isZkpToken: 0,
-                });
-            });
-            // ======================Computation from zAsset-Registry doc===================================================
-        });
-
-        describe('Internal transfer transaction should pass', async function () {
-            // Case - Internal Transfer of zZAssets
-            // External depositAmount and withdrawAmount must be 0
-            // token and tokenId must be 0
-            it('when zZAsset is transfered within the MASP', async () => {
-                zAssetCheckerSignals.zAssetOffset = 32;
-
-                let counter = 0xabba;
-                zAssetCheckerSignals.zAssetId = BigInt(counter) << BigInt(32);
-
-                // computation of utxoZAssetId
-                let lsbMask = 2 ** zAssetCheckerSignals.zAssetOffset - 1;
-                zAssetCheckerSignals.utxoZAssetId =
-                    zAssetCheckerSignals.zAssetId +
-                    (BigInt(zAssetCheckerSignals.tokenId) & BigInt(lsbMask));
-
-                await checkWitness({
-                    isZkpToken: 0,
-                });
-
-                await checkWitness({
+                await zAssetChecker.assertOut(wtnsFormattedOutput, {
                     isZkpToken: 0,
                 });
             });

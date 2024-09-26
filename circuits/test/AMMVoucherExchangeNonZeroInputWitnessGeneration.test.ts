@@ -193,7 +193,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         16585547643065588372010718035675163508420403417446192422307560350739915741648n;
 
     const staticTreeMerkleRoot =
-        15323795652282733476787593554593633163509524267163105218965028724899034265607n;
+        15348222720660628311446592885548915884577953917057577776988845594265385226543n;
 
     const forestTree = poseidon([
         taxiMerkleRoot,
@@ -218,7 +218,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zAssetWeight: 20,
         zAssetScale: 10 ** 12,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
@@ -375,10 +375,10 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
         zZoneKycExpiryTime: 10368000, // 1 week epoch time
         zZoneKytExpiryTime: 86400,
         zZoneDepositMaxAmount: 1 * 10 ** 12,
-        zZoneWithrawMaxAmount: 1 * 10 ** 12,
+        zZoneWithdrawMaxAmount: 1 * 10 ** 12,
         zZoneInternalMaxAmount: 1 * 10 ** 12,
         zZoneMerkleRoot:
-            9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+            14189511324259672403799169204478898082389936563693111126414306380356116434465n,
 
         zZonePathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
@@ -408,6 +408,11 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
 
         zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
         zZoneTimePeriodPerMaximumAmount: 86400,
+        zZoneDataEscrowPubKey: [
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        ],
+        zZoneSealing: 1,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,
@@ -435,7 +440,7 @@ describe('Automated Market Maker - Non Zero Input Voucher Exchange - Witness com
             675413191976636849763056983375622181122390331630387511499559599588194530856n,
 
         staticTreeMerkleRoot:
-            16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+            15348222720660628311446592885548915884577953917057577776988845594265385226543n,
 
         forestMerkleRoot:
             21797104496963892262884335320223742656647321711420251344379316478709925639367n,

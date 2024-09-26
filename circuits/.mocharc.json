@@ -1,0 +1,4 @@
+{
+  "spec": "lib/**/*.js",
+  "ignore": "lib/legacy/**/*.js"
+}

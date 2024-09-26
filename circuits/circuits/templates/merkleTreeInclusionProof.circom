@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
@@ -19,9 +19,9 @@ in the array are leaves (pair leaves to the one set by the `leaf` signal).
 */
 
 template MerkleTreeInclusionProof(n_levels) {
-    signal input leaf;
-    signal input pathIndices[n_levels+1];
-    signal input pathElements[n_levels+1]; // extra slot for third leave
+    signal input          leaf;
+    signal input {binary} pathIndices[n_levels+1];
+    signal input          pathElements[n_levels+1]; // extra slot for third leave
 
     signal output root;
 
@@ -40,6 +40,10 @@ template MerkleTreeInclusionProof(n_levels) {
     hashers[0].inputs[1] <== temp + pathIndices[1]*(pathElements[1] - pathElements[0]);
     hashers[0].inputs[2] <== pathElements[1] + pathIndices[1]*(leaf -pathElements[1]);
 
+    for (var i = 0; i < n_levels; i++) {
+        // enforce binary index
+        pathIndices[i] - pathIndices[i] * pathIndices[i] === 0;
+    }
     // ... then iterate through levels above leaves
     for (var i = 1; i < n_levels; i++) {
         // (outL,outR) = sel==0 ? (L,R) : (R,L)
@@ -56,9 +60,9 @@ template MerkleTreeInclusionProof(n_levels) {
 }
 
 template MerkleTreeInclusionProofDoubleLeaves(n_levels) {
-    signal input leaf;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input          leaf;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
 
     signal output root;
 
@@ -74,6 +78,11 @@ template MerkleTreeInclusionProofDoubleLeaves(n_levels) {
     hashers[0] = Poseidon(2);
     hashers[0].inputs[0] <== switchers[0].outL;
     hashers[0].inputs[1] <== switchers[0].outR;
+
+    for (var i = 0; i < n_levels; i++) {
+        // enforce binary index
+        pathIndices[i] - pathIndices[i] * pathIndices[i] === 0;
+    }
 
     // ... then iterate through levels above leaves
     for (var i = 1; i < n_levels; i++) {
@@ -98,7 +107,7 @@ template Selector3() {
     signal input R;
 
     // Selector that chooses the input signal
-    signal input sel[2];
+    signal input {binary} sel[2];
 
     signal output out;
 
@@ -140,11 +149,11 @@ template MerkleTreeInclusionProofDoubleLeavesSelectable(
     var r_levels = m_levels + r_extraLevels;
 
     // If the left ([0,0]) or middle ([1,0]) or right ([0,1]) tree to be selected
-    signal input treeSelector[2];
+    signal input {binary} treeSelector[2];
 
-    signal input leaf;
-    signal input pathElements[r_levels];
-    signal input pathIndices[r_levels];
+    signal input          leaf;
+    signal input          pathElements[r_levels];
+    signal input {binary} pathIndices[r_levels];
 
     signal output root;
 
