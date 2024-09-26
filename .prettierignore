@@ -40,6 +40,7 @@ contracts/types/
 contracts/typing/
 contracts/LICENSE*
 contracts/.solhintignore
+contracts/slither.Dockerfile
 
 crypto/coverage/
 crypto/lib/
