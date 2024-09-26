@@ -91,7 +91,7 @@ contract BlacklistedZAccountsIdsRegistry is
         // getting index which is between 0 and 253
         flagIndex = zAccountId & 0xFF;
 
-        require(flagIndex < 254, ERR_INVALID_ZACCOUNT_FLAG_POSITION);
+        require(flagIndex < 253, ERR_INVALID_ZACCOUNT_FLAG_POSITION);
 
         // getting the 16 MSB from uint24
         leafIndex = zAccountId >> 8;
