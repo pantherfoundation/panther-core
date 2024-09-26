@@ -16,7 +16,7 @@ import {
     StaticTree,
 } from '../../../types/contracts';
 
-describe.skip('BlacklistedZAccountIdRegistry', () => {
+describe('BlacklistedZAccountIdRegistry', () => {
     let blacklistedZAccountsIdsRegistry: MockBlacklistedZAccountsIdsRegistry;
     let staticTree: FakeContract<StaticTree>;
     let pantherPool: SignerWithAddress;
@@ -70,7 +70,7 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                 expectedFlagIndex: string,
                 expectedLeafIndex: string;
 
-            describe('when zAccount id is between 0 and 253', () => {
+            describe('when zAccount id is between 0 and 252', () => {
                 it('should return 0 flag and 0 leaf index', async () => {
                     zAccountId = '0';
                     expectedFlagIndex = '0';
@@ -131,9 +131,9 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     );
                 });
 
-                it('should return 253 flag and 0 leaf index', async () => {
-                    zAccountId = '253';
-                    expectedFlagIndex = '253';
+                it('should return 252 flag and 0 leaf index', async () => {
+                    zAccountId = '252';
+                    expectedFlagIndex = '252';
                     expectedLeafIndex = '0';
 
                     await checkFlagIndexAndLeafIndex(
@@ -141,6 +141,16 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                         expectedFlagIndex,
                         expectedLeafIndex,
                     );
+                });
+
+                it('should revert when zAccount id is 253', async () => {
+                    zAccountId = '253';
+
+                    await expect(
+                        blacklistedZAccountsIdsRegistry.internalGetZAccountFlagAndLeafIndexes(
+                            zAccountId,
+                        ),
+                    ).to.revertedWith('ZAR:E9');
                 });
 
                 it('should revert when zAccount id is 254', async () => {
@@ -152,19 +162,9 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                         ),
                     ).to.revertedWith('ZAR:E9');
                 });
-
-                it('should revert when zAccount id is 255', async () => {
-                    zAccountId = '255';
-
-                    await expect(
-                        blacklistedZAccountsIdsRegistry.internalGetZAccountFlagAndLeafIndexes(
-                            zAccountId,
-                        ),
-                    ).to.revertedWith('ZAR:E9');
-                });
             });
 
-            describe('when zAccount id is between 256 and 509', () => {
+            describe('when zAccount id is between 256 and 508', () => {
                 it('should return 0 flag and 1 leaf index', async () => {
                     zAccountId = '256';
                     expectedFlagIndex = '0';
@@ -225,9 +225,9 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     );
                 });
 
-                it('should return 253 flag and 1 leaf index', async () => {
-                    zAccountId = '509';
-                    expectedFlagIndex = '253';
+                it('should return 252 flag and 1 leaf index', async () => {
+                    zAccountId = '508';
+                    expectedFlagIndex = '252';
                     expectedLeafIndex = '1';
 
                     await checkFlagIndexAndLeafIndex(
@@ -237,8 +237,8 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     );
                 });
 
-                it('should revert when zAccount id is 510', async () => {
-                    zAccountId = '510';
+                it('should revert when zAccount id is 509', async () => {
+                    zAccountId = '509';
 
                     await expect(
                         blacklistedZAccountsIdsRegistry.internalGetZAccountFlagAndLeafIndexes(
@@ -247,8 +247,8 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     ).to.revertedWith('ZAR:E9');
                 });
 
-                it('should revert when zAccount id is 511', async () => {
-                    zAccountId = '511';
+                it('should revert when zAccount id is 510', async () => {
+                    zAccountId = '510';
 
                     await expect(
                         blacklistedZAccountsIdsRegistry.internalGetZAccountFlagAndLeafIndexes(
@@ -380,9 +380,9 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     );
                 });
 
-                it('should blacklist zAccount with id 253', async () => {
-                    zAccountId = '253';
-                    flagIndex = '253';
+                it('should blacklist zAccount with id 252', async () => {
+                    zAccountId = '252';
+                    flagIndex = '252';
 
                     currentLeaf = leafWithIndex0; // 15
                     leafWithIndex0 = addIdToLeaf(currentLeaf, flagIndex);
@@ -399,7 +399,7 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                 });
             });
 
-            describe('adding ids 256 to 509 to the second leaf', () => {
+            describe('adding ids 256 to 508 to the second leaf', () => {
                 const leafIndex = 1;
                 let proof: Proof;
 
@@ -425,9 +425,9 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                     );
                 });
 
-                it('should blacklist zAccount with id 509', async () => {
-                    zAccountId = '509';
-                    flagIndex = '253';
+                it('should blacklist zAccount with id 508', async () => {
+                    zAccountId = '508';
+                    flagIndex = '252';
 
                     currentLeaf = leafWithIndex1;
                     leafWithIndex1 = addIdToLeaf(currentLeaf, flagIndex);
@@ -506,8 +506,8 @@ describe.skip('BlacklistedZAccountIdRegistry', () => {
                 const leafIndex = 1;
 
                 it('should whitelist zAccount with id 509', async () => {
-                    zAccountId = '509';
-                    flagIndex = '253';
+                    zAccountId = '508';
+                    flagIndex = '252';
 
                     currentLeaf = leafWithIndex1;
                     leafWithIndex1 = removeIdFromLeaf(currentLeaf, flagIndex);
