@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "circomlib/circuits/switcher.circom";
 include "./hasher.circom";
 
 template MerkleInclusionProof(levels) {
-    signal input leaf;
-    signal input pathElements[levels];
-    signal input pathIndices[levels];
+    signal input          leaf;
+    signal input          pathElements[levels];
+    signal input {binary} pathIndices[levels];
 
     signal output root;
 

@@ -36,15 +36,12 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         extraInputsHash: 0,
 
         depositAmount: 0,
-        depositChange: 0,
         withdrawAmount: 0,
-        withdrawChange: 0,
         addedAmountZkp: 0,
         token: 0,
         tokenId: 0,
         utxoZAsset: 0,
 
-        // zAsset
         zAssetId: 0,
         zAssetToken: 0,
         zAssetTokenId: 0,
@@ -71,17 +68,6 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         forDepositReward: 0,
 
         spendTime: 0,
-
-        // input 'zAsset UTXOs'
-        // to switch-off:
-        //      1) utxoInAmount = 0
-        //      2) utxoInSpendPrivKey = 0
-        //      3) utxoInSpendKeyRandom = 0
-        // switch-off control is used for:
-        //      1) deposit only tx
-        //      2) deposit & zAccount::zkpAmount
-        //      3) deposit & zAccount::zkpAmount & withdraw
-        //      4) deposit & withrdaw
 
         utxoInSpendPrivKey: [0, 0],
         utxoInSpendKeyRandom: [0, 0],
@@ -117,8 +103,11 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             ],
         ],
         utxoInNullifier: [0, 0],
+        utxoInDataEscrowPubKey: [
+            [0, 0],
+            [0, 0],
+        ],
 
-        // input 'zAccount UTXO'
         zAccountUtxoInId: 0,
         zAccountUtxoInZkpAmount: 0,
         zAccountUtxoInPrpAmount: 0,
@@ -152,7 +141,6 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
 
-        // zZone
         zZoneOriginZoneIDs: 0,
         zZoneTargetZoneIDs: 0,
         zZoneNetworkIDsBitMap: 0,
@@ -160,7 +148,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zZoneKycExpiryTime: 0,
         zZoneKytExpiryTime: 0,
         zZoneDepositMaxAmount: 0,
-        zZoneWithrawMaxAmount: 0,
+        zZoneWithdrawMaxAmount: 0,
         zZoneInternalMaxAmount: 0,
         zZoneMerkleRoot: 0,
         zZonePathElements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -171,9 +159,9 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zZoneDataEscrowEphemeralPubKeyAy: 1,
         zZoneZAccountIDsBlackList:
             '1766847064778384329583297500742918515827483896875618958121606201292619775',
-
         zZoneMaximumAmountPerTimePeriod: 0,
         zZoneTimePeriodPerMaximumAmount: 0,
+        zZoneSealing: 0,
 
         zZoneDataEscrowEncryptedMessageAx: [0],
         zZoneDataEscrowEncryptedMessageAy: [1],
@@ -193,6 +181,7 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         kytDepositSignedMessageSessionId: 0,
         kytDepositSignedMessageRuleId: 0,
         kytDepositSignedMessageAmount: 0,
+        kytDepositSignedMessageChargedAmountZkp: 0,
         kytDepositSignedMessageSigner: 0,
         kytDepositSignedMessageHash: 0,
         kytDepositSignature: [0, 0, 0],
@@ -205,9 +194,19 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         kytWithdrawSignedMessageSessionId: 0,
         kytWithdrawSignedMessageRuleId: 0,
         kytWithdrawSignedMessageAmount: 0,
+        kytWithdrawSignedMessageChargedAmountZkp: 0,
         kytWithdrawSignedMessageSigner: 0,
         kytWithdrawSignedMessageHash: 0,
         kytWithdrawSignature: [0, 0, 0],
+
+        kytSignedMessagePackageType: 253,
+        kytSignedMessageTimestamp: 0,
+        kytSignedMessageSessionId: 0,
+        kytSignedMessageChargedAmountZkp: 0,
+        kytSignedMessageSigner: 0,
+        kytSignedMessageDataEscrowHash: 0,
+        kytSignedMessageHash: 0,
+        kytSignature: [0, 0, 0],
 
         dataEscrowPubKey: [0, 0],
         dataEscrowPubKeyExpiryTime: 0,
@@ -219,8 +218,9 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         ],
         dataEscrowPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
-        dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
         daoDataEscrowPubKey: [0, 0],
         daoDataEscrowEphemeralRandom: 0,
         daoDataEscrowEphemeralPubKeyAx: 0,
@@ -237,8 +237,8 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         utxoOutTargetZoneIdOffset: [0, 0],
         utxoOutSpendPubKeyRandom: [0, 0],
         utxoOutRootSpendPubKey: [
-            [0, 0],
-            [0, 0],
+            [0, 1],
+            [0, 1],
         ],
         utxoOutCommitment: [0, 0],
 
@@ -263,7 +263,6 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         busMerkleRoot: 0,
         ferryMerkleRoot: 0,
 
-        // salt
         salt: 0,
         saltHash: 0,
 

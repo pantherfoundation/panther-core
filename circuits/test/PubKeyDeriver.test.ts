@@ -1,6 +1,6 @@
 import * as path from 'path';
 import crypto from 'crypto';
-import {expect} from 'chai';
+import {assert, expect} from 'chai';
 import {bufferToBigInt} from '@panther-core/crypto/lib/utils/bigint-conversions';
 import {generateRandomInBabyJubSubField} from '@panther-core/crypto/lib/base/field-operations';
 import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
@@ -50,9 +50,12 @@ describe('PubKeyDeriver circuit', async function (this: any) {
                 },
                 true,
             );
-            await pubKeyDeriver.assertOut(witness, {
-                derivedPubKey: expectedPubKey,
-            });
+            // await pubKeyDeriver.assertOut(witness, {
+            //     derivedPubKey: expectedPubKey,
+            // });
+
+            assert.equal(witness[3064], expectedPubKey[0]);
+            assert.equal(witness[3065], expectedPubKey[1]);
         });
     });
 

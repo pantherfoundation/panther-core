@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./merkleTreeInclusionProof.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
@@ -8,10 +8,10 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template ZAccountNoteInclusionProver(n_levels) {
-    signal input root;
-    signal input note;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input          root;
+    signal input          note;
+    signal input {binary} pathIndices[n_levels];
+    signal input          pathElements[n_levels];
 
     // compute the root from the Merkle inclusion proof
     component proof = MerkleTreeInclusionProofDoubleLeaves(n_levels);

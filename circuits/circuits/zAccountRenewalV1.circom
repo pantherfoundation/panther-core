@@ -1,10 +1,9 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 // project deps
 include "./templates/balanceChecker.circom";
-include "./templates/isNotZero.circom";
-include "./templates/trustProvidersMerkleTreeLeafIdAndRuleInclusionProver.circom";
+include "./templates/trustProvidersMerkleTreeLeafIDAndRuleInclusionProver.circom";
 include "./templates/trustProvidersNoteInclusionProver.circom";
 include "./templates/pubKeyDeriver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
@@ -17,6 +16,7 @@ include "./templates/zNetworkNoteInclusionProver.circom";
 include "./templates/zZoneNoteHasher.circom";
 include "./templates/zZoneNoteInclusionProver.circom";
 include "./templates/zZoneZAccountBlackListExclusionProver.circom";
+include "./templates/utils.circom";
 
 // 3rd-party deps
 include "../node_modules/circomlib/circuits/babyjub.circom";
@@ -25,8 +25,6 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
-
-include "./zAccountRenewalV1RangeCheck.circom";
 
 template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              UtxoMiddleMerkleTreeDepth,
@@ -37,62 +35,63 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
                              TrustProvidersMerkleTreeDepth ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
-    var UtxoRightMerkleTreeDepth = UtxoMiddleMerkleTreeDepth + ZNetworkMerkleTreeDepth;
+    var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Equal to ferry MT size
-    var UtxoMerkleTreeDepth = UtxoRightMerkleTreeDepth;
+    var UtxoMerkleTreeDepth = UtxoMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     // Bus MT extra levels
-    var UtxoMiddleExtraLevels = UtxoMiddleMerkleTreeDepth - UtxoLeftMerkleTreeDepth;
+    var UtxoMiddleExtraLevels = UtxoMiddleExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, UtxoLeftMerkleTreeDepth);
     // Ferry MT extra levels
-    var UtxoRightExtraLevels = UtxoRightMerkleTreeDepth - UtxoMiddleMerkleTreeDepth;
+    var UtxoRightExtraLevels = UtxoRightExtraLevels_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // external data anchoring
     signal input extraInputsHash;  // public
 
-    signal input addedAmountZkp;   // public
+    // zkp amounts (not scaled)
+    signal input {uint96} addedAmountZkp;   // public
     // output 'protocol + relayer fee in ZKP'
-    signal input chargedAmountZkp; // public
+    signal input {uint96} chargedAmountZkp; // public
 
     // zAsset
-    signal input zAssetId;
-    signal input zAssetToken;
-    signal input zAssetTokenId;
-    signal input zAssetNetwork;
-    signal input zAssetOffset;
-    signal input zAssetWeight;
-    signal input zAssetScale;
-    signal input zAssetMerkleRoot;
-    signal input zAssetPathIndices[ZAssetMerkleTreeDepth];
-    signal input zAssetPathElements[ZAssetMerkleTreeDepth];
+    signal input {uint64}          zAssetId;
+    signal input {uint168}         zAssetToken;
+    signal input {uint252}         zAssetTokenId;
+    signal input {uint6}           zAssetNetwork;
+    signal input {uint32}          zAssetOffset;
+    signal input {uint48}          zAssetWeight;
+    signal input {non_zero_uint64} zAssetScale;
+    signal input                   zAssetMerkleRoot;
+    signal input {binary}          zAssetPathIndices[ZAssetMerkleTreeDepth];
+    signal input                   zAssetPathElements[ZAssetMerkleTreeDepth];
 
     // zAccount Input
-    signal input zAccountUtxoInId;
-    signal input zAccountUtxoInZkpAmount;
-    signal input zAccountUtxoInPrpAmount;
-    signal input zAccountUtxoInZoneId;
-    signal input zAccountUtxoInNetworkId;
-    signal input zAccountUtxoInExpiryTime;
-    signal input zAccountUtxoInNonce;
-    signal input zAccountUtxoInTotalAmountPerTimePeriod;
-    signal input zAccountUtxoInCreateTime;
-    signal input zAccountUtxoInRootSpendPrivKey;
-    signal input zAccountUtxoInRootSpendPubKey[2];
-    signal input zAccountUtxoInReadPubKey[2];
-    signal input zAccountUtxoInNullifierPubKey[2];
-    signal input zAccountUtxoInMasterEOA;
-    signal input zAccountUtxoInSpendKeyRandom;
-    signal input zAccountUtxoInNullifierPrivKey;
-    signal input zAccountUtxoInCommitment; // public
-    signal input zAccountUtxoInNullifier;  // public
-    signal input zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
-    signal input zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
-    signal input zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
+    signal input {uint24}           zAccountUtxoInId;
+    signal input {uint64}           zAccountUtxoInZkpAmount;
+    signal input {uint196}          zAccountUtxoInPrpAmount;
+    signal input {uint16}           zAccountUtxoInZoneId;
+    signal input {uint6}            zAccountUtxoInNetworkId;
+    signal input {uint32}           zAccountUtxoInExpiryTime;
+    signal input {uint32}           zAccountUtxoInNonce;
+    signal input {uint96}           zAccountUtxoInTotalAmountPerTimePeriod;
+    signal input {uint32}           zAccountUtxoInCreateTime;
+    signal input {sub_order_bj_sf}  zAccountUtxoInRootSpendPrivKey;
+    signal input {sub_order_bj_p}   zAccountUtxoInRootSpendPubKey[2];
+    signal input {sub_order_bj_p}   zAccountUtxoInReadPubKey[2];
+    signal input {sub_order_bj_p}   zAccountUtxoInNullifierPubKey[2];
+    signal input {uint160}          zAccountUtxoInMasterEOA;
+    signal input {sub_order_bj_sf}  zAccountUtxoInSpendKeyRandom;
+    signal input {sub_order_bj_sf}  zAccountUtxoInNullifierPrivKey;
+    signal input {external}         zAccountUtxoInCommitment; // public
+    signal input {external}         zAccountUtxoInNullifier;  // public
+    signal input {binary}           zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
+    signal input {binary}           zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
+    signal input                    zAccountUtxoInPathElements[UtxoMerkleTreeDepth];
 
     // zAccount Output
-    signal input zAccountUtxoOutZkpAmount;
-    signal input zAccountUtxoOutExpiryTime;
-    signal input zAccountUtxoOutCreateTime; // public
-    signal input zAccountUtxoOutSpendKeyRandom;
-    signal input zAccountUtxoOutCommitment; // public
+    signal input {uint64}           zAccountUtxoOutZkpAmount;
+    signal input {uint32}           zAccountUtxoOutExpiryTime;
+    signal input {uint32}           zAccountUtxoOutCreateTime; // public
+    signal input {sub_order_bj_sf}  zAccountUtxoOutSpendKeyRandom;
+    signal input {external}         zAccountUtxoOutCommitment; // public
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
@@ -100,40 +99,42 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     signal input zAccountBlackListPathElements[ZAccountBlackListMerkleTreeDepth];
 
     // zZone
-    signal input zZoneOriginZoneIDs;
-    signal input zZoneTargetZoneIDs;
-    signal input zZoneNetworkIDsBitMap;
-    signal input zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
-    signal input zZoneKycExpiryTime;
-    signal input zZoneKytExpiryTime;
-    signal input zZoneDepositMaxAmount;
-    signal input zZoneWithrawMaxAmount;
-    signal input zZoneInternalMaxAmount;
-    signal input zZoneMerkleRoot;
-    signal input zZonePathElements[ZZoneMerkleTreeDepth];
-    signal input zZonePathIndices[ZZoneMerkleTreeDepth];
-    signal input zZoneEdDsaPubKey[2];
-    signal input zZoneZAccountIDsBlackList;
-    signal input zZoneMaximumAmountPerTimePeriod;
-    signal input zZoneTimePeriodPerMaximumAmount;
+    signal input {uint240}         zZoneOriginZoneIDs;
+    signal input {uint240}         zZoneTargetZoneIDs;
+    signal input {uint64}          zZoneNetworkIDsBitMap;
+    signal input {uint240}         zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
+    signal input {uint32}          zZoneKycExpiryTime;
+    signal input {uint32}          zZoneKytExpiryTime;
+    signal input {uint96}          zZoneDepositMaxAmount;
+    signal input {uint96}          zZoneWithdrawMaxAmount;
+    signal input {uint96}          zZoneInternalMaxAmount;
+    signal input                   zZoneMerkleRoot;
+    signal input                   zZonePathElements[ZZoneMerkleTreeDepth];
+    signal input {binary}          zZonePathIndices[ZZoneMerkleTreeDepth];
+    signal input {sub_order_bj_p}  zZoneEdDsaPubKey[2];
+    signal input {uint240}         zZoneZAccountIDsBlackList;
+    signal input {uint96}          zZoneMaximumAmountPerTimePeriod;
+    signal input {uint32}          zZoneTimePeriodPerMaximumAmount;
+    signal input {sub_order_bj_p}  zZoneDataEscrowPubKey[2];
+    signal input {binary}          zZoneSealing;
 
     // KYC
-    signal input kycEdDsaPubKey[2];
-    signal input kycEdDsaPubKeyExpiryTime;
-    signal input trustProvidersMerkleRoot;
-    signal input kycPathElements[TrustProvidersMerkleTreeDepth];
-    signal input kycPathIndices[TrustProvidersMerkleTreeDepth];
-    signal input kycMerkleTreeLeafIDsAndRulesOffset;
+    signal input {sub_order_bj_p} kycEdDsaPubKey[2];
+    signal input {uint32}         kycEdDsaPubKeyExpiryTime;
+    signal input                  trustProvidersMerkleRoot;                       // used both for kytSignature, DataEscrow, DaoDataEscrow
+    signal input                  kycPathElements[TrustProvidersMerkleTreeDepth];
+    signal input {binary}         kycPathIndices[TrustProvidersMerkleTreeDepth];
+    signal input {uint4}          kycMerkleTreeLeafIDsAndRulesOffset;     // used for both cases of deposit & withdraw
     // signed message
-    signal input kycSignedMessagePackageType;         // 1 - KYC
-    signal input kycSignedMessageTimestamp;
-    signal input kycSignedMessageSender;              // 0
-    signal input kycSignedMessageReceiver;            // 0
-    signal input kycSignedMessageSessionId;
-    signal input kycSignedMessageRuleId;
-    signal input kycSignedMessageSigner;
-    signal input kycSignedMessageHash;                // public
-    signal input kycSignature[3];                     // S,R8x,R8y
+    signal input           kycSignedMessagePackageType;         // 1 - KYC
+    signal input           kycSignedMessageTimestamp;
+    signal input           kycSignedMessageSender;              // 0
+    signal input           kycSignedMessageReceiver;            // 0
+    signal input           kycSignedMessageSessionId;
+    signal input {uint8}   kycSignedMessageRuleId;
+    signal input {uint160} kycSignedMessageSigner;
+    signal input           kycSignedMessageHash;                // public
+    signal input           kycSignature[3];                     // S,R8x,R8y
 
     // zNetworks tree
     // network parameters:
@@ -141,17 +142,17 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // 2) network-id - 6 bit
     // 3) rewards params - all of them: forTxReward, forUtxoReward, forDepositReward
     // 4) daoDataEscrowPubKey[2]
-    signal input zNetworkId;
-    signal input zNetworkChainId;
-    signal input zNetworkIDsBitMap;
-    signal input zNetworkTreeMerkleRoot;
-    signal input zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
-    signal input zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
+    signal input {uint6}    zNetworkId;
+    signal input {external} zNetworkChainId; // public
+    signal input {uint64}   zNetworkIDsBitMap;
+    signal input            zNetworkTreeMerkleRoot;
+    signal input            zNetworkTreePathElements[ZNetworkMerkleTreeDepth];
+    signal input {binary}   zNetworkTreePathIndices[ZNetworkMerkleTreeDepth];
 
-    signal input daoDataEscrowPubKey[2];
-    signal input forTxReward;
-    signal input forUtxoReward;
-    signal input forDepositReward;
+    signal input {sub_order_bj_p}   daoDataEscrowPubKey[2];
+    signal input {uint40}           forTxReward;
+    signal input {uint40}           forUtxoReward;
+    signal input {uint40}           forDepositReward;
 
     // static tree merkle root
     // Poseidon of:
@@ -182,7 +183,11 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // START OF CODE /////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    var IGNORE_CONSTANT = NonActive();
+    var IGNORE_PUBLIC = NonActive();
+    var IGNORE_ANCHORED = NonActive();
+    var IGNORE_CHECKED_IN_CIRCOMLIB = NonActive();
+    var ACTIVE = Active();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [0] - Extra inputs hash anchoring
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,14 +211,14 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     // [2] - Check zAsset
     component zAssetChecker = ZAssetChecker();
-    zAssetChecker.token <== 0;
-    zAssetChecker.tokenId <== 0;
+    zAssetChecker.token <== Uint168Tag(IGNORE_CONSTANT)(0);
+    zAssetChecker.tokenId <== Uint252Tag(IGNORE_CONSTANT)(0);
     zAssetChecker.zAssetId <== zAssetId;
     zAssetChecker.zAssetToken <== zAssetToken;
     zAssetChecker.zAssetTokenId <== zAssetTokenId;
     zAssetChecker.zAssetOffset <== zAssetOffset;
-    zAssetChecker.depositAmount <== 0;
-    zAssetChecker.withdrawAmount <== 0;
+    zAssetChecker.depositAmount <== Uint96Tag(IGNORE_CONSTANT)(0);
+    zAssetChecker.withdrawAmount <== Uint96Tag(IGNORE_CONSTANT)(0);
     zAssetChecker.utxoZAssetId <== zAssetId;
 
     // verify zkp-token
@@ -222,19 +227,20 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // [3] - Zkp balance
     component totalBalanceChecker = BalanceChecker();
     totalBalanceChecker.isZkpToken <== zAssetChecker.isZkpToken;
-    totalBalanceChecker.depositAmount <== 0;
-    totalBalanceChecker.depositChange <== 0;
-    totalBalanceChecker.withdrawAmount <== 0;
-    totalBalanceChecker.withdrawChange <== 0;
+    totalBalanceChecker.depositAmount <== Uint96Tag(IGNORE_CONSTANT)(0);
+    totalBalanceChecker.withdrawAmount <== Uint96Tag(IGNORE_CONSTANT)(0);
     totalBalanceChecker.chargedAmountZkp <== chargedAmountZkp;
     totalBalanceChecker.addedAmountZkp <== addedAmountZkp;
     totalBalanceChecker.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
     totalBalanceChecker.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
-    totalBalanceChecker.totalUtxoInAmount <== 0;
-    totalBalanceChecker.totalUtxoOutAmount <== 0;
+    totalBalanceChecker.totalUtxoInAmount <== Uint70Tag(IGNORE_CONSTANT)(0);
+    totalBalanceChecker.totalUtxoOutAmount <== Uint70Tag(IGNORE_CONSTANT)(0);
     totalBalanceChecker.zAssetWeight <== zAssetWeight;
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
+    totalBalanceChecker.kytDepositChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
+    totalBalanceChecker.kytWithdrawChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
+    totalBalanceChecker.kytInternalChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
 
     // [4] - Verify input 'zAccount UTXO input'
     component zAccountUtxoInRootSpendPubKeyCheck = BabyPbk();
@@ -345,7 +351,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoOutNoteHasher.amountPrp <== zAccountUtxoInPrpAmount;
     zAccountUtxoOutNoteHasher.zoneId <== zAccountUtxoInZoneId;
     zAccountUtxoOutNoteHasher.expiryTime <== zAccountUtxoOutExpiryTime;
-    zAccountUtxoOutNoteHasher.nonce <== zAccountUtxoInNonce + 1;
+    zAccountUtxoOutNoteHasher.nonce <== Uint32Tag(ACTIVE)(zAccountUtxoInNonce + 1);
     zAccountUtxoOutNoteHasher.totalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
     zAccountUtxoOutNoteHasher.createTime <== zAccountUtxoOutCreateTime;
     zAccountUtxoOutNoteHasher.networkId <== zAccountUtxoInNetworkId;
@@ -414,7 +420,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     }
     component kycLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
     kycLeafIdAndRuleInclusionProver.enabled <== trustProvidersMerkleRoot;
-    kycLeafIdAndRuleInclusionProver.leafId <== b2nLeafId.out;
+    kycLeafIdAndRuleInclusionProver.leafId <== Uint16Tag(ACTIVE)(b2nLeafId.out);
     kycLeafIdAndRuleInclusionProver.rule <== kycSignedMessageRuleId;
     kycLeafIdAndRuleInclusionProver.leafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
     kycLeafIdAndRuleInclusionProver.offset <== kycMerkleTreeLeafIDsAndRulesOffset;
@@ -431,11 +437,14 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zZoneNoteHasher.kycExpiryTime <== zZoneKycExpiryTime;
     zZoneNoteHasher.kytExpiryTime <== zZoneKytExpiryTime;
     zZoneNoteHasher.depositMaxAmount <== zZoneDepositMaxAmount;
-    zZoneNoteHasher.withdrawMaxAmount <== zZoneWithrawMaxAmount;
+    zZoneNoteHasher.withdrawMaxAmount <== zZoneWithdrawMaxAmount;
     zZoneNoteHasher.internalMaxAmount <== zZoneInternalMaxAmount;
     zZoneNoteHasher.zAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zZoneNoteHasher.maximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zZoneNoteHasher.timePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
+    zZoneNoteHasher.dataEscrowPubKey[0] <== zZoneDataEscrowPubKey[0];
+    zZoneNoteHasher.dataEscrowPubKey[1] <== zZoneDataEscrowPubKey[1];
+    zZoneNoteHasher.sealing <== zZoneSealing;
 
     component zZoneInclusionProver = ZZoneNoteInclusionProver(ZZoneMerkleTreeDepth);
     zZoneInclusionProver.zZoneCommitment <== zZoneNoteHasher.out;
@@ -452,7 +461,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
 
     // [16] - Verify zNetwork's membership
     component zNetworkNoteInclusionProver = ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth);
-    zNetworkNoteInclusionProver.active <== 1; // ALLWAYS ACTIVE
+    zNetworkNoteInclusionProver.active <== BinaryOne()(); // ALWAYS ACTIVE
     zNetworkNoteInclusionProver.networkId <== zNetworkId;
     zNetworkNoteInclusionProver.chainId <== zNetworkChainId;
     zNetworkNoteInclusionProver.networkIDsBitMap <== zNetworkIDsBitMap;
@@ -504,123 +513,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     isEqualSalt.enabled <== saltHash;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [20] - Magical Contraint check ////////////////////////////////////////////////////////////////////////
+    // [20] - Magical Constraint check ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     magicalConstraint * 0 === 0;
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // [21] - Range Check ////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    component zAccountRenewalRC = ZAccountRenewalRangeCheck(UtxoLeftMerkleTreeDepth,
-                                                                 UtxoMiddleMerkleTreeDepth,
-                                                                 ZNetworkMerkleTreeDepth,
-                                                                 ZAssetMerkleTreeDepth,
-                                                                 ZAccountBlackListMerkleTreeDepth,
-                                                                 ZZoneMerkleTreeDepth,
-                                                                 TrustProvidersMerkleTreeDepth);
-
-    zAccountRenewalRC.extraInputsHash <== extraInputsHash;
-
-    zAccountRenewalRC.addedAmountZkp <== addedAmountZkp;
-    zAccountRenewalRC.chargedAmountZkp <== chargedAmountZkp;
-
-    zAccountRenewalRC.zAssetId <== zAssetId;
-    zAccountRenewalRC.zAssetToken <== zAssetToken;
-    zAccountRenewalRC.zAssetTokenId <== zAssetTokenId;
-    zAccountRenewalRC.zAssetNetwork <== zAssetNetwork;
-    zAccountRenewalRC.zAssetOffset <== zAssetOffset;
-    zAccountRenewalRC.zAssetWeight <== zAssetWeight;
-    zAccountRenewalRC.zAssetScale <== zAssetScale;
-    zAccountRenewalRC.zAssetMerkleRoot <== zAssetMerkleRoot;
-    zAccountRenewalRC.zAssetPathIndices <== zAssetPathIndices;
-    zAccountRenewalRC.zAssetPathElements <== zAssetPathElements;
-
-    zAccountRenewalRC.zAccountUtxoInId <== zAccountUtxoInId;
-    zAccountRenewalRC.zAccountUtxoInZkpAmount <== zAccountUtxoInZkpAmount;
-    zAccountRenewalRC.zAccountUtxoInPrpAmount <== zAccountUtxoInPrpAmount;
-    zAccountRenewalRC.zAccountUtxoInZoneId <== zAccountUtxoInZoneId;
-    zAccountRenewalRC.zAccountUtxoInNetworkId <== zAccountUtxoInNetworkId;
-    zAccountRenewalRC.zAccountUtxoInExpiryTime <== zAccountUtxoInExpiryTime;
-    zAccountRenewalRC.zAccountUtxoInNonce <== zAccountUtxoInNonce;
-    zAccountRenewalRC.zAccountUtxoInTotalAmountPerTimePeriod <== zAccountUtxoInTotalAmountPerTimePeriod;
-    zAccountRenewalRC.zAccountUtxoInCreateTime <== zAccountUtxoInCreateTime;
-    zAccountRenewalRC.zAccountUtxoInRootSpendPrivKey <== zAccountUtxoInRootSpendPrivKey;
-    zAccountRenewalRC.zAccountUtxoInRootSpendPubKey <== zAccountUtxoInRootSpendPubKey;
-    zAccountRenewalRC.zAccountUtxoInReadPubKey <== zAccountUtxoInReadPubKey;
-    zAccountRenewalRC.zAccountUtxoInNullifierPubKey <== zAccountUtxoInNullifierPubKey;
-    zAccountRenewalRC.zAccountUtxoInMasterEOA <== zAccountUtxoInMasterEOA;
-    zAccountRenewalRC.zAccountUtxoInSpendKeyRandom <== zAccountUtxoInSpendKeyRandom;
-    zAccountRenewalRC.zAccountUtxoInNullifierPrivKey <== zAccountUtxoInNullifierPrivKey;
-    zAccountRenewalRC.zAccountUtxoInCommitment <== zAccountUtxoInCommitment;
-    zAccountRenewalRC.zAccountUtxoInNullifier <== zAccountUtxoInNullifier;
-    zAccountRenewalRC.zAccountUtxoInMerkleTreeSelector <== zAccountUtxoInMerkleTreeSelector;
-    zAccountRenewalRC.zAccountUtxoInPathIndices <== zAccountUtxoInPathIndices;
-    zAccountRenewalRC.zAccountUtxoInPathElements <== zAccountUtxoInPathElements;
-
-    zAccountRenewalRC.zAccountUtxoOutZkpAmount <== zAccountUtxoOutZkpAmount;
-    zAccountRenewalRC.zAccountUtxoOutExpiryTime <== zAccountUtxoOutExpiryTime;
-    zAccountRenewalRC.zAccountUtxoOutCreateTime <== zAccountUtxoOutCreateTime;
-    zAccountRenewalRC.zAccountUtxoOutSpendKeyRandom <== zAccountUtxoOutSpendKeyRandom;
-    zAccountRenewalRC.zAccountUtxoOutCommitment <== zAccountUtxoOutCommitment;
-
-    zAccountRenewalRC.zAccountBlackListLeaf <== zAccountBlackListLeaf;
-    zAccountRenewalRC.zAccountBlackListMerkleRoot <== zAccountBlackListMerkleRoot;
-    zAccountRenewalRC.zAccountBlackListPathElements <== zAccountBlackListPathElements;
-
-    zAccountRenewalRC.zZoneOriginZoneIDs <== zZoneOriginZoneIDs;
-    zAccountRenewalRC.zZoneTargetZoneIDs <== zZoneTargetZoneIDs;
-    zAccountRenewalRC.zZoneNetworkIDsBitMap <== zZoneNetworkIDsBitMap;
-    zAccountRenewalRC.zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList <== zZoneTrustProvidersMerkleTreeLeafIDsAndRulesList;
-    zAccountRenewalRC.zZoneKycExpiryTime <== zZoneKycExpiryTime;
-    zAccountRenewalRC.zZoneKytExpiryTime <== zZoneKytExpiryTime;
-    zAccountRenewalRC.zZoneDepositMaxAmount <== zZoneDepositMaxAmount;
-    zAccountRenewalRC.zZoneWithrawMaxAmount <== zZoneWithrawMaxAmount;
-    zAccountRenewalRC.zZoneInternalMaxAmount <== zZoneInternalMaxAmount;
-    zAccountRenewalRC.zZoneMerkleRoot <== zZoneMerkleRoot;
-    zAccountRenewalRC.zZonePathElements <== zZonePathElements;
-    zAccountRenewalRC.zZonePathIndices <== zZonePathIndices;
-    zAccountRenewalRC.zZoneEdDsaPubKey <== zZoneEdDsaPubKey;
-    zAccountRenewalRC.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
-    zAccountRenewalRC.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
-    zAccountRenewalRC.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
-
-    zAccountRenewalRC.kycEdDsaPubKey <== kycEdDsaPubKey;
-    zAccountRenewalRC.kycEdDsaPubKeyExpiryTime <== kycEdDsaPubKeyExpiryTime;
-    zAccountRenewalRC.trustProvidersMerkleRoot <== trustProvidersMerkleRoot;
-    zAccountRenewalRC.kycPathElements <== kycPathElements;
-    zAccountRenewalRC.kycPathIndices <== kycPathIndices;
-    zAccountRenewalRC.kycMerkleTreeLeafIDsAndRulesOffset <== kycMerkleTreeLeafIDsAndRulesOffset;
-    zAccountRenewalRC.kycSignedMessagePackageType <== kycSignedMessagePackageType;
-    zAccountRenewalRC.kycSignedMessageTimestamp <== kycSignedMessageTimestamp;
-    zAccountRenewalRC.kycSignedMessageSender <== kycSignedMessageSender;
-    zAccountRenewalRC.kycSignedMessageReceiver <== kycSignedMessageReceiver;
-    zAccountRenewalRC.kycSignedMessageSessionId <== kycSignedMessageSessionId;
-    zAccountRenewalRC.kycSignedMessageRuleId <== kycSignedMessageRuleId;
-    zAccountRenewalRC.kycSignedMessageSigner <== kycSignedMessageSigner;
-    zAccountRenewalRC.kycSignedMessageHash <== kycSignedMessageHash;
-    zAccountRenewalRC.kycSignature <== kycSignature;
-
-    zAccountRenewalRC.zNetworkId <== zNetworkId;
-    zAccountRenewalRC.zNetworkChainId <== zNetworkChainId;
-    zAccountRenewalRC.zNetworkIDsBitMap <== zNetworkIDsBitMap;
-    zAccountRenewalRC.zNetworkTreeMerkleRoot <== zNetworkTreeMerkleRoot;
-    zAccountRenewalRC.zNetworkTreePathElements <== zNetworkTreePathElements;
-    zAccountRenewalRC.zNetworkTreePathIndices <== zNetworkTreePathIndices;
-
-    zAccountRenewalRC.daoDataEscrowPubKey <== daoDataEscrowPubKey;
-    zAccountRenewalRC.forTxReward <== forTxReward;
-    zAccountRenewalRC.forUtxoReward <== forUtxoReward;
-    zAccountRenewalRC.forDepositReward <== forDepositReward;
-
-    zAccountRenewalRC.staticTreeMerkleRoot <== staticTreeMerkleRoot;
-
-    zAccountRenewalRC.forestMerkleRoot <== forestMerkleRoot;
-    zAccountRenewalRC.taxiMerkleRoot <== taxiMerkleRoot;
-    zAccountRenewalRC.busMerkleRoot <== busMerkleRoot;
-    zAccountRenewalRC.ferryMerkleRoot <== ferryMerkleRoot;
-
-    zAccountRenewalRC.salt <== salt;
-    zAccountRenewalRC.saltHash <== saltHash;
-
-    zAccountRenewalRC.magicalConstraint <== magicalConstraint;
 }

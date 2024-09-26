@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./zAccountNoteInclusionProver.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
@@ -16,10 +16,10 @@ This template checks if the ZAccount is blacklisted or not.
 4. pathElements - path elements that leads to the merkle root
 */
 template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
-    signal input zAccountId;
-    signal input leaf;
-    signal input merkleRoot;
-    signal input pathElements[ZAccountBlackListMerkleTreeDepth];
+    signal input {uint24} zAccountId;
+    signal input          leaf;
+    signal input          merkleRoot;
+    signal input          pathElements[ZAccountBlackListMerkleTreeDepth];
 
     component zAccountBlackListInlcusionProver = ZAccountNoteInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.note <== leaf;
@@ -28,7 +28,7 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     assert(ZAccountBlackListMerkleTreeDepth < 17);
     assert(zAccountId < 2**(ZAccountBlackListMerkleTreeDepth+8));
 
-    // copy path ellements
+    // copy path elements
     for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
         zAccountBlackListInlcusionProver.pathElements[j] <== pathElements[j];
     }
@@ -36,9 +36,10 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     component n2b_zAccountId = Num2Bits(ZAccountBlackListMerkleTreeDepth+8); // LSB is a bit number inside leaf
     n2b_zAccountId.in <== zAccountId;
 
+    var ACTIVE = Active();
     // build the path inside merkle-tree
     for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
-        zAccountBlackListInlcusionProver.pathIndices[j] <== n2b_zAccountId.out[j+8]; // +8 --> path is ZAccountBlackListMerkleTreeDepth MSB bits
+        zAccountBlackListInlcusionProver.pathIndices[j] <== BinaryTag(ACTIVE)(n2b_zAccountId.out[j+8]); // +8 --> path is ZAccountBlackListMerkleTreeDepth MSB bits
     }
 
     // build the index inside leaf
@@ -54,15 +55,14 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     n2b_leaf.in <== leaf;
 
     component is_zero[254];
-    signal enabled_bit_check[254];
+
     for(var i = 0; i < 254; i++) {
-        // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out (
+        // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out
         is_zero[i] = IsZero();
         is_zero[i].in <== i - b2n_zAccountIdInsideLeaf.out;
-
-        // enabled_bit_check will be something only when is_zero[i].out == 1
-        enabled_bit_check[i] <== is_zero[i].out * n2b_leaf.out[i];
-        // make sure that is is_zero[i].out == 1 --> is_zero[i].out * ( 1 - is_zero[i].out ) == 0
-        enabled_bit_check[i] === is_zero[i].out * ( 1 - is_zero[i].out );
+        // make sure that for our zAccountId LSB inside leaf, the bit is zero,
+        // for example: zAccountId LSB = 200, for i = 200, is_zero[i].out == 1 --> if n2b_leaf.out[i] == 1, then the assertion will fail
+        // which means that our zAccountId is blacklisted !
+        is_zero[i].out * n2b_leaf.out[i] === 0;
     }
 }

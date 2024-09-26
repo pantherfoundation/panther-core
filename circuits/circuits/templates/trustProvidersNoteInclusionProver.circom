@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./merkleTreeInclusionProof.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
@@ -8,12 +8,12 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/switcher.circom";
 
 template TrustProvidersNoteInclusionProver(n_levels) {
-    signal input enabled;
-    signal input root;
-    signal input key[2];
-    signal input expiryTime;
-    signal input pathIndices[n_levels];
-    signal input pathElements[n_levels];
+    signal input                    enabled;
+    signal input                    root;
+    signal input {sub_order_bj_p}   key[2];
+    signal input {uint32}           expiryTime;
+    signal input {binary}           pathIndices[n_levels];
+    signal input                    pathElements[n_levels];
 
     assert(enabled < 2);
     enabled * enabled - enabled === 0;

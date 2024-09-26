@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
@@ -9,7 +9,18 @@ template ZeroPaddedInputChecker(max_nInputs, zeroValue){
     signal input nInputs;
 
     assert(max_nInputs<=252);
+    component isMax_nInputsLessOrEqualTo252;
+    isMax_nInputsLessOrEqualTo252 = LessEqThan(252);
+    isMax_nInputsLessOrEqualTo252.in[0] <== max_nInputs;
+    isMax_nInputsLessOrEqualTo252.in[1] <== 252;
+    isMax_nInputsLessOrEqualTo252.out === 1;
+
     assert(nInputs<=max_nInputs);
+    component isNInputsLessOrEqualToMax_nInputs;
+    isNInputsLessOrEqualToMax_nInputs = LessEqThan(252);
+    isNInputsLessOrEqualToMax_nInputs.in[0] <== nInputs;
+    isNInputsLessOrEqualToMax_nInputs.in[1] <== max_nInputs;
+    isNInputsLessOrEqualToMax_nInputs.out === 1;
 
     component comparators[max_nInputs];
     signal factors[max_nInputs];

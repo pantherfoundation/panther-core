@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
 template PubKeyDeriver(){
-    signal input rootPubKey[2];
-    signal input random;
-    signal output derivedPubKey[2];
+    signal input {sub_order_bj_p}  rootPubKey[2];
+    signal input {sub_order_bj_sf} random;
+    signal output {sub_order_bj_p} derivedPubKey[2];
 
     component n2b = Num2Bits(253);
 

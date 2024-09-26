@@ -99,7 +99,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // ]
         // console.log('rootPublicKeys=>', rootPublicKeys);
 
-        /* yet to use - @sushma
+        /*
         Derive child spending private key from root spending private key
         const deriveChildPrivKey = deriveChildPrivKeyFromRootPrivKey(
             rootPrivateKey,
@@ -355,7 +355,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             21448888980709764146265348599357914296432058767851940011937843763756766907579n;
 
         const zZoneMerkleRoot =
-            9259525054892838702888137325078221513624475393849614502251135783828764533027n;
+            14189511324259672403799169204478898082389936563693111126414306380356116434465n;
 
         const kycKytMerkleRoot =
             675413191976636849763056983375622181122390331630387511499559599588194530856n;
@@ -367,7 +367,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             zZoneMerkleRoot,
             kycKytMerkleRoot,
         ]);
-        // 20916313847560988540281790948465733650483161027112149790713201119203097190152n
+        // 17931067957218291153823825912158291535579397890455292055678506728658508421915n
         // console.log('staticTreeMerkleRoot=>', staticTreeMerkleRoot);
         /* END ========== static-merkle-root calculation ========== */
 
@@ -421,7 +421,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         zAssetWeight: 20,
         zAssetScale: 10 ** 12,
         zAssetMerkleRoot:
-            19475268372719999722968422811919514831876197551539186448232606153745317203717n,
+            3907962152156750334193496040045314188759069762668001420985753241607405656087n,
 
         zAssetPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zAssetPathElements: [
@@ -572,10 +572,10 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         zZoneKycExpiryTime: 10368000,
         zZoneKytExpiryTime: 86400,
         zZoneDepositMaxAmount: 1 * 10 ** 12,
-        zZoneWithrawMaxAmount: 1 * 10 ** 12,
+        zZoneWithdrawMaxAmount: 1 * 10 ** 12,
         zZoneInternalMaxAmount: 1 * 10 ** 12,
         zZoneMerkleRoot:
-            9259525054892838702888137325078221513624475393849614502251135783828764533027n,
+            14189511324259672403799169204478898082389936563693111126414306380356116434465n,
         zZonePathElements: [
             2896678800030780677881716886212119387589061708732637213728415628433288554509n,
             15915358021544645824948763611506574620607002248967455613245207713011512736724n,
@@ -603,6 +603,11 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             1766847064778384329583297500742918515827483896875618958121606201292619775n,
         zZoneMaximumAmountPerTimePeriod: 1 * 10 ** 13,
         zZoneTimePeriodPerMaximumAmount: 86400n,
+        zZoneDataEscrowPubKey: [
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        ],
+        zZoneSealing: 1,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,
@@ -634,7 +639,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         // 4) zZoneMerkleRoot
         // 5) kycKytMerkleRoot
         staticTreeMerkleRoot:
-            16339808351986672048936670193536635492613600168986522206559067967046289908771n,
+            15348222720660628311446592885548915884577953917057577776988845594265385226543n,
         // forest root
         // Poseidon of:
         // 1) UTXO-Taxi-Tree   - 6 levels MT

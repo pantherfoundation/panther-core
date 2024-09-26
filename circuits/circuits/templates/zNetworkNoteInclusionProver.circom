@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./merkleTreeInclusionProof.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
@@ -7,17 +7,17 @@ include "../../node_modules/circomlib/circuits/gates.circom";
 
 template ZNetworkNoteInclusionProver(ZNetworkMerkleTreeDepth){
     // Poseidon ( ... )
-    signal input active;                  // 1 bit
-    signal input networkId;               // 6 bit
-    signal input chainId;                 // 256 bit
-    signal input networkIDsBitMap;        // 64 bit
-    signal input forTxReward;             // 40 bit
-    signal input forUtxoReward;           // 40 bit
-    signal input forDepositReward;        // 40 bit
-    signal input daoDataEscrowPubKey[2];  // 2 x 256 bit
-    signal input merkleRoot;
-    signal input pathIndices[ZNetworkMerkleTreeDepth];
-    signal input pathElements[ZNetworkMerkleTreeDepth];
+    signal input {binary} active;                  // 1 bit
+    signal input {uint6}  networkId;               // 6 bit
+    signal input          chainId;                 // 256 bit
+    signal input {uint64} networkIDsBitMap;        // 64 bit
+    signal input {uint40} forTxReward;             // 40 bit
+    signal input {uint40} forUtxoReward;           // 40 bit
+    signal input {uint40} forDepositReward;        // 40 bit
+    signal input          daoDataEscrowPubKey[2];  // 2 x 256 bit
+    signal input          merkleRoot;
+    signal input {binary} pathIndices[ZNetworkMerkleTreeDepth];
+    signal input          pathElements[ZNetworkMerkleTreeDepth];
 
     component merkleVerifier = MerkleTreeInclusionProofDoubleLeaves(ZNetworkMerkleTreeDepth);
 

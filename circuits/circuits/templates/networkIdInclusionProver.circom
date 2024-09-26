@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
@@ -26,16 +26,15 @@ template NetworkIdInclusionProver(){
     n2b_networkIdsBitMap.in <== networkIdsBitMap;
 
     component is_zero[64];
-    signal enabled_bit_check0[64];
-    signal enabled_bit_check1[64];
+    signal enabled_if[64];
+
     for(var i = 0; i < 64; i++) {
         is_zero[i] = IsZero();
         is_zero[i].in <== i - networkId;
+        enabled_if[i] <== is_zero[i].out * enabled;
 
-        // enabled_bit_check will be something only when is_zero[i].out == 1
-        enabled_bit_check0[i] <== is_zero[i].out * n2b_networkIdsBitMap.out[i];
-        enabled_bit_check1[i] <== enabled_bit_check0[i] * enabled;
-        // make sure that when is_zero[i].out == 1 (bit we interesting in), same bit - n2b_networkIdsBitMap.out[i]
-        enabled_bit_check1[i] === is_zero[i].out * enabled;
+        // enabled_if[i] == is_zero[i].out == 1 only when i == networkId & enabled != 0 --> same bit in networkIdsBitMap needs to be 1
+        // make sure that when is_zero[i].out == 1 (bit we are interesting in), same bit - n2b_networkIdsBitMap.out[i] should be 1
+        enabled_if[i] * n2b_networkIdsBitMap.out[i] === enabled_if[i];
     }
 }
