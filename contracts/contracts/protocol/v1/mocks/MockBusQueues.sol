@@ -27,8 +27,8 @@ contract MockBusQueues is BusQueues {
         return _oldestPendingQueueLink;
     }
 
-    function mockSetRewardReserve(int112 netRewardReserve) external pure {
-        netRewardReserve = netRewardReserve;
+    function mockSetRewardReserve(int112 _netRewardReserve) external {
+        netRewardReserve = _netRewardReserve;
     }
 
     function mockAddQueue(BusQueue calldata queue, uint32 id) external {
