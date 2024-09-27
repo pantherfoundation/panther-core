@@ -1,30 +1,33 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {poseidon} from 'circomlibjs';
 // eslint-disable-next-line import/named
 import {BigNumber, BigNumberish, ContractFactory} from 'ethers';
 import {ethers} from 'hardhat';
 
-import {getPoseidonT3Contract} from '../../lib/poseidonBuilder';
-import {getBlockNumber} from '../../lib/provider';
-import {MockBusQueues} from '../../types/contracts';
-import {BusQueues} from '../../types/contracts/MockBusQueues';
-
-import {randomInputGenerator} from './helpers/randomSnarkFriendlyInputGenerator';
+import {getPoseidonT3Contract} from '../../../lib/poseidonBuilder';
+import {getBlockNumber} from '../../../lib/provider';
+import {MockBusQueues} from '../../../types/contracts';
+import {BusQueues} from '../../../types/contracts/MockBusQueues';
+import {randomInputGenerator} from '../helpers/randomSnarkFriendlyInputGenerator';
 
 const BigNumber = ethers.BigNumber;
 
-describe.skip('BusQueue contract', function () {
+describe('BusQueue contract', function () {
     let busQueueFactory: ContractFactory;
     let busQueues: MockBusQueues;
+    let feeMaster: SignerWithAddress;
 
     const hundredPercent = 100_00;
     const maxQueueSize = 64;
     const zeroByte = ethers.constants.HashZero;
 
     before(async () => {
+        [, feeMaster] = await ethers.getSigners();
+
         const PoseidonT3 = await getPoseidonT3Contract();
         const poseidonT3 = await PoseidonT3.deploy();
         await poseidonT3.deployed();
@@ -37,7 +40,9 @@ describe.skip('BusQueue contract', function () {
     });
 
     async function getNewBusQueuesInstance(): Promise<MockBusQueues> {
-        return (await busQueueFactory.deploy()) as MockBusQueues;
+        return (await busQueueFactory.deploy(
+            feeMaster.address,
+        )) as MockBusQueues;
     }
 
     async function updateBusQueueRewardParams(
@@ -125,6 +130,32 @@ describe.skip('BusQueue contract', function () {
         });
     });
 
+    describe('allocateRewardReserve', () => {
+        const allocated = 99;
+
+        describe('when executed by fee master', () => {
+            it('should increase the netRewardsReserves', async () => {
+                await expect(
+                    busQueues
+                        .connect(feeMaster)
+                        .allocateRewardReserve(allocated),
+                )
+                    .to.emit(busQueues, 'BusQueueRewardReserveAllocated')
+                    .withArgs(allocated, allocated);
+
+                expect(await busQueues.getRewardReserve()).to.be.eq(allocated);
+            });
+        });
+
+        describe('when executed by random address', () => {
+            it('should revert', async () => {
+                await expect(
+                    busQueues.allocateRewardReserve(allocated),
+                ).to.revertedWith('unauthorized reward allocator');
+            });
+        });
+    });
+
     describe('_estimateRewarding and _computeReward', () => {
         let queue: BusQueues.BusQueueStruct;
         let currentBlockNumber: number;
@@ -207,7 +238,7 @@ describe.skip('BusQueue contract', function () {
                         );
 
                         await expect(busQueues.internalComputeReward(queue))
-                            .to.emit(busQueues, 'BusQueueRewardReserved')
+                            .to.emit(busQueues, 'BusQueueRewardReserveUpdated')
                             .withArgs(netReserveChange);
 
                         expect(await busQueues.getRewardReserve()).to.be.eq(
@@ -256,12 +287,18 @@ describe.skip('BusQueue contract', function () {
                         it('should decrease the reward reserves', async () => {
                             const {netReserveChange} = estimatedReward;
 
+                            const expectedNetRewardReserves =
+                                rewardReserve.add(netReserveChange);
+
                             await expect(busQueues.internalComputeReward(queue))
-                                .to.emit(busQueues, 'BusQueueRewardReserveUsed')
-                                .withArgs(netReserveChange);
+                                .to.emit(
+                                    busQueues,
+                                    'BusQueueRewardReserveUpdated',
+                                )
+                                .withArgs(expectedNetRewardReserves);
 
                             expect(await busQueues.getRewardReserve()).to.be.eq(
-                                rewardReserve.add(netReserveChange), // rewardReserve + (-netReserveChange)
+                                expectedNetRewardReserves,
                             );
                         });
                     });
@@ -276,12 +313,18 @@ describe.skip('BusQueue contract', function () {
                         it('should decrease both the miner premium reward and the reward reserves', async () => {
                             const {netReserveChange} = estimatedReward;
 
+                            const expectedNetRewardReserves =
+                                rewardReserve.add(netReserveChange);
+
                             await expect(busQueues.internalComputeReward(queue))
-                                .to.emit(busQueues, 'BusQueueRewardReserveUsed')
-                                .withArgs(netReserveChange);
+                                .to.emit(
+                                    busQueues,
+                                    'BusQueueRewardReserveUpdated',
+                                )
+                                .withArgs(expectedNetRewardReserves);
 
                             expect(await busQueues.getRewardReserve()).to.be.eq(
-                                rewardReserve.add(netReserveChange), // -4
+                                expectedNetRewardReserves,
                             );
                         });
                     });
