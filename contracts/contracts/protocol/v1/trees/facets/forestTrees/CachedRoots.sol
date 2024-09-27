@@ -4,7 +4,6 @@
 pragma solidity ^0.8.19;
 
 import "./cachedRoots/RingBufferRootCache.sol";
-import "../../utils/zeroTrees/Constants.sol";
 import { TAXI_TREE_FOREST_LEAF_INDEX, BUS_TREE_FOREST_LEAF_INDEX, FERRY_TREE_FOREST_LEAF_INDEX } from "../../utils/Constants.sol";
 
 import "../../../../../common/crypto/PoseidonHashers.sol";
