@@ -6,13 +6,18 @@ import yargs from 'yargs';
 
 import zAccountRegistryABI from '../../deployments/ARCHIVE/staging/mumbai/ZAccountsRegistry_Implementation.json';
 
-type CLIArgs = {
-    address: string;
-    owner: string;
+import {
+    CommonCLIArgs,
+    validateInput,
+    setupContract,
+    logScriptDetails,
+    executeTransaction,
+    logTransactionDetails,
+} from './contractInteractionUtils';
+
+type CLIArgs = CommonCLIArgs & {
     zAccountId: number;
     blacklist: boolean;
-    execute: boolean;
-    rpc: string;
 };
 
 const argv = yargs(process.argv)
@@ -22,8 +27,8 @@ const argv = yargs(process.argv)
         type: 'string',
         demandOption: true,
     })
-    .option('owner', {
-        alias: 'o',
+    .option('privateKey', {
+        alias: 'pk',
         description: 'The private key of the smart contract owner',
         type: 'string',
     })
@@ -55,68 +60,6 @@ const argv = yargs(process.argv)
     .help()
     .alias('help', 'h').argv as CLIArgs;
 
-function isValidUrl(url: string): boolean {
-    try {
-        new URL(url);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-function validateInput(args: CLIArgs): void {
-    if (!ethers.utils.isAddress(args.address)) {
-        throw new Error('Invalid contract address');
-    }
-    if (isNaN(args.zAccountId) || args.zAccountId < 0) {
-        throw new Error('Invalid zAccountId');
-    }
-    if (!isValidUrl(args.rpc)) {
-        throw new Error('Invalid RPC URL');
-    }
-    if (args.execute && !args.owner) {
-        throw new Error('Owner private key is required to execute transaction');
-    }
-}
-
-function logScriptDetails(args: CLIArgs): void {
-    console.log(
-        `Preparing to ${args.blacklist ? '' : 'un'}blacklist zAccountId: ${
-            args.zAccountId
-        }`,
-    );
-    console.log(`Using contract at address: ${args.address}`);
-}
-
-function setupContract(args: CLIArgs) {
-    const provider = new ethers.providers.JsonRpcProvider(args.rpc);
-    const signerOrProvider = args.execute
-        ? new ethers.Wallet(args.owner, provider)
-        : provider;
-    return new ethers.Contract(
-        args.address,
-        zAccountRegistryABI.abi,
-        signerOrProvider,
-    );
-}
-
-function logTransactionDetails(
-    txData: ethers.PopulatedTransaction,
-    contractAddress: string,
-): void {
-    console.log('Transaction Input (Hex):', txData.data);
-    const transactionInput = {
-        to: contractAddress,
-        data: txData.data,
-        gasLimit: txData.gasLimit?.toString(),
-        value: txData.value?.toString(),
-    };
-    console.log(
-        'Transaction Input (JSON):',
-        JSON.stringify(transactionInput, null, 2),
-    );
-}
-
 async function prepareTransaction(
     contract: ethers.Contract,
     zAccountId: number,
@@ -128,23 +71,21 @@ async function prepareTransaction(
     );
 }
 
-async function executeTransaction(
-    wallet: ethers.Wallet,
-    txData: ethers.PopulatedTransaction,
-): Promise<void> {
-    const txResponse = await wallet.sendTransaction(txData);
-    console.log('Transaction Hash:', txResponse.hash);
-    await txResponse.wait();
-    console.log('Transaction confirmed.');
-}
-
 async function main() {
     try {
-        validateInput(argv);
+        validateInput(argv, () => {
+            if (isNaN(argv.zAccountId) || argv.zAccountId < 0) {
+                throw new Error('Invalid zAccountId');
+            }
+        });
 
-        logScriptDetails(argv);
+        logScriptDetails(
+            `Preparing to ${argv.blacklist ? '' : 'un'}blacklist zAccountId: ${
+                argv.zAccountId
+            }`,
+        );
 
-        const contract = setupContract(argv);
+        const contract = setupContract(argv, zAccountRegistryABI.abi);
         const txData = await prepareTransaction(
             contract,
             argv.zAccountId,
