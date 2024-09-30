@@ -2,6 +2,7 @@
 pragma circom 2.1.9;
 
 include "./merkleInclusionProof.circom";
+include "./utils.circom";
 
 // It verifies proof of inclusion of a leaf in a (fully balanced) binary Merkle
 // tree (the "Tree"), and computes the root of the Tree after the leaf update.
@@ -31,7 +32,7 @@ template MerkleTreeUpdater(
     // Path elements (sibling nodes) of the leaf being updated
     signal input pathElements[tree_levels];
     // Path indices of the leaf being updated
-    signal input pathIndices[tree_levels];
+    signal input {binary} pathIndices[tree_levels];
 
     // Root of the Tree after the update
     signal output newRoot;

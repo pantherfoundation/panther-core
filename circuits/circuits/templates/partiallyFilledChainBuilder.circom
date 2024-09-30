@@ -2,7 +2,7 @@
 pragma circom 2.1.9;
 
 include "./hasher.circom";
-include "circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/comparators.circom";
 
 // It computes the root of the degenerate binary merkle tree (aka "chain")
 // - i.e. for the tree of this kind (e.g. nInputs = 4):
