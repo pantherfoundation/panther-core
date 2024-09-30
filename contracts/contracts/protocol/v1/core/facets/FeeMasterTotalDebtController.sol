@@ -8,16 +8,20 @@ import "../storage/FeeMasterTotalDebtControllerGap.sol";
 
 import "../interfaces/IFeeMasterTotalDebtController.sol";
 
-import { NATIVE_TOKEN, NATIVE_TOKEN_TYPE, ERC20_TOKEN_TYPE } from "../../../../common/Constants.sol";
 import "../../../../common/UtilsLib.sol";
+import { NATIVE_TOKEN, NATIVE_TOKEN_TYPE, ERC20_TOKEN_TYPE } from "../../../../common/Constants.sol";
+
 import "../libraries/VaultExecutor.sol";
 
-import "../../diamond/utils/Ownable.sol";
-
+/**
+ * @title FeeMasterTotalDebtController
+ * @notice Manages the total debt for the fee master, including adjustments to vault assets.
+ * @dev This contract interacts with the vault to lock or unlock assets and keeps track of
+ * the fee master's total debt.
+ */
 contract FeeMasterTotalDebtController is
     AppStorage,
     FeeMasterTotalDebtControllerGap,
-    Ownable,
     IFeeMasterTotalDebtController
 {
     using VaultExecutor for address;
@@ -41,16 +45,22 @@ contract FeeMasterTotalDebtController is
         FEE_MASTER = feeMaster;
     }
 
+    /**
+     * @notice Retrieves the total debt associated with the fee master for a given token.
+     * @param token The address of the token.
+     * @return The total debt of the fee master for the specified token.
+     */
     function getFeeMasterDebt(address token) external view returns (uint256) {
         return feeMasterDebt[token];
     }
 
     /**
      * @notice Adjusts vault assets based on net amount and updates fee master debt.
-     * @dev Only callable by the fee master contract.
      * @param token Address of the token being adjusted.
      * @param netAmount Net amount of tokens being locked/unlocked.
      * @param extAccount External account affected by the transaction.
+     * @dev This function can only be called by the fee master contract.
+     * The fee master can use this method to lock assets into or unlock assets from the vault.
      */
     function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
         address token,
