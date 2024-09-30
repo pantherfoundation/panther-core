@@ -5,6 +5,7 @@ include "./merkleTreeBuilder.circom";
 include "./merkleTreeUpdater.circom";
 include "./partiallyFilledChainBuilder.circom";
 include "./zeroPaddedInputChecker.circom";
+include "./utils.circom";
 
 // It verifies the root of a (fully balanced) binary Merkle tree (the "Tree")
 // after insertion of new leafs.
@@ -89,7 +90,7 @@ template TreeBatchUpdaterAndRootChecker(
     }
 
     // Compute pathIndices of the replaced node
-    signal pathIndices[upperLevels];
+    signal {binary} pathIndices[upperLevels];
     component indexBityfier = Num2Bits(upperLevels);
     indexBityfier.in <== replacedNodeIndex;
     for (var l = 0; l < upperLevels; l++) {
