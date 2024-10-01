@@ -12,17 +12,23 @@ import "../utils/Constants.sol";
 import "../../diamond/utils/Ownable.sol";
 import "../../../../common/crypto/PoseidonHashers.sol";
 
-// TODO: write PantherStaticTree 'title' and 'notice' (description) similarly to the contracts have
-// (updating the state of the PantherForest contract on a network).
-// It's a one-level quin tree that holds the roots of the following trees:
-// - ZAssetsTree,
-// - ZZonesTree,
-// - ProvidersKeys tree,
-// - ZAccountsBlacklist tree,
-// - ZNetworksTree
-//
-// It's supposed to run on the mainnet only.
-// Bridges keepers are expected to propagate its root to other networks
+/**
+ * @title StaticTree
+ * @notice This contract implements a one-level tree that holds the roots of multiple static sub trees.
+ *
+ *                        Static Root
+ *                             |
+ *     +----------+------------+-----------+--------------+
+ *     |          |            |           |              |
+ *     0          1            2           3              4
+ *  ZAssets   Blacklisted   ZNetworks    ZZones      ProvidersKeys
+ *   Tree      Accounts       Tree        Tree          Tree
+ *   Root        Root         Root        Root          Root
+ *
+ * @dev The StaticTree is intended for deployment on the mainnet only. It is responsible for maintaining
+ * and updating the static root. Bridges keepers are expected to propagate the root to other networks.
+ * The contract owner can initialize the tree and update its roots.
+ */
 contract StaticTree is
     AppStorage,
     StaticTreeStorageGap,
@@ -50,10 +56,19 @@ contract StaticTree is
         SELF = _self;
     }
 
+    /**
+     * @notice Retrieves the current static root of the tree.
+     * @return The static root as a bytes32 value.
+     */
     function getStaticRoot() external view returns (bytes32) {
         return staticRoot;
     }
 
+    /**
+     * @notice Initializes the static tree with the roots from the respective subtrees.
+     * @dev This function can only be called by the owner. It must be called before the static tree can be used.
+     * Reverts if the static root has already been initialized.
+     */
     function initializeStaticTree() external onlyOwner {
         require(staticRoot == bytes32(0), "PF: Already initialized");
 
@@ -73,6 +88,14 @@ contract StaticTree is
         staticRoot = hash(leafs);
     }
 
+    /**
+     * @notice Updates the static root with a new leaf value.
+     * @param updatedLeaf The new leaf value to be set.
+     * @param leafIndex The index of the leaf to be updated; must be less than the total number of leaves.
+     * @dev This function can only be called by the contract itself. It emits a RootUpdated event after
+     * updating the root.
+     * Reverts if the leafIndex is invalid or if the caller is unauthorized.
+     */
     function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
         require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
         require(msg.sender == SELF, "unauthorized");
@@ -83,6 +106,12 @@ contract StaticTree is
         emit RootUpdated(leafIndex, updatedLeaf, staticRoot);
     }
 
+    /**
+     * @dev Computes the hash of the provided leaves using the Poseidon hashing function.
+     * @param input An array of leaf values to be hashed.
+     * @return The computed hash as a bytes32 value.
+     * @dev This function ensures that all input values are within the SNARK field.
+     */
     function hash(bytes32[5] memory input) private pure returns (bytes32) {
         // We trust the caller provides all input values within the SNARK field
         return PoseidonHashers.poseidonT6(input);
