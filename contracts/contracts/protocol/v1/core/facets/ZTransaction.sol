@@ -20,6 +20,12 @@ import "../libraries/TokenTypeAndAddressDecoder.sol";
 
 import "../../../../common/NonReentrant.sol";
 
+/**
+ * @title ZTransaction
+ * @notice The ZTransaction contract facilitates the execution of transactions involving zAssets,
+ * including deposit and withdrawal, and, internal transactions.
+ */
+
 contract ZTransaction is
     AppStorage,
     ZTransactionStorageGap,
@@ -51,14 +57,22 @@ contract ZTransaction is
         PANTHER_TREES = pantherTrees;
     }
 
-    /// @param inputs The public input parameters to be passed to verifier
-    /// (refer to MainPublicSignals.sol).
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param privateMessages the private message that contains zAccount and zAssets utxo
-    /// data.
-    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
-    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. Other bits are reserved.
+    /**
+     * @notice Executes the main transaction logic for processing deposits and withdrawals of zAssets.
+     * @param inputs An array of public input parameters to be passed to the verifier
+     * (see MainPublicSignals.sol).
+     * @param proof The zero knowledge proof
+     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
+     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
+     * @param paymasterCompensation The amount to compensate the paymaster for processing the transaction.
+     * @param privateMessages The private messages.
+     * (see `TransactionNoteEmitter.sol`).
+     * @return zAccountUtxoBusQueuePos The position in the UTXO bus queue for the newly created zAccount UTXO.
+     * @dev Validates inputs to ensure they meet the required constraints,
+     * checks for non-zero public inputs, and verifies creation and spend times.
+     * Emits a main transaction note upon successful execution.
+     * May revert if any validation fails, including checks on non-zero parameters and valid transaction types.
+     */
     function main(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -158,6 +172,11 @@ contract ZTransaction is
         }
     }
 
+    /**
+     * @notice Checks that required public inputs are non-zero.
+     * @dev Validates specific inputs to prevent zero values which could cause errors.
+     * @param inputs An array of public input values to validate.
+     */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[MAIN_SALT_HASH_IND].validateNonZero(ERR_ZERO_SALT_HASH);
 
@@ -174,6 +193,15 @@ contract ZTransaction is
         );
     }
 
+    /**
+     * @notice Validates extra inputs
+     * @dev Checks the provided inputs against their expected hash to ensure data integrity.
+     * @param extraInputsHash The hash of the extra inputs to validate.
+     * @param transactionOptions The transaction options provided.
+     * @param paymasterCompensation The compensation amount for the paymaster.
+     * @param privateMessages Encrypted private messages related to the transaction.
+     * @dev Reverts if the provided extraInputsHash does not match the hash of the combined extra inputs.
+     */
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
