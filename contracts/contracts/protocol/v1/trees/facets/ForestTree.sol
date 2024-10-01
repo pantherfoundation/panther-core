@@ -17,12 +17,11 @@ import "./forestTrees/BusTree.sol";
 import "./forestTrees/FerryTree.sol";
 
 /**
- * @title PantherForest
- * @notice It stores and updates leafs and the root of the Panther Forest Tree.
- * @dev "Panther Forest Tree" is a merkle tree with a single level (leafs) under
- * the root. It has 3 leafs, which are roots of 3 other merkle trees -
- * the "Taxi Tree", the "Bus Tree" and, the "Ferry Tree".
- * (essentially, these 3 trees are subtree of the Panther Forest tree):
+ * @title ForestTree
+ * @notice This contract stores and updates leaf nodes and the root of the Panther Forest Tree.
+ * @dev The Panther Forest Tree is a Merkle tree with a single level (leaves) under the root.
+ * It has 3 leaves, which are roots of 3 other Merkle trees: the "Taxi Tree", the "Bus Tree",
+ * and the "Ferry Tree". The structure is as follows:
  *
  *      Forest Root
  *            |
@@ -33,11 +32,8 @@ import "./forestTrees/FerryTree.sol";
  *   Tree    Tree   Tree
  *   root    root   root
  *
- * Every of 3 trees are controlled by "tree" smart contracts. A "tree" contract
- * must call this contract to update the value of the leaf and the root of the
- * Forest Tree every time the "controlled" tree is updated.
- * It supports a "history" of recent roots, so that users may refer not only to
- * the latest root, but on former roots cached in the history.
+ * The contract supports a history of recent roots, allowing users to refer to not only the latest
+ * root but also previous roots cached in history.
  */
 contract ForestTree is
     AppStorage,
@@ -78,6 +74,11 @@ contract ForestTree is
         _;
     }
 
+    /**
+     * @notice Retrieves the current static and forest roots.
+     * @return _staticRoot The static root of the forest.
+     * @return _forestRoot The current forest root.
+     */
     function getRoots()
         external
         view
@@ -87,6 +88,14 @@ contract ForestTree is
         _forestRoot = forestRoot;
     }
 
+    /**
+     * @notice Initializes the Panther Forest Trees with specific parameters.
+     * @param onboardingQueueCircuitId The circuit ID for the onboarding queue.
+     * @param reservationRate The rate for reservations in the bus queue.
+     * @param premiumRate The premium rate for bus queue rewards.
+     * @param minEmptyQueueAge The minimum age for an empty bus queue.
+     * @dev This function can only be called by the owner and must be called only once.
+     */
     function initializeForestTrees(
         uint160 onboardingQueueCircuitId,
         uint16 reservationRate,
@@ -109,6 +118,13 @@ contract ForestTree is
         );
     }
 
+    /**
+     * @notice Updates the reward parameters for the bus queue.
+     * @param reservationRate The new rate for reservations in the bus queue.
+     * @param premiumRate The new premium rate for bus queue rewards.
+     * @param minEmptyQueueAge The new minimum age for an empty bus queue.
+     * @dev This function can only be called by the owner.
+     */
     function updateBusQueueRewardParams(
         uint16 reservationRate,
         uint16 premiumRate,
@@ -121,6 +137,17 @@ contract ForestTree is
         );
     }
 
+    /**
+     * @notice Adds UTXOs to the bus queue.
+     * @param utxos An array of UTXOs to be added to the bus queue.
+     * @param cachedForestRootIndex The index of the cached forest root to verify.
+     * @param forestRoot The current forest root to validate against.
+     * @param staticRoot The static root to validate against.
+     * @param reward The reward associated with adding these UTXOs.
+     * @return firstUtxoQueueId The queue ID of the first UTXO added.
+     * @return firstUtxoIndexInQueue The index of the first UTXO in the queue.
+     * @dev This function can only be called by the Panther Pool and checks for non-zero UTXOs.
+     */
     function addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint256 cachedForestRootIndex,
@@ -141,6 +168,18 @@ contract ForestTree is
         );
     }
 
+    /**
+     * @notice Adds UTXOs to the bus queue and the taxi tree.
+     * @param utxos An array of UTXOs to be added.
+     * @param numTaxiUtxos The number of UTXOs to be added to the taxi tree.
+     * @param cachedForestRootIndex The index of the cached forest root to verify.
+     * @param forestRoot The current forest root to validate against.
+     * @param staticRoot The static root to validate against.
+     * @param reward The reward associated with adding these UTXOs.
+     * @return firstUtxoQueueId The queue ID of the first UTXO added.
+     * @return firstUtxoIndexInQueue The index of the first UTXO in the queue.
+     * @dev This function can only be called by the Panther Pool and checks for non-zero UTXOs.
+     */
     function addUtxosToBusQueueAndTaxiTree(
         bytes32[] memory utxos,
         uint8 numTaxiUtxos,
@@ -183,6 +222,13 @@ contract ForestTree is
         _cacheNewForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);
     }
 
+    /**
+     * @notice Onboards a queue to the bus tree.
+     * @param miner The address of the miner.
+     * @param queueId The ID of the queue to be onboarded.
+     * @param inputs The inputs required for onboarding.
+     * @param proof The zero-knowledge proof to validate the onboarding.
+     */
     function onboardBusQueue(
         address miner,
         uint32 queueId,
@@ -201,11 +247,23 @@ contract ForestTree is
         _cacheNewForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
     }
 
-    /// sends zkp token rewards to miner
+    /**
+     * @notice Claims the mining reward for a specified receiver.
+     * @param receiver The address to receive the mining reward.
+     */
     function claimMiningReward(address receiver) external {
         _claimMinerRewards(msg.sender, receiver);
     }
 
+    /**
+     * @notice Claims the mining reward with a signature.
+     * @param receiver The address to receive the mining reward.
+     * @param v The recovery id of the signature.
+     * @param r The r part of the signature.
+     * @param s The s part of the signature.
+     * @dev This function recovers the miner's address from the signature and processes
+     * the reward claim.
+     */
     function claimMiningRewardWithSignature(
         address receiver,
         uint8 v,
