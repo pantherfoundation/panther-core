@@ -4,7 +4,14 @@ pragma solidity ^0.8.19;
 
 import "../../../errMsgs/CachedRootsErrMsgs.sol";
 
-/// @dev It caches roots in a ring buffer and checks if a root is in the cache
+/**
+ * @title RingBufferRootCache
+ * @notice This contract caches roots in a ring buffer and provides functionalities to check if a root is in the cache.
+ * @dev The contract allows caching of up to 256 roots, and it manages the storage of roots using a mapping from
+ * cache indices to root values. The cached roots can be queried for statistics, and individual roots can be checked
+ * for their presence in the cache. All storage parameters are initialized to zero, so no constructor initialization
+ * is required.
+ */
 abstract contract RingBufferRootCache {
     // slither-disable-next-line shadowing-state unused-state
     uint256[10] private __gap;
@@ -27,6 +34,12 @@ abstract contract RingBufferRootCache {
     // Value of _cachedRootsCounter after the latest cache reset
     uint64 private _cacheStartPos;
 
+    /**
+     * @notice Retrieves statistics about the cached roots.
+     * @return numRootsCached The number of roots currently cached.
+     * @return latestCacheIndex The index of the latest cached root.
+     * @dev Reverts with an error message if no roots have been cached yet.
+     */
     function getCacheStats()
         external
         view
@@ -51,6 +64,14 @@ abstract contract RingBufferRootCache {
         );
     }
 
+    /**
+     * @notice Checks if a specific root is present in the cache.
+     * @param root The root to check for presence in the cache.
+     * @param cacheIndex The index of the cache to check.
+     * @return isCached A boolean indicating whether the root is cached or not.
+     * @dev If the cacheIndex is set to UNDEFINED_CACHE_INDEX, the function iterates through all cached roots.
+     * Reverts with an error message if the cacheIndex is out of range.
+     */
     function isCachedRoot(
         bytes32 root,
         uint256 cacheIndex
@@ -83,11 +104,22 @@ abstract contract RingBufferRootCache {
         }
     }
 
+    /**
+     * @notice Caches a new root in the ring buffer.
+     * @param root The root to be cached.
+     * @return cacheIndex The index in the cache where the root has been stored.
+     */
     function cacheNewRoot(bytes32 root) internal returns (uint256 cacheIndex) {
         cacheIndex = _addRootToCache(root);
     }
 
     /// Private functions follow
+
+    /**
+     * @dev Adds a root to the cache and returns the cache index.
+     * @param root The root to be added to the cache.
+     * @return cacheIndex The index in the cache where the root has been stored.
+     */
 
     function _addRootToCache(
         bytes32 root
@@ -101,7 +133,13 @@ abstract contract RingBufferRootCache {
         _cachedRootsCounter = ++counter;
     }
 
-    // Calling code MUST ensure `counter >= startPos`
+    /**
+     * @dev Gets the number of cached roots since the last reset.
+     * @param counter The current count of cached roots.
+     * @param startPos The starting position for counting cached roots.
+     * @return The number of roots cached since the last reset.
+     * @dev Calling code MUST ensure `counter >= startPos`
+     */
     function _getCachedRootsNum(
         uint256 counter,
         uint256 startPos
@@ -110,7 +148,13 @@ abstract contract RingBufferRootCache {
         return (nSinceStart > CACHE_SIZE) ? CACHE_SIZE : nSinceStart;
     }
 
-    // Calling code MUST ensure `counter >= startPos`
+    /**
+     * @dev Gets the next index for caching based on the current count and starting position.
+     * @param counter The current count of cached roots.
+     * @param startPos The starting position for indexing.
+     * @return The next index to use for caching.
+     * @dev Calling code MUST ensure `counter >= startPos`
+     */
     function _getCacheNextIndex(
         uint256 counter,
         uint256 startPos
