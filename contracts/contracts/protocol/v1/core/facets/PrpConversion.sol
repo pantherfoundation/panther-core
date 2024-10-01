@@ -19,6 +19,12 @@ import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 import "../libraries/ZAssetUtxoGenerator.sol";
 
+/**
+ * @title PrpConversion
+ * @notice Handles the conversion of PRPs to zZKP tokens.
+ * @dev This contract manages the conversion process, including the initialization of reserves,
+ * adjusting ZKP reserves, and processing the conversion of PRP to zZKP.
+ */
 contract PrpConversion is
     AppStorage,
     PrpConversionStorageGap,
@@ -52,6 +58,15 @@ contract PrpConversion is
         PANTHER_TREES = pantherTrees;
     }
 
+    /**
+     * @notice Initializes the conversion pool with specified amounts of PRP and ZKP tokens.
+     * @param prpVirtualAmount The virtual amount of PRP to initialize.
+     * @param zkpAmount The amount of ZKP tokens required for the initialization.
+     * @dev This function can only be called by the contract owner. ZKP tokens must be transferred to
+     * this contract prior to initialization.
+     * It also increases the Vault’s allowance to allow it to transfer ZKP tokens from this contract
+     * during conversion operations.
+     */
     function initPool(
         uint256 prpVirtualAmount,
         uint256 zkpAmount
@@ -70,6 +85,14 @@ contract PrpConversion is
         emit Initialized(prpVirtualAmount, zkpAmount);
     }
 
+    /**
+     * @notice Increases the ZKP reserve based on the available balance.
+     * @dev This function can be called only after the contract has been initialized.
+     * It checks the current balance of ZKP tokens and updates the reserves if there
+     * are additional tokens beyond the current reserve.
+     * It also increases the Vault’s allowance to allow it to transfer ZKP tokens from this contract
+     * during conversion operations.
+     */
     function increaseZkpReserve() external {
         require(initialized, ERR_NOT_INITIALIZED);
 
@@ -95,21 +118,22 @@ contract PrpConversion is
         _update(prpVirtualBalance, zkpBalance);
     }
 
-    /// @notice Accounts prp conversion
-    /// @dev It converts prp to zZkp. The msg.sender should approve pantherPool to transfer the
-    /// ZKPs to the vault in order to create new zAsset utxo. In ideal case, the msg sender is prpConverter.
-    /// This function also spend the old zAccount utxo and creates new one with decreased prp balance.
-    /// @param inputs The public input parameters to be passed to verifier
-    /// (refer to MainPublicSignals.sol).
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param privateMessages the private message that contains zAccount utxo data.
-    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// This data is used to spend the newly created utxo.
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param zkpAmountOutMin Minimum zZkp to receive.
-    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
-    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. Other bits are reserved.
+    /**
+     * @notice Converts PRP tokens to zZKP tokens.
+     * @param inputs The public input parameters to be passed to the verifier.
+     * (see `PrpConversionPublicSignals.sol`).
+     * @param proof The zero knowledge proof
+     * @param transactionOptions Options for the transaction, encoded as a 17-bit number.
+     * @param zkpAmountOutMin The minimum amount of zZKP tokens to receive from the conversion.
+     * @param paymasterCompensation Compensation for the paymaster.
+     * @param privateMessages Private message containing zAccount utxo data.
+     * @return firstUtxoBusQueuePos Position in the UTXO bus queue for the first UTXO.
+     * @dev Handles the spending of old zAccount UTXOs and creates new ones with the
+     * updated PRP balance.
+     * The user can choose whether the UTXO should be added quickly via the taxi tree
+     * or slowly via the bus tree. The transactionOptions param defines the method used (further
+     * details can be found in the `TransactionOptions.sol` library)
+     */
     function convert(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -194,6 +218,10 @@ contract PrpConversion is
         }
     }
 
+    /**
+     * @dev Validates that the public inputs are non-zero.
+     * @param inputs The public input parameters to check.
+     */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[PRP_CONVERSION_ZASSET_SCALE_IND].validateNonZero(ERR_ZERO_SCALE);
 
@@ -210,6 +238,17 @@ contract PrpConversion is
         );
     }
 
+    /**
+     * @notice Validates extra inputs
+     * @dev Checks the provided inputs against their expected hash to ensure data integrity.
+     * @param extraInputsHash The hash of the extra inputs to validate.
+     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
+     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
+     * @param zkpAmountOutMin Minimum zZKP tokens to receive.
+     * @param paymasterCompensation Compensation for the paymaster.
+     * @param privateMessages Private message of the user.
+     * (see `TransactionNoteEmitter.sol`).
+     */
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
@@ -226,7 +265,13 @@ contract PrpConversion is
         extraInputsHash.validateExtraInputHash(extraInp);
     }
 
-    /// @dev May be only called by the {OWNER}
+    /**
+     * @notice Rescues ERC20 tokens from the contract.
+     * @param token The address of the ERC20 token to rescue.
+     * @param to The address to send the rescued tokens to.
+     * @param amount The amount of tokens to rescue.
+     * @dev This function can only be called by the contract owner.
+     */
     function rescueErc20(
         address token,
         address to,
