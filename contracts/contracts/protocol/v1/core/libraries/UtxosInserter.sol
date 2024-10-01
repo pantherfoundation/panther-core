@@ -18,6 +18,18 @@ string constant ERR_ZERO_COMITMENT = "UI:E1";
 library UtxosInserter {
     using TransactionOptions for uint32;
 
+    /**
+     * @notice Inserts UTXOs related to ZAccount activation.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for ZAccount activation.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts two UTXOs for ZAccount activation. Requires a non-zero zAccount
+     * commitment and KYC signed message hash.
+     */
     function insertZAccountActivationUtxos(
         address pantherTrees,
         uint256[] calldata inputs,
@@ -88,6 +100,18 @@ library UtxosInserter {
         }
     }
 
+    /**
+     * @notice Inserts UTXO for PRP claim.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for PRP claim.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts one UTXO for PRP claim. Requires a non-zero commitment. Requires
+     * non-zero zAccount commitment.
+     */
     function insertPrpClaimUtxo(
         address pantherTrees,
         uint256[] calldata inputs,
@@ -151,6 +175,19 @@ library UtxosInserter {
         }
     }
 
+    /**
+     * @notice Inserts UTXOs for PRP conversion.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for PRP conversion.
+     * @param zAssetUtxoOutCommitment The commitment for the zAsset UTXO.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts two UTXOs for PRP conversion. Requires non-zero zAccount and
+     * zAsset commitments.
+     */
     function insertPrpConversionUtxos(
         address pantherTrees,
         uint256[] calldata inputs,
@@ -219,6 +256,18 @@ library UtxosInserter {
         }
     }
 
+    /**
+     * @notice Inserts UTXOs for the main protocol process.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for the main protocol.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts five UTXOs for the main protocol. Requires non-zero ZAccount and
+     * zAssets commitments, and, KYT message hashes.
+     */
     function insertMainUtxos(
         address pantherTrees,
         uint256[] calldata inputs,
@@ -302,6 +351,19 @@ library UtxosInserter {
         }
     }
 
+    /**
+     * @notice Inserts UTXOs for a ZSwap operation.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for ZSwap.
+     * @param zAssetUtxos Array of UTXO commitments for the zAssets involved in the swap.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts three UTXOs for the ZSwap operation. Requires non-zero commitments
+     * for zAccount and zAssets.
+     */
     function insertZSwapUtxos(
         address pantherTrees,
         uint256[] calldata inputs,
@@ -369,6 +431,19 @@ library UtxosInserter {
         }
     }
 
+    /**
+     * @notice Adds UTXOs to the bus queue.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param utxos Array of UTXOs to be inserted.
+     * @param cachedForestRootIndex The index of the cached forest Merkle root.
+     * @param forestRoot The Merkle root of the forest.
+     * @param staticRoot The static Merkle root.
+     * @param rewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts UTXOs into the bus queue and calculates their queue position.
+     */
     function _addUtxosToBusQueue(
         address pantherTrees,
         bytes32[] memory utxos,
@@ -405,6 +480,21 @@ library UtxosInserter {
         );
     }
 
+    /**
+     * @notice Adds UTXOs to both the bus queue and taxi tree.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param utxos Array of UTXOs to be inserted.
+     * @param numTaxiUtxos The number of UTXOs to be added to the taxi tree.
+     * @param cachedForestRootIndex The index of the cached forest Merkle root.
+     * @param forestRoot The Merkle root of the forest.
+     * @param staticRoot The static Merkle root.
+     * @param reward The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts UTXOs into both the bus queue and taxi tree. Calculates the UTXO
+     * bus queue position.
+     */
     function _addUtxosToBusQueueAndTaxiTree(
         address pantherTrees,
         bytes32[] memory utxos,
@@ -443,6 +533,13 @@ library UtxosInserter {
         );
     }
 
+    /**
+     * @notice Calculates the position of a UTXO in the bus queue.
+     * @param zAccountUtxoQueueId The queue ID of the UTXO.
+     * @param zAccountUtxoIndexInQueue The index of the UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The calculated bus queue position of the UTXO.
+     * @dev Combines the queue ID and index to determine the UTXO's position in the bus queue.
+     */
     function _getZAccountUtxoBusQueuePos(
         uint256 zAccountUtxoQueueId,
         uint256 zAccountUtxoIndexInQueue
