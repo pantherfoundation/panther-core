@@ -81,12 +81,16 @@ contract PrpVoucherController is
         _;
     }
 
-    /// @notice Generates a reward voucher for a given secret hash and voucher
-    /// type.
-    /// @param _secretHash The secret hash for the reward voucher.
-    /// @param _amount The amount of the reward voucher.
-    /// @param _voucherType The type of the reward voucher.
-    /// @return _prpToGrant The prp amount which has be granted.
+    /**
+     * @notice Generates a reward voucher for a given secret hash and voucher type.
+     * @param _secretHash The secret hash for the reward voucher.
+     * @param _amount The amount of the reward voucher.
+     * @param _voucherType The type of the reward voucher.
+     * @return _prpToGrant The PRP amount that has been granted.
+     * @dev Verifies if the voucher type is valid, then creates a reward voucher for
+     * the secret hash with the specified amount. Emits the `RewardVoucherGenerated`
+     * event upon successful creation.
+     */
     function generateRewards(
         bytes32 _secretHash,
         uint64 _amount,
@@ -101,13 +105,17 @@ contract PrpVoucherController is
         emit RewardVoucherGenerated(_secretHash, _prpToGrant);
     }
 
-    /// @notice Sets the terms for action rewards for a given voucher type.
-    /// @param _allowedContract The address of the contract allowed to generate
-    /// reward vouchers.
-    /// @param _voucherType The type of the reward voucher.
-    /// @param _limit The limit for the voucher grants.
-    /// @param _amount The amount of PRP to grant for the voucher.
-    /// @param _enabled The status of the voucher type.
+    /**
+     * @notice Updates the terms for generating reward vouchers.
+     * @param _allowedContract The address of the contract allowed to generate reward vouchers.
+     * @param _voucherType The type of the reward voucher.
+     * @param _limit The limit for voucher grants.
+     * @param _amount The amount of PRP to grant for the voucher.
+     * @param _enabled The status of the voucher type (enabled or disabled).
+     * @dev Allows the contract owner to modify the terms for reward vouchers, including the allowed
+     * contract, voucher type, limit, and grant amount. Emits the `VoucherTermsUpdated` event
+     * upon successful update.
+     */
     function updateVoucherTerms(
         address _allowedContract,
         bytes4 _voucherType,
@@ -131,15 +139,23 @@ contract PrpVoucherController is
         );
     }
 
-    /// @param inputs The public input parameters to be passed to verifier
-    /// (refer to MainPublicSignals.sol).
-    /// @param privateMessages the private message that contains zAccount utxo data.
-    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// This data is used to spend the newly created utxo.
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
-    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. Other bits are reserved.
+    /**
+     * @notice Accounts for rewards by converting PRP tokens into zZKP tokens.
+     * @param inputs The public input parameters to be passed to the verifier
+     * (see `PrpAccountingPublicSignals.sol`).
+     * @param proof The zero knowledge proof
+     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
+     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
+     * @param paymasterCompensation Compensation for the paymaster.
+     * @param privateMessages Private message of the user.
+     * (see `TransactionNoteEmitter.sol`).
+     * @return utxoBusQueuePos The position in the UTXO bus queue for the first UTXO.
+     * @dev Validates and processes UTXO rewards accounting. The user chooses whether UTXOs are added
+     * quickly via the taxi tree or slowly via the bus tree using `transactionOptions`.
+     * Also handles validation of public inputs and spends the nullifier of the UTXO being used.
+     * Emits `RewardClaimed` upon successful claim and processes associated rewards.
+     */
+
     function accountRewards(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -214,12 +230,25 @@ contract PrpVoucherController is
         }
     }
 
+    /**
+     * @dev Validates non-zero public inputs to ensure correctness in the UTXO commitment process.
+     * @param inputs The public input parameters.
+     */
+
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[PRP_ACCOUNTING_ZACCOUNT_UTXO_OUT_COMMITMENT_IND].validateNonZero(
             ERR_ZERO_ZACCOUNT_COMMIT
         );
     }
 
+    /**
+     * @notice Validates extra inputs
+     * @dev Checks the provided inputs against their expected hash to ensure data integrity.
+     * @param extraInputsHash The hash of the public parameters.
+     * @param transactionOptions Transaction options in the form of a 17-bit number.
+     * @param paymasterCompensation Compensation for the paymaster.
+     * @param privateMessages Private messages containing UTXO data.
+     */
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
