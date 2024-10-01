@@ -21,6 +21,12 @@ import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 import "../libraries/ZAssetUtxoGenerator.sol";
 
+/**
+ * @title ZSwap
+ * @notice The ZSwap contract facilitates the swapping of zAssets within the Panther ecosystem,
+ * allowing users to spend zAsset UTXO and create another. It integrates with plugins that handle
+ * swap processes.
+ */
 contract ZSwap is
     AppStorage,
     ZSwapStorageGap,
@@ -56,6 +62,12 @@ contract ZSwap is
         VAULT = vault;
     }
 
+    /**
+     * @notice Updates the status of a ZSwap plugin.
+     * @param plugin The address of the plugin to update.
+     * @param status The new status of the plugin (enabled or disabled).
+     * @dev Emits a `ZSwapPluginUpdated` event when the plugin status is changed.
+     */
     function updatePluginStatus(
         address plugin,
         bool status
@@ -65,15 +77,22 @@ contract ZSwap is
         emit ZSwapPluginUpdated(plugin, status);
     }
 
-    /// @param inputs The public input parameters to be passed to verifier
-    /// (refer to MainPublicSignals.sol).
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
-    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. Other bits are reserved.
-    /// @param swapData The address of plugin that manages the swap proccess
-    /// @param privateMessages the private message that contains zAccount and zAssets utxo
-    /// data.
+    /**
+     * @notice Swaps a Z-Asset using the provided parameters.
+     * @param inputs The public input parameters to be passed to the verifier
+     * (see `ZSwapPublicSignals.sol`).
+     * @param proof The zero knowledge proof
+     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
+     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
+     * @param paymasterCompensation The compensation amount for the paymaster.
+     * @param swapData The encoded data to proceed with the swap.
+     * (see `PluginDataDecoderLib.sol`).
+     * @param privateMessages The private message.
+     * (see `TransactionNoteEmitter.sol`).
+     * @return zAccountUtxoBusQueuePos The position in the UTXO bus queue for the zAccount.
+     * @dev Validates inputs, checks non-zero public inputs, sanitizes private messages,
+     * validates and spends nullifiers, and processes the swap through the identified plugin.
+     */
     function swapZAsset(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -161,6 +180,10 @@ contract ZSwap is
         }
     }
 
+    /**
+     * @dev Checks that the public inputs are non-zero.
+     * @param inputs The public input parameters to validate.
+     */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[ZSWAP_SALT_HASH_IND].validateNonZero(ERR_ZERO_SALT_HASH);
         inputs[ZSWAP_MAGICAL_CONSTRAINT_IND].validateNonZero(
@@ -168,6 +191,15 @@ contract ZSwap is
         );
     }
 
+    /**
+     * @notice Validates extra inputs
+     * @dev Checks the provided inputs against their expected hash to ensure data integrity.
+     * @param extraInputsHash The expected hash of the extra inputs.
+     * @param transactionOptions The transaction options to validate.
+     * @param paymasterCompensation The compensation for the paymaster to validate.
+     * @param swapData The swap data to validate.
+     * @param privateMessages The private messages to validate.
+     */
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
@@ -184,6 +216,12 @@ contract ZSwap is
         extraInputsHash.validateExtraInputHash(extraInp);
     }
 
+    /**
+     * @dev Retrieves the plugin address from the swap data and checks its validity.
+     * @param swapData The data containing the plugin address.
+     * @return _plugin The address of the identified plugin.
+     * @dev Reverts if the plugin is not known.
+     */
     function _getKnownPluginOrRevert(
         bytes memory swapData
     ) private view returns (address _plugin) {
