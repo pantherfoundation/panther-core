@@ -25,6 +25,13 @@ import "../libraries/UtxosInserter.sol";
 import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 
+/**
+ * @title ZAccountsRegistration
+ * @notice This contract manages the registration and activation of ZAccounts, which are secure accounts
+ * associated with public keys for private transactions. It includes functionalities for
+ * blacklisting master EOAs and public root spending keys, and provides mechanisms for
+ * ZAccount activation through UTXOs.
+ */
 // solhint-disable contract-name-camelcase
 contract ZAccountsRegistration is
     AppStorage,
@@ -99,6 +106,12 @@ contract ZAccountsRegistration is
 
     /* ========== VIEW FUNCTIONS ========== */
 
+    /**
+     * @notice Check if a ZAccount is whitelisted.
+     * @param _masterEOA Address of the master EOA.
+     * @return isWhitelisted True if the ZAccount is whitelisted, false otherwise.
+     * @dev This function checks if a ZAccount exists and is not blacklisted.
+     */
     function isZAccountWhitelisted(
         address _masterEOA
     ) external view returns (bool isWhitelisted) {
@@ -128,7 +141,14 @@ contract ZAccountsRegistration is
 
     /* ========== EXTERNAL FUNCTIONS ========== */
 
-    /// @dev Note comments to `function isAcceptablePubKey`
+    /**
+     * @notice Registers a new ZAccount.
+     * @param _pubRootSpendingKey The public root spending key.
+     * @param _pubReadingKey The public reading key.
+     * @param v The recovery byte of the signature.
+     * @param r The r value of the signature.
+     * @param s The s value of the signature.
+     */
     function registerZAccount(
         G1Point memory _pubRootSpendingKey,
         G1Point memory _pubReadingKey,
@@ -182,36 +202,21 @@ contract ZAccountsRegistration is
         emit ZAccountRegistered(masterEoa, _zAccount);
     }
 
-    /// @notice Creates zAccount utxo
-    /// @dev It can be executed only after registring the zAccount. It throws
-    /// if the zAccount has not been registered or it's registered but it has been
-    /// blacklisted.
-    /// @param inputs The public input parameters to be passed to verifier.
-    /// @param inputs[0]  - extraInputsHash
-    /// @param inputs[1]  - addedAmountZkp
-    /// @param inputs[2]  - chargedAmountZkp
-    /// @param inputs[3]  - zAccountId
-    /// @param inputs[4]  - zAccountCreateTime
-    /// @param inputs[5]  - zAccountRootSpendPubKeyX
-    /// @param inputs[6]  - zAccountRootSpendPubKeyY
-    /// @param inputs[7]  - zAccountReadPubKeyX
-    /// @param inputs[8]  - zAccountReadPubKeyY
-    /// @param inputs[9] - zAccountNullifierPubKeyX
-    /// @param inputs[10] - zAccountNullifierPubKeyY
-    /// @param inputs[11] - zAccountMasterEOA
-    /// @param inputs[12] - zAccountNullifierZone
-    /// @param inputs[13] - zAccountCommitment
-    /// @param inputs[14] - kycSignedMessageHash
-    /// @param inputs[15] - staticTreeMerkleRoot
-    /// @param inputs[16] - forestMerkleRoot
-    /// @param inputs[17] - saltHash
-    /// @param inputs[18] - magicalConstraint
-    /// @param proof A proof associated with the zAccount and a secret.
-    /// @param privateMessages the private message that contains zAccount utxo data.
-    /// zAccount utxo data contains bytes1 msgType, bytes32 ephemeralKey and bytes64 cypherText
-    /// @param transactionOptions A 17-bits number. The 8 LSB (bits at position 1 to
-    /// position 8) defines the cachedForestRootIndex and the 1 MSB (bit at position 17) enables/disables
-    /// the taxi tree. Other bits are reserved.
+    /**
+     * @notice Creates a ZAccount UTXO.
+     * @param inputs The public input parameters to be passed to verifier.
+     * (see `ZAccountActivationPublicSignals.sol`).
+     * @param proof The zero knowledge proof
+     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
+     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
+     * @param paymasterCompensation The compensation for the paymaster.
+     * @param privateMessages The private messages.
+     * (see `TransactionNoteEmitter.sol`).
+     * @return utxoBusQueuePos The position in the UTXO bus queue.
+     * @dev It can be executed only after registering the ZAccount. It throws
+     * if the ZAccount has not been registered or it's registered but it has been
+     * blacklisted.
+     */
     function activateZAccount(
         uint256[] calldata inputs,
         SnarkProof calldata proof,
@@ -286,6 +291,12 @@ contract ZAccountsRegistration is
 
     // /* ========== ONLY FOR OWNER FUNCTIONS ========== */
 
+    /**
+     * @notice Updates the blacklist status for multiple master EOAs.
+     * @param masterEoas The addresses of the master EOAs to update.
+     * @param isBlackListed The corresponding blacklist status for each master EOA.
+     * @dev Only callable by the contract owner.
+     */
     function batchUpdateBlacklistForMasterEoa(
         address[] calldata masterEoas,
         bool[] calldata isBlackListed
@@ -311,6 +322,12 @@ contract ZAccountsRegistration is
         }
     }
 
+    /**
+     * @notice Updates the blacklist status for multiple public root spending keys.
+     * @param packedPubRootSpendingKeys The public root spending keys to update.
+     * @param isBlackListed The corresponding blacklist status for each key.
+     * @dev Only callable by the contract owner.
+     */
     function batchUpdateBlacklistForPubRootSpendingKey(
         bytes32[] calldata packedPubRootSpendingKeys,
         bool[] calldata isBlackListed
@@ -342,6 +359,14 @@ contract ZAccountsRegistration is
         }
     }
 
+    /**
+     * @notice Updates the blacklist status for a specific ZAccount ID.
+     * @param zAccountId The ID of the ZAccount to update.
+     * @param leaf The leaf to use in the blacklist update.
+     * @param proofSiblings The proof siblings for the blacklist operation.
+     * @param isBlacklisted The new blacklist status for the ZAccount ID.
+     * @dev Only callable by the contract owner.
+     */
     function updateBlacklistForZAccountId(
         uint24 zAccountId,
         bytes32 leaf,
@@ -369,6 +394,12 @@ contract ZAccountsRegistration is
 
     // /* ========== PRIVATE FUNCTIONS ========== */
 
+    /**
+     * @notice Gets the next ZAccount ID.
+     * @dev This function increments the zAccountIdTracker and ensures it
+     * does not exceed the maximum limit of 253.
+     * @return curId The current ZAccount ID before incrementing.
+     */
     function _getNextZAccountId() internal returns (uint256 curId) {
         curId = zAccountIdTracker;
         zAccountIdTracker = curId & 0xFF < 253
@@ -376,6 +407,14 @@ contract ZAccountsRegistration is
             : curId + ZACCOUNT_ID_COUNTER_JUMP;
     }
 
+    /**
+     * @notice Validates extra inputs
+     * @dev Checks the provided inputs against their expected hash to ensure data integrity.
+     * @param extraInputsHash The hash of the extra inputs to validate.
+     * @param transactionOptions Options for the transaction.
+     * @param paymasterCompensation The compensation for the paymaster.
+     * @param privateMessages Any private messages related to the transaction.
+     */
     function _validateExtraInputs(
         uint256 extraInputsHash,
         uint32 transactionOptions,
@@ -391,6 +430,11 @@ contract ZAccountsRegistration is
         extraInputsHash.validateExtraInputHash(extraInp);
     }
 
+    /**
+     * @notice Checks that required public inputs are non-zero.
+     * @dev Validates specific inputs to prevent zero values which could cause errors.
+     * @param inputs An array of public input values to validate.
+     */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[ZACCOUNT_ACTIVATION_SALT_HASH_IND].validateNonZero(
             "ERR_ZERO_SALT_HASH"
@@ -410,6 +454,14 @@ contract ZAccountsRegistration is
             );
     }
 
+    /**
+     * @notice Verifies and activates a ZAccount based on the provided inputs.
+     * @dev Checks various conditions including blacklisting and key validation
+     * before activating the ZAccount.
+     * @param inputs An array of inputs required for verification and activation.
+     * @return transactionType The type of transaction, can be TT_ZACCOUNT_ACTIVATION
+     * or TT_ZACCOUNT_REACTIVATION.
+     */
     function _verifyAndActivateZAccount(
         uint256[] calldata inputs
     ) private returns (uint16 transactionType) {
@@ -445,6 +497,13 @@ contract ZAccountsRegistration is
         );
     }
 
+    /**
+     * @notice Validates the spending and reading keys against provided inputs.
+     * @dev Ensures that the keys match the expected values to prevent unauthorized access.
+     * @param inputs An array of input values that include the keys.
+     * @param zAccountPubRootSpendingKey The expected public root spending key.
+     * @param zAccountReadingKey The expected reading key.
+     */
     function _validateSpendingAndReadingKeys(
         uint256[] calldata inputs,
         bytes32 zAccountPubRootSpendingKey,
@@ -478,6 +537,11 @@ contract ZAccountsRegistration is
         }
     }
 
+    /**
+     * @notice Validates and spends nullifiers for ZAccount activation.
+     * @dev Checks the nullifiers to prevent double activation in the same zone and network.
+     * @param inputs An array of inputs that include nullifier keys.
+     */
     function _validateAndSpendNullifiers(uint256[] calldata inputs) private {
         bytes32 pubKeyNullifier = BabyJubJub.pointPack(
             G1Point({
@@ -495,6 +559,14 @@ contract ZAccountsRegistration is
         zoneZAccountNullifiers.validateAndSpendNullifier(zoneNullifier);
     }
 
+    /**
+     * @notice Activates the ZAccount status and returns the transaction type.
+     * @dev Updates the ZAccount status based on the previous status and emits an event.
+     * @param prevStatus The previous status of the ZAccount.
+     * @param zAccountEoa The address of the ZAccount EOA.
+     * @param zAccountId The ID of the ZAccount being activated.
+     * @return transactionType The type of transaction after activation.
+     */
     function _activateZAccountStatusAndReturnTxType(
         ZACCOUNT_STATUS prevStatus,
         address zAccountEoa,
@@ -513,6 +585,11 @@ contract ZAccountsRegistration is
         emit ZAccountActivated(zAccountId);
     }
 
+    /**
+     * @notice Grants rewards to a user based on a secret hash.
+     * @dev Attempts to generate rewards and catches any errors for handling.
+     * @param secretHash The hash representing the user's secret for reward generation.
+     */
     function _grantPrpRewardsToUser(bytes32 secretHash) private {
         try
             IPrpVoucherController(SELF).generateRewards(
@@ -528,11 +605,20 @@ contract ZAccountsRegistration is
         }
     }
 
+    /**
+     * @notice Checks if a ZAccount or related keys are blacklisted.
+     * @dev Evaluates multiple conditions to determine if the ZAccount is blacklisted.
+     * @param id The ID of the ZAccount.
+     * @param _masterEOA The address of the master EOA to check.
+     * @param pubRootSpendingKey The public root spending key to validate.
+     * @return isBlacklisted Indicates if the ZAccount or keys are blacklisted.
+     * @return err Any error messages related to the blacklist status.
+     */
     function _isBlacklisted(
         uint24 id,
         address _masterEOA,
         bytes32 pubRootSpendingKey
-    ) private view returns (bool isBlaklisted, string memory err) {
+    ) private view returns (bool isBlacklisted, string memory err) {
         if (isZAccountIdBlacklisted[id]) {
             err = _formatBlackListError(err, ERR_BLACKLIST_ZACCOUNT_ID);
         }
@@ -546,10 +632,16 @@ contract ZAccountsRegistration is
             );
         }
 
-        return (isBlaklisted = bytes(err).length > 0 ? true : false, err);
+        return (isBlacklisted = bytes(err).length > 0 ? true : false, err);
     }
 
-    /// @dev Concatenate the strings together and returns the result
+    /**
+     * @notice Formats the blacklist error message.
+     * @dev Concatenates the current error message with the new error to provide a comprehensive error report.
+     * @param currentErrMsg The existing error message.
+     * @param errToBeAdded The new error message to add.
+     * @return newErrMsg The formatted error message containing both the current and new errors.
+     */
     function _formatBlackListError(
         string memory currentErrMsg,
         string memory errToBeAdded
