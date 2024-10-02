@@ -8,33 +8,9 @@ import { TAXI_TREE_FOREST_LEAF_INDEX, BUS_TREE_FOREST_LEAF_INDEX, FERRY_TREE_FOR
 
 import "../../../../../common/crypto/PoseidonHashers.sol";
 
-// import "../../../common/ImmutableOwnable.sol";
-
-// import "./Constants.sol";
-// import "./Types.sol";
-
 /**
- * @title PantherForest
- * @notice It stores and updates leafs and the root of the Panther Forest Tree.
- * @dev "Panther Forest Tree" is a merkle tree with a single level (leafs) under
- * the root. It has 3 leafs, which are roots of 3 other merkle trees -
- * the "Taxi Tree", the "Bus Tree" and, the "Ferry Tree".
- * (essentially, these 3 trees are subtree of the Panther Forest tree):
- *
- *      Forest Root
- *            |
- *     +------+------+
- *     |      |      |
- *     0      1      2
- *   Taxi    Bus    Ferry
- *   Tree    Tree   Tree
- *   root    root   root
- *
- * Every of 3 trees are controlled by "tree" smart contracts. A "tree" contract
- * must call this contract to update the value of the leaf and the root of the
- * Forest Tree every time the "controlled" tree is updated.
- * It supports a "history" of recent roots, so that users may refer not only to
- * the latest root, but on former roots cached in the history.
+ * @title CachedRoots
+ * @notice This contract manages the leaves and root of the Panther Forest Tree, enabling efficient updates and caching of roots.
  */
 abstract contract CachedRoots is RingBufferRootCache {
     uint256 private constant NUM_FOREST_LEAFS = 3;
@@ -46,6 +22,15 @@ abstract contract CachedRoots is RingBufferRootCache {
         bytes32 updatedRoot,
         uint256 cacheIndex
     );
+
+    /**
+     * @notice Initializes the cache for the forest root with the provided roots from the subtree trees.
+     * @param taxiTreeRoot The root of the Taxi Tree.
+     * @param busTreeRoot The root of the Bus Tree.
+     * @param ferryTreeRoot The root of the Ferry Tree.
+     * @return _forestRoot The newly computed forest root after initialization.
+     * @dev This function should be called to set up the forest root when initializing the contract.
+     */
 
     function _initCacheForestRoot(
         bytes32 taxiTreeRoot,
@@ -60,6 +45,14 @@ abstract contract CachedRoots is RingBufferRootCache {
         cacheNewRoot(_forestRoot);
     }
 
+    /**
+     * @notice Caches a new forest root and updates the specified leaf.
+     * @param updatedLeaf The new value for the leaf being updated.
+     * @param leafIndex The index of the leaf being updated; must be less than the total number of leaves.
+     * @return _forestRoot The newly computed forest root after the update.
+     * @dev Emits a ForestRootUpdated event after updating the root.
+     * Reverts if the leafIndex is invalid.
+     */
     function _cacheNewForestRoot(
         bytes32 updatedLeaf,
         uint256 leafIndex
