@@ -13,9 +13,6 @@ import "../../../errMsgs/CachedRootsErrMsgs.sol";
  * is required.
  */
 abstract contract RingBufferRootCache {
-    // slither-disable-next-line shadowing-state unused-state
-    uint256[10] private __gap;
-
     // Must be a power of 2
     uint256 private constant CACHE_SIZE = 2 ** 8;
     uint256 private constant CACHE_INDEX_MASK = CACHE_SIZE - 1;
@@ -161,7 +158,4 @@ abstract contract RingBufferRootCache {
     ) private pure returns (uint256) {
         return (counter - startPos) & CACHE_INDEX_MASK;
     }
-
-    // slither-disable-next-line shadowing-state unused-state
-    uint256[10] private _trailingGap;
 }
