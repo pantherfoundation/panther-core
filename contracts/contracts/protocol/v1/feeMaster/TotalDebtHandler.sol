@@ -12,6 +12,10 @@ library TotalDebtHandler {
         int256 netAmount,
         address extAccount
     ) internal {
+        // NOTE: Since FeeMaster already knows that ERC20 and native tokens will be
+        // locked or unlocked to the Vault, we don't provide the tokenType.
+        // PantherPoolV1 (aka FeeMasterTotalDebtController) determines whether the token is
+        // native or ERC20 based on its address.
         uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
 
         try
