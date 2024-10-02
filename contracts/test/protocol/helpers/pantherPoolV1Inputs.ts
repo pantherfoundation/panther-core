@@ -326,9 +326,10 @@ export async function getMainInputs(options: MainOptions) {
         ethers.utils.id('zAccountUtxoOutCommitment');
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const token = BigNumber.from(options.tokenType)
-        .shl(160)
-        .or(BigNumber.from(options.token));
+    const token = await encodeTokenTypeAndAddress(
+        options.tokenType,
+        BigNumber.from(options.token),
+    );
     const tokenId = options.tokenId || 0;
     const zNetworkChainId = options.zNetworkChainId || 31337;
     const ZoneDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
@@ -464,12 +465,14 @@ export async function getSwapInputs(options: SwapOptions) {
     const zAccountUtxoOutCommitmentPvrt = getSnarkFriendlyBytes();
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const existingToken = BigNumber.from(options.existingTokenType)
-        .shl(160)
-        .or(BigNumber.from(options.existingToken));
-    const incomingToken = BigNumber.from(options.incomingTokenType)
-        .shl(160)
-        .or(BigNumber.from(options.incomingToken));
+    const existingToken = await encodeTokenTypeAndAddress(
+        options.existingTokenType,
+        BigNumber.from(options.existingToken),
+    );
+    const incomingToken = await encodeTokenTypeAndAddress(
+        options.incomingTokenType,
+        BigNumber.from(options.incomingToken),
+    );
     options.incomingToken || ethers.Wallet.createRandom().address;
     const existingTokenId = options.existingTokenId || 0;
     const incomingTokenId = options.incomingTokenId || 0;
