@@ -231,6 +231,9 @@ contract FeeMaster is
     /* ========== EXTERNAL FUNCTIONS ========== */
 
     function rebalanceDebt(bytes32 secretHash, address sellToken) external {
+        // NOTE: This method converts ERC20 tokens to native tokens and/or ZKP.
+        // NFTs will remain in the contract. This issue will be addressed later.
+
         // getting sell amount: total protocol fee in sell token
         uint256 sellTokenAmount = getDebtForProtocol(sellToken);
 
