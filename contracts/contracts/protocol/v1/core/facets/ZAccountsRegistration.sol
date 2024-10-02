@@ -256,7 +256,7 @@ contract ZAccountsRegistration is
         }
 
         {
-            uint160 circuitId = circuitIds[TT_ZACCOUNT_ACTIVATION];
+            uint160 circuitId = circuitIds[transactionType];
             verifyOrRevert(circuitId, inputs, proof);
         }
 
