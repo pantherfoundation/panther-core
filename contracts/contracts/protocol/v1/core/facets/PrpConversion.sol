@@ -48,6 +48,7 @@ contract PrpConversion is
     bool public initialized;
 
     event Initialized(uint256 prpVirtualAmount, uint256 zkpAmount);
+    event ZkpReservesIncreased(uint256 increasedAmount);
 
     constructor(
         address vault,
@@ -78,7 +79,7 @@ contract PrpConversion is
 
         initialized = true;
 
-        TransferHelper.safeIncreaseAllowance(ZKP_TOKEN, VAULT, zkpAmount);
+        ZKP_TOKEN.safeIncreaseAllowance(VAULT, zkpAmount);
 
         _update(prpVirtualAmount, zkpAmount);
 
@@ -96,16 +97,13 @@ contract PrpConversion is
     function increaseZkpReserve() external {
         require(initialized, ERR_NOT_INITIALIZED);
 
-        uint256 zkpBalance = TransferHelper.safeBalanceOf(
-            ZKP_TOKEN,
-            address(this)
-        );
-
+        uint256 zkpBalance = ZKP_TOKEN.safeBalanceOf(address(this));
         (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
 
         if (zkpBalance <= _zkpReserve) return;
 
         uint256 zkpAmountIn = zkpBalance - _zkpReserve;
+        ZKP_TOKEN.safeIncreaseAllowance(VAULT, zkpAmountIn);
 
         uint256 prpAmountOut = getAmountOut(
             zkpAmountIn,
@@ -116,6 +114,8 @@ contract PrpConversion is
         uint256 prpVirtualBalance = _prpReserve - prpAmountOut;
 
         _update(prpVirtualBalance, zkpBalance);
+
+        emit ZkpReservesIncreased(zkpAmountIn);
     }
 
     /**
