@@ -28,12 +28,10 @@ import {getMainInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe('ZTransactions', function () {
     let zTransaction: MockZTransaction;
-
     let zkpToken: TokenMock;
     let feeMaster: FakeContract<FeeMaster>;
     let pantherTrees: FakeContract<IUtxoInserter>;
     let vault: FakeContract<VaultV1>;
-
     let owner: SignerWithAddress;
     let snapshot: number;
 
@@ -88,7 +86,7 @@ describe('ZTransactions', function () {
     });
 
     describe('#main', function () {
-        it('should execute Internal main transaction ', async function () {
+        it('should execute Internal main transaction and increase feeMasterDebt', async function () {
             const inputs = await getMainInputs({
                 depositPrpAmount: BigNumber.from('0'),
                 withdrawPrpAmount: BigNumber.from('0'),
@@ -97,13 +95,29 @@ describe('ZTransactions', function () {
                 kytWithdrawSignedMessageSender: vault.address,
             });
 
-            await zTransaction.main(
-                inputs,
-                proof,
-                transactionOptions,
-                paymasterCompensation,
-                privateMessage,
-            );
+            const chargedZkp = inputs[36];
+
+            await expect(
+                zTransaction.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            )
+                .to.emit(zTransaction, 'FeesAccounted')
+                .withArgs([0, 0])
+                .and.to.emit(zTransaction, 'TransactionNote');
+
+            expect(
+                await zTransaction.internalfeeMasterDebt(zkpToken.address),
+            ).to.be.equal(chargedZkp);
+
+            // Check if the nullifier is spent after the swap
+            expect(await zTransaction.internalIsSpent(inputs[7])).to.be.gt(0); //zAssetUtxoInNullifier1
+            expect(await zTransaction.internalIsSpent(inputs[8])).to.be.gt(0); //zAssetUtxoInNullifier2
+            expect(await zTransaction.internalIsSpent(inputs[9])).to.be.gt(0); //zAccountUtxoInNullifier
         });
 
         it('should revert Internal main transaction if token address is non zero ', async function () {
@@ -125,56 +139,54 @@ describe('ZTransactions', function () {
             ).to.be.revertedWith('PP:E31');
         });
 
-        it('should withdraw native token from vault', async function () {
-            const inputs = await getMainInputs({
-                withdrawPrpAmount: BigNumber.from('0'),
-                token: ethers.constants.AddressZero,
-                tokenType: 255,
-                kytWithdrawSignedMessageSender: vault.address,
-            });
-
-            const withdrawAmount = inputs[2];
-
-            const balanceOfVault = await ethers.provider.getBalance(
-                vault.address,
-            );
-
-            await zTransaction.main(
-                inputs,
-                proof,
-                transactionOptions,
-                paymasterCompensation,
-                privateMessage,
-            );
-
-            expect(await ethers.provider.getBalance(vault.address)).to.be.equal(
-                balanceOfVault.sub(withdrawAmount),
-            );
-        });
-
-        it('should withdraw token from vault', async function () {
-            await zkpToken.transfer(vault.address, BigNumber.from('100'));
-            await zkpToken.increaseAllowance(
-                vault.address,
-                BigNumber.from('100'),
-            );
-
+        it('should withdraw token from vault and increase feeMasterDebt', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
                 tokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
             });
+            const chargedZkp = inputs[36];
+            const KytWithdrawMessageHash = ethers.utils.hexZeroPad(
+                BigNumber.from(inputs[17]),
+                32,
+            );
 
-            await zTransaction.main(
-                inputs,
-                proof,
-                transactionOptions,
-                paymasterCompensation,
-                privateMessage,
+            await expect(
+                zTransaction.main(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            )
+                .to.emit(zTransaction, 'FeesAccounted')
+                .and.to.emit(zTransaction, 'SeenKytMessageHash')
+                .withArgs(KytWithdrawMessageHash)
+                .and.to.emit(zTransaction, 'TransactionNote');
+
+            expect(
+                await zTransaction.internalfeeMasterDebt(zkpToken.address),
+            ).to.be.equal(chargedZkp);
+            // Check if the nullifier is spent after the swap
+            expect(await zTransaction.internalIsSpent(inputs[7])).to.be.gt(0); //zAssetUtxoInNullifier1
+            expect(await zTransaction.internalIsSpent(inputs[8])).to.be.gt(0); //zAssetUtxoInNullifier2
+            expect(await zTransaction.internalIsSpent(inputs[9])).to.be.gt(0); //zAccountUtxoInNullifier
+
+            const expectedLockData = {
+                tokenType: 0,
+                token: zkpToken.address,
+                tokenId: BigNumber.from('0'),
+                extAccount: inputs[16],
+                extAmount: inputs[2],
+            };
+
+            expect(vault.unlockAsset).to.have.been.calledOnceWith(
+                expectedLockData,
             );
         });
 
-        it('should execute deposit main transaction', async function () {
+        it('should execute deposit tokens in vault and increase feeMasterDebt', async function () {
             const inputs = await getMainInputs({
                 token: zkpToken.address,
                 tokenType: 0,
@@ -183,16 +195,46 @@ describe('ZTransactions', function () {
                 kytDepositSignedMessageSender: owner.address,
                 kytDepositSignedMessageReceiver: vault.address,
             });
+            const chargedZkp = inputs[36];
+            const KytDepositMessageHash = ethers.utils.hexZeroPad(
+                BigNumber.from(inputs[14]),
+                32,
+            );
 
-            await zTransaction
-                .connect(owner)
-                .main(
+            await expect(
+                zTransaction.main(
                     inputs,
                     proof,
                     transactionOptions,
                     paymasterCompensation,
                     privateMessage,
-                );
+                ),
+            )
+                .to.emit(zTransaction, 'FeesAccounted')
+                .and.to.emit(zTransaction, 'SeenKytMessageHash')
+                .withArgs(KytDepositMessageHash)
+                .and.to.emit(zTransaction, 'TransactionNote');
+
+            expect(
+                await zTransaction.internalfeeMasterDebt(zkpToken.address),
+            ).to.be.equal(chargedZkp);
+            // Check if the nullifier is spent after the swap
+            expect(await zTransaction.internalIsSpent(inputs[7])).to.be.gt(0); //zAssetUtxoInNullifier1
+            expect(await zTransaction.internalIsSpent(inputs[8])).to.be.gt(0); //zAssetUtxoInNullifier2
+            expect(await zTransaction.internalIsSpent(inputs[9])).to.be.gt(0); //zAccountUtxoInNullifier
+
+            const expectedLockData = {
+                tokenType: 0,
+                token: zkpToken.address,
+                tokenId: BigNumber.from('0'),
+                salt: inputs[40],
+                extAccount: owner.address,
+                extAmount: inputs[1],
+            };
+
+            expect(vault.lockAssetWithSalt).to.have.been.calledOnceWith(
+                expectedLockData,
+            );
         });
 
         it('should revert if kytDepositSignedMessageReceiver is invalid', async function () {

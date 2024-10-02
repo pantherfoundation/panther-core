@@ -21,4 +21,16 @@ contract MockZTransaction is ZTransaction {
     function getPantherTree() external view returns (address) {
         return PANTHER_TREES;
     }
+
+    function internalIsSpent(
+        uint256 nullifier
+    ) external view returns (uint256) {
+        return isSpent[bytes32(nullifier)];
+    }
+
+    function internalfeeMasterDebt(
+        address token
+    ) external view returns (uint256) {
+        return feeMasterDebt[token];
+    }
 }
