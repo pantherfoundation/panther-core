@@ -186,6 +186,7 @@ export async function getPrpClaimandConversionInputs(
     const magicalConstraint =
         options.magicalConstraint || ethers.utils.id('magicalConstraint');
     const transactionOptions = 0x104;
+
     const utxoCommitmentPrivatePart = 0;
     const paymasterCompensation = ethers.BigNumber.from('10');
     const zkpAmountMin = ethers.utils.parseEther('10');
