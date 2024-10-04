@@ -1,0 +1,255 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "pantherTrees", "type": "address"},
+      {"internalType": "address", "name": "feeMaster", "type": "address"},
+      {"internalType": "address", "name": "zkpToken", "type": "address"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "scMiningReward",
+            "type": "uint40"
+          },
+          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
+          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterCompensationInNative",
+            "type": "uint40"
+          },
+          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+        ],
+        "indexed": false,
+        "internalType": "struct ChargedFeesPerTx",
+        "name": "chargedFeesPerTx",
+        "type": "tuple"
+      }
+    ],
+    "name": "FeesAccounted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RewardAccounted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RewardClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "prpAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "RewardVoucherGenerated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "txType",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "content",
+        "type": "bytes"
+      }
+    ],
+    "name": "TransactionNote",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "allowedContract",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes4",
+        "name": "voucherType",
+        "type": "bytes4"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "limit",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "amount",
+        "type": "uint64"
+      }
+    ],
+    "name": "VoucherTermsUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256[]", "name": "inputs", "type": "uint256[]"},
+      {
+        "components": [
+          {
+            "components": [
+              {"internalType": "uint256", "name": "x", "type": "uint256"},
+              {"internalType": "uint256", "name": "y", "type": "uint256"}
+            ],
+            "internalType": "struct G1Point",
+            "name": "a",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256[2]",
+                "name": "x",
+                "type": "uint256[2]"
+              },
+              {
+                "internalType": "uint256[2]",
+                "name": "y",
+                "type": "uint256[2]"
+              }
+            ],
+            "internalType": "struct G2Point",
+            "name": "b",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {"internalType": "uint256", "name": "x", "type": "uint256"},
+              {"internalType": "uint256", "name": "y", "type": "uint256"}
+            ],
+            "internalType": "struct G1Point",
+            "name": "c",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SnarkProof",
+        "name": "proof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint32",
+        "name": "transactionOptions",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint96",
+        "name": "paymasterCompensation",
+        "type": "uint96"
+      },
+      {"internalType": "bytes", "name": "privateMessages", "type": "bytes"}
+    ],
+    "name": "accountRewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "utxoBusQueuePos",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "name": "balance",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "_secretHash", "type": "bytes32"},
+      {"internalType": "uint64", "name": "_amount", "type": "uint64"},
+      {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"}
+    ],
+    "name": "generateRewards",
+    "outputs": [
+      {"internalType": "uint256", "name": "_prpToGrant", "type": "uint256"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_allowedContract",
+        "type": "address"
+      },
+      {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"},
+      {"internalType": "uint64", "name": "_limit", "type": "uint64"},
+      {"internalType": "uint64", "name": "_amount", "type": "uint64"},
+      {"internalType": "bool", "name": "_enabled", "type": "bool"}
+    ],
+    "name": "updateVoucherTerms",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "bytes4", "name": "", "type": "bytes4"}
+    ],
+    "name": "voucherTerms",
+    "outputs": [
+      {"internalType": "uint64", "name": "rewardsGranted", "type": "uint64"},
+      {"internalType": "uint64", "name": "limit", "type": "uint64"},
+      {"internalType": "uint64", "name": "amount", "type": "uint64"},
+      {"internalType": "bool", "name": "enabled", "type": "bool"},
+      {"internalType": "uint56", "name": "_reserved", "type": "uint56"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

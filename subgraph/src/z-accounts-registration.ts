@@ -2,13 +2,17 @@ import {
     BlacklistForMasterEoaUpdated as BlacklistForMasterEoaUpdatedEvent,
     BlacklistForPubRootSpendingKeyUpdated as BlacklistForPubRootSpendingKeyUpdatedEvent,
     BlacklistForZAccountIdUpdated as BlacklistForZAccountIdUpdatedEvent,
+    FeesAccounted as FeesAccountedEvent,
+    TransactionNote as TransactionNoteEvent,
     ZAccountActivated as ZAccountActivatedEvent,
     ZAccountRegistered as ZAccountRegisteredEvent,
-} from '../generated/ZAccountRegistry/ZAccountRegistry';
+} from '../generated/ZAccountsRegistration/ZAccountsRegistration';
 import {
     BlacklistForMasterEoaUpdated,
     BlacklistForPubRootSpendingKeyUpdated,
     BlacklistForZAccountIdUpdated,
+    FeesAccounted,
+    TransactionNote,
     ZAccountActivated,
     ZAccountRegistered,
 } from '../generated/schema';
@@ -61,11 +65,45 @@ export function handleBlacklistForZAccountIdUpdated(
     entity.save();
 }
 
+export function handleFeesAccounted(event: FeesAccountedEvent): void {
+    let entity = new FeesAccounted(
+        event.transaction.hash.concatI32(event.logIndex.toI32()),
+    );
+    entity.chargedFeesPerTx_scMiningReward =
+        event.params.chargedFeesPerTx.scMiningReward;
+    entity.chargedFeesPerTx_scKytFees = event.params.chargedFeesPerTx.scKytFees;
+    entity.chargedFeesPerTx_scKycFee = event.params.chargedFeesPerTx.scKycFee;
+    entity.chargedFeesPerTx_scPaymasterCompensationInNative =
+        event.params.chargedFeesPerTx.scPaymasterCompensationInNative;
+    entity.chargedFeesPerTx_protocolFee =
+        event.params.chargedFeesPerTx.protocolFee;
+
+    entity.blockNumber = event.block.number;
+    entity.blockTimestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
+
+    entity.save();
+}
+
+export function handleTransactionNote(event: TransactionNoteEvent): void {
+    let entity = new TransactionNote(
+        event.transaction.hash.concatI32(event.logIndex.toI32()),
+    );
+    entity.txType = event.params.txType;
+    entity.content = event.params.content;
+
+    entity.blockNumber = event.block.number;
+    entity.blockTimestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
+
+    entity.save();
+}
+
 export function handleZAccountActivated(event: ZAccountActivatedEvent): void {
     let entity = new ZAccountActivated(
         event.transaction.hash.concatI32(event.logIndex.toI32()),
     );
-    entity.ZAccountRegistry_id = event.params.id;
+    entity.ZAccountsRegistration_id = event.params.id;
 
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;

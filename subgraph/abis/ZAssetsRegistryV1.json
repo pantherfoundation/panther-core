@@ -1,0 +1,210 @@
+[
+  {
+    "inputs": [{"internalType": "address", "name": "self", "type": "address"}],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "weightController",
+        "type": "address"
+      }
+    ],
+    "name": "WeightControllerUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "newRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "zAssetInnerHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "weight",
+        "type": "uint48"
+      }
+    ],
+    "name": "ZAssetRootUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+          {
+            "internalType": "uint32",
+            "name": "startTokenId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "tokenIdsRangeSize",
+            "type": "uint32"
+          },
+          {"internalType": "uint8", "name": "scaleFactor", "type": "uint8"},
+          {"internalType": "uint8", "name": "networkId", "type": "uint8"},
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"}
+        ],
+        "internalType": "struct ZAssetsRegistryV1.ZAssetInnerParams",
+        "name": "zAssetInnerParams",
+        "type": "tuple"
+      },
+      {"internalType": "uint48", "name": "weight", "type": "uint48"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "addZAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+      {"internalType": "uint32", "name": "leafIndex", "type": "uint32"}
+    ],
+    "name": "getZAssetKey",
+    "outputs": [{"internalType": "uint64", "name": "", "type": "uint64"}],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getZAssetsRoot",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint64", "name": "zAssetKey", "type": "uint64"}
+    ],
+    "name": "isZAssetEnabled",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+          {
+            "internalType": "uint32",
+            "name": "startTokenId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "tokenIdsRangeSize",
+            "type": "uint32"
+          },
+          {"internalType": "uint8", "name": "scaleFactor", "type": "uint8"},
+          {"internalType": "uint8", "name": "networkId", "type": "uint8"},
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"}
+        ],
+        "internalType": "struct ZAssetsRegistryV1.ZAssetInnerParams",
+        "name": "currentZAssetInnerParams",
+        "type": "tuple"
+      },
+      {"internalType": "uint48", "name": "weight", "type": "uint48"},
+      {"internalType": "bool", "name": "isEnabled", "type": "bool"},
+      {"internalType": "uint32", "name": "leafIndex", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "toggleZAssetStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalLeavesInserted",
+    "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_weightController",
+        "type": "address"
+      }
+    ],
+    "name": "updateWeightController",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint48",
+            "name": "updatedWeight",
+            "type": "uint48"
+          },
+          {"internalType": "uint16", "name": "scUsdPrice", "type": "uint16"},
+          {"internalType": "uint8", "name": "zAssetDecimal", "type": "uint8"},
+          {"internalType": "uint64", "name": "zAssetScale", "type": "uint64"}
+        ],
+        "internalType": "struct ZAssetsRegistryV1.WeightMetrics",
+        "name": "weightMetrics",
+        "type": "tuple"
+      },
+      {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+      {"internalType": "uint32", "name": "leafIndex", "type": "uint32"},
+      {"internalType": "bytes32", "name": "currentLeaf", "type": "bytes32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "updateZAssetWeight",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "weightController",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint64", "name": "", "type": "uint64"}],
+    "name": "zAssetsInnerHash",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
