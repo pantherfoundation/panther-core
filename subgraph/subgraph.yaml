@@ -3,169 +3,94 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: BusTree
+    name: PrpConversion
     network: polygon-amoy
     source:
-      address: '0x7B2DF31A2B6b03738369c31364893a0C962cD2ab' # Internal
-      startBlock: 6876846 # Internal
-      # address: '0xf440b054eC70b170a4f473129D37aC860DF4D260' # Public
-      # startBlock: 7114634 # Public
-      abi: BusTree
+      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      abi: PrpConversion
+      startBlock: 12725094
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - BusBatchOnboarded
-        - BusBranchFilled
-        - BusQueueOpened
-        - BusQueuePending
-        - BusQueueProcessed
-        - MinerRewarded
-        - UtxoBusQueued
+        - PrpConversionFeesAccounted
+        - Initialized
+        - Sync
+        - PrpConversionTransactionNote
+        - ZkpReservesIncreased
       abis:
-        - name: BusTree
-          file: ./abis/BusTree.json
+        - name: PrpConversion
+          file: ./abis/PrpConversion.json
       eventHandlers:
-        - event: BusBatchOnboarded(indexed uint256,indexed bytes32,uint256,uint256,bytes32,bytes32)
-          handler: handleBusBatchOnboarded
-        - event: BusBranchFilled(indexed uint256,bytes32)
-          handler: handleBusBranchFilled
-        - event: BusQueueOpened(uint256)
-          handler: handleBusQueueOpened
-        - event: BusQueueProcessed(indexed uint256)
-          handler: handleBusQueueProcessed
-        - event: MinerRewarded(address,uint256)
-          handler: handleMinerRewarded
-        - event: UtxoBusQueued(indexed bytes32,indexed uint256,uint256)
-          handler: handleUtxoBusQueued
-      file: ./src/handleBusTreeQueues.ts
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: Initialized(uint256,uint256)
+          handler: handleInitialized
+        - event: Sync(uint112,uint112)
+          handler: handleSync
+        - event: TransactionNote(uint16,bytes)
+          handler: handleTransactionNote
+        - event: ZkpReservesIncreased(uint256)
+          handler: handleZkpReservesIncreased
+      file: ./src/prp-conversion.ts
   - kind: ethereum
-    name: PRPVoucherGrantor
+    name: PrpVoucherController
     network: polygon-amoy
     source:
-      address: '0xE0e6a6e1a15c2A8B8aA5BF911efbBe3FEC7d6C54' # Internal
-      startBlock: 6876846 # Internal
-      # address: '0xCc5CEe0d0FCc46AB38583Eb8F6Dc2845a79A69A2' # Public
-      # startBlock: 7114698 # Public
-      abi: PRPVoucherGrantor
+      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      abi: PrpVoucherController
+      startBlock: 12725094
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - RewardClaimed
-        - RewardVoucherGenerated
-        - VoucherTermsUpdated
+        - PrpVoucherControllerFeesAccounted
+        - RewardAccounted
+        - PrpVoucherControllerRewardClaimed
+        - PrpVoucherControllerRewardVoucherGenerated
+        - PrpVoucherControllerTransactionNote
+        - PrpVoucherControllerVoucherTermsUpdated
       abis:
-        - name: PRPVoucherGrantor
-          file: ./abis/PRPVoucherGrantor.json
+        - name: PrpVoucherController
+          file: ./abis/PrpVoucherController.json
       eventHandlers:
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: RewardAccounted(indexed bytes32)
+          handler: handleRewardAccounted
         - event: RewardClaimed(indexed bytes32)
           handler: handleRewardClaimed
         - event: RewardVoucherGenerated(indexed bytes32,uint256)
           handler: handleRewardVoucherGenerated
-        - event: VoucherTermsUpdated(address,bytes4,uint64,uint64)
-          handler: handleVoucherTermsUpdated
-      file: ./src/handlePrpVoucherGrantor.ts
-  - kind: ethereum
-    name: PantherPoolV1
-    network: polygon-amoy
-    source:
-      address: '0x7A345cfcad0Ca2bC82EFBFcC85A8e211Afc8b05F' # Internal
-      startBlock: 6876846 # Internal
-      # address: '0x726426F04A4D291B5f19f6675140A799EDB2A0C1' # Public
-      # startBlock: 7114685 # Public
-      abi: PantherPoolV1
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - FeesAccounted
-        - KycRewardUpdated
-        - MainCircuitIdUpdated
-        - MaxTimeDeltaUpdated
-        - PrpAccountConversionCircuitIdUpdated
-        - PrpAccountingCircuitIdUpdated
-        - RootUpdated
-        - SeenKytMessageHash
-        - TransactionNote
-        - VaultAssetUnlockerUpdated
-        - ZAccountRegistrationCircuitIdUpdated
-      abis:
-        - name: PantherPoolV1
-          file: ./abis/PantherPoolV1.json
-      eventHandlers:
-        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
-          handler: handleFeesAccounted
-        - event: KycRewardUpdated(uint256)
-          handler: handleKycRewardUpdated
-        - event: MainCircuitIdUpdated(uint160)
-          handler: handleMainCircuitIdUpdated
-        - event: MaxTimeDeltaUpdated(uint256)
-          handler: handleMaxTimeDeltaUpdated
-        - event: PrpAccountConversionCircuitIdUpdated(uint160)
-          handler: handlePrpAccountConversionCircuitIdUpdated
-        - event: PrpAccountingCircuitIdUpdated(uint160)
-          handler: handlePrpAccountingCircuitIdUpdated
-        - event: RootUpdated(indexed uint256,bytes32,bytes32,uint256)
-          handler: handleRootUpdated
-        - event: SeenKytMessageHash(indexed bytes32)
-          handler: handleSeenKytMessageHash
         - event: TransactionNote(uint16,bytes)
           handler: handleTransactionNote
-        - event: VaultAssetUnlockerUpdated(address,bool)
-          handler: handleVaultAssetUnlockerUpdated
-        - event: ZAccountRegistrationCircuitIdUpdated(uint160)
-          handler: handleZAccountRegistrationCircuitIdUpdated
-      file: ./src/handlePoolContract.ts
+        - event: VoucherTermsUpdated(address,bytes4,uint64,uint64)
+          handler: handleVoucherTermsUpdated
+      file: ./src/prp-voucher-controller.ts
   - kind: ethereum
-    name: TaxiTree
+    name: ZAccountsRegistration
     network: polygon-amoy
     source:
-      address: '0x85288bD4B26480841eaB038C1A1993d52947533E' # Internal
-      startBlock: 10652712 # Internal
-      abi: TaxiTree
+      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      abi: ZAccountsRegistration
+      startBlock: 12725094
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - TaxiRootUpdated
-        - TaxiSubtreeRootUpdated
-        - TaxiUtxoAdded
+        - ZAccountsRegistrationBlacklistForMasterEoaUpdated
+        - ZAccountsRegistrationBlacklistForPubRootSpendingKeyUpdated
+        - ZAccountsRegistrationBlacklistForZAccountIdUpdated
+        - ZAccountsRegistrationFeesAccounted
+        - ZAccountsRegistrationTransactionNote
+        - ZAccountsRegistrationZAccountActivated
+        - ZAccountsRegistrationZAccountRegistered
       abis:
-        - name: TaxiTree
-          file: ./abis/TaxiTree.json
-      eventHandlers:
-        - event: TaxiRootUpdated(bytes32,uint256)
-          handler: handleTaxiRootUpdated
-        - event: TaxiSubtreeRootUpdated(bytes32)
-          handler: handleTaxiSubtreeRootUpdated
-        - event: TaxiUtxoAdded(bytes32,uint256)
-          handler: handleTaxiUtxoAdded
-      file: ./src/handleTaxiTree.ts
-  - kind: ethereum
-    name: ZAccountRegistry
-    network: polygon-amoy
-    source:
-      abi: ZAccountRegistry
-      address: '0xDA080f159b9F866da43bBC9E77eFe75E886fB02B' # Internal
-      startBlock: 6869383 # Internal
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - BlacklistForMasterEoaUpdated
-        - BlacklistForPubRootSpendingKeyUpdated
-        - BlacklistForZAccountIdUpdated
-        - ZAccountActivated
-        - ZAccountRegistered
-      abis:
-        - name: ZAccountRegistry
-          file: ./abis/ZAccountRegistry.json
+        - name: ZAccountsRegistration
+          file: ./abis/ZAccountsRegistration.json
       eventHandlers:
         - event: BlacklistForMasterEoaUpdated(address,bool)
           handler: handleBlacklistForMasterEoaUpdated
@@ -173,8 +98,287 @@ dataSources:
           handler: handleBlacklistForPubRootSpendingKeyUpdated
         - event: BlacklistForZAccountIdUpdated(uint24,bool)
           handler: handleBlacklistForZAccountIdUpdated
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: TransactionNote(uint16,bytes)
+          handler: handleTransactionNote
         - event: ZAccountActivated(uint24)
           handler: handleZAccountActivated
         - event: ZAccountRegistered(address,(uint184,uint32,uint24,uint8,uint8,bytes32,bytes32))
           handler: handleZAccountRegistered
-      file: ./src/handleZAccountRegistry.ts
+      file: ./src/z-accounts-registration.ts
+  - kind: ethereum
+    name: ZSwap
+    network: polygon-amoy
+    source:
+      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      abi: ZSwap
+      startBlock: 12725094
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ZSwapFeesAccounted
+        - ZSwapTransactionNote
+        - ZSwapPluginUpdated
+      abis:
+        - name: ZSwap
+          file: ./abis/ZSwap.json
+      eventHandlers:
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: TransactionNote(uint16,bytes)
+          handler: handleTransactionNote
+        - event: ZSwapPluginUpdated(address,bool)
+          handler: handleZSwapPluginUpdated
+      file: ./src/z-swap.ts
+  - kind: ethereum
+    name: ZTransaction
+    network: polygon-amoy
+    source:
+      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      abi: ZTransaction
+      startBlock: 12725094
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ZTransactionFeesAccounted
+        - ZTransactionSeenKytMessageHash
+        - ZTransactionTransactionNote
+      abis:
+        - name: ZTransaction
+          file: ./abis/ZTransaction.json
+      eventHandlers:
+        - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
+          handler: handleFeesAccounted
+        - event: SeenKytMessageHash(indexed bytes32)
+          handler: handleSeenKytMessageHash
+        - event: TransactionNote(uint16,bytes)
+          handler: handleTransactionNote
+      file: ./src/z-transaction.ts
+  - kind: ethereum
+    name: ProvidersKeysRegistry
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: ProvidersKeysRegistry
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - KeyExtended
+        - KeyRegistered
+        - KeyRevoked
+        - KeyringUpdated
+        - TreeLockUpdated
+      abis:
+        - name: ProvidersKeysRegistry
+          file: ./abis/ProvidersKeysRegistry.json
+      eventHandlers:
+        - event: KeyExtended(indexed uint16,indexed uint16,uint32)
+          handler: handleKeyExtended
+        - event: KeyRegistered(indexed uint16,indexed uint16,bytes32,uint32)
+          handler: handleKeyRegistered
+        - event: KeyRevoked(indexed uint16,indexed uint16)
+          handler: handleKeyRevoked
+        - event: KeyringUpdated(indexed uint16,address,uint8,uint16)
+          handler: handleKeyringUpdated
+        - event: TreeLockUpdated(uint32)
+          handler: handleTreeLockUpdated
+      file: ./src/providers-keys-registry.ts
+  - kind: ethereum
+    name: StaticTree
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: StaticTree
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - StaticTreeRootUpdated
+      abis:
+        - name: StaticTree
+          file: ./abis/StaticTree.json
+      eventHandlers:
+        - event: RootUpdated(indexed uint256,bytes32,bytes32)
+          handler: handleRootUpdated
+      file: ./src/static-tree.ts
+  - kind: ethereum
+    name: ZAssetsRegistryV1
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: ZAssetsRegistryV1
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - WeightControllerUpdated
+        - ZAssetRootUpdated
+      abis:
+        - name: ZAssetsRegistryV1
+          file: ./abis/ZAssetsRegistryV1.json
+      eventHandlers:
+        - event: WeightControllerUpdated(address)
+          handler: handleWeightControllerUpdated
+        - event: ZAssetRootUpdated(bytes32,bytes32,uint48)
+          handler: handleZAssetRootUpdated
+      file: ./src/z-assets-registry-v-1.ts
+  - kind: ethereum
+    name: ZNetworksRegistry
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: ZNetworksRegistry
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ZNetworkTreeUpdated
+      abis:
+        - name: ZNetworksRegistry
+          file: ./abis/ZNetworksRegistry.json
+      eventHandlers:
+        - event: ZNetworkTreeUpdated(bytes32)
+          handler: handleZNetworkTreeUpdated
+      file: ./src/z-networks-registry.ts
+  - kind: ethereum
+    name: ZZonesRegistry
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: ZZonesRegistry
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ZZonesTreeUpdated
+      abis:
+        - name: ZZonesRegistry
+          file: ./abis/ZZonesRegistry.json
+      eventHandlers:
+        - event: ZZonesTreeUpdated(bytes32)
+          handler: handleZZonesTreeUpdated
+      file: ./src/z-zones-registry.ts
+  - kind: ethereum
+    name: zkpReserveController
+    network: polygon-amoy
+    source:
+      address: '0xD6c37FcF971587acA6C7F8Bbc9d2af9CEF750331'
+      abi: zkpReserveController
+      startBlock: 12725094
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardParamsUpdated
+        - ZkpReservesReleased
+      abis:
+        - name: zkpReserveController
+          file: ./abis/zkpReserveController.json
+      eventHandlers:
+        - event: RewardParamsUpdated(uint256,uint256)
+          handler: handleRewardParamsUpdated
+        - event: ZkpReservesReleased(bytes32,uint256)
+          handler: handleZkpReservesReleased
+      file: ./src/zkp-reserve-controller.ts
+  - kind: ethereum
+    name: vaultV1
+    network: polygon-amoy
+    source:
+      address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf'
+      abi: vaultV1
+      startBlock: 12725094
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DepositedToEscrow
+        - FundedFromEscrow
+        - Locked
+        - ReturnedFromEscrow
+        - SaltUsed
+        - Unlocked
+      abis:
+        - name: vaultV1
+          file: ./abis/vaultV1.json
+      eventHandlers:
+        - event: DepositedToEscrow(address,uint256,bytes32,address)
+          handler: handleDepositedToEscrow
+        - event: FundedFromEscrow(address,uint256,bytes32,address)
+          handler: handleFundedFromEscrow
+        - event: Locked((uint8,address,uint256,address,uint96))
+          handler: handleLocked
+        - event: ReturnedFromEscrow(address,uint256,bytes32,address)
+          handler: handleReturnedFromEscrow
+        - event: SaltUsed(bytes32)
+          handler: handleSaltUsed
+        - event: Unlocked((uint8,address,uint256,address,uint96))
+          handler: handleUnlocked
+      file: ./src/vault-v-1.ts
+  - kind: ethereum
+    name: feeMaster
+    network: polygon-amoy
+    source:
+      address: '0x2cF41FB1E01fEAF7b7fcc7C40625aE9c08D95343'
+      abi: feeMaster
+      startBlock: 12725094
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DebtsUpdated
+        - DonationsUpdated
+        - FeeParamsUpdated
+        - NativeTokenReserveTargetUpdated
+        - NativeTokenReserveUpdated
+        - PayOff
+        - PoolUpdated
+        - ProtocolZkpFeeDistributionParamsUpdated
+        - TwapPeriodUpdated
+        - ZkpTokenDonationsUpdated
+        - ZkpsDistributed
+      abis:
+        - name: feeMaster
+          file: ./abis/feeMaster.json
+      eventHandlers:
+        - event: DebtsUpdated(address,address,uint256)
+          handler: handleDebtsUpdated
+        - event: DonationsUpdated(uint16,uint256)
+          handler: handleDonationsUpdated
+        - event: FeeParamsUpdated((uint32,uint32,uint32,uint16))
+          handler: handleFeeParamsUpdated
+        - event: NativeTokenReserveTargetUpdated(uint256)
+          handler: handleNativeTokenReserveTargetUpdated
+        - event: NativeTokenReserveUpdated(uint256)
+          handler: handleNativeTokenReserveUpdated
+        - event: PayOff(address,address,uint256)
+          handler: handlePayOff
+        - event: PoolUpdated(address,bool)
+          handler: handlePoolUpdated
+        - event: ProtocolZkpFeeDistributionParamsUpdated(uint16,uint96)
+          handler: handleProtocolZkpFeeDistributionParamsUpdated
+        - event: TwapPeriodUpdated(uint256)
+          handler: handleTwapPeriodUpdated
+        - event: ZkpTokenDonationsUpdated(uint256)
+          handler: handleZkpTokenDonationsUpdated
+        - event: ZkpsDistributed(uint256,uint256)
+          handler: handleZkpsDistributed
+      file: ./src/fee-master.ts

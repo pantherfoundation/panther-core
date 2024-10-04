@@ -1,19 +1,11 @@
 [
   {
     "inputs": [
-      {"internalType": "address", "name": "_owner", "type": "address"},
       {"internalType": "uint8", "name": "_zAccountVersion", "type": "uint8"},
-      {"internalType": "address", "name": "pantherPool", "type": "address"},
-      {
-        "internalType": "address",
-        "name": "pantherStaticTree",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "onboardingController",
-        "type": "address"
-      }
+      {"internalType": "address", "name": "self", "type": "address"},
+      {"internalType": "address", "name": "pantherTrees", "type": "address"},
+      {"internalType": "address", "name": "feeMaster", "type": "address"},
+      {"internalType": "address", "name": "zkpToken", "type": "address"}
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -79,6 +71,53 @@
     "anonymous": false,
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "scMiningReward",
+            "type": "uint40"
+          },
+          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
+          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterCompensationInNative",
+            "type": "uint40"
+          },
+          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+        ],
+        "indexed": false,
+        "internalType": "struct ChargedFeesPerTx",
+        "name": "chargedFeesPerTx",
+        "type": "tuple"
+      }
+    ],
+    "name": "FeesAccounted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "txType",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "content",
+        "type": "bytes"
+      }
+    ],
+    "name": "TransactionNote",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint24",
         "name": "id",
@@ -124,80 +163,13 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct ZAccountsRegistry.ZAccount",
+        "internalType": "struct ZAccountsRegistration.ZAccount",
         "name": "zAccount",
         "type": "tuple"
       }
     ],
     "name": "ZAccountRegistered",
     "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "EIP712_NAME",
-    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "EIP712_SALT",
-    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "EIP712_VERSION",
-    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ONBOARDING_CONTROLLER",
-    "outputs": [
-      {
-        "internalType": "contract IOnboardingController",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "OWNER",
-    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PANTHER_POOL",
-    "outputs": [
-      {
-        "internalType": "contract IPantherPoolV1",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PANTHER_STATIC_TREE",
-    "outputs": [
-      {
-        "internalType": "contract ITreeRootUpdater",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -300,20 +272,6 @@
     "name": "batchUpdateBlacklistForPubRootSpendingKey",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getDomainSeperator",
-    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getRoot",
-    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-    "stateMutability": "view",
     "type": "function"
   },
   {
