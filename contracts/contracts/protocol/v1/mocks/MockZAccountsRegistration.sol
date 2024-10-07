@@ -57,4 +57,10 @@ contract MockZAccountsRegistration is ZAccountsRegistration {
     {
         return (SELF, PANTHER_TREES);
     }
+
+    function internalFeeMasterDebt(
+        address token
+    ) external view returns (uint256) {
+        return feeMasterDebt[token];
+    }
 }

@@ -8,7 +8,6 @@ import {TypedDataDomain} from '@ethersproject/abstract-signer';
 import {Bytes, BytesLike} from '@ethersproject/bytes';
 import {Provider} from '@ethersproject/providers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {expect} from 'chai';
 import {fromRpcSig} from 'ethereumjs-util';
 import {BigNumber} from 'ethers';
@@ -38,6 +37,7 @@ import {
     revertSnapshot,
     takeSnapshot,
 } from '../helpers/hardhat';
+import {getCreateZAccountInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe('ZAccountsRegistry', function () {
     let zAccountsRegistry: MockZAccountsRegistration;
@@ -68,6 +68,21 @@ describe('ZAccountsRegistry', function () {
         x: '11422399650618806433286579969134364085104724365992006856880595766565570395421',
         y: '1176938832872885725065086511371600479013703711997288837813773296149367990317',
     };
+
+    const placeholder = BigNumber.from(0);
+    const proofs = {
+        a: {x: placeholder, y: placeholder},
+        b: {
+            x: [placeholder, placeholder],
+            y: [placeholder, placeholder],
+        },
+        c: {x: placeholder, y: placeholder},
+    } as SnarkProofStruct;
+    const privateMessages = generatePrivateMessage(
+        TransactionTypes.zAccountActivation,
+    );
+    const transactionOptions = 256;
+    const paymasterCompensation = ethers.BigNumber.from('10');
 
     before(async () => {
         [, owner, notOwner, user] = await ethers.getSigners();
@@ -104,28 +119,6 @@ describe('ZAccountsRegistry', function () {
         pubRootSpendingKey?: {x: string; y: string};
         pubReadingKey?: {x: string; y: string};
         user?: SignerWithAddress;
-    }
-
-    interface ActivateZAccountOptions {
-        extraInputsHash?: string;
-        addedAmountZkp?: number;
-        chargedAmountZkp?: number;
-        zAccountId?: number;
-        zAccountCreateTime?: BigNumber;
-        zAccountRootSpendPubKeyX?: string;
-        zAccountRootSpendPubKeyY?: string;
-        zAccountPubReadKeyX?: string;
-        zAccountPubReadKeyY?: string;
-        zAccountNullifierPubKeyX?: string;
-        zAccountNullifierPubKeyY?: string;
-        zAccountMasterEOA?: string;
-        zAccountNullifierZone?: string;
-        commitment?: string;
-        kycSignedMessageHash?: string;
-        staticTreeMerkleRoot?: string;
-        forestMerkleRoot?: string;
-        saltHash?: string;
-        magicalConstraint?: string;
     }
 
     async function genSignature(
@@ -199,99 +192,6 @@ describe('ZAccountsRegistry', function () {
             r,
             s,
         );
-    }
-
-    async function activateZAccount(options: ActivateZAccountOptions) {
-        const placeholder = BigNumber.from(0);
-        const proof = {
-            a: {x: placeholder, y: placeholder},
-            b: {
-                x: [placeholder, placeholder],
-                y: [placeholder, placeholder],
-            },
-            c: {x: placeholder, y: placeholder},
-        } as SnarkProofStruct;
-
-        const addedAmountZkp = options.addedAmountZkp || 0;
-        const chargedAmountZkp = options.chargedAmountZkp || 0;
-        const zAccountId = options.zAccountId || 0;
-        const privateMessages = generatePrivateMessage(
-            TransactionTypes.zAccountActivation,
-        );
-        const zAccountCreateTime =
-            options.zAccountCreateTime || (await getBlockTimestamp()) + 10;
-        const zAccountRootSpendPubKeyX =
-            options.zAccountRootSpendPubKeyX || examplePubKeys.x;
-        const zAccountRootSpendPubKeyY =
-            options.zAccountRootSpendPubKeyY || examplePubKeys.y;
-        const zAccountPubReadKeyX =
-            options.zAccountPubReadKeyX || examplePubKeys.x;
-        const zAccountPubReadKeyY =
-            options.zAccountPubReadKeyY || examplePubKeys.y;
-        const zAccountMasterEOA = options.zAccountMasterEOA || user.address;
-        const zAccountNullifierZone =
-            options.zAccountNullifierZone || BigNumber.from(1);
-        const zAccountNullifierPubKeyX =
-            options.zAccountNullifierPubKeyX || ethers.utils.id('nullifier');
-        const zAccountNullifierPubKeyY =
-            options.zAccountNullifierPubKeyY || ethers.utils.id('nullifier');
-        const commitment = options.commitment || ethers.utils.id('commitment');
-        const kycSignedMessageHash =
-            options.kycSignedMessageHash ||
-            ethers.utils.id('kycSignedMessageHash');
-        const staticTreeMerkleRoot =
-            options.staticTreeMerkleRoot ||
-            ethers.utils.id('staticTreeMerkleRoot');
-        const forestMerkleRoot =
-            options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
-        const saltHash =
-            options.saltHash ||
-            ethers.utils.keccak256(
-                ethers.utils.toUtf8Bytes('PANTHER_EIP712_DOMAIN_SALT'),
-            );
-        const magicalConstraint =
-            options.magicalConstraint || ethers.utils.id('magicalConstraint');
-        const transactionOptions = 0b100000000;
-        const paymasterCompensation = ethers.BigNumber.from('10');
-        const extraInput = ethers.utils.solidityPack(
-            ['uint32', 'uint96', 'bytes'],
-            [transactionOptions, paymasterCompensation, privateMessages],
-        );
-        const calculatedExtraInputHash = BigNumber.from(
-            ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-        ).mod(SNARK_FIELD_SIZE);
-
-        const extraInputsHash =
-            options.extraInputsHash || calculatedExtraInputHash;
-        await expect(
-            zAccountsRegistry.activateZAccount(
-                [
-                    extraInputsHash,
-                    addedAmountZkp,
-                    chargedAmountZkp,
-                    zAccountId,
-                    zAccountCreateTime,
-                    zAccountRootSpendPubKeyX,
-                    zAccountRootSpendPubKeyY,
-                    zAccountPubReadKeyX,
-                    zAccountPubReadKeyY,
-                    zAccountNullifierPubKeyX,
-                    zAccountNullifierPubKeyY,
-                    zAccountMasterEOA,
-                    zAccountNullifierZone,
-                    commitment,
-                    kycSignedMessageHash,
-                    staticTreeMerkleRoot,
-                    forestMerkleRoot,
-                    saltHash,
-                    magicalConstraint,
-                ],
-                proof,
-                transactionOptions,
-                paymasterCompensation,
-                privateMessages,
-            ),
-        ).to.emit(zAccountsRegistry, 'ZAccountActivated');
     }
 
     async function generateRandomPubRootSpendingKeys(): Promise<
@@ -414,6 +314,9 @@ describe('ZAccountsRegistry', function () {
                 expect(zAccountStruct.creationBlock).to.be.eq(nextBlockNum);
                 expect(zAccountStruct.version).to.be.eq(zAccountVersion);
                 expect(zAccountStruct.status).to.be.eq(Status.Registered);
+                expect(
+                    await zAccountsRegistry.masterEOAs(expectedZAccountId),
+                ).to.be.equal(user.address);
             });
         });
 
@@ -594,11 +497,50 @@ describe('ZAccountsRegistry', function () {
 
                 mockGenerateRewards();
 
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
+                await expect(
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
+                )
+                    .to.emit(zAccountsRegistry, 'ZAccountActivated')
+                    .withArgs(0)
+                    .and.to.emit(zAccountsRegistry, 'TransactionNote');
+
                 expect(
-                    await activateZAccount({
-                        zAccountMasterEOA: user.address,
-                    }),
-                ).to.emit(zAccountsRegistry, 'ZAccountActivated');
+                    await zAccountsRegistry.zoneZAccountNullifiers(
+                        ethers.utils.hexZeroPad(
+                            ethers.utils.hexlify(inputs[12]),
+                            32,
+                        ),
+                    ),
+                ).to.be.gt(0); //zAccountNullifierZone
+
+                const pubKeyZAccountNullifiers = await pointPack({
+                    x: inputs[9],
+                    y: inputs[10],
+                });
+                expect(
+                    await zAccountsRegistry.pubKeyZAccountNullifiers(
+                        ethers.utils.hexZeroPad(
+                            ethers.utils.hexlify(pubKeyZAccountNullifiers),
+                            32,
+                        ),
+                    ),
+                ).to.be.gt(0);
+
+                expect(
+                    await zAccountsRegistry.internalFeeMasterDebt(
+                        zkpToken.address,
+                    ),
+                ).to.be.equal(inputs[2]); //chargedAmountZkp
             });
         });
 
@@ -607,8 +549,19 @@ describe('ZAccountsRegistry', function () {
                 await registerZAccount({});
                 const wallet = ethers.Wallet.createRandom();
                 const fauxUser = wallet.address;
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: fauxUser,
+                });
+
                 await expect(
-                    activateZAccount({zAccountMasterEOA: fauxUser}),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E6');
             });
 
@@ -616,8 +569,19 @@ describe('ZAccountsRegistry', function () {
                 await registerZAccount({});
                 const invalidInputsHash =
                     ethers.BigNumber.from('12345').toString();
+
+                const inputs = await getCreateZAccountInputs({
+                    extraInputsHash: invalidInputsHash,
+                });
+
                 await expect(
-                    activateZAccount({extraInputsHash: invalidInputsHash}),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('PIG:E4');
             });
 
@@ -626,12 +590,29 @@ describe('ZAccountsRegistry', function () {
                     zAccountsRegistry,
                     'ZAccountRegistered',
                 );
-                expect(
-                    await activateZAccount({zAccountMasterEOA: user.address}),
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
+                await expect(
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.emit(zAccountsRegistry, 'ZAccountActivated');
 
                 await expect(
-                    activateZAccount({zAccountMasterEOA: user.address}),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('SN:E2');
             });
 
@@ -640,11 +621,21 @@ describe('ZAccountsRegistry', function () {
                     zAccountsRegistry,
                     'ZAccountRegistered',
                 );
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                    zAccountPubReadKeyX: examplePubKeys.x,
+                    zAccountPubReadKeyY: examplePubKeys.x,
+                });
+
                 await expect(
-                    activateZAccount({
-                        zAccountPubReadKeyX: examplePubKeys.x,
-                        zAccountPubReadKeyY: examplePubKeys.x,
-                    }),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E19');
             });
 
@@ -653,11 +644,21 @@ describe('ZAccountsRegistry', function () {
                     zAccountsRegistry,
                     'ZAccountRegistered',
                 );
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                    zAccountRootSpendPubKeyX: examplePubKeys.x,
+                    zAccountRootSpendPubKeyY: examplePubKeys.x,
+                });
+
                 await expect(
-                    activateZAccount({
-                        zAccountRootSpendPubKeyX: examplePubKeys.x,
-                        zAccountRootSpendPubKeyY: examplePubKeys.x,
-                    }),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E18');
             });
 
@@ -670,10 +671,19 @@ describe('ZAccountsRegistry', function () {
                     [user.address],
                     [true],
                 );
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
                 await expect(
-                    activateZAccount({
-                        zAccountMasterEOA: user.address,
-                    }),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E2');
             });
 
@@ -686,10 +696,19 @@ describe('ZAccountsRegistry', function () {
                     [await pointPack(examplePubKeys)],
                     [true],
                 );
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
                 await expect(
-                    activateZAccount({
-                        zAccountMasterEOA: user.address,
-                    }),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E3');
             });
         });
@@ -743,8 +762,18 @@ describe('ZAccountsRegistry', function () {
                     [user.address],
                     [true],
                 );
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
                 await expect(
-                    activateZAccount({zAccountMasterEOA: user.address}),
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
                 ).to.be.revertedWith('ZAR:E2');
             });
 

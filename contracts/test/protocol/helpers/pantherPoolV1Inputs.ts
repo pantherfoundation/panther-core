@@ -244,9 +244,9 @@ export async function getCreateZAccountInputs(options: CreateZAccountOptions) {
     const zAccountNullifierZone =
         options.zAccountNullifierZone || BigNumber.from(1);
     const zAccountNullifierPubKeyX =
-        options.zAccountNullifierPubKeyX || ethers.utils.id('nullifier');
+        options.zAccountNullifierPubKeyX || BigNumber.from(2);
     const zAccountNullifierPubKeyY =
-        options.zAccountNullifierPubKeyY || ethers.utils.id('nullifier');
+        options.zAccountNullifierPubKeyY || BigNumber.from(3);
     const commitment = options.commitment || ethers.utils.id('commitment');
     const kycSignedMessageHash =
         options.kycSignedMessageHash || ethers.utils.id('kycSignedMessageHash');
@@ -261,7 +261,7 @@ export async function getCreateZAccountInputs(options: CreateZAccountOptions) {
         );
     const magicalConstraint =
         options.magicalConstraint || ethers.utils.id('magicalConstraint');
-    const transactionOptions = 0;
+    const transactionOptions = 256;
     const paymasterCompensation = ethers.BigNumber.from('10');
     const extraInput = ethers.utils.solidityPack(
         ['uint32', 'uint96', 'bytes'],
