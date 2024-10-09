@@ -1,0 +1,307 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_owner", "type": "address"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "escrow",
+        "type": "address"
+      }
+    ],
+    "name": "DepositedToEscrow",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "escrow",
+        "type": "address"
+      }
+    ],
+    "name": "FundedFromEscrow",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+          {
+            "internalType": "address",
+            "name": "extAccount",
+            "type": "address"
+          },
+          {"internalType": "uint96", "name": "extAmount", "type": "uint96"}
+        ],
+        "indexed": false,
+        "internalType": "struct LockData",
+        "name": "data",
+        "type": "tuple"
+      }
+    ],
+    "name": "Locked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "escrow",
+        "type": "address"
+      }
+    ],
+    "name": "ReturnedFromEscrow",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      }
+    ],
+    "name": "SaltUsed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+          {
+            "internalType": "address",
+            "name": "extAccount",
+            "type": "address"
+          },
+          {"internalType": "uint96", "name": "extAmount", "type": "uint96"}
+        ],
+        "indexed": false,
+        "internalType": "struct LockData",
+        "name": "data",
+        "type": "tuple"
+      }
+    ],
+    "name": "Unlocked",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "OWNER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+      {"internalType": "address", "name": "token", "type": "address"},
+      {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+    ],
+    "name": "getBalance",
+    "outputs": [
+      {"internalType": "uint256", "name": "balance", "type": "uint256"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "salt", "type": "bytes32"},
+      {"internalType": "address", "name": "depositor", "type": "address"}
+    ],
+    "name": "getEscrowAddress",
+    "outputs": [
+      {"internalType": "address", "name": "escrowAddr", "type": "address"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+          {
+            "internalType": "address",
+            "name": "extAccount",
+            "type": "address"
+          },
+          {"internalType": "uint96", "name": "extAmount", "type": "uint96"}
+        ],
+        "internalType": "struct LockData",
+        "name": "lData",
+        "type": "tuple"
+      }
+    ],
+    "name": "lockAsset",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+          {"internalType": "bytes32", "name": "salt", "type": "bytes32"},
+          {
+            "internalType": "address",
+            "name": "extAccount",
+            "type": "address"
+          },
+          {"internalType": "uint256", "name": "extAmount", "type": "uint256"}
+        ],
+        "internalType": "struct SaltedLockData",
+        "name": "slData",
+        "type": "tuple"
+      }
+    ],
+    "name": "lockAssetWithSalt",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "bytes", "name": "", "type": "bytes"}
+    ],
+    "name": "onERC1155Received",
+    "outputs": [{"internalType": "bytes4", "name": "", "type": "bytes4"}],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "bytes", "name": "", "type": "bytes"}
+    ],
+    "name": "onERC721Received",
+    "outputs": [{"internalType": "bytes4", "name": "", "type": "bytes4"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "salt", "type": "bytes32"}],
+    "name": "sendEthToEscrow",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint8", "name": "tokenType", "type": "uint8"},
+          {"internalType": "address", "name": "token", "type": "address"},
+          {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+          {
+            "internalType": "address",
+            "name": "extAccount",
+            "type": "address"
+          },
+          {"internalType": "uint96", "name": "extAmount", "type": "uint96"}
+        ],
+        "internalType": "struct LockData",
+        "name": "lData",
+        "type": "tuple"
+      }
+    ],
+    "name": "unlockAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes32", "name": "salt", "type": "bytes32"}],
+    "name": "withdrawEthFromEscrow",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

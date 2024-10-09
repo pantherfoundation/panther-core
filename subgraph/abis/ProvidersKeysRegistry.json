@@ -1,0 +1,481 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "self", "type": "address"},
+      {"internalType": "uint8", "name": "keyringVersion", "type": "uint8"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyringId",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyIndex",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "newExpiry",
+        "type": "uint32"
+      }
+    ],
+    "name": "KeyExtended",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyringId",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyIndex",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "packedPubKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "expiry",
+        "type": "uint32"
+      }
+    ],
+    "name": "KeyRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyringId",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyIndex",
+        "type": "uint16"
+      }
+    ],
+    "name": "KeyRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "keyringId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProvidersKeysRegistry.STATUS",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "numAllocKeys",
+        "type": "uint16"
+      }
+    ],
+    "name": "KeyringUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "tillTime",
+        "type": "uint32"
+      }
+    ],
+    "name": "TreeLockUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "KEYRING_VERSION",
+    "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "operator", "type": "address"},
+      {"internalType": "uint16", "name": "numAllocKeys", "type": "uint16"}
+    ],
+    "name": "addKeyring",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {"internalType": "uint32", "name": "newExpiry", "type": "uint32"},
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "extendKeyExpiry",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"},
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {"internalType": "uint32", "name": "newExpiry", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      },
+      {"internalType": "uint8", "name": "v", "type": "uint8"},
+      {"internalType": "bytes32", "name": "r", "type": "bytes32"},
+      {"internalType": "bytes32", "name": "s", "type": "bytes32"}
+    ],
+    "name": "extendKeyExpiryWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"}
+    ],
+    "name": "getKeyCommitment",
+    "outputs": [
+      {"internalType": "bytes32", "name": "commitment", "type": "bytes32"}
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getProvidersKeysRoot",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getStatistics",
+    "outputs": [
+      {"internalType": "uint16", "name": "numKeyrings", "type": "uint16"},
+      {
+        "internalType": "uint16",
+        "name": "totalNumRegisteredKeys",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "totalNumAllocatedKeys",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint32",
+        "name": "treeLockedTillTime",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {"internalType": "uint16", "name": "allocation", "type": "uint16"}
+    ],
+    "name": "increaseKeyringKeyAllocation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      }
+    ],
+    "name": "isAcceptablePubKey",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint16", "name": "", "type": "uint16"}],
+    "name": "keyringIds",
+    "outputs": [{"internalType": "uint16", "name": "", "type": "uint16"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint16", "name": "", "type": "uint16"}],
+    "name": "keyrings",
+    "outputs": [
+      {"internalType": "address", "name": "operator", "type": "address"},
+      {
+        "internalType": "enum ProvidersKeysRegistry.STATUS",
+        "name": "status",
+        "type": "uint8"
+      },
+      {"internalType": "uint16", "name": "numKeys", "type": "uint16"},
+      {"internalType": "uint16", "name": "numAllocKeys", "type": "uint16"},
+      {
+        "internalType": "uint32",
+        "name": "registrationBlock",
+        "type": "uint32"
+      },
+      {"internalType": "uint24", "name": "_unused", "type": "uint24"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      }
+    ],
+    "name": "packPubKey",
+    "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"}
+    ],
+    "name": "reactivateKeyring",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "registerKey",
+    "outputs": [
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      },
+      {"internalType": "uint8", "name": "v", "type": "uint8"},
+      {"internalType": "bytes32", "name": "r", "type": "bytes32"},
+      {"internalType": "bytes32", "name": "s", "type": "bytes32"}
+    ],
+    "name": "registerKeyWithSignature",
+    "outputs": [
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"},
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "revokeKey",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {"internalType": "uint16", "name": "keyIndex", "type": "uint16"},
+      {
+        "components": [
+          {"internalType": "uint256", "name": "x", "type": "uint256"},
+          {"internalType": "uint256", "name": "y", "type": "uint256"}
+        ],
+        "internalType": "struct G1Point",
+        "name": "pubKey",
+        "type": "tuple"
+      },
+      {"internalType": "uint32", "name": "expiry", "type": "uint32"},
+      {
+        "internalType": "bytes32[]",
+        "name": "proofSiblings",
+        "type": "bytes32[]"
+      },
+      {"internalType": "uint8", "name": "v", "type": "uint8"},
+      {"internalType": "bytes32", "name": "r", "type": "bytes32"},
+      {"internalType": "bytes32", "name": "s", "type": "bytes32"}
+    ],
+    "name": "revokeKeyWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"}
+    ],
+    "name": "suspendKeyring",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {"internalType": "address", "name": "newOperator", "type": "address"}
+    ],
+    "name": "updateKeyringOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
+      {"internalType": "address", "name": "newOperator", "type": "address"},
+      {"internalType": "uint8", "name": "v", "type": "uint8"},
+      {"internalType": "bytes32", "name": "r", "type": "bytes32"},
+      {"internalType": "bytes32", "name": "s", "type": "bytes32"}
+    ],
+    "name": "updateKeyringOperatorWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint32", "name": "lockPeriod", "type": "uint32"}
+    ],
+    "name": "updateTreeLock",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
