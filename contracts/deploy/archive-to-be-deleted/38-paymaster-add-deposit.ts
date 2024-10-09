@@ -35,6 +35,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 
-func.tags = ['erc4337', 'paymaster-add-deposit'];
+// func.tags = ['erc4337', 'paymaster-add-deposit'];
 
-func.dependencies = ['check-params', 'deployment-consent'];
+// func.dependencies = ['check-params', 'deployment-consent'];

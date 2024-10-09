@@ -23,6 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const tx = await diamond.updatePluginStatus(
             uniswapV3RouterPlugin,
             true,
+            {gasPrice: 30000000000},
         );
         const res = await tx.wait();
         console.log('uniswap v3 router is updated', res.transactionHash);
@@ -34,6 +35,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const tx = await diamond.updatePluginStatus(
             quickswapRouterPlugin,
             true,
+            {gasPrice: 30000000000},
         );
         const res = await tx.wait();
         console.log('quickswap router is updated', res.transactionHash);
