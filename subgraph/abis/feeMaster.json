@@ -1,0 +1,765 @@
+[
+  {
+    "inputs": [
+      {"internalType": "address", "name": "owner", "type": "address"},
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "pantherPool",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "pantherTrees",
+            "type": "address"
+          },
+          {"internalType": "address", "name": "paymaster", "type": "address"},
+          {
+            "internalType": "address",
+            "name": "trustProvider",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct Providers",
+        "name": "providers",
+        "type": "tuple"
+      },
+      {"internalType": "address", "name": "zkpToken", "type": "address"},
+      {"internalType": "address", "name": "wethToken", "type": "address"},
+      {"internalType": "address", "name": "vault", "type": "address"},
+      {"internalType": "address", "name": "treasury", "type": "address"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {"inputs": [], "name": "T", "type": "error"},
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "updatedDebt",
+        "type": "uint256"
+      }
+    ],
+    "name": "DebtsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "txType",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "donation",
+        "type": "uint256"
+      }
+    ],
+    "name": "DonationsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "scPerUtxoReward",
+            "type": "uint32"
+          },
+          {"internalType": "uint32", "name": "scPerKytFee", "type": "uint32"},
+          {"internalType": "uint32", "name": "scKycFee", "type": "uint32"},
+          {
+            "internalType": "uint16",
+            "name": "protocolFeePercentage",
+            "type": "uint16"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct FeeParams",
+        "name": "feeParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "FeeParamsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nativeTokenReserveTarget",
+        "type": "uint256"
+      }
+    ],
+    "name": "NativeTokenReserveTargetUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nativeTokenReserve",
+        "type": "uint256"
+      }
+    ],
+    "name": "NativeTokenReserveUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "PayOff",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "PoolUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "treasuryLockPercentage",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "minRewardableZkpAmount",
+        "type": "uint96"
+      }
+    ],
+    "name": "ProtocolZkpFeeDistributionParamsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "twapPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "TwapPeriodUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "zkpTokenDonation",
+        "type": "uint256"
+      }
+    ],
+    "name": "ZkpTokenDonationsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minerPremiumRewards",
+        "type": "uint256"
+      }
+    ],
+    "name": "ZkpsDistributed",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "OWNER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_BUS_TREE",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_POOL",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_TREES",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PAYMASTER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PRP_CONVERTER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PRP_VOUCHER_GRANTOR",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TREASURY",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TRUST_PROVIDER",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "VAULT",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WETH",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ZKP_TOKEN",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint16", "name": "txType", "type": "uint16"},
+          {
+            "internalType": "uint8",
+            "name": "numOutputUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterZkpFee",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scAddedZkpAmount",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scChargedZkpAmount",
+            "type": "uint40"
+          }
+        ],
+        "internalType": "struct FeeData",
+        "name": "feeData",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint128",
+            "name": "depositAmount",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "withdrawAmount",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct AssetData",
+        "name": "assetData",
+        "type": "tuple"
+      }
+    ],
+    "name": "accountFees",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "scMiningReward",
+            "type": "uint40"
+          },
+          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
+          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterCompensationInNative",
+            "type": "uint40"
+          },
+          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+        ],
+        "internalType": "struct ChargedFeesPerTx",
+        "name": "chargedFeesPerTx",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {"internalType": "uint16", "name": "txType", "type": "uint16"},
+          {
+            "internalType": "uint8",
+            "name": "numOutputUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterZkpFee",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scAddedZkpAmount",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scChargedZkpAmount",
+            "type": "uint40"
+          }
+        ],
+        "internalType": "struct FeeData",
+        "name": "feeData",
+        "type": "tuple"
+      }
+    ],
+    "name": "accountFees",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "scMiningReward",
+            "type": "uint40"
+          },
+          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
+          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scPaymasterCompensationInNative",
+            "type": "uint40"
+          },
+          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+        ],
+        "internalType": "struct ChargedFeesPerTx",
+        "name": "chargedFeesPerTx",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_pool", "type": "address"},
+      {"internalType": "address", "name": "_tokenA", "type": "address"},
+      {"internalType": "address", "name": "_tokenB", "type": "address"}
+    ],
+    "name": "addPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "approveVaultToTransferZkp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cacheNativeToZkpRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cachedNativeRateInZkp",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "address", "name": "", "type": "address"}
+    ],
+    "name": "debts",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "secretHash", "type": "bytes32"}
+    ],
+    "name": "distributeProtocolZkpFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint16", "name": "", "type": "uint16"}],
+    "name": "donations",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "feeParams",
+    "outputs": [
+      {"internalType": "uint32", "name": "scPerUtxoReward", "type": "uint32"},
+      {"internalType": "uint32", "name": "scPerKytFee", "type": "uint32"},
+      {"internalType": "uint32", "name": "scKycFee", "type": "uint32"},
+      {
+        "internalType": "uint16",
+        "name": "protocolFeePercentage",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "token", "type": "address"}],
+    "name": "getDebtForProtocol",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "tokenA", "type": "address"},
+      {"internalType": "address", "name": "tokenB", "type": "address"}
+    ],
+    "name": "getEnabledPoolAddress",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256", "name": "nativeAmount", "type": "uint256"}
+    ],
+    "name": "getNativeRateInZkp",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "pool", "type": "address"},
+      {"internalType": "address", "name": "baseToken", "type": "address"},
+      {"internalType": "address", "name": "quoteToken", "type": "address"},
+      {"internalType": "uint256", "name": "baseAmount", "type": "uint256"}
+    ],
+    "name": "getQuoteAmount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256", "name": "zkpAmount", "type": "uint256"}
+    ],
+    "name": "getZkpRateInNative",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "increaseNativeTokenReserves",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_zkpTokenDonation",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseZkpTokenDonations",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nativeTokenReserve",
+    "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nativeTokenReserveTarget",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "receiver", "type": "address"}
+    ],
+    "name": "payOff",
+    "outputs": [{"internalType": "uint256", "name": "debt", "type": "uint256"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "tokenAddress", "type": "address"},
+      {"internalType": "address", "name": "receiver", "type": "address"},
+      {"internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "payOff",
+    "outputs": [{"internalType": "uint256", "name": "debt", "type": "uint256"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bytes4", "name": "", "type": "bytes4"}],
+    "name": "pools",
+    "outputs": [
+      {"internalType": "address", "name": "_address", "type": "address"},
+      {"internalType": "bool", "name": "_enabled", "type": "bool"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "bytes32", "name": "secretHash", "type": "bytes32"},
+      {"internalType": "address", "name": "sellToken", "type": "address"}
+    ],
+    "name": "rebalanceDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "twapPeriod",
+    "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "int256", "name": "amount0Delta", "type": "int256"},
+      {"internalType": "int256", "name": "amount1Delta", "type": "int256"},
+      {"internalType": "bytes", "name": "data", "type": "bytes"}
+    ],
+    "name": "uniswapV3SwapCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint16[]", "name": "txTypes", "type": "uint16[]"},
+      {
+        "internalType": "uint256[]",
+        "name": "donateAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "updateDonations",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint96", "name": "perUtxoReward", "type": "uint96"},
+      {"internalType": "uint96", "name": "perKytFee", "type": "uint96"},
+      {"internalType": "uint96", "name": "kycFee", "type": "uint96"},
+      {
+        "internalType": "uint16",
+        "name": "protocolFeePercentage",
+        "type": "uint16"
+      }
+    ],
+    "name": "updateFeeParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_nativeTokenReserveTarget",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateNativeTokenReserveTarget",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_pool", "type": "address"},
+      {"internalType": "address", "name": "_tokenA", "type": "address"},
+      {"internalType": "address", "name": "_tokenB", "type": "address"},
+      {"internalType": "bool", "name": "_enabled", "type": "bool"}
+    ],
+    "name": "updatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "treasuryLockPercentage",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint96",
+        "name": "minRewardableZkpAmount",
+        "type": "uint96"
+      }
+    ],
+    "name": "updateProtocolZkpFeeDistributionParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint32", "name": "_twapPeriod", "type": "uint32"}
+    ],
+    "name": "updateTwapPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "zkpTokenDonationReserve",
+    "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {"stateMutability": "payable", "type": "receive"}
+]
