@@ -37,6 +37,6 @@ const func: DeployFunction =
 
 export default func;
 
-func.tags = ['erc4337', 'paymaster-add-stake'];
+// func.tags = ['erc4337', 'paymaster-add-stake'];
 
-func.dependencies = ['check-params', 'deployment-consent'];
+// func.dependencies = ['check-params', 'deployment-consent'];

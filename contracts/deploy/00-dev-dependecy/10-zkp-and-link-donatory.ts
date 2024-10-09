@@ -4,11 +4,12 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {getNamedAccount} from '../../../lib/deploymentHelpers';
+import {getNamedAccount} from '../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
-    const multisig = await getNamedAccount(hre, 'multisig');
+    const pzkp = await getNamedAccount(hre, 'pzkp');
+    const link = await getNamedAccount(hre, 'link');
 
     const {
         deployments: {deploy, get},
@@ -16,13 +17,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const coreDiamond = (await get('PantherPoolV1')).address;
 
-    await deploy('VaultV1', {
+    await deploy('TestnetZkpAndLinkDonatory', {
         from: deployer,
-        args: [coreDiamond],
-        proxy: {
-            proxyContract: 'EIP173ProxyWithReceive',
-            owner: multisig,
-        },
+        args: [deployer, coreDiamond, link, pzkp],
         log: true,
         autoMine: true,
         gasPrice: 30000000000,
@@ -30,5 +27,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['vault-v1', 'core', 'protocol-v1'];
+func.tags = ['zkp-and-link-donatory'];
 func.dependencies = ['core-diamond'];

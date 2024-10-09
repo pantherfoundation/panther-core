@@ -13,36 +13,67 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
-        deployments: {deploy},
+        deployments: {deploy, get},
+        ethers,
     } = hre;
 
-    const coreDiamond = (await deployments.get('PantherPoolV1')).address;
+    const coreDiamond = (await get('PantherPoolV1')).address;
 
-    const poolMainSelector = ethers.utils
+    /**
+     * @dev The `uint96` field in the Ztransaction 'main' function calldata
+     * `main(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)`
+     * paymasterCompensation offset  -> `uint96` = 4 + 32 + 256 + 32 = 324 bytes
+     */
+    const zTxnMainPayCompOffset = 324;
+    const zTxnMainSelector = ethers.utils
         .id(
-            'main(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint8,uint96,bytes)',
+            'main(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
         )
         .slice(0, 10);
 
-    const activateZAccountSelector = ethers.utils
-        .id(
-            'activateZAccount(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
-        )
-        .slice(0, 10);
-
-    const claimRewardsSelector = ethers.utils
-        .id(
-            'claimRewards(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
-        )
-        .slice(0, 10);
-
-    const convertSelector = ethers.utils
+    /**
+     * @dev The second `uint96` field in PrpConversion `convert` function calldata
+     * `convert(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,uint96,bytes)`
+     *  paymasterCompensation offset  -> second `uint96` = 4 + 32 + 256 + 32 + 32 = 356 bytes
+     */
+    const prpConvPayCompOffset = 356;
+    const prpConvSelector = ethers.utils
         .id(
             'convert(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,uint96,bytes)',
         )
         .slice(0, 10);
 
-    const swapZAssetSelector = ethers.utils
+    /**
+     * @dev The `uint96` field in the PrpVoucherController `accountRewards` function calldata
+     * `accountRewards(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)`
+     *  paymasterCompensation offset  -> `uint96` = 4 + 32 + 256 + 32 = 324 bytes
+     */
+    const voucherCtrlAccRwdsPayCompOffset = 324;
+    const voucherCtrlAccRwdsSelector = ethers.utils
+        .id(
+            'accountRewards(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
+        )
+        .slice(0, 10);
+
+    /**
+     * @dev The `uint96` field in the ZAccountsRegistration `activateZAccount` function calldata
+     * `activateZAccount(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)`
+     *  paymasterCompensation offset  -> `uint96` = 4 + 32 + 256 + 32 = 324 bytes
+     */
+    const zAcctRegActivatePayCompOffset = 324;
+    const zAcctRegActivateSelector = ethers.utils
+        .id(
+            'activateZAccount(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
+        )
+        .slice(0, 10);
+
+    /**
+     * @dev The `uint96` field in the ZSwap `swapZAsset` function calldata
+     * `swapZAsset(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes,bytes)`
+     *  paymasterCompensation offset  -> `uint96` = 4 + 32 + 256 + 32 = 324 bytes
+     */
+    const zSwapZassetPayCompOffset = 324;
+    const zSwapZassetSelector = ethers.utils
         .id(
             'swapZAsset(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes,bytes)',
         )
@@ -62,19 +93,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 ADDRESS_ONE,
             ],
             [
-                poolMainSelector,
-                activateZAccountSelector,
-                claimRewardsSelector,
-                convertSelector,
-                swapZAssetSelector,
+                zTxnMainSelector,
+                prpConvSelector,
+                voucherCtrlAccRwdsSelector,
+                zAcctRegActivateSelector,
+                zSwapZassetSelector,
                 BYTES_ONE,
                 BYTES_ONE,
                 BYTES_ONE,
             ],
-            [356, 324, 324, 356, 324, 0, 0, 0],
+            [
+                zTxnMainPayCompOffset,
+                prpConvPayCompOffset,
+                voucherCtrlAccRwdsPayCompOffset,
+                zAcctRegActivatePayCompOffset,
+                zSwapZassetPayCompOffset,
+                0,
+                0,
+                0,
+            ],
         ],
         log: true,
         autoMine: true,
+        gasPrice: 30000000000,
     });
 };
 export default func;

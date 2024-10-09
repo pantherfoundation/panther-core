@@ -8,27 +8,25 @@ import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
-    const multisig = await getNamedAccount(hre, 'multisig');
+    const entryPoint = await getNamedAccount(hre, 'entryPoint');
 
     const {
         deployments: {deploy, get},
     } = hre;
 
+    const account = (await get('Account')).address;
+    const feeMaster = (await get('FeeMaster')).address;
     const coreDiamond = (await get('PantherPoolV1')).address;
 
-    await deploy('VaultV1', {
+    await deploy('PayMaster_Implementation', {
+        contract: 'PayMaster',
         from: deployer,
-        args: [coreDiamond],
-        proxy: {
-            proxyContract: 'EIP173ProxyWithReceive',
-            owner: multisig,
-        },
+        args: [entryPoint, account, feeMaster, coreDiamond],
         log: true,
         autoMine: true,
-        gasPrice: 30000000000,
     });
 };
 export default func;
 
-func.tags = ['vault-v1', 'core', 'protocol-v1'];
-func.dependencies = ['core-diamond'];
+func.tags = ['paymaster-imp', 'protocol-v1'];
+func.dependencies = ['account', 'fee-master', 'core-diamond'];
