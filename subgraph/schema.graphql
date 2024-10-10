@@ -413,3 +413,145 @@ type ZkpsDistributed @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
+
+type BusBatchOnboarded @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    batchRoot: Bytes! # bytes32
+    numUtxosInBatch: BigInt! # uint256
+    leftLeafIndexInBusTree: BigInt! # uint256
+    busTreeNewRoot: Bytes! # bytes32
+    busBranchNewRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusBranchFilled @entity(immutable: true) {
+    id: Bytes!
+    branchIndex: BigInt! # uint256
+    busBranchFinalRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueOpened @entity(immutable: false) {
+    id: String!
+    queueId: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+    isOnboarded: Boolean! # bool
+}
+
+type BusQueueProcessed @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueRewardAdded @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint256
+    accumReward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueRewardParamsUpdated @entity(immutable: true) {
+    id: Bytes!
+    reservationRate: BigInt! # uint256
+    premiumRate: BigInt! # uint256
+    minEmptyQueueAge: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueRewardReserveAllocated @entity(immutable: true) {
+    id: Bytes!
+    updatedNetRewardReserve: BigInt! # int112
+    allocated: BigInt! # uint112
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type BusQueueRewardReserveUpdated @entity(immutable: true) {
+    id: Bytes!
+    updatedNetRewardReserve: BigInt! # int112
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ForestRootUpdated @entity(immutable: true) {
+    id: Bytes!
+    leafIndex: BigInt! # uint256
+    updatedLeaf: Bytes! # bytes32
+    updatedRoot: Bytes! # bytes32
+    cacheIndex: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type MinerRewardAccounted @entity(immutable: true) {
+    id: Bytes!
+    queueId: BigInt! # uint32
+    miner: Bytes! # address
+    reward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type MinerRewardClaimed @entity(immutable: true) {
+    id: Bytes!
+    timestamp: BigInt! # uint32
+    miner: Bytes! # address
+    reward: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TaxiRootUpdated @entity(immutable: true) {
+    id: Bytes!
+    updatedRoot: Bytes! # bytes32
+    numLeaves: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TaxiSubtreeRootUpdated @entity(immutable: true) {
+    id: Bytes!
+    subtreeRoot: Bytes! # bytes32
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type TaxiUtxoAdded @entity(immutable: true) {
+    id: Bytes!
+    utxo: Bytes! # bytes32
+    totalUtxoInsertions: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type UtxoBusQueued @entity(immutable: true) {
+    id: Bytes!
+    utxo: Bytes! # bytes32
+    queueId: BigInt! # uint256
+    utxoIndexInBatch: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
