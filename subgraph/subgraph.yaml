@@ -382,3 +382,65 @@ dataSources:
         - event: ZkpsDistributed(uint256,uint256)
           handler: handleZkpsDistributed
       file: ./src/fee-master.ts
+  - kind: ethereum
+    name: PantherForest
+    network: polygon-amoy
+    source:
+      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      abi: PantherForest
+      startBlock: 12725104
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BusBatchOnboarded
+        - BusBranchFilled
+        - BusQueueOpened
+        - BusQueueProcessed
+        - BusQueueRewardAdded
+        - BusQueueRewardParamsUpdated
+        - BusQueueRewardReserveAllocated
+        - BusQueueRewardReserveUpdated
+        - ForestRootUpdated
+        - MinerRewardAccounted
+        - MinerRewardClaimed
+        - TaxiRootUpdated
+        - TaxiSubtreeRootUpdated
+        - TaxiUtxoAdded
+        - UtxoBusQueued
+      abis:
+        - name: PantherForest
+          file: ./abis/PantherForest.json
+      eventHandlers:
+        - event: BusBatchOnboarded(indexed uint256,indexed bytes32,uint256,uint256,bytes32,bytes32)
+          handler: handleBusBatchOnboarded
+        - event: BusBranchFilled(indexed uint256,bytes32)
+          handler: handleBusBranchFilled
+        - event: BusQueueOpened(uint256)
+          handler: handleBusQueueOpened
+        - event: BusQueueProcessed(indexed uint256)
+          handler: handleBusQueueProcessed
+        - event: BusQueueRewardAdded(indexed uint256,uint256)
+          handler: handleBusQueueRewardAdded
+        - event: BusQueueRewardParamsUpdated(uint256,uint256,uint256)
+          handler: handleBusQueueRewardParamsUpdated
+        - event: BusQueueRewardReserveAllocated(int112,uint112)
+          handler: handleBusQueueRewardReserveAllocated
+        - event: BusQueueRewardReserveUpdated(int112)
+          handler: handleBusQueueRewardReserveUpdated
+        - event: ForestRootUpdated(indexed uint256,bytes32,bytes32,uint256)
+          handler: handleForestRootUpdated
+        - event: MinerRewardAccounted(uint32,address,uint256)
+          handler: handleMinerRewardAccounted
+        - event: MinerRewardClaimed(uint32,address,uint256)
+          handler: handleMinerRewardClaimed
+        - event: TaxiRootUpdated(bytes32,uint256)
+          handler: handleTaxiRootUpdated
+        - event: TaxiSubtreeRootUpdated(bytes32)
+          handler: handleTaxiSubtreeRootUpdated
+        - event: TaxiUtxoAdded(bytes32,uint256)
+          handler: handleTaxiUtxoAdded
+        - event: UtxoBusQueued(indexed bytes32,indexed uint256,uint256)
+          handler: handleUtxoBusQueued
+      file: ./src/panther-forest.ts
