@@ -56,8 +56,8 @@ export const claimRewardsInputs = async () => {
         ethers.utils.parseEther('1000').toString(), // depositAmountPrp (inputs[4])
         ethers.utils.parseEther('0').toString(), // withdrawAmountPrp (inputs[5])
         getSnarkFriendlyBytes(), // utxoCommitmentPrivatePart (inputs[6])
-        getSnarkFriendlyBytes(), // utxoSpendPubKeyX (inputs[7])
-        getSnarkFriendlyBytes(), // utxoSpendPubKeyY (inputs[8])
+        // getSnarkFriendlyBytes(), // utxoSpendPubKeyX (inputs[7])
+        // getSnarkFriendlyBytes(), // utxoSpendPubKeyY (inputs[8])
         '1', // zAssetScale (inputs[9])
         getSnarkFriendlyBytes(), // zAccountUtxoInNullifier (inputs[10])
         getSnarkFriendlyBytes(), // zAccountUtxoOutCommitment (inputs[11])
@@ -462,7 +462,7 @@ describe('PrpVoucherController', function () {
 
             inputs = await claimRewardsInputs();
 
-            inputs[15] = secretHash2;
+            inputs[13] = secretHash2;
             inputs[4] = amount.add(zeroValue);
             inputs[0] = generateExtraInputsHash(
                 ['uint32', 'uint96', 'bytes'],
@@ -510,7 +510,7 @@ describe('PrpVoucherController', function () {
         it('reverts when trying to claim a reward voucher with no balance', async function () {
             inputs[3] = ((await getBlockTimestamp()) + 3).toString();
             const noBalanceSecretHash = ethers.utils.id('no_balance_secret');
-            inputs[15] = noBalanceSecretHash;
+            inputs[13] = noBalanceSecretHash;
             await expect(
                 prpVoucherController
                     .connect(user)
@@ -550,7 +550,7 @@ describe('PrpVoucherController', function () {
             inputs = await claimRewardsInputs();
             secretHash = ethers.utils.id('all_rewards');
             inputs[3] = ((await getBlockTimestamp()) + 3).toString();
-            inputs[15] = secretHash;
+            inputs[13] = secretHash;
             inputs[4] = amount.add(zeroValue);
             inputs[0] = generateExtraInputsHash(
                 ['uint32', 'uint96', 'bytes'],
