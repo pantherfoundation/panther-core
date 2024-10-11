@@ -38,10 +38,6 @@ describe('PrpConversion', function () {
     let owner: SignerWithAddress, notOwner: SignerWithAddress;
     let snapshot: number;
 
-    const examplePubKeys = {
-        x: '11422399650618806433286579969134364085104724365992006856880595766565570395421',
-        y: '1176938832872885725065086511371600479013703711997288837813773296149367990317',
-    };
     const privateMessage = generatePrivateMessage(
         TransactionTypes.prpConversion,
     );
@@ -95,8 +91,6 @@ describe('PrpConversion', function () {
         depositPrpAmount?: BigNumber;
         withdrawPrpAmount?: BigNumber;
         utxoCommitmentPrivatePart?: string;
-        utxoSpendPubKeyX?: string;
-        utxoSpendPubKeyY?: string;
         zAssetScale?: number;
         zAccountUtxoInNullifier?: string;
         zAccountUtxoOutCommitment?: string;
@@ -127,8 +121,6 @@ describe('PrpConversion', function () {
         const privateMessages = privateMessage;
         const zAccountCreateTime =
             options.utxoOutCreateTime || (await getBlockTimestamp()) + 10;
-        const utxoSpendPubKeyX = options.utxoSpendPubKeyX || examplePubKeys.x;
-        const utxoSpendPubKeyY = options.utxoSpendPubKeyY || examplePubKeys.y;
         const zAssetScale = options.zAssetScale || 1000;
         const zNetworkChainId = 31337;
         const zAccountUtxoInNullifier =
@@ -177,8 +169,6 @@ describe('PrpConversion', function () {
                     depositPrpAmount,
                     withdrawPrpAmount,
                     utxoCommitmentPrivatePart,
-                    utxoSpendPubKeyX,
-                    utxoSpendPubKeyY,
                     zAssetScale,
                     zAccountUtxoInNullifier,
                     zAccountUtxoOutCommitment,
