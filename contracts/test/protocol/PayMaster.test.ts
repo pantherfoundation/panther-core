@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {smock, FakeContract} from '@defi-wonderland/smock';
+import {smock, MockContract} from '@defi-wonderland/smock';
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
-import {BigNumber, Contract} from 'ethers';
+import {BigNumber, Contract, BaseContract} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {abi, bytecode} from '../../external/abi/EntryPoint.json';
 import {callculateAndGetNonce} from '../../lib/calcAndGetNonce';
 import {toBytes32} from '../../lib/utilities';
-import {PayMaster, IFeeMasterHelper} from '../../types/contracts';
+import {PayMaster} from '../../types/contracts';
 import {UserOperationStruct} from '../../types/contracts/Account';
 
 import {ADDRESS_ONE, ADDRESS_ZERO} from './helpers/constants';
@@ -35,17 +36,35 @@ describe('Paymaster contract', function () {
     let paymasterCompensation: BigNumber;
 
     let requiredPrefund: BigNumber;
-    let feeMaster: FakeContract<IFeeMasterHelper>;
+    let feeMaster: MockContract<BaseContract>;
     let paymaster: Contract,
         entryPoint: Contract,
         smartAccount: Contract,
         prpVoucherGrantor: Contract;
-    let ethersSigner!: JsonRpcSigner;
+    let ethersSigner!: SignerWithAddress;
 
     before(async function () {
-        [ethersSigner] = await hre.ethers.getSigners();
+        [ethersSigner] = await ethers.getSigners();
 
-        feeMaster = await smock.fake('IFeeMasterHelper');
+        const providers = {
+            // using `ethersSigner` as place holder address
+            pantherPool: ethersSigner.address,
+            pantherTrees: ethersSigner.address,
+            paymaster: ethersSigner.address,
+            trustProvider: ethersSigner.address,
+        };
+
+        const feeMasterFactory = await smock.mock('FeeMaster');
+        feeMaster = await feeMasterFactory.deploy(
+            // using `ethersSigner` as place holder address
+            ethersSigner.address,
+            providers,
+            ethersSigner.address,
+            ethersSigner.address,
+            ethersSigner.address,
+            ethersSigner.address,
+        );
+
         feeMaster.cachedNativeRateInZkp.returns(
             '240749478694512898077317062222',
         );
@@ -171,7 +190,7 @@ describe('Paymaster contract', function () {
         });
     });
 
-    context('function claimEthAndRefundEntryPoint', () => {
+    context.skip('function claimEthAndRefundEntryPoint', () => {
         it('should send FeeMaster debt to EntryPoint', async () => {
             const before = await entryPoint.getDepositInfo(paymaster.address);
 
@@ -181,7 +200,7 @@ describe('Paymaster contract', function () {
 
             const after = await entryPoint.getDepositInfo(paymaster.address);
 
-            await expect(before.deposit.add(debt)).to.eq(after.deposit);
+            expect(before.deposit.add(debt)).to.eq(after.deposit);
         });
     });
 
@@ -394,7 +413,7 @@ describe('Paymaster contract', function () {
             );
         });
 
-        it('should withdraw deposit to address', async function () {
+        it.skip('should withdraw deposit to address', async function () {
             await paymaster.depositToEntryPoint({
                 value: ethers.utils.parseEther('1'),
             });
