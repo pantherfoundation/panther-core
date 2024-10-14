@@ -23,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         args: [quickswapRouter02, quickswapFactory, vaultV1, weth9],
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 };
 export default func;

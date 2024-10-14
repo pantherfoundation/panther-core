@@ -16,11 +16,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treesDiamond = (await get('PantherTrees')).address;
 
     const poseidonT3 = (await get('PoseidonT3')).address;
+    const poseidonT6 = (await get('PoseidonT6')).address;
 
     await deploy('ZAssetsRegistryV1', {
         from: deployer,
         args: [treesDiamond],
-        libraries: {PoseidonT3: poseidonT3},
+        libraries: {PoseidonT3: poseidonT3, PoseidonT6: poseidonT6},
         log: true,
         autoMine: true,
         gasPrice: 30000000000,

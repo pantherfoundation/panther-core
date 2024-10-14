@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 
     const PoseidonT4 = await getPoseidonT4Contract();
@@ -44,7 +44,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 
     const PoseidonT5 = await getPoseidonT5Contract();
@@ -58,7 +58,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 
     const PoseidonT6 = await getPoseidonT6Contract();
@@ -72,7 +72,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 };
 export default func;

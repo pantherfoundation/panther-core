@@ -51,9 +51,8 @@
     "test:ts": "echo '[i] not implemented: yarn pchain:load-snapshot --eval-and-exit \"jest --runInBand --detectOpenHandles --forceExit --verbose --colors\"'",
     "test": "yarn clean && HARDHAT_NO_MNEMONIC=yes hardhat test",
     "typechain": "HARDHAT_NO_MNEMONIC=yes hardhat typechain",
-    "uml": "yarn sol2uml -i utils contracts -o ../docs/contracts.svg",
-    "verify:network": "HARDHAT_NO_MNEMONIC=yes hardhat verify --network",
-    "verify": "hardhat verify"
+    "verify": "hardhat verify",
+    "verify:all": "hardhat run scripts/verifyContracts.ts --network"
   },
   "keywords": [
     "blockchain",
