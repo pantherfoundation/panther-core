@@ -25,6 +25,7 @@
     "deploy:contracts": "yarn workspace @panther-core/contracts deploy",
     "deploy:dapp:ci:ipfs": "yarn workspace @panther-core/dapp deploy:ci:ipfs",
     "deploy:graph": "yarn workspace @panther-core/subgraph deploy",
+    "feemaster:payOff": "yarn workspace @panther-core/contracts feemaster:payOff",
     "graph:auth": "yarn workspace @panther-core/subgraph auth",
     "hardhat": "yarn workspace @panther-core/contracts hardhat",
     "install:clean": "yarn workspaces run rimraf node_modules && yarn rimraf node_modules && yarn install",
@@ -33,12 +34,12 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "prettier:list-different": "yarn prettier --list-different .",
+    "test:ci:dapp": "yarn workspace @panther-core/dapp test:ci",
+    "test:ci": "yarn test:contracts && yarn test:crypto && yarn test:ci:dapp",
     "test:contracts": "TS_NODE_TRANSPILE_ONLY=1 yarn workspace @panther-core/contracts test",
     "test:crypto": "yarn workspace @panther-core/crypto test",
     "test:dapp": "yarn workspace @panther-core/dapp test",
-    "test:ci:dapp": "yarn workspace @panther-core/dapp test:ci",
-    "test": "yarn test:contracts && yarn test:crypto && yarn test:dapp",
-    "test:ci": "yarn test:contracts && yarn test:crypto && yarn test:ci:dapp"
+    "test": "yarn test:contracts && yarn test:crypto && yarn test:dapp"
   },
   "workspaces": {
     "packages": [
