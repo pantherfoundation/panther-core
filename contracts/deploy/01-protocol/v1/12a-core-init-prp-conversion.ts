@@ -24,16 +24,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     {
         const pZkp = await ethers.getContractAt('MockPZkp', pzkp);
         console.log('transfering zkp tokens...');
-        const tx = await pZkp.transfer(diamond.address, zkpAmount);
+        const tx = await pZkp.transfer(diamond.address, zkpAmount, {
+            gasPrice: 30000000000,
+        });
         const res = await tx.wait();
         console.log('zkp tokens are transfered', res.transactionHash);
     }
 
     {
         console.log('initialize prpConversion');
-        const tx = await diamond.initPool(prpVirtualAmount, zkpAmount);
+        const tx = await diamond.initPool(prpVirtualAmount, zkpAmount, {
+            gasPrice: 30000000000,
+        });
         const res = await tx.wait();
-        console.log('prpConversio is initializd', res.transactionHash);
+        console.log('prpConversion is initializd', res.transactionHash);
     }
 };
 export default func;

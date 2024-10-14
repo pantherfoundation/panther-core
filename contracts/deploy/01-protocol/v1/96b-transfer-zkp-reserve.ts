@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {DeployFunction} from 'hardhat-deploy/types';
+
+import {getNamedAccount} from '../../../lib/deploymentHelpers';
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const pzkp = await getNamedAccount(hre, 'pzkp');
+
+    const {
+        deployments: {get},
+        ethers,
+    } = hre;
+
+    const zkpReserveController = (await get('ZkpReserveController')).address;
+
+    const zkpTokenReserves = ethers.utils.parseEther('1000000');
+
+    const pZkp = await ethers.getContractAt('MockPZkp', pzkp);
+
+    console.log('transfering zkp tokens...');
+    const tx = await pZkp.transfer(zkpReserveController, zkpTokenReserves, {
+        gasPrice: 30000000000,
+    });
+    const res = await tx.wait();
+
+    console.log('zkp tokens are transfered', res.transactionHash);
+};
+export default func;
+
+func.tags = [
+    'transfer-zkp-reserve-controller-zkp-tokens',
+    'core',
+    'protocol-v1',
+];
+func.dependencies = ['zkp-reserve-controller'];

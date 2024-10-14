@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         log: true,
         autoMine: true,
-        gasPrice: 25000000000,
+        gasPrice: 30000000000,
     });
 };
 export default func;

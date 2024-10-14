@@ -15,6 +15,7 @@ import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
+import './tasks/get-deployment-addresses.ts';
 import './tasks/protocol/grant-issue';
 import './tasks/protocol/pool-time-update.ts';
 import './tasks/protocol/pubkey-register';
@@ -325,22 +326,29 @@ function getNamedAccounts() {
             amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
         },
 
-        pZkp_native_pool: {
+        pZkp_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
-            amoy: '0x7a37f4a561514feb762d5301d0a25631e5faf30a',
+            amoy: '0xE4F378BF1B3E7d7B92AA2B0ADB5FF4548651Ea36',
         },
 
-        pZkp_link_pool: {
+        pZkp_link_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
-            amoy: '0x39150aF61A33E0d97878D26e1b7eDFbd3ca2d505',
+            amoy: '0x79ea0F4f833f1C752c92e5ac6F105f87cd423Af9',
         },
 
-        link_native_pool: {
+        link_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xd61679A9cD1152bdfA9Ce2ff78ebd8bE67314935',
+        },
+
+        uniswapV3NonfungiblePositionManager: {
+            amoy: '',
+        },
+        uniswapV3Factory: {
+            amoy: '',
         },
     };
 

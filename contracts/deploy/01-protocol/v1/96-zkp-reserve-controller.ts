@@ -8,19 +8,18 @@ import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
-    const quickswapRouter02 = await getNamedAccount(hre, 'quickswapRouter02');
-    const quickswapFactory = await getNamedAccount(hre, 'quickswapFactory');
-    const weth9 = await getNamedAccount(hre, 'weth9');
+    const multisig = await getNamedAccount(hre, 'multisig');
+    const pzkp = await getNamedAccount(hre, 'pzkp');
 
     const {
         deployments: {deploy, get},
     } = hre;
 
-    const vaultV1 = (await get('VaultV1')).address;
+    const coreDiamond = (await get('PantherPoolV1')).address;
 
-    await deploy('QuickswapRouterPlugin', {
+    await deploy('ZkpReserveController', {
         from: deployer,
-        args: [quickswapRouter02, quickswapFactory, vaultV1, weth9],
+        args: [multisig, pzkp, coreDiamond],
         log: true,
         autoMine: true,
         gasPrice: 30000000000,
@@ -28,5 +27,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['quickswap-router-plugin', 'core', 'protocol-v1'];
-func.dependencies = ['vault-v1'];
+func.tags = ['zkp-reserve-controller', 'core', 'protocol-v1'];
+func.dependencies = ['core-diamond'];

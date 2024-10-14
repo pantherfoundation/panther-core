@@ -20,6 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         args: [coreDiamond],
         log: true,
         autoMine: true,
+        gasPrice: 30000000000,
     });
 };
 export default func;

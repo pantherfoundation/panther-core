@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     const pointer = verificationKeys.filter(
-        (x: any) => x.key === 'oneInputPoseidonHasher',
+        (x: any) => x.key === 'busTreeUpdater',
     )[0].pointer;
 
     const reservationRate = '2000';

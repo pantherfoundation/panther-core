@@ -32,9 +32,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         `../../../test/protocol/data/verificationKeys/VK_ztransaction.json`,
     );
 
-    const oneInputPoseidonHasherVKFilePath = join(
+    const busTreeUpdaterVKFilePath = join(
         __dirname,
-        `../../../test/protocol/data/verificationKeys/VK_oneInputPoseidonHasher.json`,
+        `../../../test/protocol/data/verificationKeys/VK_pantherBusTreeUpdater.json`,
     );
 
     const verificationKeys: {key?: string; pointer?: string}[] = [];
@@ -136,10 +136,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
     {
-        console.log('deploying one input hasher vk...');
+        console.log('deploying bus tree updater vk...');
 
         const verificationKey = JSON.parse(
-            await promises.readFile(oneInputPoseidonHasherVKFilePath, {
+            await promises.readFile(busTreeUpdaterVKFilePath, {
                 encoding: 'utf8',
             }),
         );
@@ -149,9 +149,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             encodeVerificationKey(verificationKey),
         );
 
-        verificationKeys.push({key: 'oneInputPoseidonHasher', pointer});
+        verificationKeys.push({key: 'busTreeUpdater', pointer});
 
-        if (isReused) console.log('one input hasher vk was already deployed!');
+        if (isReused) console.log('bus tree updater vk was already deployed!');
     }
 
     process.env.VERIFICATION_KEY_POINTERS = JSON.stringify(verificationKeys);

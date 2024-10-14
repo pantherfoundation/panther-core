@@ -30,11 +30,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['init-static-root', 'trees', 'protocol-v1'];
-// func.dependencies = [
-//     'add-static-tree',
-//     'add-blacklisted-zaccount-ids-registry',
-//     'add-providers-keys-registry',
-//     'add-znetworks-registry',
-//     'add-zassets-registry',
-//     'add-zzone-registry',
-// ];
+func.dependencies = [
+    'add-static-tree',
+    'add-blacklisted-zaccount-ids-registry',
+    'add-providers-keys-registry',
+    'add-znetworks-registry',
+    'add-zassets-registry',
+    'add-zzone-registry',
+];

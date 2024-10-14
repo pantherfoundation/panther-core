@@ -22,19 +22,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('Adding keyrings...');
 
-    const transactions = numAllocKeys.map(async numAllocKeys => {
-        const tx = await diamond.addKeyring(deployer, numAllocKeys, {
+    for (const numAllocKey of numAllocKeys) {
+        const tx = await diamond.addKeyring(deployer, numAllocKey, {
             gasPrice: 30000000000,
         });
-        return tx.wait();
-    });
+        const res = await tx.wait();
 
-    transactions.forEach((tx, index) => {
-        const allocKeys = numAllocKeys[index];
         console.log(
-            `Keyring added for operator ${deployer} with ${allocKeys} allocated keys. Transaction hash: ${tx.transactionHash}`,
+            `Keyring added for operator ${deployer} with ${numAllocKey} allocated keys. Transaction hash: ${res.transactionHash}`,
         );
-    });
+    }
 };
 
 export default func;
