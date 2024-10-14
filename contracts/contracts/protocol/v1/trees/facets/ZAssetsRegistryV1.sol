@@ -45,7 +45,7 @@ contract ZAssetsRegistryV1 is
     bytes32 private _currentRoot;
 
     // the next leaf index
-    uint32 public totalLeavesInserted;
+    uint32 private totalLeavesInserted;
 
     address public weightController;
 
@@ -67,7 +67,7 @@ contract ZAssetsRegistryV1 is
     }
 
     // zAsset key to inner hash
-    mapping(uint64 => bytes32) public zAssetsInnerHash;
+    mapping(uint64 => bytes32) private zAssetsInnerHash;
 
     // zAsset key to network ID
     mapping(uint64 => uint8) private previousZAssetsNetwork;
