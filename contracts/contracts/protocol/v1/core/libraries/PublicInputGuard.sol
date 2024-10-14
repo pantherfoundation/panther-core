@@ -52,7 +52,7 @@ library PublicInputGuard {
         uint256 spendTime,
         uint256 maxBlockTimeOffset
     ) internal view {
-        // Must be less than 32 bits and NOT in the past
+        // Must be less than 32 bits and NOT in the future
         uint32 spendTimeSafe32 = spendTime.safe32();
 
         require(
