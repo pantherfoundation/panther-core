@@ -15,7 +15,6 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - PrpConversionFeesAccounted
-        - Initialized
         - Sync
         - PrpConversionTransactionNote
         - ZkpReservesIncreased
@@ -25,8 +24,6 @@ dataSources:
       eventHandlers:
         - event: FeesAccounted((uint40,uint40,uint40,uint40,uint96))
           handler: handleFeesAccounted
-        - event: Initialized(uint256,uint256)
-          handler: handleInitialized
         - event: Sync(uint112,uint112)
           handler: handleSync
         - event: TransactionNote(uint16,bytes)

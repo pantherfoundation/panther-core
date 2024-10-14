@@ -7,7 +7,6 @@ import {
 } from '../generated/PrpConversion/PrpConversion';
 import {
     FeesAccounted,
-    Initialized,
     Sync,
     TransactionNote,
     ZkpReservesIncreased,
@@ -25,20 +24,6 @@ export function handleFeesAccounted(event: FeesAccountedEvent): void {
         event.params.chargedFeesPerTx.scPaymasterCompensationInNative;
     entity.chargedFeesPerTx_protocolFee =
         event.params.chargedFeesPerTx.protocolFee;
-
-    entity.blockNumber = event.block.number;
-    entity.blockTimestamp = event.block.timestamp;
-    entity.transactionHash = event.transaction.hash;
-
-    entity.save();
-}
-
-export function handleInitialized(event: InitializedEvent): void {
-    let entity = new Initialized(
-        event.transaction.hash.concatI32(event.logIndex.toI32()),
-    );
-    entity.prpVirtualAmount = event.params.prpVirtualAmount;
-    entity.zkpAmount = event.params.zkpAmount;
 
     entity.blockNumber = event.block.number;
     entity.blockTimestamp = event.block.timestamp;
