@@ -200,6 +200,7 @@ abstract contract TransactionNoteEmitter {
     // the same transaction's MT_UTXO_ZACCOUNT message
     uint8 internal constant MT_SPENT_2UTXO = 0x09;
     // `msgContainer` MUST contain the following data:
+    // - bytes[32] ephemeralKey,
     // - bytes[64] cypherText
     // (the ephemeral key omitted to avoid duplication)
     // Length in bytes (msgType, msgContainer)
