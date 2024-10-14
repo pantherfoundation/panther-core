@@ -7,6 +7,13 @@ import "./UniswapPoolsList.sol";
 import { NATIVE_TOKEN } from "../../../common/Constants.sol";
 
 abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
+    event ProtocolFeeSwapped(
+        address sellToken,
+        uint256 sellAmount,
+        uint256 receivedNative,
+        uint256 receivedZkp
+    );
+
     function _trySwapProtoclFeesToNativeAndZkp(
         address zkpToken,
         address sellToken,
@@ -42,12 +49,26 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         );
 
         convertWNativeToNative(wNativeBalance);
+
+        // emit selltoken, selltokenAmount, zkpConverted, nativeConverted
+        emit ProtocolFeeSwapped(
+            sellToken,
+            sellAmount,
+            receivedWNative,
+            newProtocolFeeInZkp
+        );
     }
 
     function _convertTokenToNative(
         address _token,
         uint256 _swapAmount
     ) private returns (uint256 receivedNative) {
+        if (_token == WETH) {
+            // skip the swap, if the sell token is wEth
+            receivedNative = _swapAmount;
+            return receivedNative;
+        }
+
         // getting pool address
         address pool = getEnabledPoolAddress(NATIVE_TOKEN, _token);
 
