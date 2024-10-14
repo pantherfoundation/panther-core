@@ -10,15 +10,6 @@ type FeesAccounted @entity(immutable: true) {
     transactionHash: Bytes!
 }
 
-type Initialized @entity(immutable: true) {
-    id: Bytes!
-    prpVirtualAmount: BigInt! # uint256
-    zkpAmount: BigInt! # uint256
-    blockNumber: BigInt!
-    blockTimestamp: BigInt!
-    transactionHash: Bytes!
-}
-
 type Sync @entity(immutable: true) {
     id: Bytes!
     prpReserve: BigInt! # uint112
