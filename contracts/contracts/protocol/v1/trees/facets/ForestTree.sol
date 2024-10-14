@@ -108,7 +108,11 @@ contract ForestTree is
         bytes32 busTreeRoot = getBusTreeRoot();
         bytes32 ferryTreeRoot = getFerryTreeRoot();
 
-        _initCacheForestRoot(taxiTreeRoot, busTreeRoot, ferryTreeRoot);
+        forestRoot = _initCacheForestRoot(
+            taxiTreeRoot,
+            busTreeRoot,
+            ferryTreeRoot
+        );
 
         _initializeBusTree(
             onboardingQueueCircuitId,
@@ -168,6 +172,10 @@ contract ForestTree is
         );
     }
 
+    function addBusTreeCircuit(uint160 id) external onlyOwner {
+        _updateCircuitId(id);
+    }
+
     /**
      * @notice Adds UTXOs to the bus queue and the taxi tree.
      * @param utxos An array of UTXOs to be added.
@@ -219,7 +227,10 @@ contract ForestTree is
             taxiTreeNewRoot = _addUtxos(utxos);
         }
 
-        _cacheNewForestRoot(taxiTreeNewRoot, TAXI_TREE_FOREST_LEAF_INDEX);
+        forestRoot = _cacheNewForestRoot(
+            taxiTreeNewRoot,
+            TAXI_TREE_FOREST_LEAF_INDEX
+        );
     }
 
     /**
@@ -244,7 +255,10 @@ contract ForestTree is
             proof
         );
 
-        _cacheNewForestRoot(busTreeNewRoot, BUS_TREE_FOREST_LEAF_INDEX);
+        forestRoot = _cacheNewForestRoot(
+            busTreeNewRoot,
+            BUS_TREE_FOREST_LEAF_INDEX
+        );
     }
 
     /**
