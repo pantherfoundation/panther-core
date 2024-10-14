@@ -3,40 +3,28 @@
 // solhint-disable one-contract-per-file
 pragma solidity ^0.8.19;
 
-// import "../PantherPoolV1.sol";
+contract MockPantherPoolV1 {
+    event LogGenerateRewards(
+        bytes32 _secretHash,
+        uint64 _amount,
+        bytes4 _voucherType
+    );
 
-// contract MockPantherPoolV1 is PantherPoolV1 {
-//     constructor(
-//         address _owner,
-//         address zkpToken,
-//         address pantherTrees,
-//         address vault,
-//         address zAccountRegistry,
-//         address prpVoucherGrantor,
-//         address prpConverter,
-//         address feeMaster,
-//         address verifier
-//     )
-//         PantherPoolV1(
-//             _owner,
-//             zkpToken,
-//             pantherTrees,
-//             vault,
-//             zAccountRegistry,
-//             prpVoucherGrantor,
-//             prpConverter,
-//             feeMaster,
-//             verifier
-//         )
-//     {}
+    constructor() {}
 
-//     // function internalCacheNewRoot(
-//     //     uint256 root
-//     // ) external returns (uint256 cacheIndex) {
-//     //     cacheIndex = cacheNewRoot(bytes32(root));
-//     // }
+    function increaseZkpReserve() external {}
 
-//     function mockSpendUtxo(uint256 _utxo, bool _isSpent) external {
-//         isSpent[bytes32(_utxo)] = _isSpent;
-//     }
-// }
+    function generateRewards(
+        bytes32 _secretHash,
+        uint64 _amount,
+        bytes4 _voucherType
+    ) external returns (uint256) {
+        emit LogGenerateRewards(_secretHash, _amount, _voucherType);
+    }
+
+    function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        address token,
+        int256 netAmount,
+        address extAccount
+    ) external payable {}
+}
