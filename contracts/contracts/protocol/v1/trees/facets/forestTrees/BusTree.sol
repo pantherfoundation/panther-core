@@ -81,10 +81,7 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
         address feeMaster,
         address rewardToken,
         uint8 miningRewardVersion
-    )
-        BusQueues(feeMaster)
-        MiningRewards(feeMaster, rewardToken, miningRewardVersion)
-    {}
+    ) MiningRewards(feeMaster, rewardToken, miningRewardVersion) {}
 
     function getBusTreeStats()
         external
@@ -168,7 +165,7 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
 
         {
             bytes32 oldRoot = bytes32(inputs[0]);
-            require(oldRoot == _busTreeRoot, ERR_INVALID_BUS_TREE_ROOT);
+            require(oldRoot == getBusTreeRoot(), ERR_INVALID_BUS_TREE_ROOT);
         }
         {
             bytes memory extraInput = abi.encodePacked(miner, queueId);

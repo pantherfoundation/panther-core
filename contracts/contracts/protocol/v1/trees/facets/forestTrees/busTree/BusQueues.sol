@@ -2,8 +2,6 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import "../../../interfaces/IMinersNetRewardReserves.sol";
-
 import "../../../utils/merkleTrees/DegenerateIncrementalBinaryTree.sol";
 
 import "../../../../../../common/crypto/PoseidonHashers.sol";
@@ -30,14 +28,9 @@ import { HUNDRED_PERCENT } from "../../../../../../common/Constants.sol";
  * The queue lifecycle is:
  * "Opened -> (optionally) Closed -> Processed (and deleted)."
  */
-abstract contract BusQueues is
-    DegenerateIncrementalBinaryTree,
-    IMinersNetRewardReserves
-{
+abstract contract BusQueues is DegenerateIncrementalBinaryTree {
     uint256 internal constant QUEUE_MAX_LEVELS = 6;
     uint256 private constant QUEUE_MAX_SIZE = 2 ** QUEUE_MAX_LEVELS;
-
-    address public immutable REWARD_RESERVE_ALLOCATOR;
 
     /**
      * @param nUtxos Number of UTXOs in the queue
@@ -90,11 +83,11 @@ abstract contract BusQueues is
     // (i.e. an extra reward) for every block the queue pends processing
     uint16 private _premiumRate;
 
+    // Unused yet part of queue rewards which were reserved for premiums
+    uint96 internal _rewardReserve;
+
     // Minimum number of blocks an empty queue must pend processing.
     uint16 private _minEmptyQueueAge;
-
-    // Unused yet part of queue rewards which were reserved for premiums
-    int112 public netRewardReserve;
 
     // Emitted for every UTXO appended to a queue
     event UtxoBusQueued(
@@ -119,18 +112,13 @@ abstract contract BusQueues is
     // Emitted when the reward reserves are either increased or decreased
     event BusQueueRewardReserveUpdated(int112 updatedNetRewardReserve);
 
-    // Emitted when the reward reserves are allocated by FeeMaster
-    event BusQueueRewardReserveAllocated(
-        int112 updatedNetRewardReserve,
-        uint112 allocated
-    );
+    // Emitted when new reward "reserves" added
+    event BusQueueRewardReserved(uint256 extraReseve);
+    // Emitted when (part of) reward "reserves" used
+    event BusQueueRewardReserveUsed(uint256 usage);
 
     // Emitted when queue reward increased w/o adding UTXOs
     event BusQueueRewardAdded(uint256 indexed queueId, uint256 accumReward);
-
-    constructor(address rewardReserveAllocator) {
-        REWARD_RESERVE_ALLOCATOR = rewardReserveAllocator;
-    }
 
     modifier nonEmptyBusQueue(uint32 queueId) {
         require(_busQueues[queueId].nUtxos > 0, "BQ:EMPTY_QUEUE");
@@ -169,7 +157,8 @@ abstract contract BusQueues is
         returns (
             uint32 curQueueId,
             uint32 numPendingQueues,
-            uint32 oldestPendingQueueId
+            uint32 oldestPendingQueueId,
+            uint96 rewardReserve
         )
     {
         uint32 nextQueueId = _nextQueueId;
@@ -179,6 +168,7 @@ abstract contract BusQueues is
         oldestPendingQueueId = numPendingQueues == 0
             ? 0
             : _oldestPendingQueueLink - 1;
+        rewardReserve = _rewardReserve;
     }
 
     function getBusQueue(
@@ -230,18 +220,6 @@ abstract contract BusQueues is
         }
 
         return queues;
-    }
-
-    function allocateRewardReserve(uint112 allocated) external {
-        require(
-            msg.sender == REWARD_RESERVE_ALLOCATOR,
-            "unauthorized reward allocator"
-        );
-
-        int112 _netRewardReserve = netRewardReserve + int112(allocated);
-        netRewardReserve = _netRewardReserve;
-
-        emit BusQueueRewardReserveAllocated(_netRewardReserve, allocated);
     }
 
     // @dev Refer to return values of the `getParam` function
@@ -456,16 +434,22 @@ abstract contract BusQueues is
             uint256 premium,
             int256 netReserveChange
         ) = _estimateRewarding(queue);
-
-        int112 updatedNetRewardReserve = int112(
-            netRewardReserve + netReserveChange
-        );
-
-        netRewardReserve = updatedNetRewardReserve;
-
+        uint256 reserve = _rewardReserve;
+        if (netReserveChange > 0) {
+            uint256 addition = uint256(netReserveChange);
+            _rewardReserve = uint96(reserve + addition);
+            emit BusQueueRewardReserved(addition);
+        }
+        if (netReserveChange < 0) {
+            uint256 usage = uint256(-netReserveChange);
+            if (usage > reserve) {
+                premium -= (usage - reserve);
+                usage = reserve;
+            }
+            _rewardReserve = uint96(reserve - usage);
+            emit BusQueueRewardReserveUsed(usage);
+        }
         actReward = reward + premium;
-
-        emit BusQueueRewardReserveUpdated(updatedNetRewardReserve);
     }
 
     function _estimateRewarding(
