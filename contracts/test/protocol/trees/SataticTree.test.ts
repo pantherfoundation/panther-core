@@ -97,7 +97,7 @@ describe('SataticTree', function () {
             await pantherStaticTree.initializeStaticTree();
             await expect(
                 pantherStaticTree.initializeStaticTree(),
-            ).to.be.revertedWith('PF: Already initialized');
+            ).to.be.revertedWith('ST: Already initialized');
         });
     });
 
@@ -130,6 +130,8 @@ describe('SataticTree', function () {
         });
 
         it('Should not allow wrong controller to update root', async function () {
+            await pantherStaticTree.initializeStaticTree();
+
             await expect(
                 pantherStaticTree
                     .connect(user)
@@ -138,9 +140,11 @@ describe('SataticTree', function () {
         });
 
         it('Should revert if the leafIndex is invalid', async function () {
+            await pantherStaticTree.initializeStaticTree();
+
             await expect(
                 pantherStaticTree.updateStaticRoot(NEW_LEAF, 7),
-            ).to.be.revertedWith('PF: INVALID_LEAF_IND');
+            ).to.be.revertedWith('ST: INVALID_LEAF_IND');
         });
     });
 });

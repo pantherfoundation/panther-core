@@ -70,7 +70,7 @@ contract StaticTree is
      * Reverts if the static root has already been initialized.
      */
     function initializeStaticTree() external onlyOwner {
-        require(staticRoot == bytes32(0), "PF: Already initialized");
+        require(staticRoot == bytes32(0), "ST: Already initialized");
 
         leafs[ZASSET_STATIC_LEAF_INDEX] = IStaticSubtreesRootsGetter(SELF)
             .getZAssetsRoot();
@@ -97,7 +97,9 @@ contract StaticTree is
      * Reverts if the leafIndex is invalid or if the caller is unauthorized.
      */
     function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external {
-        require(leafIndex < NUM_LEAFS, "PF: INVALID_LEAF_IND");
+        require(staticRoot != bytes32(0), "ST: not initialized");
+
+        require(leafIndex < NUM_LEAFS, "ST: INVALID_LEAF_IND");
         require(msg.sender == SELF, "unauthorized");
 
         leafs[leafIndex] = updatedLeaf;
