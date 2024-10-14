@@ -27,7 +27,7 @@ contract MockProtocolFeeSwapper is ProtocolFeeSwapper {
     }
 
     function addPool(address _pool, address _tokenA, address _tokenB) public {
-        _addPool(_pool, _tokenA, _tokenB);
+        _updatePool(_pool, _tokenA, _tokenB, true);
     }
 
     function updateTwapPeriod(uint32 _twapPeriod) public {
