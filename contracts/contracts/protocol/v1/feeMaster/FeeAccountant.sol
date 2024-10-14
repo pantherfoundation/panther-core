@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+import "../interfaces/IProviderFeeDebt.sol";
 import { Providers, FeeParams, FeeData, AssetData, ChargedFeesPerTx } from "./Types.sol";
 
 import "../../../common/UtilsLib.sol";
 import { HUNDRED_PERCENT, NATIVE_TOKEN } from "../../../common/Constants.sol";
 
-abstract contract FeeAccountant {
+abstract contract FeeAccountant is IProviderFeeDebt {
     using UtilsLib for uint256;
     using UtilsLib for uint96;
     using UtilsLib for uint40;
@@ -43,16 +44,7 @@ abstract contract FeeAccountant {
     /* ========== PRIVATE FUNCTIONS ========== */
 
     function _updateDebtForProtocol(address token, int256 netAmount) internal {
-        uint256 protocolDebts = debts[PANTHER_POOL][token];
-
-        if (netAmount > 0) {
-            protocolDebts += uint256(netAmount);
-        }
-        if (netAmount < 0) {
-            protocolDebts -= uint256(-netAmount);
-        }
-
-        debts[PANTHER_POOL][token] = protocolDebts;
+        _updateDebts(PANTHER_POOL, token, netAmount);
     }
 
     function _updateFeeParams(

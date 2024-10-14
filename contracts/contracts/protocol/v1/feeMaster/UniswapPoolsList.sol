@@ -19,30 +19,19 @@ abstract contract UniswapPoolsList {
         bytes4 key = PoolKey.getKey(tokenA, tokenB);
         Pool memory pool = pools[key];
 
-        require(pool._enabled, "pool is disaled");
+        require(pool._enabled, "pool is disabled");
         return pool._address;
     }
 
-    function _addPool(
+    function _updatePool(
         address _pool,
         address _tokenA,
-        address _tokenB
-    ) internal {
-        bytes4 key = PoolKey.getKey(_tokenA, _tokenB);
-        pools[key] = Pool({ _address: _pool, _enabled: true });
-    }
-
-    function _updatePool(
-        address _tokenA,
         address _tokenB,
-        address _address,
         bool _enabled
-    ) internal {
-        bytes4 key = PoolKey.getKey(_tokenA, _tokenB);
-        Pool memory pool = pools[key];
+    ) internal returns (bytes4 key) {
+        require(_pool != address(0), "addPool: zero address");
+        key = PoolKey.getKey(_tokenA, _tokenB);
 
-        require(pool._address != address(0), "Pool not found");
-
-        pools[key] = Pool({ _address: _address, _enabled: _enabled });
+        pools[key] = Pool({ _address: _pool, _enabled: _enabled });
     }
 }

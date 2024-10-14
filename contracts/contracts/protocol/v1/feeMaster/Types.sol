@@ -29,6 +29,14 @@ struct ChargedFeesPerTx {
     uint96 protocolFee;
 }
 
+/**
+ * @dev Represents the fee-related data for a transaction.
+ * @param txType The type identifier of the transaction.
+ * @param numOutputUtxos The number of output UTXOs in the transaction.
+ * @param scPaymasterZkpFee The scaled ZKP fee allocated for paymaster compensation (scaled by 1e12).
+ * @param scAddedZkpAmount The scaled ZKP amount donated by the FeeMaster (scaled by 1e12).
+ * @param scChargedZkpAmount The scaled total ZKP amount charged to the user (scaled by 1e12).
+ */
 struct FeeData {
     uint16 txType;
     uint8 numOutputUtxos;
@@ -37,6 +45,12 @@ struct FeeData {
     uint40 scChargedZkpAmount;
 }
 
+/**
+ * @dev Represents the asset-related data for a transaction.
+ * @param tokenAddress The address of the transacted token.
+ * @param depositAmount The deposited amount. it can be 0.
+ * @param withdrawAmount The withdrawn amount. it can be 0.
+ */
 struct AssetData {
     address tokenAddress;
     uint128 depositAmount;

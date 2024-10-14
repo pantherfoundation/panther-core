@@ -4,7 +4,6 @@ pragma solidity ^0.8.19;
 
 import "../core/interfaces/IPrpConversion.sol";
 import "../core/interfaces/IPrpVoucherController.sol";
-import "../trees/interfaces/IMinersNetRewardReserves.sol";
 import "../../../common/TransferHelper.sol";
 import { HUNDRED_PERCENT } from "../../../common/Constants.sol";
 
@@ -15,7 +14,7 @@ abstract contract ProtocolFeeDistributor {
     address public immutable PANTHER_TREES;
     address public immutable PRP_CONVERTER;
 
-    uint16 internal _treasuryLockPercentage;
+    uint16 public treasuryLockPercentage;
 
     constructor(address treasury, address pantherTrees, address prpConverter) {
         TREASURY = treasury;
@@ -26,42 +25,12 @@ abstract contract ProtocolFeeDistributor {
     function _distributeProtocolZkpFees(
         address zkpToken,
         uint256 amount
-    ) internal returns (uint256 minersPremiumRewards) {
-        minersPremiumRewards = _tryBalanceMinersPremiumRewards(amount);
-
-        uint256 remainingZkps = amount - minersPremiumRewards;
-
-        if (remainingZkps > 0) {
-            _sendZkpsToPrpConverterAndTreasury(zkpToken, remainingZkps);
-        }
-    }
-
-    function _tryBalanceMinersPremiumRewards(
-        uint256 availableAmount
-    ) private returns (uint256 usedZkps) {
-        int256 netRewardReserve = IMinersNetRewardReserves(PANTHER_TREES)
-            .netRewardReserve();
-
-        if (netRewardReserve < 0) {
-            usedZkps = availableAmount > uint256(-netRewardReserve)
-                ? uint256(-netRewardReserve)
-                : availableAmount;
-
-            IMinersNetRewardReserves(PANTHER_TREES).allocateRewardReserve(
-                uint112(usedZkps)
-            );
-        }
-    }
-
-    function _sendZkpsToPrpConverterAndTreasury(
-        address zkpToken,
-        uint256 availableZkps
-    ) private {
-        uint256 treasuryAmount = (availableZkps * _treasuryLockPercentage) /
+    ) internal {
+        uint256 treasuryAmount = (amount * treasuryLockPercentage) /
             HUNDRED_PERCENT;
         zkpToken.safeTransfer(TREASURY, treasuryAmount);
 
-        uint256 remainingZkps = availableZkps - treasuryAmount;
+        uint256 remainingZkps = amount - treasuryAmount;
         zkpToken.safeTransfer(PRP_CONVERTER, remainingZkps);
         IPrpConversion(PRP_CONVERTER).increaseZkpReserve();
     }

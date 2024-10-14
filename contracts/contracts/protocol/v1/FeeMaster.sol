@@ -64,11 +64,20 @@ contract FeeMaster is
     // to be used as donation to user to cover fees
     uint128 public zkpTokenDonationReserve;
 
-    uint96 private _minRewardableZkpAmount;
+    uint96 public minRewardableZkpAmount;
 
     // transaction types => donation amount
     mapping(uint16 => uint256) public donations;
 
+    /**
+     * @notice Initializes the FeeMaster contract with necessary addresses.
+     * @param owner The address of the contract owner.
+     * @param providers The Providers struct containing essential provider addresses.
+     * @param zkpToken The address of the ZKP token contract.
+     * @param wethToken The address of the WETH token contract.
+     * @param vault The address of the vault contract.
+     * @param treasury The address of the treasury contract.
+     */
     constructor(
         address owner,
         Providers memory providers,
@@ -127,15 +136,15 @@ contract FeeMaster is
     }
 
     function updateProtocolZkpFeeDistributionParams(
-        uint16 treasuryLockPercentage,
-        uint96 minRewardableZkpAmount
+        uint16 _treasuryLockPercentage,
+        uint96 _minRewardableZkpAmount
     ) external onlyOwner {
-        _treasuryLockPercentage = treasuryLockPercentage;
-        _minRewardableZkpAmount = minRewardableZkpAmount;
+        treasuryLockPercentage = _treasuryLockPercentage;
+        minRewardableZkpAmount = _minRewardableZkpAmount;
 
         emit ProtocolZkpFeeDistributionParamsUpdated(
-            treasuryLockPercentage,
-            minRewardableZkpAmount
+            _treasuryLockPercentage,
+            _minRewardableZkpAmount
         );
     }
 
@@ -199,25 +208,15 @@ contract FeeMaster is
         emit TwapPeriodUpdated(twapPeriod);
     }
 
-    function addPool(
-        address _pool,
-        address _tokenA,
-        address _tokenB
-    ) external onlyOwner {
-        _addPool(_pool, _tokenA, _tokenB);
-
-        emit PoolUpdated(_pool, true);
-    }
-
     function updatePool(
         address _pool,
         address _tokenA,
         address _tokenB,
         bool _enabled
     ) external onlyOwner {
-        _updatePool(_tokenA, _tokenB, _pool, _enabled);
+        bytes4 _key = _updatePool(_pool, _tokenA, _tokenB, _enabled);
 
-        emit PoolUpdated(_pool, _enabled);
+        emit PoolUpdated(_pool, _key, _enabled);
     }
 
     function approveVaultToTransferZkp() external {
@@ -233,6 +232,11 @@ contract FeeMaster is
     function rebalanceDebt(bytes32 secretHash, address sellToken) external {
         // NOTE: This method converts ERC20 tokens to native tokens and/or ZKP.
         // NFTs will remain in the contract. This issue will be addressed later.
+
+        require(
+            sellToken != ZKP_TOKEN && sellToken != NATIVE_TOKEN,
+            "invalid sell token"
+        );
 
         // getting sell amount: total protocol fee in sell token
         uint256 sellTokenAmount = getDebtForProtocol(sellToken);
@@ -290,22 +294,30 @@ contract FeeMaster is
     function distributeProtocolZkpFees(bytes32 secretHash) external {
         uint256 zkpAmount = getDebtForProtocol(ZKP_TOKEN);
 
-        uint256 minersPremiumRewards = _distributeProtocolZkpFees(
+        // Receiving sell token from Vault and decreasing the
+        // total debt that PantherPool owes to FeeMaster in sellToken
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
             ZKP_TOKEN,
-            zkpAmount
+            -int256(zkpAmount),
+            address(this)
         );
 
-        if (zkpAmount > _minRewardableZkpAmount) {
+        _distributeProtocolZkpFees(ZKP_TOKEN, zkpAmount);
+
+        if (zkpAmount > minRewardableZkpAmount) {
             _grantPrpRewardsToUser(secretHash, GT_ZKP_DISTRIBUTE);
         }
 
-        emit ZkpsDistributed(zkpAmount, minersPremiumRewards);
+        _updateDebtForProtocol(ZKP_TOKEN, -int256(zkpAmount));
+
+        emit ZkpsDistributed(zkpAmount);
     }
 
     function accountFees(
         FeeData calldata feeData
     )
         external
+        onlyPantherPool
         checkChargedZkpAmount(feeData)
         checkAvailableDonation(feeData)
         returns (ChargedFeesPerTx memory chargedFeesPerTx)
@@ -335,6 +347,7 @@ contract FeeMaster is
         AssetData calldata assetData
     )
         external
+        onlyPantherPool
         checkChargedZkpAmount(feeData)
         checkAvailableDonation(feeData)
         returns (ChargedFeesPerTx memory chargedFeesPerTx)
@@ -392,6 +405,39 @@ contract FeeMaster is
         }
     }
 
+    /**
+     * @notice Attempts to convert a specified amount of ZKP tokens into native tokens to compensate the paymaster.
+     *         This function utilizes the contract's native token reserves and protocol debts to fulfill the compensation.
+     * @dev This internal function performs the following steps:
+     *      1. **Calculate Equivalent Native Tokens:**
+     *         Determines the amount of native tokens (`outputNative`) equivalent to the provided ZKP tokens (`paymasterCompensationInZkp`)
+     *         using the current cached TWAP obtained from `getZkpRateInNative`.
+     *
+     *      2. **Utilize Native Reserves:**
+     *         Attempts to fulfill the `outputNative` requirement by utilizing the contract's native token reserves via
+     *         `_utilizeNativeReservesForInternalZkpConversion`. If reserves are sufficient, the required amount is deducted from the reserves.
+     *
+     *      3. **Utilize Protocol Debts:**
+     *         If native reserves are insufficient (`unconvertedNativeAmount > 0`), the function attempts to cover the remaining
+     *         native token requirement by reducing the protocol's existing native token debts through
+     *         `_utilizeProtocolNativeDebtForInternalZkpConversion`.
+     *
+     *      4. **Debt Accounting:**
+     *         - **Full Conversion:** If the entire `outputNative` is covered by reserves and debts (`unconvertedNativeAmount == 0`),
+     *           the paymaster's debt is fully accounted in native tokens (`paymasterDebtInNative = outputNative`), and no debt remains in ZKP tokens.
+     *
+     *         - **Partial Conversion:** If there's a portion of `outputNative` that couldn't be covered (`unconvertedNativeAmount > 0`),
+     *           the function accounts for the covered portion in native tokens and the remaining debt in ZKP tokens. Specifically:
+     *           - `paymasterDebtInNative = outputNative - unconvertedNativeAmount`
+     *           - `paymasterDebtInZkp = (unconvertedNativeAmount * paymasterCompensationInZkp) / outputNative`
+     *
+     *      5. **Event Emission:**
+     *         Emits a `PaymasterCompensationAccounted` event with the updated debts in ZKP and native tokens.
+     *
+     * @param paymasterCompensationInZkp The amount of ZKP tokens intended to compensate the paymaster.
+     * @return paymasterDebtInZkp The portion of the compensation that remains as debt in ZKP tokens after attempting the conversion.
+     * @return paymasterDebtInNative The portion of the compensation successfully converted to native tokens.
+     */
     function _tryInternalZkpToNativeConversion(
         uint256 paymasterCompensationInZkp
     )
@@ -401,25 +447,30 @@ contract FeeMaster is
     {
         uint256 outputNative = getZkpRateInNative(paymasterCompensationInZkp);
 
-        uint256 unconvertedAmount = _utilizeNativeReservesForInternalZkpConversion(
+        uint256 unconvertedNativeAmount = _utilizeNativeReservesForInternalZkpConversion(
                 outputNative
             );
 
-        if (unconvertedAmount > 0) {
-            unconvertedAmount = _utilizeProtocolNativeDebtForInternalZkpConversion(
-                unconvertedAmount
+        if (unconvertedNativeAmount > 0) {
+            unconvertedNativeAmount = _utilizeProtocolNativeDebtForInternalZkpConversion(
+                unconvertedNativeAmount
             );
         }
 
-        if (unconvertedAmount == 0) {
+        if (unconvertedNativeAmount == 0) {
             paymasterDebtInNative = outputNative;
             paymasterDebtInZkp = 0;
         } else {
-            paymasterDebtInNative = outputNative - unconvertedAmount;
+            paymasterDebtInNative = outputNative - unconvertedNativeAmount;
             paymasterDebtInZkp =
-                (paymasterDebtInNative * paymasterCompensationInZkp) /
+                (unconvertedNativeAmount * paymasterCompensationInZkp) /
                 outputNative;
         }
+
+        emit PaymasterCompensationConverted(
+            paymasterDebtInZkp,
+            paymasterDebtInNative
+        );
     }
 
     function _utilizeNativeReservesForInternalZkpConversion(
@@ -484,6 +535,11 @@ contract FeeMaster is
 
     /* ========== MODIFIERS ========== */
 
+    /**
+     * @dev Checks if the donation amount is available and correctly configured for the transaction type.
+     * @param feeData The FeeData struct containing fee-related information.
+     * @notice Ensures that if a donation is included, it matches the configured amount and the reserve is sufficient.
+     */
     modifier checkAvailableDonation(FeeData calldata feeData) {
         if (feeData.scAddedZkpAmount > 0) {
             uint256 addedZkpAmount = feeData.scAddedZkpAmount.scaleUpBy1e12();
@@ -499,8 +555,19 @@ contract FeeMaster is
         }
         _;
     }
+
+    /**
+     * @dev Ensures that the charged ZKP amount is greater than zero.
+     * @param feeData The FeeData struct containing fee-related information.
+     * @notice Prevents processing transactions with zero charged ZKP amounts.
+     */
     modifier checkChargedZkpAmount(FeeData calldata feeData) {
         require(feeData.scChargedZkpAmount > 0, "zero charged zkp");
+        _;
+    }
+
+    modifier onlyPantherPool() {
+        require(msg.sender == PANTHER_POOL, "only panther pool");
         _;
     }
 }
