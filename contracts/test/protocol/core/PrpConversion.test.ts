@@ -3,7 +3,6 @@
 
 import {smock, FakeContract} from '@defi-wonderland/smock';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
@@ -26,6 +25,7 @@ import {
     revertSnapshot,
     takeSnapshot,
 } from '../helpers/hardhat';
+import {getPrpClaimandConversionInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe('PrpConversion', function () {
     let prpConversion: MockPrpConversion;
@@ -43,6 +43,19 @@ describe('PrpConversion', function () {
     );
     const prpVirtualAmount = ethers.utils.parseUnits('1000', 6); // Reduced precision to fit in 64-bit
     const zkpAmount = ethers.utils.parseUnits('500', 9); // Reduced precision to fit in 96-bit
+
+    const placeholder = BigNumber.from(0);
+    const proof = {
+        a: {x: placeholder, y: placeholder},
+        b: {
+            x: [placeholder, placeholder],
+            y: [placeholder, placeholder],
+        },
+        c: {x: placeholder, y: placeholder},
+    } as SnarkProofStruct;
+    const transactionOptions = 0x104;
+    const paymasterCompensation = ethers.BigNumber.from('10');
+    const zkpAmountMin = 10000;
 
     before(async () => {
         [owner, notOwner] = await ethers.getSigners();
@@ -83,108 +96,15 @@ describe('PrpConversion', function () {
         await revertSnapshot(snapshot);
     });
 
-    interface inputs {
-        extraInputsHash?: string;
-        addedAmountZkp?: number;
-        chargedAmountZkp?: number;
-        utxoOutCreateTime?: BigNumber;
-        depositPrpAmount?: BigNumber;
-        withdrawPrpAmount?: BigNumber;
-        utxoCommitmentPrivatePart?: string;
-        zAssetScale?: number;
-        zAccountUtxoInNullifier?: string;
-        zAccountUtxoOutCommitment?: string;
-        zNetworkChainId?: number;
-        staticTreeMerkleRoot?: string;
-        forestMerkleRoot?: string;
-        saltHash?: string;
-        magicalConstraint?: string;
-    }
-
-    async function convert(options: inputs) {
-        const placeholder = BigNumber.from(0);
-        const proof = {
-            a: {x: placeholder, y: placeholder},
-            b: {
-                x: [placeholder, placeholder],
-                y: [placeholder, placeholder],
-            },
-            c: {x: placeholder, y: placeholder},
-        } as SnarkProofStruct;
-
-        const addedAmountZkp = options.addedAmountZkp || BigNumber.from(0);
-        const chargedAmountZkp = options.chargedAmountZkp || BigNumber.from(0);
-        const depositPrpAmount = options.depositPrpAmount || BigNumber.from(0);
-        const withdrawPrpAmount =
-            options.withdrawPrpAmount || BigNumber.from(10);
-        const utxoCommitmentPrivatePart = 0;
-        const privateMessages = privateMessage;
-        const zAccountCreateTime =
-            options.utxoOutCreateTime || (await getBlockTimestamp()) + 10;
-        const zAssetScale = options.zAssetScale || 1000;
-        const zNetworkChainId = 31337;
-        const zAccountUtxoInNullifier =
-            options.zAccountUtxoInNullifier || BigNumber.from(1);
-        const zAccountUtxoOutCommitment =
-            options.zAccountUtxoOutCommitment ||
-            ethers.utils.id('zAccountUtxoOutCommitment');
-        const staticTreeMerkleRoot =
-            options.staticTreeMerkleRoot ||
-            ethers.utils.id('staticTreeMerkleRoot');
-        const forestMerkleRoot =
-            options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
-        const saltHash =
-            options.saltHash ||
-            ethers.utils.keccak256(
-                ethers.utils.toUtf8Bytes('PANTHER_EIP712_DOMAIN_SALT'),
-            );
-        const magicalConstraint =
-            options.magicalConstraint || ethers.utils.id('magicalConstraint');
-        const transactionOptions = 0x104;
-        const paymasterCompensation = ethers.BigNumber.from('10');
-        const zkpAmountMin = 10000;
-        const extraInput = ethers.utils.solidityPack(
-            ['uint32', 'uint96', 'uint96', 'bytes'],
-            [
-                transactionOptions,
-                zkpAmountMin,
-                paymasterCompensation,
-                privateMessages,
-            ],
-        );
-        const calculatedExtraInputHash = BigNumber.from(
-            ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
-        ).mod(SNARK_FIELD_SIZE);
-
-        const extraInputsHash =
-            options.extraInputsHash || calculatedExtraInputHash;
-
-        await expect(
-            prpConversion.convert(
-                [
-                    extraInputsHash,
-                    addedAmountZkp,
-                    chargedAmountZkp,
-                    zAccountCreateTime,
-                    depositPrpAmount,
-                    withdrawPrpAmount,
-                    utxoCommitmentPrivatePart,
-                    zAssetScale,
-                    zAccountUtxoInNullifier,
-                    zAccountUtxoOutCommitment,
-                    zNetworkChainId,
-                    staticTreeMerkleRoot,
-                    forestMerkleRoot,
-                    saltHash,
-                    magicalConstraint,
-                ],
-                proof,
-                transactionOptions,
-                zkpAmountMin,
-                paymasterCompensation,
-                privateMessages,
-            ),
-        ).to.emit(prpConversion, 'Sync');
+    function getAmountOut(
+        amountIn: BigNumber,
+        reserveIn: BigNumber,
+        reserveOut: BigNumber,
+    ): BigNumber {
+        const numerator = amountIn.mul(reserveOut);
+        const denominator = reserveIn.add(amountIn);
+        const amountOut = numerator.div(denominator);
+        return amountOut;
     }
 
     describe('#deployment', () => {
@@ -196,16 +116,27 @@ describe('PrpConversion', function () {
     });
 
     describe('#initPool', () => {
-        it('should execute initPool', async () => {
+        it('should execute initPool and set the correct reserves', async () => {
             await zkpToken.transfer(prpConversion.address, zkpAmount);
+            expect(
+                await zkpToken.allowance(prpConversion.address, vault.address),
+            ).to.be.equal(0);
 
             await expect(prpConversion.initPool(prpVirtualAmount, zkpAmount))
-                .to.emit(prpConversion, 'Initialized')
+                .to.emit(prpConversion, 'Sync')
+                .withArgs(prpVirtualAmount, zkpAmount)
+                .and.to.emit(prpConversion, 'Initialized')
                 .withArgs(prpVirtualAmount, zkpAmount);
 
             const reserves = await prpConversion.getReserves();
             expect(reserves._prpReserve).to.equal(prpVirtualAmount);
             expect(reserves._zkpReserve).to.equal(zkpAmount);
+            expect(reserves._blockTimestampLast).to.equal(
+                await getBlockTimestamp(),
+            );
+            expect(
+                await zkpToken.allowance(prpConversion.address, vault.address),
+            ).to.be.equal(zkpAmount);
 
             expect(await prpConversion.initialized()).to.equal(true);
         });
@@ -238,18 +169,42 @@ describe('PrpConversion', function () {
         beforeEach(async () => {
             await zkpToken.transfer(prpConversion.address, zkpAmount);
         });
-        it('should increase zkp reserve  ', async function () {
+        it('should increase zkp reserve and update allowance of vault ', async function () {
             await prpConversion.initPool(prpVirtualAmount, zkpAmount);
+            expect(
+                await zkpToken.allowance(prpConversion.address, vault.address),
+            ).to.be.equal(zkpAmount);
 
             const newZkpAmount = ethers.utils.parseUnits('500', 9);
             await zkpToken.transfer(prpConversion.address, newZkpAmount);
 
-            await expect(prpConversion.increaseZkpReserve()).to.emit(
-                prpConversion,
-                'Sync',
+            const prpAmountOut = await getAmountOut(
+                newZkpAmount,
+                zkpAmount,
+                prpVirtualAmount,
             );
+
+            await expect(prpConversion.increaseZkpReserve())
+                .to.emit(prpConversion, 'Sync')
+                .withArgs(
+                    prpVirtualAmount.sub(prpAmountOut),
+                    zkpAmount.add(newZkpAmount),
+                )
+                .and.to.emit(prpConversion, 'ZkpReservesIncreased')
+                .withArgs(newZkpAmount);
+
             const reserves = await prpConversion.getReserves();
             expect(reserves._zkpReserve).to.equal(zkpAmount.add(newZkpAmount));
+            expect(reserves._prpReserve).to.equal(
+                prpVirtualAmount.sub(prpAmountOut),
+            );
+            expect(reserves._blockTimestampLast).to.equal(
+                await getBlockTimestamp(),
+            );
+            //vault allowance should be increased
+            expect(
+                await zkpToken.allowance(prpConversion.address, vault.address),
+            ).to.be.equal(zkpAmount.add(newZkpAmount));
         });
 
         it('should return if zkpBalance is less than zkpReserve', async function () {
@@ -288,46 +243,121 @@ describe('PrpConversion', function () {
             const withdrawPrp = BigNumber.from(1000);
             const prpReserve = (await prpConversion.getReserves())._prpReserve;
 
-            await convert({
+            const inputs = await getPrpClaimandConversionInputs({
                 withdrawPrpAmount: withdrawPrp,
             });
 
+            const reserves = await prpConversion.getReserves();
+
             await expect(
-                (await prpConversion.getReserves())._prpReserve,
-            ).to.be.equal(prpReserve.add(withdrawPrp));
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            )
+                .to.emit(prpConversion, 'Sync')
+                .withArgs(prpReserve.add(withdrawPrp), zkpAmount)
+                .and.to.emit(prpConversion, 'FeesAccounted')
+                .and.to.emit(prpConversion, 'TransactionNote');
+
+            expect((await prpConversion.getReserves())._prpReserve).to.be.equal(
+                prpReserve.add(withdrawPrp),
+            );
+            expect(await prpConversion.internalIsSpent(inputs[8])).to.be.gt(0); //zAccountUtxoInNullifier
+            expect(
+                await prpConversion.internalFeeMasterDebt(zkpToken.address),
+            ).to.be.equal(inputs[2]); //chargedAmountZkp
+
+            const zkpAmtOut = getAmountOut(
+                withdrawPrp,
+                reserves._prpReserve,
+                reserves._zkpReserve,
+            );
+            const zkpAmt = zkpAmtOut.div(inputs[7]);
+
+            const expectedLockData = {
+                tokenType: 0,
+                token: zkpToken.address,
+                tokenId: BigNumber.from('0'),
+                extAccount: prpConversion.address,
+                extAmount: zkpAmt,
+            };
+
+            expect(vault.lockAsset).to.have.been.calledOnceWith(
+                expectedLockData,
+            );
         });
 
         it('should revert if the extraInputsHash is larger than FIELD_SIZE', async function () {
             const invalidInputsHash = ethers.BigNumber.from('12345').toString();
+            const inputs = await getPrpClaimandConversionInputs({
+                extraInputsHash: invalidInputsHash,
+            });
+
             await expect(
-                convert({extraInputsHash: invalidInputsHash}),
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith('PIG:E4');
         });
 
         it('should revert if the depositPrpAmount is non zero ', async function () {
+            const inputs = await getPrpClaimandConversionInputs({
+                depositPrpAmount: BigNumber.from(10),
+            });
+
             await expect(
-                convert({depositPrpAmount: BigNumber.from(10)}),
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith('PC:E14');
         });
 
         it('should revert if withdrawPrpAmount is zero ', async function () {
+            const inputs = await getPrpClaimandConversionInputs({
+                withdrawPrpAmount: BigNumber.from(0),
+            });
+
             await expect(
-                convert({withdrawPrpAmount: BigNumber.from(0)}),
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith('PC:E6');
         });
 
         it('should revert if amountOut is less than amountOutMin  ', async function () {
-            await expect(
-                convert({withdrawPrpAmount: BigNumber.from(1)}),
-            ).to.be.revertedWith('PC:E7');
-        });
+            const inputs = await getPrpClaimandConversionInputs({
+                withdrawPrpAmount: BigNumber.from(1),
+            });
 
-        it('should revert if amountOut is less than zAsset Scale  ', async function () {
             await expect(
-                convert({
-                    zAssetScale: 10000,
-                    withdrawPrpAmount: BigNumber.from(1),
-                }),
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
             ).to.be.revertedWith('PC:E7');
         });
 
@@ -337,7 +367,18 @@ describe('PrpConversion', function () {
                 owner.address,
                 100000,
             );
-            await expect(convert({})).to.be.revertedWith('PC:E9');
+            const inputs = await getPrpClaimandConversionInputs({});
+
+            await expect(
+                prpConversion.convert(
+                    inputs,
+                    proof,
+                    transactionOptions,
+                    zkpAmountMin,
+                    paymasterCompensation,
+                    privateMessage,
+                ),
+            ).to.be.revertedWith('PC:E9');
         });
     });
 
