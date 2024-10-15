@@ -133,7 +133,7 @@ abstract contract ConversionHandler {
                 zkpToken,
                 // tokenId undefined for ERC-20
                 0,
-                msg.sender,
+                address(this),
                 amount.safe96()
             )
         );

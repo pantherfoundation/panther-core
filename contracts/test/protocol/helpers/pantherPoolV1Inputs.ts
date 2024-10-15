@@ -155,15 +155,14 @@ export async function getPrpClaimandConversionInputs(
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
     const privateMessages = generatePrivateMessage(
-        TransactionTypes.zAccountActivation,
+        TransactionTypes.prpConversion,
     );
     const utxoOutCreateTime =
         options.utxoOutCreateTime || (await getBlockTimestamp()) + 10;
     const depositPrpAmount = options.depositPrpAmount || BigNumber.from(0);
     const withdrawPrpAmount = options.withdrawPrpAmount || BigNumber.from(10);
-    const utxoSpendPubKeyX = options.utxoSpendPubKeyX || examplePubKeys.x;
-    const utxoSpendPubKeyY = options.utxoSpendPubKeyY || examplePubKeys.y;
-    const zAssetScale = options.zAssetScale || 100000;
+
+    const zAssetScale = options.zAssetScale || 1000;
     const zNetworkChainId = options.zNetworkChainId || 31337;
     const zAccountUtxoInNullifier =
         options.zAccountUtxoInNullifier || BigNumber.from(1);
@@ -181,12 +180,18 @@ export async function getPrpClaimandConversionInputs(
         );
     const magicalConstraint =
         options.magicalConstraint || ethers.utils.id('magicalConstraint');
-    const transactionOptions = 0;
+    const transactionOptions = 0x104;
     const utxoCommitmentPrivatePart = 0;
     const paymasterCompensation = ethers.BigNumber.from('10');
+    const zkpAmountMin = 10000;
     const extraInput = ethers.utils.solidityPack(
-        ['uint32', 'uint96', 'bytes'],
-        [transactionOptions, paymasterCompensation, privateMessages],
+        ['uint32', 'uint96', 'uint96', 'bytes'],
+        [
+            transactionOptions,
+            zkpAmountMin,
+            paymasterCompensation,
+            privateMessages,
+        ],
     );
     const calculatedExtraInputHash = BigNumber.from(
         ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
@@ -202,8 +207,6 @@ export async function getPrpClaimandConversionInputs(
         depositPrpAmount,
         withdrawPrpAmount,
         utxoCommitmentPrivatePart,
-        utxoSpendPubKeyX,
-        utxoSpendPubKeyY,
         zAssetScale,
         zAccountUtxoInNullifier,
         zAccountUtxoOutCommitment,
