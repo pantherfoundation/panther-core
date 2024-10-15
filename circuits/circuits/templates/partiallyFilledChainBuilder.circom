@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: ISC
 pragma circom 2.1.9;
 
+include "./utils.circom";
+
 include "./hasher.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 
@@ -20,9 +22,19 @@ template PartiallyFilledChainBuilder(max_nInputs){
 
     signal output out;
 
-    assert(max_nInputs<=252);
-    assert(nInputs>0);
-    assert(nInputs<=max_nInputs);
+    assert(0 < max_nInputs <= 252);
+
+    assert(nInputs > 0);
+    component lessThen = LessThanWhenEnabled(8);
+    lessThen.in[0] <== 0;
+    lessThen.in[1] <== nInputs;
+    lessThen.enabled <== 1;
+
+    assert(nInputs <= max_nInputs);
+    component lessThenEq = LessEqThanWhenEnabled(8);
+    lessThenEq.in[0] <== nInputs;
+    lessThenEq.in[1] <== max_nInputs;
+    lessThenEq.enabled <== 1;
 
     component hasher[max_nInputs-1];
     component comparators[max_nInputs-1];
@@ -32,10 +44,14 @@ template PartiallyFilledChainBuilder(max_nInputs){
     signal accumulator[max_nInputs];
 
     // First, let's process inputs[0]
+    component isSingleLeafTree = IsEqual();
+    isSingleLeafTree.in[0] <== nInputs;
+    isSingleLeafTree.in[1] <== 1;
     interimHashes[0] <== inputs[0];
-    accumulator[0] <== 0;
+    // Root of the tree with a single leaf only equals to the leaf
+    accumulator[0] <== 0 + inputs[0]*isSingleLeafTree.out;
 
-    for(var i=0; i<max_nInputs-1; i++) {
+    for(var i = 0; i < max_nInputs-1; i++) {
         // Let's process inputs[nextInd] signal
         var nextInd = i+1;
         hasher[i] = Hasher(2);
