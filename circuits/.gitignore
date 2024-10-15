@@ -9,5 +9,6 @@ compiled/*
 !compiled/zTransaction
 !compiled/zAccountRenewal
 !compiled/zSwap
+!compiled/treeBatchUpdaterAndRootChecker
 !compiled/generate_witness.js
 *.ptau
