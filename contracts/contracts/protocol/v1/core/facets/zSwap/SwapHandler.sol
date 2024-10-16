@@ -82,7 +82,7 @@ library SwapHandler {
         ].getTokenTypeAndAddress();
 
         (uint8 incomingTokenType, address incomingTokenAddress) = inputs[
-            ZSWAP_EXISTING_TOKEN_IND
+            ZSWAP_INCOMING_TOKEN_IND
         ].getTokenTypeAndAddress();
 
         PluginData memory pluginData = PluginData({
