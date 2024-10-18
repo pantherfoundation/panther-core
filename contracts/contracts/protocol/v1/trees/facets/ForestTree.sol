@@ -56,7 +56,7 @@ contract ForestTree is
     {}
 
     modifier nonZeroUtxosLength(bytes32[] memory utxos) {
-        require(utxos.length != 0, ERR_EMPTY_UTXOS_ARRAY);
+        require(utxos.length != 0, "FT: empty utxos");
         _;
     }
 
@@ -68,7 +68,7 @@ contract ForestTree is
         require(
             isCachedRoot(_forestRoot, _cachedForestRootIndex) &&
                 _staticRoot == staticRoot,
-            "invalid roots"
+            "FT: invalid roots"
         );
 
         _;
@@ -102,7 +102,7 @@ contract ForestTree is
         uint16 premiumRate,
         uint16 minEmptyQueueAge
     ) external onlyOwner {
-        require(forestRoot == bytes32(0), "PF: Already initialized");
+        require(forestRoot == bytes32(0), "FT: Already initialized");
 
         bytes32 taxiTreeRoot = getTaxiTreeRoot();
         bytes32 busTreeRoot = getBusTreeRoot();
@@ -142,6 +142,15 @@ contract ForestTree is
     }
 
     /**
+     * @notice Updates the bus tree onboarding circuit id
+     * @param circuitId The new circuit id
+     * @dev This function can only be called by the owner.
+     */
+    function updateBusTreeCircuitId(uint160 circuitId) external onlyOwner {
+        _updateCircuitId(circuitId);
+    }
+
+    /**
      * @notice Adds UTXOs to the bus queue.
      * @param utxos An array of UTXOs to be added to the bus queue.
      * @param cachedForestRootIndex The index of the cached forest root to verify.
@@ -170,10 +179,6 @@ contract ForestTree is
             utxos,
             reward
         );
-    }
-
-    function addBusTreeCircuit(uint160 id) external onlyOwner {
-        _updateCircuitId(id);
     }
 
     /**

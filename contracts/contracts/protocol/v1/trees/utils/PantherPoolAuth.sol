@@ -10,7 +10,10 @@ abstract contract PantherPoolAuth {
     }
 
     modifier onlyPantherPool() {
-        require(msg.sender == PANTHER_POOL, "only panther pool");
+        require(
+            msg.sender == PANTHER_POOL,
+            "pantherTrees: unauthorized panther pool"
+        );
         _;
     }
 }

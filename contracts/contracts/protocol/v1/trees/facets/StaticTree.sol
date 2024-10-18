@@ -44,7 +44,7 @@ contract StaticTree is
     // mapping from leaf index to leaf owner
     mapping(uint8 => address) public leafControllers;
 
-    event RootUpdated(
+    event StaticRootUpdated(
         uint256 indexed leafIndex,
         bytes32 updatedLeaf,
         bytes32 updatedRoot
@@ -105,7 +105,7 @@ contract StaticTree is
         leafs[leafIndex] = updatedLeaf;
         staticRoot = hash(leafs);
 
-        emit RootUpdated(leafIndex, updatedLeaf, staticRoot);
+        emit StaticRootUpdated(leafIndex, updatedLeaf, staticRoot);
     }
 
     /**

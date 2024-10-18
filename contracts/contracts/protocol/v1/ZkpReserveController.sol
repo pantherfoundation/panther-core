@@ -40,6 +40,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
         uint256 releasablePerBlock,
         uint256 minRewardableAmount
     );
+    event ZkpRescued(address to, uint256 amount);
 
     /**
      * @notice Constructor to initialize the AMMRefill contract.
@@ -152,7 +153,16 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
         return (scReleasablePerBlock * blockOffset) - scTotalReleased;
     }
 
+    /**
+     * @dev Allows the contract owner to rescue ZKP tokens from the contract.
+     * This function is intended for use in scenarios where tokens need to be recovered
+     * or reallocated. It is a safeguard to ensure that tokens can be retrieved in case
+     * they are sent to the contract by mistake or need to be moved for administrative reasons.
+     * @param to The address to which the ZKP tokens will be sent.
+     * @param amount The amount of ZKP tokens to rescue.
+     */
     function rescueZkps(address to, uint256 amount) external onlyOwner {
         _claimErc20(ZKP_TOKEN, to, amount);
+        emit ZkpRescued(to, amount);
     }
 }
