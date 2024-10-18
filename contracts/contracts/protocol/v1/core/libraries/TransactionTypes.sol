@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import { MAIN_DEPOSIT_AMOUNT_IND, MAIN_WITHDRAW_AMOUNT_IND } from "../publicSignals/MainPublicSignals.sol";
-import { TT_MAIN_TRANSACTION, TF_DEPOSIT_TRANSACTION, TF_WITHDRAWAL_TRANSACTION } from "../utils/Types.sol";
+import { TT_MAIN_TRANSACTION, TF_DEPOSIT_TRANSACTION, TF_WITHDRAWAL_TRANSACTION, TM_CLEAR_FLAGS } from "../utils/Types.sol";
 
 library TransactionTypes {
     function generateMainTxType(
@@ -18,11 +18,11 @@ library TransactionTypes {
     }
 
     function isDeposit(uint16 txType) internal pure returns (bool) {
-        return txType ^ TT_MAIN_TRANSACTION == TF_DEPOSIT_TRANSACTION;
+        return isMain(txType) && (txType & TF_DEPOSIT_TRANSACTION > 0);
     }
 
     function isWithdrawal(uint16 txType) internal pure returns (bool) {
-        return txType ^ TT_MAIN_TRANSACTION == TF_WITHDRAWAL_TRANSACTION;
+        return isMain(txType) && (txType & TF_WITHDRAWAL_TRANSACTION > 0);
     }
 
     function isInternal(uint16 txType) internal pure returns (bool) {
@@ -30,11 +30,6 @@ library TransactionTypes {
     }
 
     function isMain(uint16 txType) internal pure returns (bool) {
-        // TT_MAIN_TRANSACTION | TF_WITHDRAWAL_TRANSACTION | TF_DEPOSIT_TRANSACTION = 0x135
-        return
-            isInternal(txType) ||
-            isDeposit(txType) ||
-            isWithdrawal(txType) ||
-            txType == 0x135;
+        return (txType & TM_CLEAR_FLAGS) == TT_MAIN_TRANSACTION;
     }
 }

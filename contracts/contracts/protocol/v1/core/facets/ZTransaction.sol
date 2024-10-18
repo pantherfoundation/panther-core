@@ -134,7 +134,7 @@ contract ZTransaction is
                     .getTokenTypeAndAddress();
                 require(tokenAddress == address(0), ERR_NON_ZERO_TOKEN);
             } else {
-                // depost and/or withdraw tx
+                // deposit and/or withdraw tx
                 // NOTE: This contract expects the Vault will check the token (inputs[4]) to
                 // be non-zero only if the tokenType is not native.
                 _processDepositAndWithdraw(
