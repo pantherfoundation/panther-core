@@ -62,6 +62,8 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
 
     bytes32[50] private _endGap;
 
+    event BusTreeInitialized(uint32 startBlockTime);
+    event CircuitIdUpdated(uint160 circuitId);
     event BusBatchOnboarded(
         uint256 indexed queueId,
         bytes32 indexed batchRoot,
@@ -135,10 +137,13 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
             premiumRate,
             minEmptyQueueAge
         );
+
+        emit BusTreeInitialized(busTreeStartTime);
     }
 
     function _updateCircuitId(uint160 _circuitId) internal {
         onboardingQueueCircuitId = _circuitId;
+        emit CircuitIdUpdated(_circuitId);
     }
 
     /// @dev ZK-circuit public signals:

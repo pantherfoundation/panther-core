@@ -7,17 +7,13 @@ import "../../../errMsgs/MiningRewardsErrMsgs.sol";
 import "./MiningRewardsSignatureVerifier.sol";
 
 abstract contract MiningRewards is MiningRewardsSignatureVerifier {
-    uint256[50] private __gap;
-
     // address of feeMaster contract
     address public immutable FEE_MASTER;
 
     // address of reward token
     address public immutable REWARD_TOKEN;
 
-    mapping(address => uint256) public rewards;
-
-    bytes32[50] private _endGap;
+    mapping(address => uint256) public miningRewards;
 
     event MinerRewardAccounted(uint32 queueId, address miner, uint256 reward);
     event MinerRewardClaimed(uint32 timestamp, address miner, uint256 reward);
@@ -36,19 +32,19 @@ abstract contract MiningRewards is MiningRewardsSignatureVerifier {
         address miner,
         uint256 reward
     ) internal {
-        rewards[miner] += reward;
+        miningRewards[miner] += reward;
         emit MinerRewardAccounted(queueId, miner, reward);
     }
 
     function _claimMinerRewards(address miner, address receiver) internal {
-        uint256 reward = rewards[miner];
+        uint256 reward = miningRewards[miner];
         require(reward != 0, ERR_ZERO_MINER_REWARD);
 
-        rewards[miner] = 0;
+        miningRewards[miner] = 0;
 
         _payOff(receiver, reward);
 
-        emit MinerRewardClaimed(uint32(block.timestamp), miner, reward);
+        emit MinerRewardClaimed(uint32(block.number), miner, reward);
     }
 
     function _payOff(address receiver, uint256 reward) private {

@@ -16,6 +16,7 @@ abstract contract CachedRoots is RingBufferRootCache {
     uint256 private constant NUM_FOREST_LEAFS = 3;
     bytes32[NUM_FOREST_LEAFS] public forestLeafs;
 
+    event ForestRootInitialized(bytes32 forestRoot, uint256 cacheIndex);
     event ForestRootUpdated(
         uint256 indexed leafIndex,
         bytes32 updatedLeaf,
@@ -42,7 +43,9 @@ abstract contract CachedRoots is RingBufferRootCache {
         forestLeafs[FERRY_TREE_FOREST_LEAF_INDEX] = ferryTreeRoot;
 
         _forestRoot = PoseidonHashers.poseidonT4(forestLeafs);
-        cacheNewRoot(_forestRoot);
+        uint256 cacheIndex = cacheNewRoot(_forestRoot);
+
+        emit ForestRootInitialized(_forestRoot, cacheIndex);
     }
 
     /**
