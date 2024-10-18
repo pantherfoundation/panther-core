@@ -25,7 +25,7 @@ abstract contract DepositAndWithdrawalHandler {
     address internal immutable VAULT;
 
     // Mapping of KYT message hashes to block numbers when they were seen
-    mapping(bytes32 => uint256) internal seenKytMessageHashes;
+    mapping(bytes32 => uint256) public seenKytMessageHashes;
     // Events
     event SeenKytMessageHash(bytes32 indexed kytMessageHash);
 
