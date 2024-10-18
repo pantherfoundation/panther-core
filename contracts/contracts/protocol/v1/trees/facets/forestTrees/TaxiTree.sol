@@ -53,10 +53,11 @@ contract TaxiTree is RingBufferTree {
 
         unchecked {
             leafIndex = _totalLeavesInsertions % MAX_LEAF_NUM;
-            totalLeavesInsertions = _totalLeavesInsertions + 1;
+            ++_totalLeavesInsertions;
         }
 
         newRoot = _insertLeaf(leafIndex, utxo);
+        totalLeavesInsertions = _totalLeavesInsertions;
 
         emit TaxiUtxoAdded(utxo, _totalLeavesInsertions);
     }
