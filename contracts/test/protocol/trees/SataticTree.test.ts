@@ -125,7 +125,7 @@ describe('SataticTree', function () {
                     .connect(signer)
                     .updateStaticRoot(NEW_LEAF, zeroIndex),
             )
-                .to.emit(pantherStaticTree, 'RootUpdated')
+                .to.emit(pantherStaticTree, 'StaticRootUpdated')
                 .withArgs(zeroIndex, NEW_LEAF, newRoot);
         });
 

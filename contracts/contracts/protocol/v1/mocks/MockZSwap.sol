@@ -29,9 +29,9 @@ contract MockZSwap is ZSwap {
         _;
     }
 
-    function _getTokenTypeAndAddress(
+    function internalGetTokenTypeAndAddress(
         uint256 tokenTypeAndAddress
-    ) external view returns (uint8 tokenType, address tokenAddress) {
+    ) external pure returns (uint8 tokenType, address tokenAddress) {
         return tokenTypeAndAddress.getTokenTypeAndAddress();
     }
 
@@ -41,5 +41,17 @@ contract MockZSwap is ZSwap {
         returns (address pantherTree, address vault)
     {
         return (PANTHER_TREES, VAULT);
+    }
+
+    function internalIsSpent(
+        uint256 nullifier
+    ) external view returns (uint256) {
+        return isSpent[bytes32(nullifier)];
+    }
+
+    function internalFeeMasterDebt(
+        address token
+    ) external view returns (uint256) {
+        return feeMasterDebt[token];
     }
 }

@@ -61,10 +61,6 @@ describe('FeeMaster Contract', function () {
             paymaster,
             trustProvider,
         ] = await ethers.getSigners();
-    });
-
-    beforeEach(async function () {
-        snapshotId = await takeSnapshot();
 
         weth = await (await ethers.getContractFactory('WETH9')).deploy();
         zkp = await (
@@ -75,6 +71,13 @@ describe('FeeMaster Contract', function () {
         ).deploy();
 
         uniswapV3Pool = await smock.fake('IUniswapV3Pool');
+    });
+
+    beforeEach(async function () {
+        snapshotId = await takeSnapshot();
+
+        // creating a new pantherPoolV1 fake to keep track of how many times its methods have
+        // been executed on each specific unit test
         pantherPoolV1 = await smock.fake('MockPantherPoolV1');
 
         // Prepare Providers struct

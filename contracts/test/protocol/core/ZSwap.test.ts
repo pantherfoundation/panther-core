@@ -23,18 +23,19 @@ import {
     TransactionTypes,
 } from '../data/samples/transactionNote.data';
 import {revertSnapshot, takeSnapshot} from '../helpers/hardhat';
-import {getSwapInputs} from '../helpers/pantherPoolV1Inputs';
+import {
+    encodeTokenTypeAndAddress,
+    getSwapInputs,
+} from '../helpers/pantherPoolV1Inputs';
 
 describe('ZSwap', function () {
     let zSwap: MockZSwap;
-
     let zkpToken: TokenMock;
     let linkToken: TokenMock;
     let feeMaster: FakeContract<FeeMaster>;
     let pantherTrees: FakeContract<IUtxoInserter>;
     let vault: FakeContract<VaultV1>;
     let plugin: FakeContract<IPlugin>;
-
     let owner: SignerWithAddress, notOwner: SignerWithAddress;
     let snapshot: number;
 
@@ -47,6 +48,7 @@ describe('ZSwap', function () {
         },
         c: {x: placeholder, y: placeholder},
     } as SnarkProofStruct;
+
     const transactionOptions = 0;
     const paymasterCompensation = ethers.BigNumber.from('10');
     const privateMessage = generatePrivateMessage(TransactionTypes.swapZAsset);
@@ -101,10 +103,12 @@ describe('ZSwap', function () {
     });
 
     describe('#updatePluginStatus', () => {
-        it('should update Plugin Status', async () => {
+        it('should update Plugin Status and emit ZSwapPluginUpdated event', async () => {
             await expect(zSwap.updatePluginStatus(plugin.address, true))
                 .to.emit(zSwap, 'ZSwapPluginUpdated')
                 .withArgs(plugin.address, true);
+
+            expect(await zSwap.zSwapPlugins(plugin.address)).to.be.true;
         });
 
         it('should revert if not executed by owner ', async () => {
@@ -116,26 +120,7 @@ describe('ZSwap', function () {
         });
     });
 
-    describe('#swap', async function () {
-        before(async function () {
-            await zkpToken.transfer(
-                vault.address,
-                ethers.utils.parseEther('100'),
-            );
-            await zkpToken.increaseAllowance(
-                vault.address,
-                ethers.utils.parseEther('100'),
-            );
-            await linkToken.transfer(
-                plugin.address,
-                ethers.utils.parseEther('100'),
-            );
-            await linkToken.increaseAllowance(
-                plugin.address,
-                ethers.utils.parseEther('100'),
-            );
-        });
-
+    describe('#swap', function () {
         async function getSwapDataAndHash() {
             const swapData = ethers.utils.solidityPack(
                 ['address'],
@@ -158,167 +143,287 @@ describe('ZSwap', function () {
             return {swapData, calculatedExtraInputHash};
         }
 
-        it('should update plugin status and swap tokens', async function () {
-            await zSwap.updatePluginStatus(plugin.address, true);
+        describe('success', () => {
+            beforeEach(async () => {
+                await zSwap.updatePluginStatus(plugin.address, true);
 
-            const {swapData, calculatedExtraInputHash} =
-                await getSwapDataAndHash();
-
-            const inputs = await getSwapInputs({
-                extraInputsHash: calculatedExtraInputHash,
-                existingToken: zkpToken.address,
-                incomingToken: linkToken.address,
-                existingTokenType: 0,
-                incomingTokenType: 0,
-                withdrawPrpAmount: ethers.utils.parseEther('10'),
-                incomingZassetScale: BigNumber.from('1000000'),
-                existingZassetScale: BigNumber.from('1000000'),
-                kytWithdrawSignedMessageSender: vault.address,
-                kytDepositSignedMessageReceiver: vault.address,
+                //mocked functions
+                plugin.execute.returns(100);
+                vault.getBalance.returnsAtCall(0, 100);
+                vault.getBalance.returnsAtCall(1, 200);
             });
 
-            //mocked functions
-            plugin.execute.returns(100);
-            vault.getBalance.returnsAtCall(0, 100);
-            vault.getBalance.returnsAtCall(1, 200);
+            it('should execute swap and update the FeeMasterDebt', async function () {
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
 
-            await zSwap.swapZAsset(
-                inputs,
-                proof,
-                transactionOptions,
-                paymasterCompensation,
-                swapData,
-                privateMessage,
-            );
+                const withdrawAmount = ethers.utils.parseEther('10');
+
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    withdrawPrpAmount: withdrawAmount,
+                    incomingZassetScale: BigNumber.from('1000000'),
+                    existingZassetScale: BigNumber.from('1000000'),
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
+
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                )
+                    .to.emit(zSwap, 'FeesAccounted')
+                    .and.to.emit(zSwap, 'TransactionNote');
+
+                expect(vault.unlockAsset).to.have.been.calledOnceWith({
+                    tokenType: 0,
+                    token: zkpToken.address,
+                    tokenId: BigNumber.from('0'),
+                    extAccount: plugin.address,
+                    extAmount: withdrawAmount,
+                });
+
+                expect(plugin.execute).to.have.been.calledOnceWith({
+                    tokenIn: zkpToken.address,
+                    tokenOut: linkToken.address,
+                    amountIn: withdrawAmount,
+                    tokenType: 0,
+                    data: swapData,
+                });
+                // Check if the nullifier is spent after the swap
+                expect(await zSwap.internalIsSpent(inputs[12])).to.be.gt(0); //zAssetUtxoInNullifier1
+                expect(
+                    await zSwap.internalFeeMasterDebt(zkpToken.address),
+                ).to.be.equal(inputs[41]); //chargedAmountZkp
+            });
         });
 
-        it('should revert if plugin id not found', async function () {
-            const {swapData, calculatedExtraInputHash} =
-                await getSwapDataAndHash();
+        describe('failure', () => {
+            it('should revert if ExtraInputHash is not valid', async function () {
+                const {swapData} = await getSwapDataAndHash();
 
-            const inputs = await getSwapInputs({
-                extraInputsHash: calculatedExtraInputHash,
-                existingToken: zkpToken.address,
-                incomingToken: linkToken.address,
-                existingTokenType: 0,
-                incomingTokenType: 0,
-                kytWithdrawSignedMessageSender: vault.address,
-                kytDepositSignedMessageReceiver: vault.address,
+                const inputs = await getSwapInputs({
+                    extraInputsHash: BigNumber.from('1'),
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
+
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.revertedWith('PIG:E4');
             });
 
-            await expect(
-                zSwap.swapZAsset(
+            it('should revert if salt hash is zero', async function () {
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
+
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                    saltHash: '0',
+                });
+
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.revertedWith('ZS:E2');
+            });
+
+            it('should revert when trying to spend a nullifier twice', async function () {
+                await zSwap.updatePluginStatus(plugin.address, true);
+
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
+
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    withdrawPrpAmount: ethers.utils.parseEther('10'),
+                    incomingZassetScale: BigNumber.from('1000000'),
+                    existingZassetScale: BigNumber.from('1000000'),
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
+
+                plugin.execute.returns(100);
+                vault.getBalance.returnsAtCall(2, 100);
+                vault.getBalance.returnsAtCall(3, 200);
+
+                // First swap should succeed
+                await zSwap.swapZAsset(
                     inputs,
                     proof,
                     transactionOptions,
                     paymasterCompensation,
                     swapData,
                     privateMessage,
-                ),
-            ).to.revertedWith('OW:E1');
-        });
+                );
 
-        it('should revert if the output amount is zero', async function () {
-            await zSwap.updatePluginStatus(plugin.address, true);
-
-            const {swapData, calculatedExtraInputHash} =
-                await getSwapDataAndHash();
-
-            const inputs = await getSwapInputs({
-                extraInputsHash: calculatedExtraInputHash,
-                existingToken: zkpToken.address,
-                incomingToken: linkToken.address,
-                existingTokenType: 0,
-                incomingTokenType: 0,
-                kytWithdrawSignedMessageSender: vault.address,
-                kytDepositSignedMessageReceiver: vault.address,
+                // Second swap with the same nullifier should fail
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.be.revertedWith('SN:E2');
             });
 
-            plugin.execute.returns(0);
+            it('should revert if plugin id not found', async function () {
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
 
-            await expect(
-                zSwap.swapZAsset(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    paymasterCompensation,
-                    swapData,
-                    privateMessage,
-                ),
-            ).to.revertedWith('Zero received amount');
-        });
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
 
-        it('should revert if there is mismatch between outputAmount and receivedAmount', async function () {
-            await zSwap.updatePluginStatus(plugin.address, true);
-
-            const {swapData, calculatedExtraInputHash} =
-                await getSwapDataAndHash();
-
-            const inputs = await getSwapInputs({
-                extraInputsHash: calculatedExtraInputHash,
-                existingToken: zkpToken.address,
-                incomingToken: linkToken.address,
-                existingTokenType: 0,
-                incomingTokenType: 0,
-                kytWithdrawSignedMessageSender: vault.address,
-                kytDepositSignedMessageReceiver: vault.address,
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.revertedWith('ZS:E1');
             });
 
-            plugin.execute.returns(100);
-            vault.getBalance.returns(100);
+            it('should revert if the output amount is zero', async function () {
+                await zSwap.updatePluginStatus(plugin.address, true);
 
-            await expect(
-                zSwap.swapZAsset(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    paymasterCompensation,
-                    swapData,
-                    privateMessage,
-                ),
-            ).to.revertedWith('Unexpected vault balance');
-        });
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
 
-        it('should revert if the nullifier is already spent', async function () {
-            const {swapData, calculatedExtraInputHash} =
-                await getSwapDataAndHash();
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
 
-            const inputs = await getSwapInputs({
-                extraInputsHash: calculatedExtraInputHash,
-                existingToken: zkpToken.address,
-                incomingToken: linkToken.address,
-                existingTokenType: 0,
-                incomingTokenType: 0,
-                zAccountUtxoInNullifier: BigNumber.from('1'),
-                kytWithdrawSignedMessageSender: vault.address,
-                kytDepositSignedMessageReceiver: vault.address,
+                plugin.execute.returns(0);
+
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.revertedWith('Zero received amount');
             });
 
-            await expect(
-                zSwap.swapZAsset(
-                    inputs,
-                    proof,
-                    transactionOptions,
-                    paymasterCompensation,
-                    swapData,
-                    privateMessage,
-                ),
-            ).to.revertedWith('SN:E2');
+            it('should revert if there is mismatch between outputAmount and receivedAmount', async function () {
+                await zSwap.updatePluginStatus(plugin.address, true);
+
+                const {swapData, calculatedExtraInputHash} =
+                    await getSwapDataAndHash();
+
+                const inputs = await getSwapInputs({
+                    extraInputsHash: calculatedExtraInputHash,
+                    existingToken: zkpToken.address,
+                    incomingToken: linkToken.address,
+                    existingTokenType: 0,
+                    incomingTokenType: 0,
+                    kytWithdrawSignedMessageSender: vault.address,
+                    kytDepositSignedMessageReceiver: vault.address,
+                });
+
+                plugin.execute.returns(100);
+                vault.getBalance.returns(100);
+
+                await expect(
+                    zSwap.swapZAsset(
+                        inputs,
+                        proof,
+                        transactionOptions,
+                        paymasterCompensation,
+                        swapData,
+                        privateMessage,
+                    ),
+                ).to.revertedWith('Unexpected vault balance');
+            });
         });
     });
 
-    describe('#_getTokenTypeAndAddress', async function () {
+    describe('#_getTokenTypeAndAddress', function () {
         it('should decode token type and address', async function () {
-            const erc20token =
-                '1107971845733491151633663588461822472338118381199';
-            const Nativetoken =
-                '372682917519380244141939632342652170012262798458880';
+            const nativeTypeAndToken = encodeTokenTypeAndAddress(
+                0xff,
+                ethers.constants.AddressZero,
+            );
+            const erc20TypeAndToken = encodeTokenTypeAndAddress(
+                0,
+                zkpToken.address,
+            );
+
             expect(
-                (await zSwap._getTokenTypeAndAddress(erc20token)).tokenType,
+                (await zSwap.internalGetTokenTypeAndAddress(erc20TypeAndToken))
+                    .tokenType,
             ).to.be.equal(0);
             expect(
-                (await zSwap._getTokenTypeAndAddress(Nativetoken)).tokenType,
+                (await zSwap.internalGetTokenTypeAndAddress(erc20TypeAndToken))
+                    .tokenAddress,
+            ).to.be.equal(zkpToken.address);
+
+            expect(
+                (await zSwap.internalGetTokenTypeAndAddress(nativeTypeAndToken))
+                    .tokenType,
             ).to.be.equal(255);
+            expect(
+                (await zSwap.internalGetTokenTypeAndAddress(nativeTypeAndToken))
+                    .tokenAddress,
+            ).to.be.equal(ethers.constants.AddressZero);
         });
     });
 });
