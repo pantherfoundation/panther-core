@@ -51,7 +51,7 @@ describe('TaxiTree', () => {
                 BigNumber.from(merkleTree.root),
                 32,
             );
-            await expect(actualRoot).to.be.equal(expectedRoot);
+            expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should insert multiple utxos and update the root', async () => {
@@ -65,7 +65,7 @@ describe('TaxiTree', () => {
                 BigNumber.from(merkleTree.root),
                 32,
             );
-            await expect(actualRoot).to.be.equal(expectedRoot);
+            expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should insert a leaf into the right subtree when left is full', async function () {
@@ -82,7 +82,7 @@ describe('TaxiTree', () => {
                 BigNumber.from(merkleTree.root),
                 32,
             );
-            await expect(actualRoot).to.be.equal(expectedRoot);
+            expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should reset the left subtree when full', async function () {
@@ -105,7 +105,7 @@ describe('TaxiTree', () => {
                 BigNumber.from(merkleTree.root),
                 32,
             );
-            await expect(actualRoot).to.be.equal(expectedRoot);
+            expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         it('should reset the right subtree when the left subtree is full', async function () {
@@ -126,7 +126,7 @@ describe('TaxiTree', () => {
                 BigNumber.from(merkleTree.root),
                 32,
             );
-            await expect(actualRoot).to.be.equal(expectedRoot);
+            expect(actualRoot).to.be.equal(expectedRoot);
         });
 
         async function fillSubtree(

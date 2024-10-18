@@ -461,7 +461,7 @@ export async function getSwapInputs(options: SwapOptions) {
         options.chargedAmountZkp || ethers.utils.parseEther('10');
     const existingToken = BigNumber.from(options.existingTokenType)
         .shl(160)
-        .or(BigNumber.from(options.incomingToken));
+        .or(BigNumber.from(options.existingToken));
     const incomingToken = BigNumber.from(options.incomingTokenType)
         .shl(160)
         .or(BigNumber.from(options.incomingToken));

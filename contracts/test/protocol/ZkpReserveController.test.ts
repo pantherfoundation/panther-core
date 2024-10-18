@@ -171,6 +171,39 @@ describe('ZkpReserveController', function () {
         });
     });
 
+    describe('Rescue functionality', function () {
+        it('should allow owner to rescue ZKP tokens', async function () {
+            const rescueAmount = ethers.utils.parseEther('100');
+            const ownerAddress = await owner.getAddress();
+            const initialBalance = await zkpToken.balanceOf(ownerAddress);
+
+            // Perform the rescue operation
+            await expect(
+                ZkpReserveController.connect(owner).rescueZkps(
+                    ownerAddress,
+                    rescueAmount,
+                ),
+            )
+                .to.emit(ZkpReserveController, 'ZkpRescued')
+                .withArgs(ownerAddress, rescueAmount);
+
+            const finalBalance = await zkpToken.balanceOf(ownerAddress);
+            expect(finalBalance).to.equal(initialBalance.add(rescueAmount));
+        });
+
+        it('should revert when non-owner tries to rescue ZKP tokens', async function () {
+            const rescueAmount = ethers.utils.parseEther('50');
+            const nonOwnerAddress = await nonOwner.getAddress();
+
+            await expect(
+                ZkpReserveController.connect(nonOwner).rescueZkps(
+                    nonOwnerAddress,
+                    rescueAmount,
+                ),
+            ).to.be.revertedWith('ImmOwn: unauthorized');
+        });
+    });
+
     async function calcReleasableAmount() {
         const currBlock = await ethers.provider.getBlockNumber();
         const params = await ZkpReserveController.getRewardStats();
