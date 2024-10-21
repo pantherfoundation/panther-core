@@ -185,7 +185,7 @@ type TreeLockUpdated @entity(immutable: true) {
     blockTimestamp: BigInt!
     transactionHash: Bytes!
 }
-type RootUpdated @entity(immutable: true) {
+type StaticRootUpdated @entity(immutable: true) {
     id: Bytes!
     leafIndex: BigInt! # uint256
     updatedLeaf: Bytes! # bytes32

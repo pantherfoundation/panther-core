@@ -2,13 +2,14 @@ specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
+  # Panther Pool
   - kind: ethereum
     name: PrpConversion
     network: polygon-amoy
     source:
-      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
       abi: PrpConversion
-      startBlock: 12725094
+      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -31,13 +32,14 @@ dataSources:
         - event: ZkpReservesIncreased(uint256)
           handler: handleZkpReservesIncreased
       file: ./src/prp-conversion.ts
+
   - kind: ethereum
     name: PrpVoucherController
     network: polygon-amoy
     source:
-      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
       abi: PrpVoucherController
-      startBlock: 12725094
+      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -66,13 +68,14 @@ dataSources:
         - event: VoucherTermsUpdated(address,bytes4,uint64,uint64)
           handler: handleVoucherTermsUpdated
       file: ./src/prp-voucher-controller.ts
+
   - kind: ethereum
     name: ZAccountsRegistration
     network: polygon-amoy
     source:
-      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
       abi: ZAccountsRegistration
-      startBlock: 12725094
+      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -104,13 +107,14 @@ dataSources:
         - event: ZAccountRegistered(address,(uint184,uint32,uint24,uint8,uint8,bytes32,bytes32))
           handler: handleZAccountRegistered
       file: ./src/z-accounts-registration.ts
+
   - kind: ethereum
     name: ZSwap
     network: polygon-amoy
     source:
-      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
       abi: ZSwap
-      startBlock: 12725094
+      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -130,13 +134,14 @@ dataSources:
         - event: ZSwapPluginUpdated(address,bool)
           handler: handleZSwapPluginUpdated
       file: ./src/z-swap.ts
+
   - kind: ethereum
     name: ZTransaction
     network: polygon-amoy
     source:
-      address: '0xe57DA4d3782E198c3854bac4Abb33b7DB20a3E79'
+      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
       abi: ZTransaction
-      startBlock: 12725094
+      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -156,13 +161,15 @@ dataSources:
         - event: TransactionNote(uint16,bytes)
           handler: handleTransactionNote
       file: ./src/z-transaction.ts
+
+  # Panther Forest
   - kind: ethereum
     name: ProvidersKeysRegistry
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: ProvidersKeysRegistry
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -188,13 +195,14 @@ dataSources:
         - event: TreeLockUpdated(uint32)
           handler: handleTreeLockUpdated
       file: ./src/providers-keys-registry.ts
+
   - kind: ethereum
     name: StaticTree
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: StaticTree
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -205,16 +213,17 @@ dataSources:
         - name: StaticTree
           file: ./abis/StaticTree.json
       eventHandlers:
-        - event: RootUpdated(indexed uint256,bytes32,bytes32)
+        - event: StaticRootUpdated(indexed uint256,bytes32,bytes32)
           handler: handleRootUpdated
       file: ./src/static-tree.ts
+
   - kind: ethereum
     name: ZAssetsRegistryV1
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: ZAssetsRegistryV1
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -231,13 +240,14 @@ dataSources:
         - event: ZAssetRootUpdated(bytes32,bytes32,uint48)
           handler: handleZAssetRootUpdated
       file: ./src/z-assets-registry-v-1.ts
+
   - kind: ethereum
     name: ZNetworksRegistry
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: ZNetworksRegistry
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -251,13 +261,14 @@ dataSources:
         - event: ZNetworkTreeUpdated(bytes32)
           handler: handleZNetworkTreeUpdated
       file: ./src/z-networks-registry.ts
+
   - kind: ethereum
     name: ZZonesRegistry
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: ZZonesRegistry
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -271,121 +282,14 @@ dataSources:
         - event: ZZonesTreeUpdated(bytes32)
           handler: handleZZonesTreeUpdated
       file: ./src/z-zones-registry.ts
-  - kind: ethereum
-    name: zkpReserveController
-    network: polygon-amoy
-    source:
-      address: '0xD6c37FcF971587acA6C7F8Bbc9d2af9CEF750331'
-      abi: zkpReserveController
-      startBlock: 12725094
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - RewardParamsUpdated
-        - ZkpReservesReleased
-      abis:
-        - name: zkpReserveController
-          file: ./abis/zkpReserveController.json
-      eventHandlers:
-        - event: RewardParamsUpdated(uint256,uint256)
-          handler: handleRewardParamsUpdated
-        - event: ZkpReservesReleased(bytes32,uint256)
-          handler: handleZkpReservesReleased
-      file: ./src/zkp-reserve-controller.ts
-  - kind: ethereum
-    name: vaultV1
-    network: polygon-amoy
-    source:
-      address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf'
-      abi: vaultV1
-      startBlock: 12725094
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - DepositedToEscrow
-        - FundedFromEscrow
-        - Locked
-        - ReturnedFromEscrow
-        - SaltUsed
-        - Unlocked
-      abis:
-        - name: vaultV1
-          file: ./abis/vaultV1.json
-      eventHandlers:
-        - event: DepositedToEscrow(address,uint256,bytes32,address)
-          handler: handleDepositedToEscrow
-        - event: FundedFromEscrow(address,uint256,bytes32,address)
-          handler: handleFundedFromEscrow
-        - event: Locked((uint8,address,uint256,address,uint96))
-          handler: handleLocked
-        - event: ReturnedFromEscrow(address,uint256,bytes32,address)
-          handler: handleReturnedFromEscrow
-        - event: SaltUsed(bytes32)
-          handler: handleSaltUsed
-        - event: Unlocked((uint8,address,uint256,address,uint96))
-          handler: handleUnlocked
-      file: ./src/vault-v-1.ts
-  - kind: ethereum
-    name: feeMaster
-    network: polygon-amoy
-    source:
-      address: '0x2cF41FB1E01fEAF7b7fcc7C40625aE9c08D95343'
-      abi: feeMaster
-      startBlock: 12725094
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - DebtsUpdated
-        - DonationsUpdated
-        - FeeParamsUpdated
-        - NativeTokenReserveTargetUpdated
-        - NativeTokenReserveUpdated
-        - PayOff
-        - PoolUpdated
-        - ProtocolZkpFeeDistributionParamsUpdated
-        - TwapPeriodUpdated
-        - ZkpTokenDonationsUpdated
-        - ZkpsDistributed
-      abis:
-        - name: feeMaster
-          file: ./abis/feeMaster.json
-      eventHandlers:
-        - event: DebtsUpdated(address,address,uint256)
-          handler: handleDebtsUpdated
-        - event: DonationsUpdated(uint16,uint256)
-          handler: handleDonationsUpdated
-        - event: FeeParamsUpdated((uint32,uint32,uint32,uint16))
-          handler: handleFeeParamsUpdated
-        - event: NativeTokenReserveTargetUpdated(uint256)
-          handler: handleNativeTokenReserveTargetUpdated
-        - event: NativeTokenReserveUpdated(uint256)
-          handler: handleNativeTokenReserveUpdated
-        - event: PayOff(address,address,uint256)
-          handler: handlePayOff
-        - event: PoolUpdated(address,bool)
-          handler: handlePoolUpdated
-        - event: ProtocolZkpFeeDistributionParamsUpdated(uint16,uint96)
-          handler: handleProtocolZkpFeeDistributionParamsUpdated
-        - event: TwapPeriodUpdated(uint256)
-          handler: handleTwapPeriodUpdated
-        - event: ZkpTokenDonationsUpdated(uint256)
-          handler: handleZkpTokenDonationsUpdated
-        - event: ZkpsDistributed(uint256,uint256)
-          handler: handleZkpsDistributed
-      file: ./src/fee-master.ts
+
   - kind: ethereum
     name: PantherForest
     network: polygon-amoy
     source:
-      address: '0x0810ea246310b737A8a3aE048Ad7ef1Ac27E9932'
+      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
       abi: PantherForest
-      startBlock: 12725104
+      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -441,3 +345,115 @@ dataSources:
         - event: UtxoBusQueued(indexed bytes32,indexed uint256,uint256)
           handler: handleUtxoBusQueued
       file: ./src/panther-forest.ts
+
+  # Rest of the contracts
+  - kind: ethereum
+    name: zkpReserveController
+    network: polygon-amoy
+    source:
+      address: '0x1355685131bB371E6eE0Cb0e99b7992b61154CEc'
+      abi: zkpReserveController
+      startBlock: 13439616
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardParamsUpdated
+        - ZkpReservesReleased
+      abis:
+        - name: zkpReserveController
+          file: ./abis/zkpReserveController.json
+      eventHandlers:
+        - event: RewardParamsUpdated(uint256,uint256)
+          handler: handleRewardParamsUpdated
+        - event: ZkpReservesReleased(bytes32,uint256)
+          handler: handleZkpReservesReleased
+      file: ./src/zkp-reserve-controller.ts
+
+  - kind: ethereum
+    name: vaultV1
+    network: polygon-amoy
+    source:
+      address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf'
+      abi: vaultV1
+      startBlock: 13438619
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DepositedToEscrow
+        - FundedFromEscrow
+        - Locked
+        - ReturnedFromEscrow
+        - SaltUsed
+        - Unlocked
+      abis:
+        - name: vaultV1
+          file: ./abis/vaultV1.json
+      eventHandlers:
+        - event: DepositedToEscrow(address,uint256,bytes32,address)
+          handler: handleDepositedToEscrow
+        - event: FundedFromEscrow(address,uint256,bytes32,address)
+          handler: handleFundedFromEscrow
+        - event: Locked((uint8,address,uint256,address,uint96))
+          handler: handleLocked
+        - event: ReturnedFromEscrow(address,uint256,bytes32,address)
+          handler: handleReturnedFromEscrow
+        - event: SaltUsed(bytes32)
+          handler: handleSaltUsed
+        - event: Unlocked((uint8,address,uint256,address,uint96))
+          handler: handleUnlocked
+      file: ./src/vault-v-1.ts
+
+  - kind: ethereum
+    name: feeMaster
+    network: polygon-amoy
+    source:
+      address: '0x95ccA3111EaE41325A38EFaE195ad8C4b85aA1df'
+      abi: feeMaster
+      startBlock: 13438657
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DebtsUpdated
+        - DonationsUpdated
+        - FeeParamsUpdated
+        - NativeTokenReserveTargetUpdated
+        - NativeTokenReserveUpdated
+        - PayOff
+        - PoolUpdated
+        - ProtocolZkpFeeDistributionParamsUpdated
+        - TwapPeriodUpdated
+        - ZkpTokenDonationsUpdated
+        - ZkpsDistributed
+      abis:
+        - name: feeMaster
+          file: ./abis/feeMaster.json
+      eventHandlers:
+        - event: DebtsUpdated(address,address,uint256)
+          handler: handleDebtsUpdated
+        - event: DonationsUpdated(uint16,uint256)
+          handler: handleDonationsUpdated
+        - event: FeeParamsUpdated((uint32,uint32,uint32,uint16))
+          handler: handleFeeParamsUpdated
+        - event: NativeTokenReserveTargetUpdated(uint256)
+          handler: handleNativeTokenReserveTargetUpdated
+        - event: NativeTokenReserveUpdated(uint256)
+          handler: handleNativeTokenReserveUpdated
+        - event: PayOff(address,address,uint256)
+          handler: handlePayOff
+        - event: PoolUpdated(address,bool)
+          handler: handlePoolUpdated
+        - event: ProtocolZkpFeeDistributionParamsUpdated(uint16,uint96)
+          handler: handleProtocolZkpFeeDistributionParamsUpdated
+        - event: TwapPeriodUpdated(uint256)
+          handler: handleTwapPeriodUpdated
+        - event: ZkpTokenDonationsUpdated(uint256)
+          handler: handleZkpTokenDonationsUpdated
+        - event: ZkpsDistributed(uint256,uint256)
+          handler: handleZkpsDistributed
+      file: ./src/fee-master.ts

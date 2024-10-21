@@ -1,8 +1,8 @@
-import {RootUpdated as RootUpdatedEvent} from '../generated/StaticTree/StaticTree';
-import {RootUpdated} from '../generated/schema';
+import {StaticRootUpdated as StaticRootUpdatedEvent} from '../generated/StaticTree/StaticTree';
+import {StaticRootUpdated} from '../generated/schema';
 
-export function handleRootUpdated(event: RootUpdatedEvent): void {
-    let entity = new RootUpdated(
+export function handleRootUpdated(event: StaticRootUpdatedEvent): void {
+    let entity = new StaticRootUpdated(
         event.transaction.hash.concatI32(event.logIndex.toI32()),
     );
     entity.leafIndex = event.params.leafIndex;
