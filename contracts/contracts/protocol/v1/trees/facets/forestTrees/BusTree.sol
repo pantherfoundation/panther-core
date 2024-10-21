@@ -60,8 +60,6 @@ abstract contract BusTree is BusQueues, MiningRewards, Verifier {
     // address of circuitId
     uint160 public onboardingQueueCircuitId;
 
-    bytes32[50] private _endGap;
-
     event BusTreeInitialized(uint32 startBlockTime);
     event CircuitIdUpdated(uint160 circuitId);
     event BusBatchOnboarded(
