@@ -326,19 +326,19 @@ function getNamedAccounts() {
             amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
         },
 
-        pZkp_native_pool: {
+        pZkp_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x7a37f4a561514feb762d5301d0a25631e5faf30a',
         },
 
-        pZkp_link_pool: {
+        pZkp_link_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x39150aF61A33E0d97878D26e1b7eDFbd3ca2d505',
         },
 
-        link_native_pool: {
+        link_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xd61679A9cD1152bdfA9Ce2ff78ebd8bE67314935',

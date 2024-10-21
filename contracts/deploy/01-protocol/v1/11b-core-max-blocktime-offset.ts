@@ -14,7 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('PantherPoolV1');
     const diamond = await ethers.getContractAt(abi, address);
 
-    const maxBlocktimeOffset = '300'; // 5 mins
+    const maxBlocktimeOffset = '600'; // 5 mins
 
     console.log('updating max blocktime offset');
 

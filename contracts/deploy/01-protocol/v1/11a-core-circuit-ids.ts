@@ -34,7 +34,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const circuitId = await diamond.getCircuitIds(txType);
 
-        if (circuitId == 0) {
+        if (circuitId != BigInt(pointer)) {
             const tx = await diamond.updateCircuitId(txType, pointer, {
                 gasPrice: 30000000000,
             });
@@ -54,7 +54,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const circuitId = await diamond.getCircuitIds(txType);
 
-        if (circuitId == 0) {
+        if (circuitId != BigInt(pointer)) {
             const tx = await diamond.updateCircuitId(txType, pointer, {
                 gasPrice: 30000000000,
             });
@@ -75,7 +75,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const circuitId = await diamond.getCircuitIds(txType);
 
-        if (circuitId == 0) {
+        if (circuitId != BigInt(pointer)) {
             const tx = await diamond.updateCircuitId(txType, pointer, {
                 gasPrice: 30000000000,
             });
@@ -96,7 +96,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const circuitId = await diamond.getCircuitIds(txType);
 
-        if (circuitId == 0) {
+        if (circuitId != BigInt(pointer)) {
             const tx = await diamond.updateCircuitId(txType, pointer, {
                 gasPrice: 30000000000,
             });
@@ -114,7 +114,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const circuitId = await diamond.getCircuitIds(txType);
 
-        if (circuitId == 0) {
+        if (circuitId != BigInt(pointer)) {
             const tx = await diamond.updateCircuitId(txType, pointer, {
                 gasPrice: 30000000000,
             });
