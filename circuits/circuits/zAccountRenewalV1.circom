@@ -311,6 +311,12 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     isEqualZAccountMerkleRoot.enabled <== zAccountRootSelectorSwitch.out;
 
     // [7] - Verify zAccountUtxoIn nullifier
+    // verify nullifier key
+    component zAccountNullifierPubKeyChecker = BabyPbk();
+    zAccountNullifierPubKeyChecker.in <== zAccountUtxoInNullifierPrivKey;
+    zAccountNullifierPubKeyChecker.Ax === zAccountUtxoInNullifierPubKey[0];
+    zAccountNullifierPubKeyChecker.Ay === zAccountUtxoInNullifierPubKey[1];
+
     component zAccountUtxoInNullifierHasher = ZAccountNullifierHasher();
     zAccountUtxoInNullifierHasher.privKey <== zAccountUtxoInNullifierPrivKey; // r * RootPrivKey
     zAccountUtxoInNullifierHasher.commitment <== zAccountUtxoInNoteHasher.out;
@@ -320,7 +326,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
     zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
 
-    // [8] - Verify zAccoutId exclusion proof
+    // [8] - Verify zAccountId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
