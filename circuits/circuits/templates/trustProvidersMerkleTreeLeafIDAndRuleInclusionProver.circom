@@ -19,6 +19,8 @@ template TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver(){
     offset_lessThan_10.in[0] <== offset;
     offset_lessThan_10.in[1] <== 10;
 
+    offset_lessThan_10.out === 1;
+
     component n2b_leafIDsAndRulesList = Num2Bits(10 * 24);
     n2b_leafIDsAndRulesList.in <== leafIDsAndRulesList;
 
