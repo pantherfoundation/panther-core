@@ -9,13 +9,14 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 ///*
 // * R = forTxReward
 // *   + [ forUtxoReward * sum[over i] ( UTXO_period_i * UTXO_amount_i )
-//         + forDepositReward * deposit_amount ] * asset_weight
-// * S1 = forTxReward
+//         + forDepositReward * deposit_amount ] * asset_weight / 2^prpScaleFactor
+// * S1 = forTxReward << prpScaleFactor // 100 bit
 // * S2 = forDepositReward * deposit_amount
 // * S3 = sum[over i](UTXO_period_i * UTXO_amount_i)
 // * S4 = forUtxoReward * S3
 // * S5 = (S4 + S2)*assetWeight
 // * R = S1 + S5
+// * Final Result = R >> prpScaleFactor // 196 bit
 // */
 template RewardsExtended(nUtxoIn) {
     signal input {uint64}   depositScaledAmount;
@@ -39,7 +40,8 @@ template RewardsExtended(nUtxoIn) {
     var prpScaleFactor = 60;
     // forTxReward is already expressed in PRPs and does not require division by the prpScaleFactor
     // --> and we can not "scale" the input value, instead of correcting the code, as the input value becomes beyond the {uint40}
-    S1 <== forTxReward; // 2^40
+    // So we scale it here by 2^prpScaleFactor
+    S1 <== forTxReward * 2**prpScaleFactor; // 2^40 * 2^60 = 2^100
     S2 <== forDepositReward * depositScaledAmount;    // 2^40 x 2^64 = 2^104
 
     signal sum[nUtxoIn];
@@ -65,7 +67,7 @@ template RewardsExtended(nUtxoIn) {
     S3 <== sum[nUtxoIn-1]; // ~ 2^100
     S4 <== forUtxoReward * S3; // 2^40 x 2^100 = 2^140
     S5 <== (S4 + S2) * assetWeight; // 2^104 x 2^48 = 2^152
-    R <== S1 + S5; // 2^40 + 2^152 = 2^153 (at most)
+    R <== S1 + S5; // 2^100 + 2^152 = 2^154 (at most)
 
     component n2b = Num2Bits(253);
     n2b.in <== R;
