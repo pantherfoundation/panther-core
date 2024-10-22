@@ -8,15 +8,19 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 template ZoneIdInclusionProver(){
     signal input enabled;
     signal input {uint16} zoneId;  // 16 bit
-    signal input zoneIds;          // 256 bit
+    signal input zoneIds;          // 240 bit
     signal input {uint4} offset;   // 4 bit
 
-    assert(offset < 16);
+    assert(offset < 15);
+    component offset_lessThan_15 = LessThan(4);
+    offset_lessThan_15.in[0] <== offset;
+    offset_lessThan_15.in[1] <== 15;
+    offset_lessThan_15.out === 1;
 
-    component n2b_zoneIds = Num2Bits(254);
+    component n2b_zoneIds = Num2Bits(240);
     n2b_zoneIds.in <== zoneIds;
 
-    component b2n_zoneIds[16];
+    component b2n_zoneIds[15];
 
     for(var i = 0, ii = 0; i < 15*16; i += 16) {
         b2n_zoneIds[ii] = Bits2Num(16);
