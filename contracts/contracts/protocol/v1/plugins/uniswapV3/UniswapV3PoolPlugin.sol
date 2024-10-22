@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "../../core/interfaces/IPlugin.sol";
+import "../../core/libraries/TokenTypeAndAddressDecoder.sol";
 
 import "../../../../common/TransferHelper.sol";
 import "../../DeFi/UniswapV3FlashSwap.sol";
@@ -10,6 +11,7 @@ import "../PluginDataDecoderLib.sol";
 import { NATIVE_TOKEN_TYPE } from "../../../../common/Constants.sol";
 
 contract UniswapV3PoolPlugin {
+    using TokenTypeAndAddressDecoder for uint168;
     using PluginDataDecoderLib for bytes;
     using UniswapV3FlashSwap for address;
     using TransferHelper for address;
@@ -45,22 +47,30 @@ contract UniswapV3PoolPlugin {
             .data
             .decodeUniswapV3PoolData();
 
-        if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
+        (uint8 tokenInType, address tokenInAddress) = pluginData
+            .tokenInTypeAndAddress
+            .getTokenTypeAndAddress();
+
+        (uint8 tokenOutType, address tokenOutAddress) = pluginData
+            .tokenInTypeAndAddress
+            .getTokenTypeAndAddress();
+
+        if (tokenInType == NATIVE_TOKEN_TYPE) {
             WETH.convertNativeToWNative(pluginData.amountIn);
         }
 
         amountOut = pool.swapExactInput(
-            pluginData.tokenIn,
-            pluginData.tokenOut,
+            tokenInAddress,
+            tokenOutAddress,
             pluginData.amountIn,
             sqrtPriceLimitX96
         );
 
-        if (pluginData.tokenType == NATIVE_TOKEN_TYPE) {
+        if (tokenOutType == NATIVE_TOKEN_TYPE) {
             WETH.convertWNativeToNative(amountOut);
             VAULT.safeTransferETH(amountOut);
         } else {
-            pluginData.tokenOut.safeTransfer(VAULT, amountOut);
+            tokenOutAddress.safeTransfer(VAULT, amountOut);
         }
     }
 

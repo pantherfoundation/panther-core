@@ -84,7 +84,7 @@ abstract contract TransactionChargesHandler {
                 .scaleDownBy1e12()
                 .safe40();
 
-            (, address tokenAddress) = inputs[MAIN_TOKEN_IND]
+            (, address tokenAddress) = inputs[MAIN_TOKEN_TYPE_AND_ADDRESS_IND]
                 .getTokenTypeAndAddress();
 
             assetData = AssetData({

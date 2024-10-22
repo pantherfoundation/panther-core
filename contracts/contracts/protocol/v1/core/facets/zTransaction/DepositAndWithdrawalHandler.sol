@@ -46,8 +46,9 @@ abstract contract DepositAndWithdrawalHandler {
     ) internal {
         uint96 depositAmount = inputs[MAIN_DEPOSIT_AMOUNT_IND].safe96();
         uint96 withdrawAmount = inputs[MAIN_WITHDRAW_AMOUNT_IND].safe96();
-        (uint8 tokenType, address tokenAddress) = inputs[MAIN_TOKEN_IND]
-            .getTokenTypeAndAddress();
+        (uint8 tokenType, address tokenAddress) = inputs[
+            MAIN_TOKEN_TYPE_AND_ADDRESS_IND
+        ].getTokenTypeAndAddress();
 
         uint256 tokenId = inputs[MAIN_TOKEN_ID_IND];
         if (transactionType.isDeposit()) {

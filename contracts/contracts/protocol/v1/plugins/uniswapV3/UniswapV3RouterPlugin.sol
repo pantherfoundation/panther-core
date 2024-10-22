@@ -11,6 +11,7 @@ import "../PluginDataDecoderLib.sol";
 import "../TokenApprovalLib.sol";
 
 contract UniswapV3RouterPlugin {
+    using TokenTypeAndAddressDecoder for uint168;
     using TokenPairResolverLib for PluginData;
     using PluginDataDecoderLib for bytes;
     using TokenApprovalLib for address;
@@ -136,22 +137,24 @@ contract UniswapV3RouterPlugin {
     function execute(
         PluginData calldata pluginData
     ) external payable returns (uint256 amountOut) {
-        uint8 tokenType = pluginData.tokenType;
         uint96 amountIn = pluginData.amountIn;
         bytes memory data = pluginData.data;
 
-        (address tokenIn, address tokenOut) = pluginData.getTokenInAndTokenOut(
-            WETH
-        );
+        (
+            uint8 tokenInType,
+            address tokenIn,
+            uint8 tokenOutType,
+            address tokenOut
+        ) = pluginData.getTokenTypesAndAddresses(WETH);
 
         uint256 nativeInputAmount = tokenIn
             .approveInputAmountOrReturnNativeInputAmount(
-                tokenType,
+                tokenInType,
                 UNISWAP_ROUTER,
                 amountIn
             );
 
-        address recipient = _getOutputRecipient(tokenOut);
+        address recipient = _getOutputRecipient(tokenOutType);
 
         amountOut = _execute(
             tokenIn,
@@ -162,7 +165,8 @@ contract UniswapV3RouterPlugin {
             data
         );
 
-        if (tokenOut == WETH) withdrawWethAndTransferToVault(amountOut);
+        if (tokenOutType == NATIVE_TOKEN_TYPE)
+            withdrawWethAndTransferToVault(amountOut);
     }
 
     function _execute(
@@ -252,11 +256,12 @@ contract UniswapV3RouterPlugin {
     }
 
     function _getOutputRecipient(
-        address tokenOut
+        uint8 tokenOutType
     ) private view returns (address recipient) {
         recipient = VAULT;
 
-        if (tokenOut == WETH) {
+        if (tokenOutType == NATIVE_TOKEN_TYPE) {
+            // Note: this contract receives wEth and converts it to ETH to be sent to the Vault
             recipient = address(this);
         }
     }
@@ -275,7 +280,11 @@ contract UniswapV3RouterPlugin {
 
         // checking if pools with other fees gives us better amountOut
         for (uint256 i = 1; i < quotes.length; i++) {
-            if (quotes[i].amountOut > amountOut) fee = quotes[i].fee;
+            uint256 _amountOut = quotes[i].amountOut;
+            if (_amountOut > amountOut) {
+                amountOut = _amountOut;
+                fee = quotes[i].fee;
+            }
         }
     }
 

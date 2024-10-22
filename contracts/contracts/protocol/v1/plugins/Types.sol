@@ -4,9 +4,8 @@
 pragma solidity ^0.8.19;
 
 struct PluginData {
-    address tokenIn;
+    uint168 tokenInTypeAndAddress;
+    uint168 tokenOutTypeAndAddress;
     uint96 amountIn;
-    address tokenOut;
-    uint8 tokenType;
     bytes data;
 }
