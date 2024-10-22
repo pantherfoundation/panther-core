@@ -44,6 +44,11 @@ library UtilsLib {
         return uint160(n);
     }
 
+    function safe168(uint256 n) internal pure returns (uint168) {
+        require(n < 2 ** 168, "UNSAFE168");
+        return uint168(n);
+    }
+
     function scaleDownBy1e12(uint256 n) internal pure returns (uint256) {
         return n / 1e12;
     }

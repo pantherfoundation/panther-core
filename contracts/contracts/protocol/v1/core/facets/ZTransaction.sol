@@ -130,8 +130,9 @@ contract ZTransaction is
             );
 
             if (transactionType.isInternal()) {
-                (, address tokenAddress) = inputs[MAIN_TOKEN_IND]
-                    .getTokenTypeAndAddress();
+                (, address tokenAddress) = inputs[
+                    MAIN_TOKEN_TYPE_AND_ADDRESS_IND
+                ].getTokenTypeAndAddress();
                 require(tokenAddress == address(0), ERR_NON_ZERO_TOKEN);
             } else {
                 // deposit and/or withdraw tx

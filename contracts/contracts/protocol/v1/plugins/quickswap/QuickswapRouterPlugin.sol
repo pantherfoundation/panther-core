@@ -86,13 +86,16 @@ contract QuickswapRouterPlugin {
 
         uint96 amountIn = pluginData.amountIn;
 
-        (address tokenIn, address tokenOut) = pluginData.getTokenInAndTokenOut(
-            WETH
-        );
+        (
+            uint8 tokenInType,
+            address tokenIn,
+            uint8 tokenOutType,
+            address tokenOut
+        ) = pluginData.getTokenTypesAndAddresses(WETH);
 
         uint256 nativeInputAmount = tokenIn
             .approveInputAmountOrReturnNativeInputAmount(
-                pluginData.tokenType,
+                tokenInType,
                 QUICKSWAP_ROUTER,
                 amountIn
             );
@@ -124,6 +127,8 @@ contract QuickswapRouterPlugin {
             amountIn,
             nativeInputAmount,
             amountOutMin,
+            tokenInType,
+            tokenOutType,
             deadline,
             completeSwapPath
         );
@@ -133,17 +138,19 @@ contract QuickswapRouterPlugin {
         uint256 amountIn,
         uint256 nativeInputAmount,
         uint256 amountOutMin,
+        uint8 tokenInType,
+        uint8 tokenOutType,
         uint32 deadline,
         address[] memory path
     ) public payable returns (uint256 amountOut) {
-        if (path[0] == WETH) {
+        if (tokenInType == NATIVE_TOKEN_TYPE) {
             amountOut = _swapExactETHForTokens(
                 nativeInputAmount,
                 amountOutMin,
                 deadline,
                 path
             );
-        } else if (path[path.length - 1] == WETH) {
+        } else if (tokenOutType == NATIVE_TOKEN_TYPE) {
             amountOut = _swapExactTokensForETH(
                 amountIn,
                 amountOutMin,

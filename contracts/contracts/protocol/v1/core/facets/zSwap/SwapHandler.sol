@@ -38,7 +38,7 @@ library SwapHandler {
             .safeAddress();
 
         (uint8 existingTokenType, address existingTokenAddress) = inputs[
-            ZSWAP_EXISTING_TOKEN_IND
+            ZSWAP_EXISTING_TOKEN_TYPE_AND_ADDRESS_IND
         ].getTokenTypeAndAddress();
 
         vault.unlockAsset(
@@ -77,19 +77,18 @@ library SwapHandler {
         uint256[] memory inputs,
         bytes memory swapData
     ) private returns (uint96 _outputAmount) {
-        (uint8 existingTokenType, address existingTokenAddress) = inputs[
-            ZSWAP_EXISTING_TOKEN_IND
-        ].getTokenTypeAndAddress();
-
         (uint8 incomingTokenType, address incomingTokenAddress) = inputs[
-            ZSWAP_INCOMING_TOKEN_IND
+            ZSWAP_INCOMING_TOKEN_TYPE_AND_ADDRESS_IND
         ].getTokenTypeAndAddress();
 
         PluginData memory pluginData = PluginData({
-            tokenIn: existingTokenAddress,
-            tokenOut: incomingTokenAddress,
+            tokenInTypeAndAddress: inputs[
+                ZSWAP_EXISTING_TOKEN_TYPE_AND_ADDRESS_IND
+            ].safe168(),
+            tokenOutTypeAndAddress: inputs[
+                ZSWAP_INCOMING_TOKEN_TYPE_AND_ADDRESS_IND
+            ].safe168(),
             amountIn: inputs[ZSWAP_WITHDRAW_AMOUNT_IND].safe96(),
-            tokenType: existingTokenType,
             data: swapData
         });
 
