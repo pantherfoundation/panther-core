@@ -40,7 +40,7 @@ template MerkleTreeInclusionProof(n_levels) {
     hashers[0].inputs[1] <== temp + pathIndices[1]*(pathElements[1] - pathElements[0]);
     hashers[0].inputs[2] <== pathElements[1] + pathIndices[1]*(leaf -pathElements[1]);
 
-    for (var i = 0; i < n_levels; i++) {
+    for (var i = 0; i < n_levels + 1; i++) {
         // enforce binary index
         pathIndices[i] - pathIndices[i] * pathIndices[i] === 0;
     }
