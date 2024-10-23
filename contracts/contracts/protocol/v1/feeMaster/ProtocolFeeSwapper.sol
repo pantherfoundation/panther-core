@@ -86,4 +86,22 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         // Executing the flash swap and receive ZKPs
         receivedZkp = _flashSwap(pool, NATIVE_TOKEN, _zkpToken, _swapAmount);
     }
+
+    function _decodeDataAndVerifySender(
+        bytes calldata data
+    )
+        internal
+        view
+        override
+        returns (address pool, address token0, address token1)
+    {
+        (pool, token0, token1) = abi.decode(data, (address, address, address));
+
+        (address _token0, address _token1) = _mapWrappedToNativeToken(
+            token0,
+            token1
+        );
+        pool = getEnabledPoolAddress(_token0, _token1);
+        require(msg.sender == pool, "uniswapV3SwapCallback::Invalid sender");
+    }
 }
