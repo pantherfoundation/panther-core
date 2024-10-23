@@ -325,10 +325,7 @@ contract FeeMaster is
         _decreaseAvailableDonation(feeData);
         cacheNativeToZkpRate();
 
-        if (
-            feeData.txType == TT_ZACCOUNT_ACTIVATION ||
-            feeData.txType == TT_ZACCOUNT_REACTIVATION
-        ) {
+        if (feeData.txType.isActivationOrReactivationOrRenewal()) {
             return chargedFeesPerTx = _accountActivationFees(feeData);
         }
         if (feeData.txType == TT_PRP_ACCOUNTING) {

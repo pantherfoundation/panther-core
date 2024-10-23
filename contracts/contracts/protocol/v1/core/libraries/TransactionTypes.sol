@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import { MAIN_DEPOSIT_AMOUNT_IND, MAIN_WITHDRAW_AMOUNT_IND } from "../publicSignals/MainPublicSignals.sol";
-import { TT_MAIN_TRANSACTION, TF_DEPOSIT_TRANSACTION, TF_WITHDRAWAL_TRANSACTION, TM_CLEAR_FLAGS } from "../utils/Types.sol";
+import "../utils/Types.sol";
 
 library TransactionTypes {
     function generateMainTxType(
@@ -31,5 +31,14 @@ library TransactionTypes {
 
     function isMain(uint16 txType) internal pure returns (bool) {
         return (txType & TM_CLEAR_FLAGS) == TT_MAIN_TRANSACTION;
+    }
+
+    function isActivationOrReactivationOrRenewal(
+        uint16 txType
+    ) internal pure returns (bool) {
+        return
+            txType == TT_ZACCOUNT_ACTIVATION ||
+            txType == TT_ZACCOUNT_REACTIVATION ||
+            txType == TT_ZACCOUNT_RENEWAL;
     }
 }

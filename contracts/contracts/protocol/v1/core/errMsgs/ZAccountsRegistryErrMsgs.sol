@@ -29,3 +29,5 @@ string constant ERR_UNEXPECTED_KEY = "ZAR:E17";
 
 string constant ERR_MISMATCH_PUB_SPEND_KEY = "ZAR:E18";
 string constant ERR_MISMATCH_PUB_READ_KEY = "ZAR:E19";
+
+string constant ERR_NOT_ACTIVATED = "ZAR:E20";

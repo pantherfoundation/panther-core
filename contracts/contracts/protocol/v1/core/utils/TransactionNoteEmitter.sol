@@ -9,6 +9,7 @@ import "../publicSignals/PrpAccountingPublicSignals.sol";
 import "../publicSignals/PrpConversionPublicSignals.sol";
 import "../publicSignals/ZSwapPublicSignals.sol";
 
+import "../libraries/TransactionTypes.sol";
 import "../errMsgs/TransactionNoteEmitterErrMsgs.sol";
 import "../../../../common/UtilsLib.sol";
 
@@ -48,6 +49,8 @@ import "../../../../common/UtilsLib.sol";
  * providing public knowledge of this fact does not leak privacy.
  */
 abstract contract TransactionNoteEmitter {
+    using TransactionTypes for uint16;
+
     // @notice Transaction Note, emitted with every MASP transaction
     event TransactionNote(uint16 txType, bytes content);
 
@@ -431,7 +434,7 @@ abstract contract TransactionNoteEmitter {
             ERR_INVALID_MT_UTXO_ZACCOUNT
         );
 
-        if (txType == TT_ZACCOUNT_ACTIVATION) {
+        if (txType.isActivationOrReactivationOrRenewal()) {
             _sanitizeZAccountActivationMessage(privateMessages);
         }
 

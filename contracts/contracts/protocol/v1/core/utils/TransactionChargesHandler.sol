@@ -152,7 +152,7 @@ abstract contract TransactionChargesHandler {
             .scaleDownBy1e12()
             .safe40();
 
-        if (txType == TT_ZACCOUNT_ACTIVATION) {
+        if (txType.isActivationOrReactivationOrRenewal()) {
             numOutputUtxos = 2;
             scAddedZkpAmount = inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND]
                 .scaleDownBy1e12()
