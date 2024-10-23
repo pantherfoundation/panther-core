@@ -159,10 +159,21 @@ describe('ZSwap', function () {
 
                 const withdrawAmount = ethers.utils.parseEther('10');
 
+                const tokenInTypeAndAddress = encodeTokenTypeAndAddress(
+                    '0x00',
+                    zkpToken.address,
+                );
+                const tokenOutTypeAndAddress = encodeTokenTypeAndAddress(
+                    '0x00',
+                    linkToken.address,
+                );
+
+                console.log({tokenInTypeAndAddress, tokenOutTypeAndAddress});
+
                 const inputs = await getSwapInputs({
                     extraInputsHash: calculatedExtraInputHash,
-                    existingToken: zkpToken.address,
-                    incomingToken: linkToken.address,
+                    existingToken: tokenInTypeAndAddress.toString(),
+                    incomingToken: tokenOutTypeAndAddress.toString(),
                     existingTokenType: 0,
                     incomingTokenType: 0,
                     withdrawPrpAmount: withdrawAmount,
@@ -194,10 +205,9 @@ describe('ZSwap', function () {
                 });
 
                 expect(plugin.execute).to.have.been.calledOnceWith({
-                    tokenIn: zkpToken.address,
-                    tokenOut: linkToken.address,
+                    tokenInTypeAndAddress,
+                    tokenOutTypeAndAddress,
                     amountIn: withdrawAmount,
-                    tokenType: 0,
                     data: swapData,
                 });
                 // Check if the nullifier is spent after the swap

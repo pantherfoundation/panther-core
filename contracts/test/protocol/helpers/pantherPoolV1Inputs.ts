@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
+import {BigNumberish} from '@ethersproject/bignumber/lib/bignumber';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
@@ -22,8 +23,11 @@ const getSnarkFriendlyBytes = (length = 32) => {
         .toString();
 };
 
-export const encodeTokenTypeAndAddress = (type: number, address: number) => {
-    return BigNumber.from(type).shl(160).add(address);
+export const encodeTokenTypeAndAddress = (
+    type: BigNumberish,
+    address: BigNumberish,
+): BigNumberish => {
+    return BigNumber.from(type).shl(160).add(BigNumber.from(address));
 };
 
 export type ForestTreesStruct = {
