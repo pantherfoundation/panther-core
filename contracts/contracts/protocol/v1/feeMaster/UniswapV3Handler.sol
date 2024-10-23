@@ -41,11 +41,11 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         int256 amount1Delta,
         bytes calldata data
     ) external {
-        (address pool, address token0, address token1) = abi.decode(
-            data,
-            (address, address, address)
-        );
-        require(msg.sender == pool, "uniswapV3SwapCallback::Invalid sender");
+        (
+            address pool,
+            address token0,
+            address token1
+        ) = _decodeDataAndVerifySender(data);
 
         if (amount0Delta > 0) token0.safeTransfer(pool, uint256(amount0Delta));
         if (amount1Delta > 0) token1.safeTransfer(pool, uint256(amount1Delta));
@@ -88,18 +88,44 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         }
     }
 
-    function _flashSwap(
-        address pool,
+    function _mapNativeToWrappedToken(
         address inputToken,
-        address outputToken,
-        uint256 swapAmount
-    ) internal returns (uint256 outputAmount) {
+        address outputToken
+    ) internal view returns (address, address) {
         if (inputToken == NATIVE_TOKEN) {
             inputToken = WETH;
         }
         if (outputToken == NATIVE_TOKEN) {
             outputToken = WETH;
         }
+
+        return (inputToken, outputToken);
+    }
+
+    function _mapWrappedToNativeToken(
+        address inputToken,
+        address outputToken
+    ) internal view returns (address, address) {
+        if (inputToken == WETH) {
+            inputToken = NATIVE_TOKEN;
+        }
+        if (outputToken == WETH) {
+            outputToken = NATIVE_TOKEN;
+        }
+
+        return (inputToken, outputToken);
+    }
+
+    function _flashSwap(
+        address pool,
+        address inputToken,
+        address outputToken,
+        uint256 swapAmount
+    ) internal returns (uint256 outputAmount) {
+        (inputToken, outputToken) = _mapNativeToWrappedToken(
+            inputToken,
+            outputToken
+        );
 
         uint256 exchangeRate = getQuoteAmount(
             pool,
@@ -115,6 +141,14 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
             getSqrtPriceLimitX96(exchangeRate)
         );
     }
+
+    function _decodeDataAndVerifySender(
+        bytes calldata data
+    )
+        internal
+        view
+        virtual
+        returns (address pool, address token0, address token1);
 
     receive() external payable {}
 }
