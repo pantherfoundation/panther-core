@@ -688,8 +688,8 @@ template NonZeroUintTag(isActive, nBits) {
     component n2b;
     if ( isActive ) {
         n2b = GreaterThan(nBits);
-        n2b.in[0] <== 0;
-        n2b.in[1] <== in;
+        n2b.in[0] <== in;
+        n2b.in[1] <== 0;
         n2b.out === 1;
     }
     out <== in;
