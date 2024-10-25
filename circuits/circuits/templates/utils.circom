@@ -970,6 +970,7 @@ template BabyJubJubSubOrderTag(isActive) {
         n2b = LessThan(251);
         n2b.in[0] <== in;
         n2b.in[1] <== suborder;
+        n2b.out === 1;
     }
     out <== in;
 }
