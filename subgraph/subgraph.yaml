@@ -7,9 +7,11 @@ dataSources:
     name: PrpConversion
     network: polygon-amoy
     source:
-      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
+      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
+      # startBlock: 13438591 # Internal
+      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
+      startBlock: 13596945 # Public
       abi: PrpConversion
-      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -37,9 +39,11 @@ dataSources:
     name: PrpVoucherController
     network: polygon-amoy
     source:
-      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
+      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
+      # startBlock: 13438591 # Internal
+      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
+      startBlock: 13596945 # Public
       abi: PrpVoucherController
-      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -73,9 +77,11 @@ dataSources:
     name: ZAccountsRegistration
     network: polygon-amoy
     source:
-      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
+      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
+      # startBlock: 13438591 # Internal
+      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
+      startBlock: 13596945 # Public
       abi: ZAccountsRegistration
-      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -112,9 +118,11 @@ dataSources:
     name: ZSwap
     network: polygon-amoy
     source:
-      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
+      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
+      # startBlock: 13438591 # Internal
+      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
+      startBlock: 13596945 # Public
       abi: ZSwap
-      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -139,9 +147,11 @@ dataSources:
     name: ZTransaction
     network: polygon-amoy
     source:
-      address: '0x386FafC2B785848794b25C2Fb7a385D17529608A'
+      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
+      # startBlock: 13438591 # Internal
+      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
+      startBlock: 13596945 # Public
       abi: ZTransaction
-      startBlock: 13438591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -167,9 +177,11 @@ dataSources:
     name: ProvidersKeysRegistry
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13596968  # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: ProvidersKeysRegistry
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -200,9 +212,11 @@ dataSources:
     name: StaticTree
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13438601 # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: StaticTree
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -221,9 +235,11 @@ dataSources:
     name: ZAssetsRegistryV1
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13438601 # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: ZAssetsRegistryV1
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -245,9 +261,11 @@ dataSources:
     name: ZNetworksRegistry
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13438601 # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: ZNetworksRegistry
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -266,9 +284,11 @@ dataSources:
     name: ZZonesRegistry
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13438601 # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: ZZonesRegistry
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -287,9 +307,11 @@ dataSources:
     name: PantherForest
     network: polygon-amoy
     source:
-      address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84'
+      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
+      # startBlock: 13438601 # Internal
+      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
+      startBlock: 13596968 # Public
       abi: PantherForest
-      startBlock: 13438601
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -351,9 +373,11 @@ dataSources:
     name: zkpReserveController
     network: polygon-amoy
     source:
-      address: '0x1355685131bB371E6eE0Cb0e99b7992b61154CEc'
+      # address: '0x1355685131bB371E6eE0Cb0e99b7992b61154CEc' # Internal
+      # startBlock: 13439616 # Internal
+      address: '0x02C761622c4e2F4c2F687ab1AF9D55b67eAafb42' # Public
+      startBlock: 13598324 # Public
       abi: zkpReserveController
-      startBlock: 13439616
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -375,9 +399,11 @@ dataSources:
     name: vaultV1
     network: polygon-amoy
     source:
-      address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf'
+      # address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf' # Internal
+      # startBlock: 13438619 # Internal
+      address: '0xfEBF64C2447e7aA65b73D2D2F400298720e718Ed' # Public
+      startBlock: 13596988 # Public
       abi: vaultV1
-      startBlock: 13438619
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -411,9 +437,11 @@ dataSources:
     name: feeMaster
     network: polygon-amoy
     source:
-      address: '0x95ccA3111EaE41325A38EFaE195ad8C4b85aA1df'
+      # address: '0x95ccA3111EaE41325A38EFaE195ad8C4b85aA1df' # Internal
+      # startBlock: 13438657 # Internal
+      address: '0x3847647CDa13077d44da2141D9b78392388f24F0' # Public
+      startBlock: 13597061 # Public
       abi: feeMaster
-      startBlock: 13438657
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
