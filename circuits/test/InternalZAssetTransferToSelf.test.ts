@@ -539,7 +539,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Self Transfer - WithOut ZZo
             928974505793416890028255163642163633941110568617692085076073897724890512527n,
 
         zAccountUtxoOutCommitment:
-            17772171969746842192747351848673717488532684081090564459852534364824511477658n,
+            6991129837942447437106224885480484531511792005929733215807835310816105473510n,
 
         // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
         chargedAmountZkp: 10 ** 15,
