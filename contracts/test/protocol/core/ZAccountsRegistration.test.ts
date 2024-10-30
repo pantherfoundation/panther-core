@@ -572,6 +572,7 @@ describe('ZAccountsRegistry', function () {
 
                 const inputs = await getCreateZAccountInputs({
                     extraInputsHash: invalidInputsHash,
+                    zAccountMasterEOA: user.address,
                 });
 
                 await expect(
@@ -595,15 +596,13 @@ describe('ZAccountsRegistry', function () {
                     zAccountMasterEOA: user.address,
                 });
 
-                await expect(
-                    zAccountsRegistry.activateZAccount(
-                        inputs,
-                        proofs,
-                        transactionOptions,
-                        paymasterCompensation,
-                        privateMessages,
-                    ),
-                ).to.emit(zAccountsRegistry, 'ZAccountActivated');
+                await zAccountsRegistry.activateZAccount(
+                    inputs,
+                    proofs,
+                    transactionOptions,
+                    paymasterCompensation,
+                    privateMessages,
+                );
 
                 await expect(
                     zAccountsRegistry.activateZAccount(
@@ -710,6 +709,85 @@ describe('ZAccountsRegistry', function () {
                         privateMessages,
                     ),
                 ).to.be.revertedWith('ZAR:E3');
+            });
+        });
+    });
+
+    describe('#renewZAccount', () => {
+        describe('Success', () => {
+            it('should renew zAccount if registered', async () => {
+                await zAccountsRegistry.updateMaxTimeOffset(1000);
+
+                expect(await registerZAccount({})).to.emit(
+                    zAccountsRegistry,
+                    'ZAccountRegistered',
+                );
+
+                mockGenerateRewards();
+
+                const inputs = await getCreateZAccountInputs({
+                    zAccountMasterEOA: user.address,
+                });
+
+                await expect(
+                    zAccountsRegistry.activateZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
+                )
+                    .to.emit(zAccountsRegistry, 'ZAccountActivated')
+                    .withArgs(0)
+                    .and.to.emit(zAccountsRegistry, 'TransactionNote');
+
+                inputs[9] = BigNumber.from('9'); //ZACCOUNT_ACTIVATION_ZACCOUNT_NULLIFIER_PUB_KEY_X_IND
+                inputs[10] = BigNumber.from('10'); //ZACCOUNT_ACTIVATION_ZACCOUNT_NULLIFIER_PUB_KEY_Y_IND
+                inputs[12] = BigNumber.from('12'); //ZACCOUNT_ACTIVATION_NULLIFIER_ZONE_IND
+
+                const chargedZkp = BigNumber.from(inputs[2]).mul(2); //Activation + Renewal
+
+                await expect(
+                    zAccountsRegistry.renewZAccount(
+                        inputs,
+                        proofs,
+                        transactionOptions,
+                        paymasterCompensation,
+                        privateMessages,
+                    ),
+                )
+                    .to.emit(zAccountsRegistry, 'ZAccountRenewed')
+                    .withArgs(0)
+                    .and.to.emit(zAccountsRegistry, 'TransactionNote');
+
+                expect(
+                    await zAccountsRegistry.zoneZAccountNullifiers(
+                        ethers.utils.hexZeroPad(
+                            ethers.utils.hexlify(inputs[12]),
+                            32,
+                        ),
+                    ),
+                ).to.be.gt(0); //zAccountNullifierZone
+
+                const pubKeyZAccountNullifiers = await pointPack({
+                    x: inputs[9],
+                    y: inputs[10],
+                });
+                expect(
+                    await zAccountsRegistry.pubKeyZAccountNullifiers(
+                        ethers.utils.hexZeroPad(
+                            ethers.utils.hexlify(pubKeyZAccountNullifiers),
+                            32,
+                        ),
+                    ),
+                ).to.be.gt(0);
+
+                expect(
+                    await zAccountsRegistry.internalFeeMasterDebt(
+                        zkpToken.address,
+                    ),
+                ).to.be.equal(chargedZkp); //chargedAmountZkp
             });
         });
     });
