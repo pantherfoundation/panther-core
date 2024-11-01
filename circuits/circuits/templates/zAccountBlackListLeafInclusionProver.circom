@@ -48,15 +48,19 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
         b2n_zAccountIdInsideLeaf.in[j] <== n2b_zAccountId.out[j];
     }
 
-    assert(b2n_zAccountIdInsideLeaf.out < 254); // regular scalar field size
+    assert(b2n_zAccountIdInsideLeaf.out < 253); // regular scalar field size
+    component zAccountId_lessThan_253 = LessThan(8);
+    zAccountId_lessThan_253.in[0] <== b2n_zAccountIdInsideLeaf.out;
+    zAccountId_lessThan_253.in[1] <== 253;
+    zAccountId_lessThan_253.out === 1;
 
     // switch-on single bit
-    component n2b_leaf = Num2Bits(254);
+    component n2b_leaf = Num2Bits(253);
     n2b_leaf.in <== leaf;
 
-    component is_zero[254];
+    component is_zero[253];
 
-    for(var i = 0; i < 254; i++) {
+    for(var i = 0; i < 253; i++) {
         // is_zero[i].out == 1 only when i == b2n_zAccountIdInsideLeaf.out
         is_zero[i] = IsZero();
         is_zero[i].in <== i - b2n_zAccountIdInsideLeaf.out;
