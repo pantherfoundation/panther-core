@@ -106,7 +106,7 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
         407487970930055136132864974074225519407787604125n,
         33,
         9999988200,
-        10,
+        20,
         1,
         1702652400,
         4,
@@ -114,7 +114,7 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
         1700028000,
         2,
     ]);
-    // 8430153123249687076501688143204918342375078823318434317378118619620565620679n
+    // 10947135848294193301503988686207855136536424152595093876136727618173966674081
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
 
     // kytWithdrawSignedMessageHashInternal computation
@@ -669,7 +669,7 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
             928974505793416890028255163642163633941110568617692085076073897724890512527n,
 
         zAccountUtxoOutCommitment:
-            8430153123249687076501688143204918342375078823318434317378118619620565620679n,
+            10947135848294193301503988686207855136536424152595093876136727618173966674081n,
 
         zNetworkId: 2,
         zNetworkChainId: 80001,
