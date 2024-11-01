@@ -244,7 +244,7 @@ const zAccountUtxoOutCommitment = poseidon([
     407487970930055136132864974074225519407787604125n, // zAccountUtxoInMasterEOA
     33, // zAccountUtxoInId
     9999988200, // zAccountUtxoOutZkpAmount
-    10, // zAccountUtxoInPrpAmount + rewards.amountPrp
+    20, // zAccountUtxoInPrpAmount + rewards.amountPrp
     1, // utxoOutTargetZoneId
     1702652400, // zAccountUtxoInExpiryTime
     4, // zAccountUtxoInNonce + 1
@@ -252,7 +252,7 @@ const zAccountUtxoOutCommitment = poseidon([
     1700902800, // utxoOutCreateTime - same time as zAssetUTXO got created
     2, // zAccountUtxoInNetworkId
 ]);
-// zAccountUtxoOutCommitment=> 17772171969746842192747351848673717488532684081090564459852534364824511477658
+// zAccountUtxoOutCommitment=> 6991129837942447437106224885480484531511792005929733215807835310816105473510
 // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
 /* 6. END ===== zAccountUtxoOutCommitment computation  ===== */
 
@@ -775,7 +775,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Without ZZoneSealing - Witn
             928974505793416890028255163642163633941110568617692085076073897724890512527n,
 
         zAccountUtxoOutCommitment:
-            17772171969746842192747351848673717488532684081090564459852534364824511477658n,
+            6991129837942447437106224885480484531511792005929733215807835310816105473510n,
         // For better testing choosing chargedAmountZkp and addedAmountZkp >= 10 ** 12
         chargedAmountZkp: 10 ** 15,
 
