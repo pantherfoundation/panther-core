@@ -154,8 +154,8 @@ contract ForestTree is
      * @notice Adds UTXOs to the bus queue.
      * @param utxos An array of UTXOs to be added to the bus queue.
      * @param cachedForestRootIndex The index of the cached forest root to verify.
-     * @param forestRoot The current forest root to validate against.
-     * @param staticRoot The static root to validate against.
+     * @param currentForestRoot The current forest root to validate against.
+     * @param currentStaticRoot The static root to validate against.
      * @param reward The reward associated with adding these UTXOs.
      * @return firstUtxoQueueId The queue ID of the first UTXO added.
      * @return firstUtxoIndexInQueue The index of the first UTXO in the queue.
@@ -164,14 +164,18 @@ contract ForestTree is
     function addUtxosToBusQueue(
         bytes32[] memory utxos,
         uint256 cachedForestRootIndex,
-        bytes32 forestRoot,
-        bytes32 staticRoot,
+        bytes32 currentForestRoot,
+        bytes32 currentStaticRoot,
         uint96 reward
     )
         external
         onlyPantherPool
         nonZeroUtxosLength(utxos)
-        checkPantherTreesRoots(cachedForestRootIndex, forestRoot, staticRoot)
+        checkPantherTreesRoots(
+            cachedForestRootIndex,
+            currentForestRoot,
+            currentStaticRoot
+        )
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
         // The pool cannot execute this method before this contract is initialized
@@ -186,8 +190,8 @@ contract ForestTree is
      * @param utxos An array of UTXOs to be added.
      * @param numTaxiUtxos The number of UTXOs to be added to the taxi tree.
      * @param cachedForestRootIndex The index of the cached forest root to verify.
-     * @param forestRoot The current forest root to validate against.
-     * @param staticRoot The static root to validate against.
+     * @param currentForestRoot The current forest root to validate against.
+     * @param currentStaticRoot The static root to validate against.
      * @param reward The reward associated with adding these UTXOs.
      * @return firstUtxoQueueId The queue ID of the first UTXO added.
      * @return firstUtxoIndexInQueue The index of the first UTXO in the queue.
@@ -197,14 +201,18 @@ contract ForestTree is
         bytes32[] memory utxos,
         uint8 numTaxiUtxos,
         uint256 cachedForestRootIndex,
-        bytes32 forestRoot,
-        bytes32 staticRoot,
+        bytes32 currentForestRoot,
+        bytes32 currentStaticRoot,
         uint96 reward
     )
         external
         onlyPantherPool
         nonZeroUtxosLength(utxos)
-        checkPantherTreesRoots(cachedForestRootIndex, forestRoot, staticRoot)
+        checkPantherTreesRoots(
+            cachedForestRootIndex,
+            currentForestRoot,
+            currentStaticRoot
+        )
         returns (uint32 firstUtxoQueueId, uint8 firstUtxoIndexInQueue)
     {
         (firstUtxoQueueId, firstUtxoIndexInQueue) = _addUtxosToBusQueue(
