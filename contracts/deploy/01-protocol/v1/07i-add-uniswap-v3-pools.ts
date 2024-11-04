@@ -9,7 +9,6 @@ import {getNamedAccount} from '../../../lib/deploymentHelpers';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pZkp = await getNamedAccount(hre, 'pzkp');
     const link = await getNamedAccount(hre, 'link');
-    const weth9 = await getNamedAccount(hre, 'weth9');
     const pZkpNativePool = await getNamedAccount(
         hre,
         'pZkp_native_uniswapV3Pool',
@@ -29,11 +28,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
+    const nativeAddress = ethers.constants.AddressZero; // zero address for native token
+
     console.log('adding pzkp-native...');
     let tx = await feeMaster.updatePool(
         pZkpNativePool,
         pZkp,
-        ethers.constants.AddressZero, // zero address for native token
+        nativeAddress,
         true,
         {
             gasPrice: 30000000000,
@@ -50,7 +51,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log('pzkp-link is added!', res.transactionHash);
 
     console.log('adding link-native...');
-    tx = await feeMaster.updatePool(linkNativePool, link, weth9, {
+    tx = await feeMaster.updatePool(linkNativePool, link, nativeAddress, {
         gasPrice: 30000000000,
     });
     res = await tx.wait();
