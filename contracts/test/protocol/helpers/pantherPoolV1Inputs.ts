@@ -166,7 +166,8 @@ export async function getPrpClaimandConversionInputs(
     const depositPrpAmount = options.depositPrpAmount || BigNumber.from(0);
     const withdrawPrpAmount = options.withdrawPrpAmount || BigNumber.from(10);
 
-    const zAssetScale = options.zAssetScale || 1000;
+    const zAssetScale =
+        options.zAssetScale || BigNumber.from('100000000000000');
     const zNetworkChainId = options.zNetworkChainId || 31337;
     const zAccountUtxoInNullifier =
         options.zAccountUtxoInNullifier || BigNumber.from(1);
@@ -187,7 +188,7 @@ export async function getPrpClaimandConversionInputs(
     const transactionOptions = 0x104;
     const utxoCommitmentPrivatePart = 0;
     const paymasterCompensation = ethers.BigNumber.from('10');
-    const zkpAmountMin = 10000;
+    const zkpAmountMin = ethers.utils.parseEther('10');
     const extraInput = ethers.utils.solidityPack(
         ['uint32', 'uint96', 'uint96', 'bytes'],
         [
