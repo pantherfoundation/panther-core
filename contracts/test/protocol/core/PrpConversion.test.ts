@@ -41,8 +41,8 @@ describe('PrpConversion', function () {
     const privateMessage = generatePrivateMessage(
         TransactionTypes.prpConversion,
     );
-    const prpVirtualAmount = ethers.utils.parseUnits('1000', 6); // Reduced precision to fit in 64-bit
-    const zkpAmount = ethers.utils.parseUnits('500', 9); // Reduced precision to fit in 96-bit
+    const zkpAmount = ethers.utils.parseEther('1000000');
+    const prpVirtualAmount = zkpAmount.div(ethers.utils.parseUnits('1', 17));
 
     const placeholder = BigNumber.from(0);
     const proof = {
@@ -55,7 +55,7 @@ describe('PrpConversion', function () {
     } as SnarkProofStruct;
     const transactionOptions = 0x104;
     const paymasterCompensation = ethers.BigNumber.from('10');
-    const zkpAmountMin = 10000;
+    const zkpAmountMin = ethers.utils.parseEther('10');
 
     before(async () => {
         [owner, notOwner] = await ethers.getSigners();
@@ -248,6 +248,12 @@ describe('PrpConversion', function () {
             });
 
             const reserves = await prpConversion.getReserves();
+            const zkpAmtOut = getAmountOut(
+                withdrawPrp,
+                reserves._prpReserve,
+                reserves._zkpReserve,
+            );
+            const zkpAmtScaled = zkpAmtOut.div(inputs[7]);
 
             await expect(
                 prpConversion.convert(
@@ -272,19 +278,12 @@ describe('PrpConversion', function () {
                 await prpConversion.internalFeeMasterDebt(zkpToken.address),
             ).to.be.equal(inputs[2]); //chargedAmountZkp
 
-            const zkpAmtOut = getAmountOut(
-                withdrawPrp,
-                reserves._prpReserve,
-                reserves._zkpReserve,
-            );
-            const zkpAmt = zkpAmtOut.div(inputs[7]);
-
             const expectedLockData = {
                 tokenType: 0,
                 token: zkpToken.address,
                 tokenId: BigNumber.from('0'),
                 extAccount: prpConversion.address,
-                extAmount: zkpAmt,
+                extAmount: zkpAmtScaled,
             };
 
             expect(vault.lockAsset).to.have.been.calledOnceWith(
@@ -358,16 +357,18 @@ describe('PrpConversion', function () {
                     paymasterCompensation,
                     privateMessage,
                 ),
-            ).to.be.revertedWith('PC:E7');
+            ).to.be.revertedWith('PC:E9');
         });
 
         it('should revert if zkpBalance and zkpReserve is not in sync  ', async function () {
             await prpConversion.rescueErc20(
                 zkpToken.address,
                 owner.address,
-                100000,
+                ethers.utils.parseEther('100'),
             );
-            const inputs = await getPrpClaimandConversionInputs({});
+            const inputs = await getPrpClaimandConversionInputs({
+                withdrawPrpAmount: BigNumber.from(1000),
+            });
 
             await expect(
                 prpConversion.convert(
@@ -378,7 +379,7 @@ describe('PrpConversion', function () {
                     paymasterCompensation,
                     privateMessage,
                 ),
-            ).to.be.revertedWith('PC:E9');
+            ).to.be.revertedWith('PC:E11');
         });
     });
 

@@ -105,6 +105,7 @@ abstract contract ConversionHandler {
         }
 
         zkpAmountOutScaled = zkpAmountOutRounded / scale;
+        _lockZkp(zkpToken, zkpAmountOutScaled);
 
         uint256 prpVirtualBalance = _prpReserve + prpWithdrawAmount;
         uint256 zkpBalance = zkpToken.safeBalanceOf(address(this));
@@ -115,8 +116,6 @@ abstract contract ConversionHandler {
         );
 
         _update(prpVirtualBalance, zkpBalance);
-
-        _lockZkp(zkpToken, zkpAmountOutScaled);
     }
 
     function _update(uint256 prpVirtualBalance, uint256 zkpBalance) internal {
