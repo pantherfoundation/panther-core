@@ -4,74 +4,81 @@
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import {poseidon} from 'circomlibjs';
 import type {BigNumberish} from 'ethers';
-import {BigNumber} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 
+import {encodeTokenTypeAndAddress} from '../../test/protocol/helpers/pantherPoolV1Inputs';
 import {pantherCoreZeroLeaf} from '../utilities';
 
+const zkpToken = '0xCd85e3E918F1A36F939281d3ca707EE262a364c6';
+const linkToken = '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60';
+const amoyNetworkId = 2;
+
 type ZAsset = {
-    // zAssetId, but it's not the leaf index
-    zAsset: BigNumberish;
+    // zAssetbatchId, but it's not the leaf index
+    zAssetbatchId: BigNumberish;
+    // zAssetId MUST be 0 for ZKP on all networks
+    zAssetId: BigNumberish;
     // address of the token contract on this network
     token: BigNumberish;
     // ID for NFTs, irrelevant for ERC-20 and the native token
-    tokenId: BigNumberish;
+    startTokenId: BigNumberish;
+    // token address followed by the token type(ERC-20/721/1155)
+    tokenAddrAndType: BigNumberish;
     // ID of the network where zAsset lives
     network: BigNumberish;
     // Irrelevant for ERC-20 and the native token
-    offset: BigNumberish;
+    tokenIdsRangeSize: BigNumberish;
     // Weight of the token
     weight: BigNumberish;
     // scale factor
     scale: BigNumberish;
+    decimals: number;
 };
 
 export const leafs: ZAsset[] = [
     // zZKP
     {
-        zAsset: 0,
+        zAssetbatchId: 0,
+        zAssetId: 0,
         // zkp token on amoy
-        token: BigInt('0x9FBF5b80F2CfcB851dfE92272ae133eaD6786483'),
-        // ID for NFTs, irrelevant for ERC-20 and the native token
-        tokenId: 0,
-        // amoy network id
-        network: 2,
-        offset: 0,
-        // 1 ZKP = 1e6 scaled units * 20 = 2e7 weighted units
-        weight: 20,
-        // 1 ZKP = 1e18 unscaled units / 1e12 = 1e6 scaled units
-        scale: 1e12,
+        token: BigInt(zkpToken),
+        startTokenId: 0,
+        tokenAddrAndType: encodeTokenTypeAndAddress(0, zkpToken),
+        network: amoyNetworkId,
+        tokenIdsRangeSize: 0,
+        weight: 100,
+        scale: 1e14,
+        decimals: 18,
     },
-    // zMatic on sepolia
+    // zMatic on amoy
     {
-        // IDs for the native tokens of different networks MUST be different
-        // i.e. 1 for zEth, 2 for zMatic, etc.
-        // TODO: starting zEth from 1
-        zAsset: 2,
+        zAssetbatchId: 1,
+        zAssetId: 1,
         // MUST be 0 for the native token on all networks
-        token: 0,
-        // ID for NFTs, irrelevant for ERC-20 and the native token
-        tokenId: 0,
-        // sepolia network id
-        network: 2,
-        offset: 0,
-        //1 Eth = 1e6 scaled units * 700 = 7e8 weighted units
-        weight: 700,
-        // 1 Eth = 1e18 unscaled units / 1e12 = 1e6 scaled units
-        scale: 1e12,
+        token: ethers.constants.AddressZero,
+        startTokenId: 0,
+        tokenAddrAndType: encodeTokenTypeAndAddress(
+            0xff,
+            ethers.constants.AddressZero,
+        ),
+        network: amoyNetworkId,
+        tokenIdsRangeSize: 0,
+        weight: 5000,
+        scale: 1e14,
+        decimals: 18,
     },
     {
-        zAsset: 3,
+        zAssetbatchId: 2,
+        zAssetId: 2,
         // Link token on amoy
-        token: BigInt('0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60'),
-        // ID for NFTs, irrelevant for ERC-20 and the native token
-        tokenId: 0,
-        // amoy network id
-        network: 2,
-        offset: 0,
-        // 1 LINK = 1e8 scaled units * 140 = 14e9 weighted units
-        weight: 140,
-        // 1 LINK = 1e18 unscaled units / 1e10 = 1e8 scaled units
-        scale: 1e10,
+        token: BigInt(linkToken),
+        startTokenId: 0,
+        tokenAddrAndType: encodeTokenTypeAndAddress(0, linkToken),
+        network: amoyNetworkId,
+        tokenIdsRangeSize: 0,
+        weight: 1400,
+        scale: 1e12,
+        decimals: 18,
     },
 ];
 
