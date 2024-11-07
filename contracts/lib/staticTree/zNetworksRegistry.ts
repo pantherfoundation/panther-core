@@ -46,8 +46,8 @@ export const testnetLeafs: {[key: string]: ZNetwork} = {
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
-        forUtxoReward: 1828n,
-        forDepositReward: 57646075n,
+        forUtxoReward: 36559n,
+        forDepositReward: 1152921505n,
         daoDataEscrowPubKeyX:
             6744227429794550577826885407270460271570870592820358232166093139017217680114n,
         daoDataEscrowPubKeyY:
@@ -60,8 +60,8 @@ export const testnetLeafs: {[key: string]: ZNetwork} = {
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
-        forUtxoReward: 1828n,
-        forDepositReward: 57646075n,
+        forUtxoReward: 36559n,
+        forDepositReward: 1152921505n,
         daoDataEscrowPubKeyX:
             6744227429794550577826885407270460271570870592820358232166093139017217680114n,
         daoDataEscrowPubKeyY:
