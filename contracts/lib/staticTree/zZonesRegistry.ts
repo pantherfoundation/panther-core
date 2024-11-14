@@ -8,6 +8,8 @@ import {BigNumber} from 'ethers';
 
 import {pantherCoreZeroLeaf} from '../utilities';
 
+const sealing = 0n;
+
 type ZZone = {
     // ID of the zone currently active
     zoneId: BigNumberish;
@@ -44,6 +46,23 @@ type ZZone = {
     // Period to count the above limit for
     zZoneTimePeriodPerMaximumAmount: BigNumberish;
 };
+
+type TrustProviderTreeLeaf = {
+    publicKeyX: BigNumberish;
+    publicKeyY: BigNumberish;
+    expiryTime: BigNumberish;
+};
+
+const providerleafs: TrustProviderTreeLeaf[] = [
+    //PrimeSafeOperator
+    {
+        publicKeyX:
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        publicKeyY:
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        expiryTime: 1735689600n,
+    },
+];
 
 export const leafs: ZZone[] = [
     {
@@ -111,8 +130,14 @@ export class ZZonesRegistry {
 
     computeCommitments(): ZZonesRegistry {
         this.commitments = this.leafs.map(leaf =>
-            poseidon(Object.values(leaf)),
+            poseidon([
+                providerleafs[0].publicKeyX,
+                providerleafs[0].publicKeyY,
+                sealing,
+                poseidon(Object.values(leaf)),
+            ]),
         );
+
         return this;
     }
 

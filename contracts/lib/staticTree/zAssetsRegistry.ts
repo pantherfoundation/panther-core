@@ -9,9 +9,16 @@ import {BigNumber, ethers} from 'ethers';
 import {encodeTokenTypeAndAddress} from '../../test/protocol/helpers/pantherPoolV1Inputs';
 import {pantherCoreZeroLeaf} from '../utilities';
 
-const zkpToken = '0xCd85e3E918F1A36F939281d3ca707EE262a364c6';
+const zkpToken = '0x9C56E89D8Aa0d4A1fB769DfbEa80D6C29e5A2893'; //Internal zkp token address
 const linkToken = '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60';
 const amoyNetworkId = 2;
+
+function zAssetBatchId(batchIndex: number): bigint {
+    // note: 32 LS bits are unused and should be zero that's why we are
+    // doing left shift by 32 bits
+    console.log('batch id', BigInt(batchIndex) << 32n);
+    return BigInt(batchIndex) << 32n;
+}
 
 type ZAsset = {
     // zAssetbatchId, but it's not the leaf index
@@ -27,33 +34,33 @@ type ZAsset = {
     // ID of the network where zAsset lives
     network: BigNumberish;
     // Irrelevant for ERC-20 and the native token
-    tokenIdsRangeSize: BigNumberish;
+    tokenIdsRangeSize: bigint;
     // Weight of the token
     weight: BigNumberish;
     // scale factor
-    scale: BigNumberish;
+    scale: bigint;
     decimals: number;
 };
 
 export const leafs: ZAsset[] = [
     // zZKP
     {
-        zAssetbatchId: 0,
-        zAssetId: 0,
+        zAssetbatchId: zAssetBatchId(0),
+        zAssetId: zAssetBatchId(0),
         // zkp token on amoy
         token: BigInt(zkpToken),
         startTokenId: 0,
         tokenAddrAndType: encodeTokenTypeAndAddress(0, zkpToken),
         network: amoyNetworkId,
-        tokenIdsRangeSize: 0,
+        tokenIdsRangeSize: 0n,
         weight: 100,
-        scale: 1e14,
+        scale: BigInt(1e14),
         decimals: 18,
     },
     // zMatic on amoy
     {
-        zAssetbatchId: 1,
-        zAssetId: 1,
+        zAssetbatchId: zAssetBatchId(1),
+        zAssetId: zAssetBatchId(1),
         // MUST be 0 for the native token on all networks
         token: ethers.constants.AddressZero,
         startTokenId: 0,
@@ -62,22 +69,22 @@ export const leafs: ZAsset[] = [
             ethers.constants.AddressZero,
         ),
         network: amoyNetworkId,
-        tokenIdsRangeSize: 0,
+        tokenIdsRangeSize: 0n,
         weight: 5000,
-        scale: 1e14,
+        scale: BigInt(1e14),
         decimals: 18,
     },
     {
-        zAssetbatchId: 2,
-        zAssetId: 2,
+        zAssetbatchId: zAssetBatchId(2),
+        zAssetId: zAssetBatchId(2),
         // Link token on amoy
         token: BigInt(linkToken),
         startTokenId: 0,
         tokenAddrAndType: encodeTokenTypeAndAddress(0, linkToken),
         network: amoyNetworkId,
-        tokenIdsRangeSize: 0,
+        tokenIdsRangeSize: 0n,
         weight: 1400,
-        scale: 1e12,
+        scale: BigInt(1e12),
         decimals: 18,
     },
 ];
@@ -103,9 +110,16 @@ export class ZAssetsRegistry {
     }
 
     computeCommitments(): ZAssetsRegistry {
-        this.commitments = this.leafs.map(leaf =>
-            poseidon(Object.values(leaf)),
-        );
+        this.commitments = this.leafs.map(leaf => {
+            const hash = poseidon([
+                leaf.zAssetbatchId,
+                leaf.tokenAddrAndType,
+                leaf.startTokenId,
+                leaf.network,
+                (leaf.tokenIdsRangeSize << 64n) + BigInt(leaf.scale.toString()),
+            ]);
+            return poseidon([hash, BigInt(leaf.weight.toString())]);
+        });
         return this;
     }
 
