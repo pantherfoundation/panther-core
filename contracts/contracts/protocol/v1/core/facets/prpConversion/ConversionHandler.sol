@@ -96,16 +96,17 @@ abstract contract ConversionHandler {
             require(zkpAmountOut >= scale, ERR_INSUFFICIENT_AMOUNT_OUT);
             require(zkpAmountOut >= zkpAmountOutMin, ERR_LOW_AMOUNT_OUT);
 
+            zkpAmountOutScaled = zkpAmountOut / scale;
+
             unchecked {
                 // rounding the amount (leaving the changes in the contract)
-                zkpAmountOutRounded = ((zkpAmountOut / scale) * scale).safe96();
+                zkpAmountOutRounded = (zkpAmountOutScaled * scale).safe96();
             }
 
             require(zkpAmountOutRounded < _zkpReserve, ERR_LOW_LIQUIDITY);
         }
 
-        zkpAmountOutScaled = zkpAmountOutRounded / scale;
-        _lockZkp(zkpToken, zkpAmountOutScaled);
+        _lockZkp(zkpToken, zkpAmountOutRounded);
 
         uint256 prpVirtualBalance = _prpReserve + prpWithdrawAmount;
         uint256 zkpBalance = zkpToken.safeBalanceOf(address(this));
