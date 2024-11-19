@@ -254,6 +254,7 @@ describe('PrpConversion', function () {
                 reserves._zkpReserve,
             );
             const zkpAmtScaled = zkpAmtOut.div(inputs[7]);
+            const zkpAmtRounded = zkpAmtScaled.mul(inputs[7]);
 
             await expect(
                 prpConversion.convert(
@@ -283,7 +284,7 @@ describe('PrpConversion', function () {
                 token: zkpToken.address,
                 tokenId: BigNumber.from('0'),
                 extAccount: prpConversion.address,
-                extAmount: zkpAmtScaled,
+                extAmount: zkpAmtRounded,
             };
 
             expect(vault.lockAsset).to.have.been.calledOnceWith(
