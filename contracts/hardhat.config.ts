@@ -252,7 +252,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
             sepolia: 0,
 
-            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0',
+            polygon: '0xB846A8098552013393f1E3db18e4cEc6856411ea',
             amoy: 0,
         },
 
@@ -272,7 +272,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
             sepolia: 0,
 
-            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0', // TODO: replace
+            polygon: '0xB846A8098552013393f1E3db18e4cEc6856411ea', // TODO: replace
             amoy: 0,
         },
 
@@ -294,54 +294,63 @@ function getNamedAccounts() {
             hardhat: 0,
             sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
             amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
+            polygon: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
         },
 
         link: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60',
+            polygon: '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39',
         },
 
         uniswapRouter: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
+            polygon: '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45',
         },
 
         uniswapQuoterV2: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
+            polygon: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e',
         },
 
         quickswapRouter02: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xf253c47dcD36Ab80BAB5731f548fd818551f1c16',
+            polygon: '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff',
         },
 
         quickswapFactory: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
+            polygon: '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32',
         },
 
         pZkp_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xE4F378BF1B3E7d7B92AA2B0ADB5FF4548651Ea36',
+            polygon: '0xED151A7637EC45375EB6E39FC596E53CE6ED51FE',
         },
 
         pZkp_link_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0x79ea0F4f833f1C752c92e5ac6F105f87cd423Af9',
+            polygon: '0x97957C4C96E8A2DB27BF4F1DE565FF6B7096E028',
         },
 
         link_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
             amoy: '0xd61679A9cD1152bdfA9Ce2ff78ebd8bE67314935',
+            polygon: '0x0A28C2F5E0E8463E047C203F00F649812AE67E4F',
         },
         entryPoint: {
             polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
