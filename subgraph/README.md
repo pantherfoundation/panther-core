@@ -1,56 +1,91 @@
-# Subgraph guide
+# Panther Protocol Subgraph
 
-This guide will quickly take you through how to deploy the subgraph.
+This subgraph indexes Panther Protocol smart contract events for different environments.
 
 ## Prerequisites
 
-First, you need to register an account on the [Subgraph](https://thegraph.com) to get your access token.
+- Node.js and yarn installed
+- Graph CLI authentication token
+- Required environment files (`.env.staging.internal`, `.env.staging.public`, `.env.canary.internal`)
 
-- Go to [Subgraph Hosted Service](https://thegraph.com/hosted-service) and create an account with your Github.
-- After creating your account, go to `My Dashboard`.
-- You will now see your `Access Token`. Copy the token. You will need it when you deploy the subgraph.
-- Now you need to create a new subgraph. To do that, click on the `Add Subgraph` button. You will be asked to choose a name, description, image, etc, for your subgraph.
+## Setup
 
-### Checking the subgraph configurations
+1. Install dependencies:
+```bash
+yarn install
+```
 
-This subgraph interacts with `AdvancedStakeRewardController` and `PantherPoolV0` smart contracts on the Polygon network.
-We have added these contracts' addresses and other information required for the subgraph deployment to the [subgraph.yaml](./subgraph.yaml) file.
+2. Authenticate with Graph CLI:
+```bash
+yarn auth
+```
+When prompted, enter your Graph CLI authentication token.
 
-If you need to check the addresses and block numbers (aka `startBlock`), open the `subgraph.yaml`. You can find the information under the `data sources` section.
+## Environment Generation
 
-### Deploying the Subgraph
+Generate subgraph configuration for different environments:
 
-Make sure you are inside the `subgraph` folder.
+### Staging Environment
+- Internal testnet:
+  ```bash
+  yarn generate:staging:internal
+  ```
+- Public testnet:
+  ```bash
+  yarn generate:staging:public
+  ```
 
-- Install the dependencies:
+### Canary Environment
+- Internal network:
+  ```bash
+  yarn generate:canary:internal
+  ```
 
-        yarn install
+## Building
 
-- Verify your account to be able to deploy the subgraph:
+After generating the environment configuration, build the subgraph:
 
-        yarn graph:auth <YOUR_ACCESS_TOKEN>
+```bash
+yarn build
+```
 
-- Now, you can execute the following command to compile and deploy the subgraph sequentially:
+## Deployment
 
-        yarn subgraph:publish <GITHUB_USERNAME>/<SUBGRAPH NAME>
+Deploy to different environments using the following commands:
 
-If you see the `Build ID` and the subgraph link in your terminal, it means the subgraph is deployed successfully, i.e.,
+### Staging Environment
+- Internal testnet:
+  ```bash
+  yarn deploy:staging:internal
+  ```
+- Public testnet:
+  ```bash
+  yarn deploy:staging:public
+  ```
 
-        Build completed: QmfD72g6naqX1B3JgAzEzf1n9yjmqzEGWdtmGEUm9u2vGm
+### Canary Environment
+- Internal network:
+  ```bash
+  yarn deploy:canary:internal
+  ```
 
-        Deployed to https://thegraph.com/explorer/subgraph/<GITHUB_USERNAME>/<SUBGRAPH NAME>
+## Utilities
 
-Go to `https://thegraph.com/explorer/subgraph/<GITHUB_USERNAME>/<SUBGRAPH NAME>` to see your subgraph.
-Do not forget to compare the deployment ID that you have seen in your terminal (i.e., `QmfD72g6naqX1B3JgAzEzf1n9yjmqzEGWdtmGEUm9u2vGm`) with the deployment ID that you see in the browser.
+Count distinct protocol users via the subgraph:
+```bash
+yarn stats:count:users
+```
 
-For more detailed information, please checkout the [thegraph](https://thegraph.com/docs/en/deploying/deploying-a-subgraph-to-hosted/) deployment documents.
+## Environment Files
 
-### Existing deployments
+Make sure to create the following environment files with appropriate values:
+- `.env.staging.internal`
+- `.env.staging.public`
+- `.env.canary.internal`
 
-For advanced staking v0.5:
+Each environment file should contain the necessary configuration variables for the respective network.
 
-- toxicehc deployed subgraph ID `QmTi7Z7YoUpzYqwGytPuKYu2FuYPEhtPTsXti5dRxn8wHR`
-  at: https://thegraph.com/hosted-service/subgraph/toxicehc/panther
+## Additional Resources
 
-- cryptoefelle deployed subgraph ID `QmZPs5CFi5vpZW73DmwF5VMzt5CYvFX7vD9Ez9gkZteuRd`
-  at: https://thegraph.com/explorer/subgraph/cryptoefelle/panther
+- [The Graph Documentation](https://thegraph.com/docs/en/)
+- [Graph CLI Reference](https://github.com/graphprotocol/graph-cli)
