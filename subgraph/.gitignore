@@ -2,3 +2,4 @@ build
 generated
 node_modules
 .env
+subgraph.yaml
