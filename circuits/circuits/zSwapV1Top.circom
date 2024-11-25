@@ -313,7 +313,7 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_forDepositReward <== Uint40Tag(IGNORE_ANCHORED)(forDepositReward);
     signal rc_spendTime <== Uint32Tag(IGNORE_PUBLIC)(spendTime);
 
-    signal rc_utxoInSpendPrivKey[nUtxoIn] <== BabyJubJubSubOrderTagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInSpendPrivKey);
+    signal rc_utxoInSpendPrivKey[nUtxoIn] <== BabyJubJubSubOrderTagArray(ACTIVE,nUtxoIn)(utxoInSpendPrivKey);
     signal rc_utxoInSpendKeyRandom[nUtxoIn] <== BabyJubJubSubOrderTagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInSpendKeyRandom);
     signal rc_utxoInAmount[nUtxoIn] <== Uint64TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInAmount);
     signal rc_utxoInOriginZoneId[nUtxoIn] <== Uint16TagArray(IGNORE_ANCHORED,nUtxoIn)(utxoInOriginZoneId);
