@@ -268,8 +268,11 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     component isZeroDeposit = IsZero();
     isZeroDeposit.in <== kytDepositAmount;
 
+    component isKytDepositSignedMessageHashIsZero = IsNotZero();
+    isKytDepositSignedMessageHashIsZero.in <== kytDepositSignedMessageHash;
+
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
-    signal isKytDepositCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  kytDepositSignedMessageHash * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out));
+    signal isKytDepositCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  isKytDepositSignedMessageHashIsZero.out * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out));
 
     component deposit = TrustProvidersDepositWithdrawKyt();
     deposit.kytToken <== extractedToken;
@@ -304,8 +307,11 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     component isZeroWithdraw = IsZero();
     isZeroWithdraw.in <== kytWithdrawAmount;
 
+    component iskytWithdrawSignedMessageHashIsZero = IsNotZero();
+    iskytWithdrawSignedMessageHashIsZero.in <== kytWithdrawSignedMessageHash;
+
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
-    signal isKytWithdrawCheckEnabled <== BinaryTag(ACTIVE)(isSwap ? kytWithdrawSignedMessageHash * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out));
+    signal isKytWithdrawCheckEnabled <== BinaryTag(ACTIVE)(isSwap ? iskytWithdrawSignedMessageHashIsZero.out * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out));
 
     component withdraw = TrustProvidersDepositWithdrawKyt();
     withdraw.kytToken <== extractedToken;
@@ -340,8 +346,11 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     component isZeroInternal = IsZero();
     isZeroInternal.in <== kytSealing;
 
+    component isKytSignedMessageHashIsZero = IsNotZero();
+    isKytSignedMessageHashIsZero.in <== kytSignedMessageHash;
+
     // internal KYT
-    signal isKytInternalCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  kytSignedMessageHash * (1 - isZeroInternal.out) : (1 - isZeroInternal.out));
+    signal isKytInternalCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  isKytSignedMessageHashIsZero.out * (1 - isZeroInternal.out) : (1 - isZeroInternal.out));
 
     component internal = TrustProvidersInternalKyt();
     internal.kytPubKey <== kytEdDsaPubKey;
