@@ -5,12 +5,10 @@ dataSources:
   # Panther Pool
   - kind: ethereum
     name: PrpConversion
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
-      # startBlock: 13438591 # Internal
-      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
-      startBlock: 13596945 # Public
+      address: '{{PANTHER_POOL_ADDRESS}}'
+      startBlock: {{PANTHER_POOL_START_BLOCK}}
       abi: PrpConversion
     mapping:
       kind: ethereum/events
@@ -37,12 +35,10 @@ dataSources:
 
   - kind: ethereum
     name: PrpVoucherController
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
-      # startBlock: 13438591 # Internal
-      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
-      startBlock: 13596945 # Public
+      address: '{{PANTHER_POOL_ADDRESS}}'
+      startBlock: {{PANTHER_POOL_START_BLOCK}}
       abi: PrpVoucherController
     mapping:
       kind: ethereum/events
@@ -75,12 +71,10 @@ dataSources:
 
   - kind: ethereum
     name: ZAccountsRegistration
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
-      # startBlock: 13438591 # Internal
-      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
-      startBlock: 13596945 # Public
+      address: '{{PANTHER_POOL_ADDRESS}}'
+      startBlock: {{PANTHER_POOL_START_BLOCK}}
       abi: ZAccountsRegistration
     mapping:
       kind: ethereum/events
@@ -116,12 +110,10 @@ dataSources:
 
   - kind: ethereum
     name: ZSwap
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
-      # startBlock: 13438591 # Internal
-      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
-      startBlock: 13596945 # Public
+      address: '{{PANTHER_POOL_ADDRESS}}'
+      startBlock: {{PANTHER_POOL_START_BLOCK}}
       abi: ZSwap
     mapping:
       kind: ethereum/events
@@ -145,12 +137,10 @@ dataSources:
 
   - kind: ethereum
     name: ZTransaction
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x386FafC2B785848794b25C2Fb7a385D17529608A' # Internal
-      # startBlock: 13438591 # Internal
-      address: '0xc399d07a3676f5949037fD8d8A32c1080b9CFff7' # Public
-      startBlock: 13596945 # Public
+      address: '{{PANTHER_POOL_ADDRESS}}'
+      startBlock: {{PANTHER_POOL_START_BLOCK}}
       abi: ZTransaction
     mapping:
       kind: ethereum/events
@@ -175,12 +165,10 @@ dataSources:
   # Panther Forest
   - kind: ethereum
     name: ProvidersKeysRegistry
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13596968  # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: ProvidersKeysRegistry
     mapping:
       kind: ethereum/events
@@ -210,12 +198,10 @@ dataSources:
 
   - kind: ethereum
     name: StaticTree
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13438601 # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: StaticTree
     mapping:
       kind: ethereum/events
@@ -233,12 +219,10 @@ dataSources:
 
   - kind: ethereum
     name: ZAssetsRegistryV1
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13438601 # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: ZAssetsRegistryV1
     mapping:
       kind: ethereum/events
@@ -259,12 +243,10 @@ dataSources:
 
   - kind: ethereum
     name: ZNetworksRegistry
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13438601 # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: ZNetworksRegistry
     mapping:
       kind: ethereum/events
@@ -282,12 +264,10 @@ dataSources:
 
   - kind: ethereum
     name: ZZonesRegistry
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13438601 # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: ZZonesRegistry
     mapping:
       kind: ethereum/events
@@ -305,12 +285,10 @@ dataSources:
 
   - kind: ethereum
     name: PantherForest
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x01006604CE30f2f2C1a65C70fb064879Ebd71f84' # Internal
-      # startBlock: 13438601 # Internal
-      address: '0x7808a77D5707d153f627e6cc68095E2146dECB49' # Public
-      startBlock: 13596968 # Public
+      address: '{{PANTHER_FOREST_ADDRESS}}'
+      startBlock: {{PANTHER_FOREST_START_BLOCK}}
       abi: PantherForest
     mapping:
       kind: ethereum/events
@@ -371,12 +349,10 @@ dataSources:
   # Rest of the contracts
   - kind: ethereum
     name: zkpReserveController
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x1355685131bB371E6eE0Cb0e99b7992b61154CEc' # Internal
-      # startBlock: 13439616 # Internal
-      address: '0x02C761622c4e2F4c2F687ab1AF9D55b67eAafb42' # Public
-      startBlock: 13598324 # Public
+      address: '{{ZKP_RESERVE_CONTROLLER_ADDRESS}}'
+      startBlock: {{ZKP_RESERVE_CONTROLLER_START_BLOCK}}
       abi: zkpReserveController
     mapping:
       kind: ethereum/events
@@ -397,12 +373,10 @@ dataSources:
 
   - kind: ethereum
     name: vaultV1
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x8011863ECb378D1dFd711B0390f1B75334246Fbf' # Internal
-      # startBlock: 13438619 # Internal
-      address: '0xfEBF64C2447e7aA65b73D2D2F400298720e718Ed' # Public
-      startBlock: 13596988 # Public
+      address: '{{VAULT_V1_ADDRESS}}'
+      startBlock: {{VAULT_V1_START_BLOCK}}
       abi: vaultV1
     mapping:
       kind: ethereum/events
@@ -435,12 +409,10 @@ dataSources:
 
   - kind: ethereum
     name: feeMaster
-    network: polygon-amoy
+    network: {{NETWORK}}
     source:
-      # address: '0x95ccA3111EaE41325A38EFaE195ad8C4b85aA1df' # Internal
-      # startBlock: 13438657 # Internal
-      address: '0x3847647CDa13077d44da2141D9b78392388f24F0' # Public
-      startBlock: 13597061 # Public
+      address: '{{FEE_MASTER_ADDRESS}}'
+      startBlock: {{FEE_MASTER_START_BLOCK}}
       abi: feeMaster
     mapping:
       kind: ethereum/events
