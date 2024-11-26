@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
+import {GAS_PRICE, PROVIDERS_KEY} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
@@ -18,13 +20,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('PantherTrees');
     const diamond = await ethers.getContractAt(abi, address);
 
-    const numAllocKeys = [20, 50];
-
     console.log('Adding keyrings...');
 
-    for (const numAllocKey of numAllocKeys) {
+    for (const numAllocKey of PROVIDERS_KEY.numAllocKeys) {
         const tx = await diamond.addKeyring(deployer, numAllocKey, {
-            gasPrice: 30000000000,
+            gasPrice: GAS_PRICE,
         });
         const res = await tx.wait();
 

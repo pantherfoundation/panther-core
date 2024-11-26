@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, FEE_PARAMS} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -14,19 +16,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
-    const perUtxoReward = ethers.utils.parseEther('0.1');
-    const perKytFee = ethers.utils.parseEther('5');
-    const kycFee = ethers.utils.parseEther('25');
-    const protocolFeePercentage = '250';
-
     console.log('updating fee params...');
 
     const tx = await feeMaster.updateFeeParams(
-        perUtxoReward,
-        perKytFee,
-        kycFee,
-        protocolFeePercentage,
-        {gasPrice: 30000000000},
+        FEE_PARAMS.perUtxoReward,
+        FEE_PARAMS.perKytFee,
+        FEE_PARAMS.kycFee,
+        FEE_PARAMS.protocolFeePercentage,
+        {gasPrice: GAS_PRICE},
     );
     const res = await tx.wait();
 

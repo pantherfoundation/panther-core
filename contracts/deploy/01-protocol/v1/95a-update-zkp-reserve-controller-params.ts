@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, ZKP_RESERVE_CONTROLLER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -14,15 +16,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('ZkpReserveController');
     const zkpReserveController = await ethers.getContractAt(abi, address);
 
-    const releasablePerBlock = ethers.utils.parseEther('1');
-    const minRewardedAmount = ethers.utils.parseEther('500');
-
     console.log('updating zkp reserve controller params...');
 
     const tx = await zkpReserveController.updateParams(
-        releasablePerBlock,
-        minRewardedAmount,
-        {gasPrice: 30000000000},
+        ZKP_RESERVE_CONTROLLER.releasablePerBlock,
+        ZKP_RESERVE_CONTROLLER.minRewardedAmount,
+        {gasPrice: GAS_PRICE},
     );
     const res = await tx.wait();
 

@@ -4,14 +4,13 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, PAYMASTER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
         ethers,
     } = hre;
-
-    const unstakeDelaySec = 87400;
-    const addStakeValue = ethers.utils.parseEther('5');
 
     const {abi} = await get('PayMaster_Implementation');
     const {address} = await get('Paymaster_Proxy');
@@ -20,9 +19,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('Adding paymaster stake');
 
-    const tx = await paymaster.addStake(unstakeDelaySec, {
-        value: addStakeValue,
-        gasPrice: 30000000000,
+    const tx = await paymaster.addStake(PAYMASTER.unstakeDelaySec, {
+        value: PAYMASTER.addStakeValue,
+        gasPrice: GAS_PRICE,
     });
     const res = await tx.wait();
 

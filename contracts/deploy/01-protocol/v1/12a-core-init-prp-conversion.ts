@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
+import {GAS_PRICE, zkpAmount, prpVirtualAmount} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
@@ -18,14 +20,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('PantherPoolV1');
     const diamond = await ethers.getContractAt(abi, address);
 
-    const zkpAmount = ethers.utils.parseEther('1000000');
-    const prpVirtualAmount = zkpAmount.div(ethers.utils.parseUnits('1', 17));
-
     {
         const pZkp = await ethers.getContractAt('MockPZkp', pzkp);
         console.log('transfering zkp tokens...');
         const tx = await pZkp.transfer(diamond.address, zkpAmount, {
-            gasPrice: 30000000000,
+            gasPrice: GAS_PRICE,
         });
         const res = await tx.wait();
         console.log('zkp tokens are transfered', res.transactionHash);
@@ -34,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     {
         console.log('initialize prpConversion');
         const tx = await diamond.initPool(prpVirtualAmount, zkpAmount, {
-            gasPrice: 30000000000,
+            gasPrice: GAS_PRICE,
         });
         const res = await tx.wait();
         console.log('prpConversion is initializd', res.transactionHash);

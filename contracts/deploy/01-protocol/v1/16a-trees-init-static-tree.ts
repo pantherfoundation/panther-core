@@ -5,6 +5,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -16,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const diamond = await ethers.getContractAt(abi, address);
 
     const tx = await diamond.initializeStaticTree({
-        gasPrice: 30000000000,
+        gasPrice: GAS_PRICE,
     });
     const res = await tx.wait();
 

@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {ZZonesRegistry, leafs} from '../../../lib/staticTree/zZonesRegistry';
 
+import {GAS_PRICE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -35,7 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             leafIndex,
             proofSiblings,
             {
-                gasPrice: 30000000000,
+                gasPrice: GAS_PRICE,
             },
         );
 

@@ -4,12 +4,13 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, PAYMASTER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
         ethers,
     } = hre;
-    const depositValue = ethers.utils.parseEther('5');
 
     const {abi} = await get('PayMaster_Implementation');
     const {address} = await get('Paymaster_Proxy');
@@ -18,8 +19,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log('Adding paymaster deposit');
 
     const tx = await paymaster.depositToEntryPoint({
-        value: depositValue,
-        gasPrice: 30000000000,
+        value: PAYMASTER.depositValue,
+        gasPrice: GAS_PRICE,
     });
     const res = await tx.wait();
 

@@ -9,6 +9,8 @@ import {
     testnetLeafs,
 } from '../../../lib/staticTree/zNetworksRegistry';
 
+import {GAS_PRICE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -21,9 +23,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('adding znetworks');
 
-    const zZoneLeafs = Object.values(testnetLeafs);
-    const zZoneRegistryTree = new ZNetworksRegistry(zZoneLeafs);
-    const inputs = zZoneRegistryTree
+    const zNetworkLeafs = Object.values(testnetLeafs);
+    const zNetworkTree = new ZNetworksRegistry(zNetworkLeafs);
+    const inputs = zNetworkTree
         .computeCommitments()
         .getInsertionInputs().zNetworkRegistryInsertionInputs;
 
@@ -38,7 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             leafIndex,
             proofSiblings,
             {
-                gasPrice: 30000000000,
+                gasPrice: GAS_PRICE,
             },
         );
 
