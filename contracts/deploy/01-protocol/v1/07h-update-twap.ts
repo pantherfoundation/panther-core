@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, FEE_MASTER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -14,11 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
-    const twap = '30';
-
     console.log('updating twap...');
 
-    const tx = await feeMaster.updateTwapPeriod(twap, {gasPrice: 30000000000});
+    const tx = await feeMaster.updateTwapPeriod(FEE_MASTER.twap, {
+        gasPrice: GAS_PRICE,
+    });
     const res = await tx.wait();
 
     console.log('twap is updated!', res.transactionHash);

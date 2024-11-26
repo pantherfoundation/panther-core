@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
+import {GAS_PRICE, ZKP_RESERVE_CONTROLLER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
@@ -16,14 +18,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const zkpReserveController = (await get('ZkpReserveController')).address;
 
-    const zkpTokenReserves = ethers.utils.parseEther('1000000');
-
     const pZkp = await ethers.getContractAt('MockPZkp', pzkp);
 
     console.log('transfering zkp tokens...');
-    const tx = await pZkp.transfer(zkpReserveController, zkpTokenReserves, {
-        gasPrice: 30000000000,
-    });
+    const tx = await pZkp.transfer(
+        zkpReserveController,
+        ZKP_RESERVE_CONTROLLER.zkpTokenReserves,
+        {
+            gasPrice: GAS_PRICE,
+        },
+    );
     const res = await tx.wait();
 
     console.log('zkp tokens are transfered', res.transactionHash);

@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
+import {GAS_PRICE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const quickswapRouter02 = await getNamedAccount(hre, 'quickswapRouter02');
@@ -23,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         args: [quickswapRouter02, quickswapFactory, vaultV1, weth9],
         log: true,
         autoMine: true,
-        gasPrice: 30000000000,
+        gasPrice: GAS_PRICE,
     });
 };
 export default func;

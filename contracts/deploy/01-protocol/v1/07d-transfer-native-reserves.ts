@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, FEE_MASTER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -14,13 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
-    const nativeTokenReserves = ethers.utils.parseEther('0.5');
-
     console.log('transfering native tokens...');
 
     const tx = await feeMaster.increaseNativeTokenReserves({
-        value: nativeTokenReserves,
-        gasPrice: 30000000000,
+        value: FEE_MASTER.nativeTokenReserves,
+        gasPrice: GAS_PRICE,
     });
     const res = await tx.wait();
 

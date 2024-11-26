@@ -5,6 +5,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, FOREST_TREE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -23,17 +25,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (x: any) => x.key === 'busTreeUpdater',
     )[0].pointer;
 
-    const reservationRate = '2000';
-    const premiumRate = '10';
-    const minEmptyQueueAge = '100';
-
     const tx = await diamond.initializeForestTrees(
         pointer,
-        reservationRate,
-        premiumRate,
-        minEmptyQueueAge,
+        FOREST_TREE.reservationRate,
+        FOREST_TREE.premiumRate,
+        FOREST_TREE.minEmptyQueueAge,
         {
-            gasPrice: 30000000000,
+            gasPrice: GAS_PRICE,
         },
     );
     const res = await tx.wait();

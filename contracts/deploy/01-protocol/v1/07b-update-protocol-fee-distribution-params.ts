@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {GAS_PRICE, FEE_MASTER} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -14,15 +16,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
-    const treasuryLockPercentage = 10 * 100; // 10%
-    const minRewardableZkpAmount = ethers.utils.parseEther('10');
-
     console.log('updating protocol fee distribution params...');
 
     const tx = await feeMaster.updateProtocolZkpFeeDistributionParams(
-        treasuryLockPercentage,
-        minRewardableZkpAmount,
-        {gasPrice: 30000000000},
+        FEE_MASTER.treasuryLockPercentage,
+        FEE_MASTER.minRewardableZkpAmount,
+        {gasPrice: GAS_PRICE},
     );
     const res = await tx.wait();
 

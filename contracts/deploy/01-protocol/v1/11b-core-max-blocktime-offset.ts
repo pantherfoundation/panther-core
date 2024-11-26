@@ -4,6 +4,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+import {maxBlocktimeOffset} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
@@ -13,8 +15,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {abi} = await get('AppConfiguration');
     const {address} = await get('PantherPoolV1');
     const diamond = await ethers.getContractAt(abi, address);
-
-    const maxBlocktimeOffset = '600'; // 10 mins
 
     console.log('updating max blocktime offset');
 

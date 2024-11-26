@@ -6,6 +6,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
+import {GAS_PRICE} from './parameters';
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const uniswapRouter = await getNamedAccount(hre, 'uniswapRouter');
@@ -22,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         args: [uniswapRouter, uniswapQuoterV2, vaultV1],
         log: true,
         autoMine: true,
-        gasPrice: 30000000000,
+        gasPrice: GAS_PRICE,
     });
 };
 export default func;
