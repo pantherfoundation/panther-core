@@ -1,128 +1,214 @@
-const fs = require('fs');
-const path = require('path');
-const {config: dotenvConfig} = require('dotenv');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 
-dotenvConfig({path: path.resolve(__dirname, './.env')});
-
-// Logger functions to print colored messages
-function logInfo(message) {
-    console.log('\x1b[32m', `Info: ${message}`, '\x1b[0m');
-}
-function logWarning(message) {
-    console.log('\x1b[33m', `Warning: ${message}`, '\x1b[0m');
-}
-function logError(message) {
-    console.log('\x1b[31m', `Error: ${message}`, '\x1b[0m');
+class SubgraphSetupError extends Error {
+    constructor(
+        message: string,
+        public code: string,
+    ) {
+        super(message);
+        this.name = 'SubgraphSetupError';
+    }
 }
 
-const Contract = {
-    advancedStakeRewardController: 'AdvancedStakeRewardController',
-    pantherPoolV0: 'PantherPoolV0',
-};
+type NetworkType = 'matic' | 'polygon-amoy';
+type Address = `0x${string}`;
+type BlockNumber = string;
 
-// importing the contract artifacts
-function requireContractArtifacts(contract, network, env) {
-    logInfo(
-        `Getting artifacts of ${contract} ${
-            env ? ` for ${env} env and ` : ''
-        }on ${network} network...`,
-    );
+interface ContractAddresses extends Record<string, string> {
+    NETWORK: NetworkType;
+    PANTHER_POOL_ADDRESS: Address;
+    PANTHER_POOL_START_BLOCK: BlockNumber;
+    PANTHER_FOREST_ADDRESS: Address;
+    PANTHER_FOREST_START_BLOCK: BlockNumber;
+    ZKP_RESERVE_CONTROLLER_ADDRESS: Address;
+    ZKP_RESERVE_CONTROLLER_START_BLOCK: BlockNumber;
+    VAULT_V1_ADDRESS: Address;
+    VAULT_V1_START_BLOCK: BlockNumber;
+    FEE_MASTER_ADDRESS: Address;
+    FEE_MASTER_START_BLOCK: BlockNumber;
+}
 
-    const deploymentPath = path.join(
-        __dirname,
-        '..',
-        'contracts',
-        'deployments',
-    );
+type RequiredField = keyof ContractAddresses;
+const requiredFields: readonly RequiredField[] = [
+    'NETWORK',
+    'PANTHER_POOL_ADDRESS',
+    'PANTHER_POOL_START_BLOCK',
+    'PANTHER_FOREST_ADDRESS',
+    'PANTHER_FOREST_START_BLOCK',
+    'ZKP_RESERVE_CONTROLLER_ADDRESS',
+    'ZKP_RESERVE_CONTROLLER_START_BLOCK',
+    'VAULT_V1_ADDRESS',
+    'VAULT_V1_START_BLOCK',
+    'FEE_MASTER_ADDRESS',
+    'FEE_MASTER_START_BLOCK',
+] as const;
 
-    let contractPath;
-
-    if (env) {
-        contractPath = path.join(
-            deploymentPath,
-            'ARCHIVE',
-            env,
-            network,
-            `${contract}.json`,
+function validateAddress(
+    address: string,
+    fieldName: string,
+): asserts address is Address {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+        throw new SubgraphSetupError(
+            `Invalid Ethereum address for ${fieldName}: ${address}`,
+            'INVALID_ADDRESS',
         );
-    } else {
-        contractPath = path.join(deploymentPath, network, `${contract}.json`);
     }
+}
 
-    if (!fs.existsSync(contractPath)) {
-        logError(
-            `Artifacts of ${contract} not found for env ${env} and network ${network}`,
+function validateBlockNumber(block: string, fieldName: string): void {
+    if (!/^\d+$/.test(block)) {
+        throw new SubgraphSetupError(
+            `Invalid block number for ${fieldName}: ${block}`,
+            'INVALID_BLOCK',
         );
-        process.exit(1);
-    }
-
-    try {
-        const artifacts = require(contractPath);
-        return artifacts;
-    } catch (error) {
-        logError(`Failed to parse ${contractPath}:\n${error}`);
-        process.exit(1);
     }
 }
 
-// Get and validate network name and environment name and get the artifacts based on network and environment
-function getContractArtifacts(contract) {
-    const [, , network, env] = process.argv;
-
-    return requireContractArtifacts(contract, network, env);
+function validateNetwork(network: string): asserts network is NetworkType {
+    if (!['matic', 'polygon-amoy'].includes(network)) {
+        throw new SubgraphSetupError(
+            `Invalid network: ${network}. Must be one of: matic, polygon-amoy`,
+            'INVALID_NETWORK',
+        );
+    }
 }
 
-// generate subgraph.yaml file
-function genSubgraphYaml() {
-    let template = fs
-        .readFileSync(path.join(__dirname, 'subgraph.template.yaml'))
-        .toString();
+function validateEnvFile(
+    env: Record<string, string | undefined>,
+): asserts env is ContractAddresses {
+    // Check required fields
+    const missingFields = requiredFields.filter(function (field) {
+        return !env[field];
+    });
 
-    for (const contract in Contract) {
-        const {address, receipt} = getContractArtifacts(Contract[contract]);
-
-        logInfo(`contract address: ${address}`);
-        logInfo(`contract start block: ${receipt.blockNumber}`);
-
-        template = template
-            .replace(`<% ${Contract[contract]}_ADDRESS %>`, address)
-            .replace(
-                `<% ${Contract[contract]}_STARTBLOCK %>`,
-                receipt.blockNumber.toString(),
-            );
+    if (missingFields.length > 0) {
+        throw new SubgraphSetupError(
+            `Missing required fields in env file:\n${missingFields
+                .map(f => `- ${f}`)
+                .join('\n')}`,
+            'MISSING_FIELDS',
+        );
     }
 
-    fs.writeFileSync(path.join(__dirname, 'subgraph.yaml'), template);
+    // Validate network
+    validateNetwork(env.NETWORK!);
+
+    // Validate addresses
+    [
+        'PANTHER_POOL_ADDRESS',
+        'PANTHER_FOREST_ADDRESS',
+        'ZKP_RESERVE_CONTROLLER_ADDRESS',
+        'VAULT_V1_ADDRESS',
+        'FEE_MASTER_ADDRESS',
+    ].forEach(function (field) {
+        validateAddress(env[field]!, field);
+    });
+
+    // Validate block numbers
+    [
+        'PANTHER_POOL_START_BLOCK',
+        'PANTHER_FOREST_START_BLOCK',
+        'ZKP_RESERVE_CONTROLLER_START_BLOCK',
+        'VAULT_V1_START_BLOCK',
+        'FEE_MASTER_START_BLOCK',
+    ].forEach(function (field) {
+        validateBlockNumber(env[field]!, field);
+    });
 }
 
-// copy contracts abi to the abis folder
-function copyAbis() {
-    logInfo('Copying abis to subgraph/abis ...');
+function parseEnvArg(args: string[]): string {
+    const envArg: string | undefined = args.find(function (arg: string) {
+        return arg.startsWith('--env=');
+    });
 
-    const abiDir = path.join(__dirname, 'abis');
-
-    // Create abi directory if it does not exist
-    if (!fs.existsSync(abiDir)) {
-        fs.mkdirSync(abiDir);
+    if (!envArg) {
+        throw new SubgraphSetupError(
+            'Missing required argument: --env\n' +
+                'Usage: ts-node setupSubgraph.ts --env=<env-file>\n' +
+                'Example: ts-node setupSubgraph.ts --env=.env.staging.internal',
+            'MISSING_ARG',
+        );
     }
 
-    for (const contract in Contract) {
-        let {abi} = getContractArtifacts(Contract[contract]);
+    const envFile: string = envArg.split('=')[1];
+    if (!envFile) {
+        throw new SubgraphSetupError(
+            'Empty env file path provided\n' +
+                'Usage: ts-node setupSubgraph.ts --env=<env-file>\n' +
+                'Example: ts-node setupSubgraph.ts --env=.env.staging.internal',
+            'INVALID_ARG',
+        );
+    }
 
-        // Delete multi-dimensional array from panther pool ABI.
-        // Github issue: https://github.com/graphprotocol/graph-cli/issues/342
-        if (Contract.pantherPoolV0 === 'PantherPoolV0') {
-            abi = abi.filter(el => el.name !== 'generateDeposits');
+    return envFile;
+}
+
+function loadEnvFile(envPath: string): ContractAddresses {
+    if (!fs.existsSync(envPath)) {
+        throw new SubgraphSetupError(
+            `Environment file not found: ${envPath}`,
+            'FILE_NOT_FOUND',
+        );
+    }
+    const env = dotenv.parse(fs.readFileSync(envPath));
+    validateEnvFile(env);
+    return env;
+}
+
+function generateSubgraphConfig(
+    env: ContractAddresses,
+    templatePath: string,
+): string {
+    if (!fs.existsSync(templatePath)) {
+        throw new SubgraphSetupError(
+            'Template file not found: subgraph.template.yaml',
+            'TEMPLATE_NOT_FOUND',
+        );
+    }
+
+    let template: string = fs.readFileSync(templatePath, 'utf8');
+
+    Object.entries(env).forEach(function ([key, value]) {
+        const placeholder = `{{${key}}}`;
+        while (template.includes(placeholder)) {
+            template = template.replace(placeholder, value);
         }
+    });
 
-        fs.writeFileSync(
-            path.join(abiDir, `${Contract[contract]}.json`),
-            JSON.stringify(abi),
-        );
+    return template;
+}
+
+function cleanup(outputPath: string): void {
+    if (fs.existsSync(outputPath)) {
+        fs.unlinkSync(outputPath);
     }
 }
 
-if (require.main === module) {
-    copyAbis();
-    genSubgraphYaml();
+function main(): void {
+    const outputPath = 'subgraph.yaml';
+    try {
+        const envFile = parseEnvArg(process.argv.slice(2));
+        const envPath = path.resolve(process.cwd(), envFile);
+        const env = loadEnvFile(envPath);
+        const templatePath = path.resolve(
+            process.cwd(),
+            'subgraph.template.yaml',
+        );
+        const config = generateSubgraphConfig(env, templatePath);
+
+        fs.writeFileSync(outputPath, config);
+        console.log(`Generated subgraph.yaml for network: ${env.NETWORK}`);
+    } catch (error) {
+        cleanup(outputPath);
+        if (error instanceof SubgraphSetupError) {
+            console.error(`Setup failed: ${error.message} (${error.code})`);
+        } else {
+            console.error('Unexpected error:', error);
+        }
+        process.exit(1);
+    }
 }
+
+main();

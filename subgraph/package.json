@@ -3,12 +3,15 @@
   "license": "SEE LICENSE IN ./LICENSE",
   "version": "0.0.1",
   "scripts": {
-    "codegen": "graph codegen",
     "auth": "graph auth --product hosted-service",
-    "build": "graph build",
-    "deploy:hosted": "graph deploy --node https://api.thegraph.com/deploy/",
-    "deploy:studio": "graph deploy --studio",
-    "subgraph:publish": "yarn codegen && yarn build && yarn deploy:studio",
+    "build": "graph codegen && graph deploy --node https://api.thegraph.com/deploy/",
+    "deploy": "graph deploy --studio",
+    "deploy:staging:internal": "graph deploy --studio amoy-internal-testnet",
+    "deploy:staging:public": "graph deploy --studio amoy-public-testnet",
+    "deploy:canary:internal": "graph deploy --studio panther-canary-internal",
+    "generate:canary:internal": "ts-node setupSubgraph.ts --env=.env.canary.internal",
+    "generate:staging:internal": "ts-node setupSubgraph.ts --env=.env.staging.internal",
+    "generate:staging:public": "ts-node setupSubgraph.ts --env=.env.staging.public",
     "stats:count:users": "sh scripts/countUsers.sh"
   },
   "dependencies": {
