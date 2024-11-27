@@ -146,8 +146,8 @@ template DataEscrowElGamalEncryption(PaddingPointsSize, ScalarsSize, PointsSize)
         drv_mGrY_final[j].y2 <== ephemeralPubKeyBuilder.hidingPoint[1];
 
         // encrypted data
-        encryptedMessage[j][0] <== drv_mGrY[j].xout;
-        encryptedMessage[j][1] <== drv_mGrY[j].yout;
+        encryptedMessage[j][0] <== drv_mGrY_final[j].xout;
+        encryptedMessage[j][1] <== drv_mGrY_final[j].yout;
 
         // next padding point
         if( j < PaddingPointsSize - 1 ) {
