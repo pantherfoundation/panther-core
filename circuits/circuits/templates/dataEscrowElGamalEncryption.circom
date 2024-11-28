@@ -180,8 +180,8 @@ template DataEscrowElGamalEncryption(PaddingPointsSize, ScalarsSize, PointsSize)
         drv_mGrY[offset+j] = BabyAdd();
         drv_mGrY[offset+j].x1 <== drv_mG[j].Ax;
         drv_mGrY[offset+j].y1 <== drv_mG[j].Ay;
-        drv_mGrY[offset+j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[j][0];
-        drv_mGrY[offset+j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[j][1];
+        drv_mGrY[offset+j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[offset + j][0];
+        drv_mGrY[offset+j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[offset + j][1];
 
         drv_mGrY_final[offset+j] = BabyAdd();
         drv_mGrY_final[offset+j].x1 <== drv_mGrY[offset+j].xout;
