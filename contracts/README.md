@@ -1,43 +1,173 @@
-# Panther Protocol
+# Panther Protocol Smart Contracts
 
-This repository contains smart contracts, their corresponding deployment scripts, Hardhat configuration tasks, and unit tests.
+This workspace contains smart contracts, deployment scripts, Hardhat configuration tasks, and unit tests for the Panther Protocol.
 
-## Test
+## Prerequisites
 
-You can run the full test suite with the following command:
+- Node.js (v20 or higher)
+- Yarn package manager
+- Compiled crypto workspace (see [crypto README](../crypto/README.md) for instructions)
+- Docker (optional, required for running Slither security analysis)
 
-    yarn compile && yarn test
+## Installation
+
+```bash
+yarn install
+```
+
+## Development
+
+### Compile Contracts
+
+```bash
+yarn compile
+```
+
+### Clean
+
+Remove artifacts and cache:
+
+```bash
+yarn clean
+```
+
+### Run Local Chain
+
+Start a local Hardhat network:
+
+```bash
+yarn chain
+```
+
+### Testing
+
+Run the full test suite:
+
+```bash
+yarn test
+```
+
+Run tests with gas reporting:
+
+```bash
+yarn test:gas
+```
+
+Generate test coverage:
+
+```bash
+yarn coverage
+```
+
+### Code Quality
+
+Run all checks:
+
+```bash
+yarn full-check-before-commit
+```
+
+Lint code:
+
+```bash
+yarn lint
+```
+
+Format code:
+
+```bash
+yarn prettier:fix
+```
+
+### Security Analysis
+
+Run Slither analysis:
+
+```bash
+yarn slither
+```
+
+Generate storage layout:
+
+```bash
+yarn storage
+```
+
+Generate UML diagrams:
+
+```bash
+yarn uml
+```
+
+## Deployment
+
+### Supported Networks
+
+- Mainnet (chainId: 1)
+- Sepolia (chainId: 11155111)
+- Polygon (chainId: 137)
+- Amoy (chainId: 80002)
+
+### Local Development
+
+1. Deploy to local network:
+
+```bash
+yarn deploy:chain
+```
+
+### Protocol Deployment
+
+Deploy protocol components:
+
+```bash
+yarn deploy:protocol
+```
+
+Deploy staking:
+
+```bash
+# Advanced staking
+yarn deploy:staking:advanced
+
+# Classic staking
+yarn deploy:staking:classic
+```
+
+Deploy forest:
+
+```bash
+yarn deploy:forest
+```
 
 ## Contract Verification
 
-Make sure you have the contracts' artifacts inside the [`deployments/mainnet`](./deployments/mainnet) and [`deployments/polygon`](./deployments/polygon) directories.
+Configure environment:
 
-First, you need to create an account in both the [Etherscan](https://etherscan.io) and the [Polygonscan](https://polygonscan.com) and get your API key to verify the contracts using hardhat.
+- Copy `.env.example` to `.env`
+- Add API keys:
+  - `ETHERSCAN_API_KEY` for Ethereum networks
+  - `POLYGONSCAN_API_KEY` for Polygon networks
 
-Once you have your API keys, Follow these steps to verify the contracts:
+Verify contracts:
 
-Make sure you are inside the [`contracts`](./contracts) workspace. Execute the following command in the root directory to change your directory to the `contracts` workspace:
+```bash
+yarn verify --network <network-name>
+```
 
-    cd ./contracts
+### Important Notes
 
-Rename the [.env.example](./.env.example) to `.env`. Then, add your API key that you have got from the Etherscan to `ETHERSCAN_API_KEY` env variable.
+- `PoseidonT3` and `PoseidonT4` contracts do not require verification
+- For manual verification:
 
-Execute the following command to verify the contracts on the Ethereum Mainnet:
+```bash
+yarn hardhat verify <contract-address> <constructor-params> --network <network-name>
+```
 
-    yarn verify --network miannet
+## Contributing
 
-After verifying the contracts on the Ethereum Mainnet, update the `ETHERSCAN_API_KEY` env variable by replacing your Etherscan API key with the Polygonscan API key.
+Please read our [Contributing Guidelines](../CONTRIBUTING.md) before submitting any pull requests.
 
-Then, execute the following command to verify the contracts on the Polygon:
+## License
 
-    yarn verify --network polygon
-
-**Note:** You do not need to verify the `PoseidonT3` and `PoseidonT4` contracts as we have deployed them based on their ABI, not their solidity code.
-
-**Note:** If for some reason, the `yarn verify` command throws an error for any of the contracts (other that `PoseidonT3` and `PoseidonT4`), you have to try verifying them manually. In this case, you will need the contract address and its constructor parameters. You can open the artifacts of the contract (that is inside the [`deployments`](./deployments) folder) and look for `address` and `args` keys in order to get contract address and its constructor parameters respectively. Once you have them, you can execute this command to verify the contract:
-
-    yarn hardhat verify <contract address> <constructor parameters separated by a space> --network <network name>
-
-## Slither
-
-    yarn slither
+See the LICENSE file in the root directory.
