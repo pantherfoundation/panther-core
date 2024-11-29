@@ -12,9 +12,6 @@ This repository contains the heart of the Panther Protocol code:
 
 It does _not_ include the zero knowledge circuits, although these will be published in the future.
 
-At the time of writing, the repository contains the code for v0.5 of the MASP, which provides both advanced staking and the foundation (i.e. a significant part but not the entirety) of the future v1.0
-release.
-
 To understand more about this codebase see [the documentation](docs/get-started.md)
 
 ## Development / testing / contributing
@@ -24,7 +21,7 @@ understanding of many technical topics including EVM chains, Solidity,
 Hardhat, React, TypeScript, The Graph, Zero Knowledge Proofs, and
 various other cryptographic techniques.
 
-The development guide in [`docs/dev-guide.md`](docs/dev-guide.md)
+The development guide in [`docs/dev/dev-guide.md`](docs/dev-guide.md)
 explains how to deploy a test environment. This is currently work in
 progress.
 
