@@ -683,7 +683,7 @@ template ZSwapV1( nUtxoIn,
     component zAccountUtxoInNullifierHasherProver = ForceEqualIfEnabled();
     zAccountUtxoInNullifierHasherProver.in[0] <== zAccountUtxoInNullifier;
     zAccountUtxoInNullifierHasherProver.in[1] <== zAccountUtxoInNullifierHasher.out;
-    zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInSpendPrivKey;
+    zAccountUtxoInNullifierHasherProver.enabled <== zAccountUtxoInNullifier;
 
     // verify reading key
     component zAccountReadPubKeyChecker = BabyPbk();
