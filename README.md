@@ -1,47 +1,71 @@
 # Panther Protocol: core repository
 
-This repository contains the heart of the Panther Protocol code:
+This repository contains the heart of the Panther Protocol code, implementing privacy-preserving infrastructure for Web3 DeFi applications.
 
-- [`contracts/`](contracts) - smart contracts:
-  - [`staking/`](contracts/contracts/staking) - contracts for classic and advanced staking
-  - [`protocol/`](contracts/contracts/protocol) - contracts for the MASP (Multi-Asset Shielded Pool)
-  - [`common/`](contracts/contracts/common) - shared utility contracts
-- [`crypto/`](crypto) - cryptography code
-- [`dapp/`](dapp) - the frontend web-based dApp interface
-- [`subgraph/`](subgraph) - code for Panther's subgraph on [The Graph](https://thegraph.com/en/)
+## Repository Structure
 
-It does _not_ include the zero knowledge circuits, although these will be published in the future.
+- [`contracts/`](contracts) - Smart contracts:
+  - [`protocol/`](contracts/contracts/protocol) - Multi-Asset Shielded Pool (MASP):
+    - `v1/pantherForest/` - Panther Forest Merkle tree implementation
+    - `v1/pantherPool/` - Panther Pool core protocol contracts
+  - [`staking/`](contracts/contracts/staking) - Staking contracts:
+    - Classic staking implementation
+    - Advanced staking implementation
+  - [`common/`](contracts/contracts/common) - Shared utilities
+- [`circuits/`](circuits) - Zero-knowledge circuits for privacy features
+- [`crypto/`](crypto) - Core cryptographic primitives and utilities
+- [`dapp/`](dapp) - Web-based dApp interface
+- [`subgraph/`](subgraph) - Subgraph code for [The Graph](https://thegraph.com/en/)
 
-At the time of writing, the repository contains the code for v0.5 of the MASP, which provides both advanced staking and the foundation (i.e. a significant part but not the entirety) of the future v1.0
-release.
+## Prerequisites
 
-To understand more about this codebase see [the documentation](docs/get-started.md)
+This codebase requires expertise in:
 
-## Development / testing / contributing
+- EVM chains, Solidity and Hardhat
+- Zero Knowledge Proofs, circuits and cryptography
+- React and Web3 development
+- The Graph protocol
 
-**Please note:** deployment of this code requires in-depth
-understanding of many technical topics including EVM chains, Solidity,
-Hardhat, React, TypeScript, The Graph, Zero Knowledge Proofs, and
-various other cryptographic techniques.
+## Getting Started
 
-The development guide in [`docs/dev-guide.md`](docs/dev-guide.md)
-explains how to deploy a test environment. This is currently work in
-progress.
+1. Read the [Whitepaper](https://pantherprotocol.io/whitepaper) for high-level architecture
+2. Read [overview documentation](docs/overview.md) for details on the UTXO model and cryptography
+3. Set up development environment:
+   - Node.js (v20 or higher)
+   - Yarn package manager
+   - Rust and Cargo (for circuits)
+   - Circom (v2.0.5)
+   - Docker (optional)
 
-Please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+## Development
 
-<!-- PVL the software development company can't host DAO-related content for legal reasons, therefore the following links are deprecated and the content will be relocated to a new home. Retain these links until such time as the content has a new home, as they point at the (delinked) backend material available in the repo that host these docs:
+Each workspace has its own build and test procedures. See individual README files:
 
-## Community resources
+- [Circuits README](circuits/README.md)
+- [Contracts README](contracts/README.md)
+- [Crypto README](crypto/README.md)
+- [Subgraph README](subgraph/README.md)
+- [dApp README](dapp/README.md)
 
-Please see the Panther DAO documentation on -->
-<!-- [Community](https://docs.pantherprotocol.io/dao/support/community) and -->
-<!-- [Other resources](https://docs.pantherprotocol.io/dao/support/other-resources). -->
+## Contributing
 
-## Licenses
+1. Fork the repository
+2. Create a feature branch
+3. Follow our [Contributing Guidelines](CONTRIBUTING.md)
+4. Submit a pull request
 
-Please see the top-level [`LICENSE`](LICENSE), other `LICENSE` and
-`LICENSE.info` files, and license headers present in many of the
-files. If any files are not explicitly marked as licensed then it
-should be assumed that they are unlicensed, i.e. _no_ rights are
-granted.
+Key guidelines:
+
+- Follow conventional commits standard
+- Include workspace scope in commit messages
+- Ensure all tests pass
+- Update documentation as needed
+
+## Community
+
+- [Discord Server](https://discord.gg/WZuRnMCZ4c)
+- [Web Forums](https://forum.pantherprotocol.io/)
+
+## License
+
+See individual LICENSE files in each workspace. If not explicitly marked, files should be considered unlicensed with no rights granted.

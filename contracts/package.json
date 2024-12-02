@@ -44,7 +44,7 @@
     "slither:install": "./scripts/slither_install.sh",
     "slither": "yarn slither:install && yarn slither:check",
     "storage": "HARDHAT_NO_MNEMONIC=yes yarn hardhat storage | grep -v '/node_modules/\\.bin/hardhat storage' > docs/docgen/storage.layout.txt",
-    "super-safe-check-before-commit": "rm -rf build artifacts cache types && yarn install && yarn compile && yarn prettier:fix && yarn lint && yarn test && yarn slither",
+    "full-check-before-commit": "rm -rf build artifacts cache types && yarn install && yarn compile && yarn prettier:fix && yarn lint && yarn test && yarn slither",
     "test:gas": "REPORT_GAS=yes yarn test",
     "test:ts": "echo '[i] not implemented: yarn pchain:load-snapshot --eval-and-exit \"jest --runInBand --detectOpenHandles --forceExit --verbose --colors\"'",
     "test": "yarn clean && HARDHAT_NO_MNEMONIC=yes hardhat test",
