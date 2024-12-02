@@ -18,6 +18,17 @@ library UniswapV3PriceFeed {
         // Interface the Uniswap pool
         IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
+        // Retrieve actual token0 and token1 addresses from the pool
+        address token0 = uniswapPool.token0();
+        address token1 = uniswapPool.token1();
+
+        // Ensure that the input and output tokens are part of the pool
+        require(
+            (inputToken == token0 && outputToken == token1) ||
+                (inputToken == token1 && outputToken == token0),
+            "Tokens not in the pool"
+        );
+
         // Get the current tick (price) using oracle
         uint32[] memory secondsAgos = new uint32[](2);
         secondsAgos[0] = secondsAgo; // TWAP period
@@ -55,8 +66,8 @@ library UniswapV3PriceFeed {
             FixedPoint96.Q96
         );
 
-        // Quote calculation:
-        if (inputToken < outputToken) {
+        // Determine if inputToken is token0 or token1 and calculate accordingly
+        if (inputToken == token0) {
             // Input token is token0, output token is token1
             quoteAmount = FullMath.mulDiv(
                 inputAmount,
