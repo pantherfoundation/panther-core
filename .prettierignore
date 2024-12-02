@@ -1,4 +1,5 @@
 CODEOWNERS
+.editorconfig
 
 build/
 circuits/compiled/
@@ -49,6 +50,8 @@ dapp/circuits/
 dapp/LICENSE*
 dapp/stats.json
 dapp/tests/data/*.index.html
+dapp/.editorconfig
+dapp/config/
 
 .env
 .env.*

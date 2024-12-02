@@ -24,7 +24,7 @@ default:
   - time yarn build:types
   - time yarn test:ci
   - cp dapp/.env.staging.internal dapp/.env
-  - time yarn run build:dapp:staging
+  - time yarn run build:dapp:staging:internal
 
 .combined_job_template:
   cache:
