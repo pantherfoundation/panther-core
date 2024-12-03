@@ -12,6 +12,7 @@ import "./staticTrees/StaticRootUpdater.sol";
 import "../utils/PantherPoolAuth.sol";
 import "../utils/merkleTrees/BinaryUpdatableTree.sol";
 import { BLACKLISTED_ZACCOUNT_STATIC_LEAF_INDEX } from "../utils/Constants.sol";
+import { SIXTEEN_LEVELS } from "../utils/zeroTrees/Constants.sol";
 
 import "../../../../common/crypto/PoseidonHashers.sol";
 
@@ -40,6 +41,8 @@ contract BlacklistedZAccountsIdsRegistry is
         bytes32 leaf,
         bytes32[] memory proofSiblings
     ) external onlyPantherPool returns (bytes32 _updatedRoot) {
+        require(proofSiblings.length == SIXTEEN_LEVELS, "invalid proof length");
+
         (uint256 flagIndex, uint256 leafIndex) = _getZAccountFlagAndLeafIndexes(
             zAccountId
         );
@@ -65,6 +68,8 @@ contract BlacklistedZAccountsIdsRegistry is
         bytes32 leaf,
         bytes32[] memory proofSiblings
     ) external onlyPantherPool returns (bytes32 _updatedRoot) {
+        require(proofSiblings.length == SIXTEEN_LEVELS, "invalid proof length");
+
         (uint256 flagIndex, uint256 leafIndex) = _getZAccountFlagAndLeafIndexes(
             zAccountId
         );
