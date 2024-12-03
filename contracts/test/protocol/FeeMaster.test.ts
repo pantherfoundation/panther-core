@@ -492,6 +492,12 @@ describe('FeeMaster Contract', function () {
         });
 
         it('should cache the native to ZKP rate correctly when Uniswap returns expected rate', async () => {
+            await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                zkp.address,
+                weth.address,
+            );
+
             // Mock the observe function of the Uniswap V3 pool to return predefined tick cumulatives and seconds agos
             // This simulates the response from Uniswap's oracle
             await mockUniswapPoolRate(uniswapV3Pool, 1, twapPeriod); // rate = 1:1
@@ -586,6 +592,12 @@ describe('FeeMaster Contract', function () {
                     zkp.address,
                     true,
                 );
+
+            await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                zkp.address,
+                weth.address,
+            );
         });
         async function setUniswapRate(rate: number) {
             await mockUniswapPoolRate(uniswapV3Pool, rate, twapPeriod);
@@ -850,6 +862,12 @@ describe('FeeMaster Contract', function () {
                 to: pantherPoolAsSigner.address,
                 value: ethers.utils.parseEther('10'),
             });
+
+            await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                zkp.address,
+                weth.address,
+            );
         });
 
         describe('zAccount activation tx', () => {
@@ -1833,6 +1851,17 @@ describe('FeeMaster Contract', function () {
             uniswapV3PoolNativeZkp =
                 await smock.fake<IUniswapV3Pool>('IUniswapV3Pool');
 
+            await mockUniswapPoolTokens(
+                uniswapV3PoolUSDTNative,
+                usdt.address,
+                weth.address,
+            );
+            await mockUniswapPoolTokens(
+                uniswapV3PoolNativeZkp,
+                zkp.address,
+                weth.address,
+            );
+
             // Update FeeMaster pools
             await feeMaster
                 .connect(owner)
@@ -2254,6 +2283,20 @@ describe('FeeMaster Contract', function () {
             });
         });
     });
+
+    async function mockUniswapPoolTokens(
+        pool: FakeContract<IUniswapV3Pool>,
+        tokenA: BigNumberish,
+        tokenB: BigNumberish,
+    ) {
+        if (BigNumber.from(tokenA).lt(BigNumber.from(tokenB))) {
+            pool.token0.returns(tokenA);
+            pool.token1.returns(tokenB);
+        } else {
+            pool.token0.returns(tokenB);
+            pool.token1.returns(tokenA);
+        }
+    }
 
     async function mockUniswapPoolRate(
         pool: FakeContract<IUniswapV3Pool>,
