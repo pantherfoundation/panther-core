@@ -10,13 +10,6 @@ export const maxBlocktimeOffset = '600'; // 10 mins
 export const zkpAmount = ethers.utils.parseEther('1000000');
 export const prpVirtualAmount = zkpAmount.div(ethers.utils.parseUnits('1', 17));
 
-export const FEE_PARAMS = {
-    perUtxoReward: ethers.utils.parseEther('0.1'),
-    perKytFee: ethers.utils.parseEther('5'),
-    kycFee: ethers.utils.parseEther('25'),
-    protocolFeePercentage: '250',
-};
-
 export const FEE_MASTER = {
     FEE_PARAMS: {
         perUtxoReward: ethers.utils.parseEther('0.1'),
