@@ -42,4 +42,12 @@ contract MockPrpConversion is PrpConversion {
     ) external view returns (uint256) {
         return feeMasterDebt[token];
     }
+
+    function testWithdrawZkp(
+        address token,
+        address to,
+        uint256 amount
+    ) external {
+        _claimErc20(token, to, amount);
+    }
 }

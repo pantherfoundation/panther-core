@@ -211,7 +211,7 @@ describe('PrpConversion', function () {
             await prpConversion.initPool(prpVirtualAmount, zkpAmount);
             const zkpReserve = (await prpConversion.getReserves())._zkpReserve;
             const prpReserve = (await prpConversion.getReserves())._prpReserve;
-            await prpConversion.rescueErc20(
+            await prpConversion.testWithdrawZkp(
                 zkpToken.address,
                 owner.address,
                 1000,
@@ -362,7 +362,7 @@ describe('PrpConversion', function () {
         });
 
         it('should revert if zkpBalance and zkpReserve is not in sync  ', async function () {
-            await prpConversion.rescueErc20(
+            await prpConversion.testWithdrawZkp(
                 zkpToken.address,
                 owner.address,
                 ethers.utils.parseEther('100'),
@@ -387,6 +387,8 @@ describe('PrpConversion', function () {
     describe('rescueERC20', function () {
         it('Should transfer token from prpConverter', async function () {
             await zkpToken.transfer(prpConversion.address, zkpAmount);
+            await prpConversion.initPool(prpVirtualAmount, zkpAmount);
+
             await prpConversion.rescueErc20(
                 zkpToken.address,
                 owner.address,
