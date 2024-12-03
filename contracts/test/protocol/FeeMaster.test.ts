@@ -2315,7 +2315,6 @@ describe('FeeMaster Contract', function () {
             ['address', 'address'],
             [sortedA, sortedB],
         );
-        const hash = ethers.utils.keccak256(packed);
-        return hash.slice(0, 10); // bytes4 is the first 4 bytes (8 hex chars) + '0x'
+        return ethers.utils.keccak256(packed);
     }
 });
