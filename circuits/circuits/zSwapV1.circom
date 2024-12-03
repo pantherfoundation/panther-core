@@ -628,7 +628,8 @@ template ZSwapV1( nUtxoIn,
     component isDeltaTimeLessEqThen = LessEqThan(32); // 1 if deltaTime <= zZoneTimePeriodPerMaximumAmount
     isDeltaTimeLessEqThen.in[0] <== deltaTime;
     isDeltaTimeLessEqThen.in[1] <== zZoneTimePeriodPerMaximumAmount;
-    signal zAccountUtxoOutTotalAmountPerTimePeriod <== Uint96Tag(ACTIVE)(isDeltaTimeLessEqThen.out * (totalBalanceChecker.totalWeighted + zAccountUtxoInTotalAmountPerTimePeriod ));
+    // current total amount + previous amount (conditioned by time period)
+    signal zAccountUtxoOutTotalAmountPerTimePeriod <== Uint96Tag(ACTIVE)( totalBalanceChecker.totalWeighted + ( isDeltaTimeLessEqThen.out * zAccountUtxoInTotalAmountPerTimePeriod ));
 
     // verify
     assert(zAccountUtxoOutTotalAmountPerTimePeriod <= zZoneMaximumAmountPerTimePeriod);
