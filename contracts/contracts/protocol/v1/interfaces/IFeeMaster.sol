@@ -78,7 +78,7 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
      * @param key the pool key to read the pool from `pools` mapping
      * @param enabled true/false for enabling/desabling pool
      */
-    event PoolUpdated(address pool, bytes4 key, bool enabled);
+    event PoolUpdated(address pool, bytes32 key, bool enabled);
 
     /**
      * @dev Updates the target amount of native token reserve.

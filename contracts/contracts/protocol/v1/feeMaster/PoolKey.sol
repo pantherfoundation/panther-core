@@ -14,8 +14,8 @@ library PoolKey {
     function getKey(
         address tokenA,
         address tokenB
-    ) internal pure returns (bytes4 key) {
+    ) internal pure returns (bytes32 key) {
         (address _tokenA, address _tokenB) = sortTokens(tokenA, tokenB);
-        return bytes4(keccak256(abi.encodePacked(_tokenA, _tokenB)));
+        return keccak256(abi.encodePacked(_tokenA, _tokenB));
     }
 }

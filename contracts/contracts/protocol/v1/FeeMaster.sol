@@ -214,7 +214,7 @@ contract FeeMaster is
         address _tokenB,
         bool _enabled
     ) external onlyOwner {
-        bytes4 _key = _updatePool(_pool, _tokenA, _tokenB, _enabled);
+        bytes32 _key = _updatePool(_pool, _tokenA, _tokenB, _enabled);
 
         emit PoolUpdated(_pool, _key, _enabled);
     }
