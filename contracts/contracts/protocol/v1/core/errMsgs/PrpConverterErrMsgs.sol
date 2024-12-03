@@ -20,3 +20,4 @@ string constant ERR_LOW_CONSTANT_PRODUCT = "PC:E11";
 string constant ERR_UNAUTHORIZED = "PC:E12";
 string constant ERR_NON_ZERO_DEPOSIT_AMOUNT_PRP = "PC:E14";
 string constant ERR_TOO_LARGE_PRP_AMOUNT = "PC:E14";
+string constant ERR_INVALID_TOKEN_ADDRESS = "PC:E15";
