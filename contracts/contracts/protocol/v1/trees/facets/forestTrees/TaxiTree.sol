@@ -26,6 +26,8 @@ contract TaxiTree is RingBufferTree {
     function _addUtxos(
         bytes32[] memory utxos
     ) internal returns (bytes32 newRoot) {
+        require(utxos.length > 0, "zero taxi utxos");
+
         newRoot;
 
         for (uint256 i = 0; i < utxos.length; ) {
