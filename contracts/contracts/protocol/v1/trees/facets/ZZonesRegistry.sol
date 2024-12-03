@@ -11,7 +11,7 @@ import "../../diamond/utils/Ownable.sol";
 import "../utils/merkleTrees/BinaryUpdatableTree.sol";
 
 import { ZZONE_STATIC_LEAF_INDEX } from "../utils/Constants.sol";
-import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT } from "../utils/zeroTrees/Constants.sol";
+import { SIXTEEN_LEVEL_EMPTY_TREE_ROOT, SIXTEEN_LEVELS } from "../utils/zeroTrees/Constants.sol";
 
 import "../../../../common/crypto/PoseidonHashers.sol";
 
@@ -48,6 +48,8 @@ contract ZZonesRegistry is
         uint256 leafIndex,
         bytes32[] calldata proofSiblings
     ) external onlyOwner {
+        require(proofSiblings.length == SIXTEEN_LEVELS, "invalid proof length");
+
         bytes32 zZonesTreeRoot = update(
             curRoot,
             curLeaf,
