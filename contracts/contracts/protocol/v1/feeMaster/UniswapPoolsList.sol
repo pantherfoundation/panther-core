@@ -10,13 +10,13 @@ abstract contract UniswapPoolsList {
         bool _enabled;
     }
 
-    mapping(bytes4 => Pool) public pools;
+    mapping(bytes32 => Pool) public pools;
 
     function getEnabledPoolAddress(
         address tokenA,
         address tokenB
     ) public view returns (address) {
-        bytes4 key = PoolKey.getKey(tokenA, tokenB);
+        bytes32 key = PoolKey.getKey(tokenA, tokenB);
         Pool memory pool = pools[key];
 
         require(pool._enabled, "pool is disabled");
@@ -28,7 +28,7 @@ abstract contract UniswapPoolsList {
         address _tokenA,
         address _tokenB,
         bool _enabled
-    ) internal returns (bytes4 key) {
+    ) internal returns (bytes32 key) {
         require(_pool != address(0), "addPool: zero address");
         key = PoolKey.getKey(_tokenA, _tokenB);
 
