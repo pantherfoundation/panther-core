@@ -37,12 +37,11 @@ contract ZNetworksRegistry is
 
     constructor(address self) StaticRootUpdater(self) {}
 
-    function getZNetworksRoot() external view returns (bytes32) {
+    function getZNetworksRoot() public view returns (bytes32) {
         return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
     }
 
     function addNetwork(
-        bytes32 curRoot,
         bytes32 curLeaf,
         bytes32 newLeaf,
         uint256 leafIndex,
@@ -51,7 +50,7 @@ contract ZNetworksRegistry is
         require(proofSiblings.length == SIX_LEVELS, "invalid proof length");
 
         bytes32 zNetworkTreeRoot = update(
-            curRoot,
+            getZNetworksRoot(),
             curLeaf,
             newLeaf,
             leafIndex,
