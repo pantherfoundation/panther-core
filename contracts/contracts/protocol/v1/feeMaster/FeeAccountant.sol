@@ -53,19 +53,17 @@ abstract contract FeeAccountant is IProviderFeeDebt {
         uint96 kycFee,
         uint16 protocolFeePercentage
     ) internal returns (FeeParams memory _feeParams) {
-        require(perUtxoReward > 0, "Zero per utxo reward");
-        require(perKytFee > 0, "Zero per kyt fee");
-        require(kycFee > 0, "Zero kyc fee");
         require(
             protocolFeePercentage > 0 &&
                 protocolFeePercentage < HUNDRED_PERCENT,
             "Invalid protocol fee percentage"
         );
 
+        // safeScaleDownBy1e12 check if the value is more than 1e12
         _feeParams = FeeParams({
-            scPerUtxoReward: perUtxoReward.scaleDownBy1e12().safe32(),
-            scPerKytFee: perKytFee.scaleDownBy1e12().safe32(),
-            scKycFee: kycFee.scaleDownBy1e12().safe32(),
+            scPerUtxoReward: perUtxoReward.safeScaleDownBy1e12().safe32(),
+            scPerKytFee: perKytFee.safeScaleDownBy1e12().safe32(),
+            scKycFee: kycFee.safeScaleDownBy1e12().safe32(),
             protocolFeePercentage: protocolFeePercentage
         });
 
