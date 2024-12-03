@@ -201,4 +201,6 @@ contract VaultV1 is
             UtilsLib.safe96(saltedData.extAmount)
         );
     }
+
+    receive() external payable {}
 }
