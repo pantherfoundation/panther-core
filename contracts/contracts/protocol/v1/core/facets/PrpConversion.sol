@@ -277,6 +277,21 @@ contract PrpConversion is
         address to,
         uint256 amount
     ) external onlyOwner {
+        require(token == ZKP_TOKEN, ERR_INVALID_TOKEN_ADDRESS);
+
+        uint256 zkpBalance = ZKP_TOKEN.safeBalanceOf(address(this));
+        require(zkpBalance >= amount, ERR_INSUFFICIENT_AMOUNT_OUT);
+
+        uint256 updatedZkpBalance = zkpBalance - amount;
+
+        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
+
+        uint256 prpAmountIn = getAmountIn(amount, _prpReserve, _zkpReserve);
+
+        uint256 updatedPrpVirtualBalance = _prpReserve + prpAmountIn;
+
         _claimErc20(token, to, amount);
+
+        _update(updatedPrpVirtualBalance, updatedZkpBalance);
     }
 }
