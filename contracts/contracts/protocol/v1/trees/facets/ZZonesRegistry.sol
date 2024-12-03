@@ -37,12 +37,11 @@ contract ZZonesRegistry is
 
     constructor(address self) StaticRootUpdater(self) {}
 
-    function getZZonesRoot() external view returns (bytes32) {
+    function getZZonesRoot() public view returns (bytes32) {
         return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;
     }
 
     function addZone(
-        bytes32 curRoot,
         bytes32 curLeaf,
         bytes32 newLeaf,
         uint256 leafIndex,
@@ -51,7 +50,7 @@ contract ZZonesRegistry is
         require(proofSiblings.length == SIXTEEN_LEVELS, "invalid proof length");
 
         bytes32 zZonesTreeRoot = update(
-            curRoot,
+            getZZonesRoot(),
             curLeaf,
             newLeaf,
             leafIndex,
