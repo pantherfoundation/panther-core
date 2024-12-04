@@ -185,7 +185,9 @@ contract ZAccountsRegistration is
             ERR_DUPLICATED_MASTER_EOA
         );
 
-        uint24 zAccountId = uint24(_getNextZAccountId());
+        // Note: Registration requires KYC, ensuring that users are verified and reducing the risk of scams.
+        // Therefore, using uint24 is sufficient, as the number of genuine users is expected to remain manageable.
+        uint24 zAccountId = _getNextZAccountId().safe24();
 
         ZAccount memory _zAccount = ZAccount({
             _unused: uint184(0),
@@ -457,8 +459,8 @@ contract ZAccountsRegistration is
             "ERR_ZERO_ZACCOUNT_COMMIT"
         );
         inputs[ZACCOUNT_ACTIVATION_KYC_SIGNED_MESSAGE_HASH_IND].validateNonZero(
-                "ERR_ZERO_KYC_MSG_HASH"
-            );
+            "ERR_ZERO_KYC_MSG_HASH"
+        );
     }
 
     /**
