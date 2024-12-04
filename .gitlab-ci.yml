@@ -1,5 +1,5 @@
 default:
-  image: node:16
+  image: node:20
 
 .yarn_cache_template: &yarn_cache_template
   key:
