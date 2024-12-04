@@ -194,7 +194,7 @@ template AmmV1Top ( UtxoLeftMerkleTreeDepth,
     signal rc_zAccountUtxoInNullifierPrivKey <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoInNullifierPrivKey);
     signal rc_zAccountUtxoInMasterEOA <== Uint160Tag(ACTIVE)(zAccountUtxoInMasterEOA);
     signal rc_zAccountUtxoInSpendKeyRandom <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoInSpendKeyRandom);
-    signal rc_zAccountUtxoInCommitment <== ExternalTag()(zAccountUtxoInCommitment);
+    signal rc_zAccountUtxoInCommitment <== SnarkFieldTag()(zAccountUtxoInCommitment);
     signal rc_zAccountUtxoInNullifier <== ExternalTag()(zAccountUtxoInNullifier);
     signal rc_zAccountUtxoInMerkleTreeSelector[2] <== BinaryTagArray(ACTIVE,2)(zAccountUtxoInMerkleTreeSelector);
     signal rc_zAccountUtxoInPathIndices[UtxoMerkleTreeDepth] <== BinaryTagArray(ACTIVE,UtxoMerkleTreeDepth)(zAccountUtxoInPathIndices);
