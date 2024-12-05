@@ -33,6 +33,11 @@ library SwapHandler {
         internal
         returns (bytes32[2] memory zAssetUtxos, uint256 outputAmountScaled)
     {
+        require(
+            inputs[ZSWAP_DEPOSIT_AMOUNT_IND] == 0,
+            "non-zero deposit amount"
+        );
+
         // it trusts the caller check if this input parameter is equal to vault address
         address vault = inputs[ZSWAP_KYT_WITHDRAW_SIGNED_MESSAGE_SENDER_IND]
             .safeAddress();
