@@ -46,6 +46,11 @@ const SegmentConfigs: {[key in TxType]: Segment[]} = {
         {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
         {type: MsgType.ZAccount, length: MsgLength.ZAccount},
     ],
+    [TxType.ZAccountRenewal]: [
+        {type: MsgType.CreateTime, length: MsgLength.CreateTime},
+        {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
+        {type: MsgType.ZAccount, length: MsgLength.ZAccount},
+    ],
     [TxType.PrpClaiming]: [
         {type: MsgType.CreateTime, length: MsgLength.CreateTime},
         {type: MsgType.BusTreeIds, length: MsgLength.BusTreeIds},
