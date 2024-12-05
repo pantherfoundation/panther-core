@@ -3,6 +3,7 @@
 
 export enum TxType {
     ZAccountActivation = 0x100, // Type1
+    ZAccountRenewal = 0x102, // Type??
     PrpClaiming = 0x103, // Type2
     PrpConversion = 0x104, // Type3
     ZTransaction = 0x105, // Type4
