@@ -10,6 +10,7 @@
     "build:crypto": "yarn workspace @panther-core/crypto build",
     "build:dapp:production": "yarn workspace @panther-core/dapp build:prod",
     "build:dapp:staging:internal": "yarn workspace @panther-core/dapp build:staging:internal",
+    "build:dapp:canary:internal": "yarn workspace @panther-core/dapp build:canary:internal",
     "build:graph": "yarn workspace @panther-core/subgraph codegen && yarn workspace @panther-core/subgraph build",
     "build:types": "yarn build:crypto && yarn workspace @panther-core/dapp build:types",
     "chain": "yarn workspace @panther-core/contracts chain",
