@@ -124,6 +124,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
 
         if (_releasable > contractBalance) {
             _releasable = contractBalance;
+            _scReleasable = _releasable.scaleDownBy1e12().safe64();
         }
 
         ZKP_TOKEN.safeTransfer(PANTHER_POOL, _releasable);
