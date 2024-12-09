@@ -200,12 +200,13 @@ describe('PrpVoucherController', function () {
                     VOUCHER_WITH_PREDEFINED_REWARD,
                 );
 
+            const newLimit = amount.add(amount);
             await prpVoucherController
                 .connect(owner)
                 .updateVoucherTerms(
                     allowedContract.address,
                     VOUCHER_WITH_PREDEFINED_REWARD,
-                    amount,
+                    newLimit,
                     amount,
                     true,
                 );
@@ -215,7 +216,7 @@ describe('PrpVoucherController', function () {
                 VOUCHER_WITH_PREDEFINED_REWARD,
             );
             expect(rewardTerms.rewardsGranted).to.equal(amount);
-            expect(rewardTerms.limit).to.equal(amount);
+            expect(rewardTerms.limit).to.equal(newLimit);
             expect(rewardTerms.amount).to.equal(amount);
             expect(rewardTerms.enabled).to.equal(true);
         });
