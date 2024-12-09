@@ -10,6 +10,7 @@ import "../../common/PullWithSaltHelper.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/OnERC1155Received.sol";
 import "../../common/OnERC721Received.sol";
+import "../../common/NonReentrant.sol";
 import "./errMsgs/VaultErrMsgs.sol";
 import "./vault/EthEscrow.sol";
 import "./vault/BalanceViewer.sol";
@@ -28,6 +29,7 @@ contract VaultV1 is
     OnERC1155Received,
     EthEscrow,
     BalanceViewer,
+    NonReentrant,
     IVaultV1
 {
     using TransferHelper for address;
@@ -128,7 +130,9 @@ contract VaultV1 is
     }
 
     /// @inheritdoc IVaultV1
-    function unlockAsset(LockData calldata lData) external override onlyOwner {
+    function unlockAsset(
+        LockData calldata lData
+    ) external override nonReentrant onlyOwner {
         _checkLockData(lData);
 
         if (lData.tokenType == NATIVE_TOKEN_TYPE) {
