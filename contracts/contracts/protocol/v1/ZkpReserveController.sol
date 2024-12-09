@@ -98,13 +98,13 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
         uint256 releasablePerBlock,
         uint256 minRewardedAmount
     ) external onlyOwner {
-        require(
-            releasablePerBlock > 0 && minRewardedAmount > 0,
-            ERR_INVALID_PARAMS
-        );
-
-        scReleasablePerBlock = releasablePerBlock.scaleDownBy1e12().safe64();
-        scMinRewardableAmount = minRewardedAmount.scaleDownBy1e12().safe64();
+        // safeScaleDownBy1e12 checks if the value is more than 1e12
+        scReleasablePerBlock = releasablePerBlock
+            .safeScaleDownBy1e12()
+            .safe64();
+        scMinRewardableAmount = minRewardedAmount
+            .safeScaleDownBy1e12()
+            .safe64();
 
         emit RewardParamsUpdated(releasablePerBlock, minRewardedAmount);
     }
