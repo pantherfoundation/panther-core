@@ -27,6 +27,8 @@ library ZAssetEncodingUtils {
         uint32 tokenIdRangeSize,
         uint8 scaleFactor
     ) internal pure returns (uint96) {
+        require(scaleFactor <= 19, "too high scale factor");
+
         uint64 scale = uint64((10 ** scaleFactor));
         return (uint96(tokenIdRangeSize) << 64) | scale;
     }
