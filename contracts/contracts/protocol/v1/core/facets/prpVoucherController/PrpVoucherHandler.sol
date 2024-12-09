@@ -114,8 +114,8 @@ abstract contract PrpVoucherHandler {
             .rewardsGranted;
 
         require(
-            _limit + _amount >= rewardsGenerated,
-            "PrpVoucherController: Limit cannot be less than rewards generated"
+            _limit >= _amount + rewardsGenerated,
+            "PrpVoucherController: Too low limit"
         );
 
         voucherTerms[_allowedContract][_voucherType] = VoucherTerms(
