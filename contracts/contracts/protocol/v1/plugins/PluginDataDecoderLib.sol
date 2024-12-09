@@ -61,7 +61,7 @@ library PluginDataDecoderLib {
                 shr(128, pluginData_1),
                 0xffffffffffffffffffffffff
             )
-            fee := and(shr(104, pluginData_1), 0xffffffff)
+            fee := and(shr(104, pluginData_1), 0xffffff)
 
             // skip 312 bits ( 160 (plugin) + 32(deadline) + 96(amountOutMinimum) + 24(fee) )
             let pluginData_2 := mload(add(location, add(0x20, 0x27)))
