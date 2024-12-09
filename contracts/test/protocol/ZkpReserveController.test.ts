@@ -3,7 +3,7 @@
 
 import {FakeContract, smock} from '@defi-wonderland/smock';
 import {expect} from 'chai';
-import {Contract, Signer} from 'ethers';
+import {BigNumber, Contract, Signer} from 'ethers';
 import {ethers} from 'hardhat';
 
 import abiZkpToken from './data/abi/ZKPToken.json';
@@ -60,9 +60,10 @@ describe('ZkpReserveController', function () {
     });
 
     describe('Configuration', function () {
+        const releasablePerBlock = ethers.utils.parseUnits('20', '12');
+        const minRewardableAmount = ethers.utils.parseUnits('200', '12');
+
         it('should update configuration correctly', async function () {
-            const releasablePerBlock = BigInt(20 * 1e12);
-            const minRewardableAmount = BigInt(200 * 1e12);
             await ZkpReserveController.updateParams(
                 releasablePerBlock,
                 minRewardableAmount,
@@ -81,13 +82,21 @@ describe('ZkpReserveController', function () {
         });
 
         it('should emit RewardParamsUpdated event when params are updated', async function () {
-            await expect(ZkpReserveController.updateParams(30, 300))
+            await expect(
+                ZkpReserveController.updateParams(
+                    releasablePerBlock,
+                    minRewardableAmount,
+                ),
+            )
                 .to.emit(ZkpReserveController, 'RewardParamsUpdated')
-                .withArgs(30, 300);
+                .withArgs(releasablePerBlock, minRewardableAmount);
         });
     });
 
     describe('Refill functionality', function () {
+        const releasablePerBlock = ethers.utils.parseUnits('20', '12');
+        const minRewardableAmount = ethers.utils.parseUnits('200', '12');
+
         it('should revert if there is nothing to release', async function () {
             await ZkpReserveController.connect(user)
                 .releaseZkps(ethers.utils.formatBytes32String('test'))
@@ -108,16 +117,23 @@ describe('ZkpReserveController', function () {
         });
 
         it('should not reward if released amount is below minimalRewardedAmount', async function () {
-            await ZkpReserveController.updateParams(10, 200);
+            await ZkpReserveController.updateParams(
+                releasablePerBlock,
+                minRewardableAmount,
+            );
 
             const releasableAmount = await calcReleasableAmount();
+
             await expect(ZkpReserveController.connect(user).releaseZkps(secret))
                 .to.emit(ZkpReserveController, 'ZkpReservesReleased')
                 .withArgs(secret, releasableAmount);
         });
 
         it('should reward if released amount is above minimalRewardedAmount', async function () {
-            await ZkpReserveController.updateParams(10, 5);
+            await ZkpReserveController.updateParams(
+                releasablePerBlock,
+                minRewardableAmount,
+            );
 
             const releasableAmount = await calcReleasableAmount();
             await expect(ZkpReserveController.connect(user).releaseZkps(secret))
@@ -208,9 +224,14 @@ describe('ZkpReserveController', function () {
         const currBlock = await ethers.provider.getBlockNumber();
         const params = await ZkpReserveController.getRewardStats();
 
-        const releasableAmount =
-            params._releasablePerBlock * (currBlock + 1) -
-            params._totalReleased;
+        const blockOffset = BigNumber.from(currBlock)
+            .sub(params._startBlock)
+            .add(1);
+
+        const releasableAmount = params._releasablePerBlock
+            .mul(blockOffset)
+            .sub(params._totalReleased);
+
         return releasableAmount;
     }
 });
