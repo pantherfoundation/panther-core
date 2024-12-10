@@ -26,6 +26,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
     using UtilsLib for uint256;
     using UtilsLib for uint64;
 
+    uint256 public immutable START_BLOCK;
     uint256 public constant SCALE = 1e12;
     address public immutable ZKP_TOKEN;
     address public immutable PANTHER_POOL;
@@ -33,12 +34,15 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
     uint64 private scReleasablePerBlock;
     uint64 private scMinRewardableAmount;
     uint64 private scTotalReleased;
-    uint64 private startBlock;
+    uint64 private scAccumulatedAccrual;
+
+    uint32 private blockAtLastUpdate; // Will remain 0 until first updateParams call
 
     event ZkpReservesReleased(bytes32 saltHash, uint256 amount);
     event RewardParamsUpdated(
         uint256 releasablePerBlock,
-        uint256 minRewardableAmount
+        uint256 minRewardableAmount,
+        uint256 blockAtLastUpdate
     );
     event ZkpRescued(address to, uint256 amount);
 
@@ -60,8 +64,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
 
         ZKP_TOKEN = _zkpToken;
         PANTHER_POOL = _pantherPool;
-
-        startBlock = block.number.safe64();
+        START_BLOCK = block.number;
     }
 
     function getRewardStats()
@@ -71,13 +74,15 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
             uint256 _releasablePerBlock,
             uint256 _minRewardableAmount,
             uint256 _totalReleased,
-            uint256 _startBlock
+            uint256 _blockAtLastUpdate,
+            uint256 _scAccumulatedAccrual
         )
     {
         _releasablePerBlock = scReleasablePerBlock.scaleUpBy1e12();
         _minRewardableAmount = scMinRewardableAmount.scaleUpBy1e12();
         _totalReleased = scTotalReleased.scaleUpBy1e12();
-        _startBlock = startBlock;
+        _blockAtLastUpdate = blockAtLastUpdate;
+        _scAccumulatedAccrual = scAccumulatedAccrual.scaleUpBy1e12();
     }
 
     /**
@@ -98,7 +103,21 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
         uint256 releasablePerBlock,
         uint256 minRewardedAmount
     ) external onlyOwner {
-        // safeScaleDownBy1e12 checks if the value is more than 1e12
+        uint32 currentBlock = block.number.safe32();
+
+        if (blockAtLastUpdate == 0) {
+            // First updateParams call
+            blockAtLastUpdate = currentBlock;
+            scAccumulatedAccrual = 0;
+        } else {
+            // finalize old accrual and start a new accrual period
+            uint64 blockOffset = currentBlock - blockAtLastUpdate;
+            uint64 scOldAccrual = scReleasablePerBlock * blockOffset;
+
+            scAccumulatedAccrual += scOldAccrual;
+            blockAtLastUpdate = currentBlock;
+        }
+
         scReleasablePerBlock = releasablePerBlock
             .safeScaleDownBy1e12()
             .safe64();
@@ -106,7 +125,11 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
             .safeScaleDownBy1e12()
             .safe64();
 
-        emit RewardParamsUpdated(releasablePerBlock, minRewardedAmount);
+        emit RewardParamsUpdated(
+            releasablePerBlock,
+            minRewardedAmount,
+            blockAtLastUpdate
+        );
     }
 
     /**
@@ -116,7 +139,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
      * @param saltHash A unique hash value used to distinguish between different refill actions.
      */
     function releaseZkps(bytes32 saltHash) external {
-        uint64 contractBalance = uint64(ZKP_TOKEN.safeBalanceOf(address(this)));
+        uint256 contractBalance = ZKP_TOKEN.safeBalanceOf(address(this));
         require(contractBalance > 0, "no zkp is available");
 
         uint64 _scReleasable = _scReleasableAmount();
@@ -149,9 +172,22 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
      * scaled by 1e12
      */
     function _scReleasableAmount() private view returns (uint64) {
-        uint64 blockOffset = block.number.safe64() - startBlock;
+        // If no updateParams call has been made yet, no accrual starts.
+        if (blockAtLastUpdate == 0) {
+            return 0;
+        }
 
-        return (scReleasablePerBlock * blockOffset) - scTotalReleased;
+        uint64 currentBlock = block.number.safe64();
+        uint64 blockOffset = currentBlock - blockAtLastUpdate;
+
+        uint64 scTotalAccrued = scAccumulatedAccrual +
+            (scReleasablePerBlock * blockOffset);
+
+        if (scTotalAccrued <= scTotalReleased) {
+            return 0;
+        }
+
+        return scTotalAccrued - scTotalReleased;
     }
 
     /**
