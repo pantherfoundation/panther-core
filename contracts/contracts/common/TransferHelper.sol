@@ -210,7 +210,10 @@ library TransferHelper {
     function safeContractBalance(
         address _contract
     ) internal view returns (uint256) {
-        isDeployedContract(_contract);
+        require(
+            isDeployedContract(_contract),
+            "TransferHelper: Only contract address"
+        );
         return _contract.balance;
     }
 
