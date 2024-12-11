@@ -87,7 +87,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     signal input {sub_order_bj_sf}  zAccountUtxoInNullifierPrivKey;
     signal input {uint160}          zAccountUtxoInMasterEOA;
     signal input {sub_order_bj_sf}  zAccountUtxoInSpendKeyRandom;
-    signal input {external}         zAccountUtxoInCommitment; // public
+    signal input {snark_ff}         zAccountUtxoInCommitment;
     signal input {external}         zAccountUtxoInNullifier;  // public
     signal input {binary}           zAccountUtxoInMerkleTreeSelector[2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
     signal input {binary}           zAccountUtxoInPathIndices[UtxoMerkleTreeDepth];
@@ -282,7 +282,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     component zAccountUtxoInHasherProver = ForceEqualIfEnabled();
     zAccountUtxoInHasherProver.in[0] <== zAccountUtxoInCommitment;
     zAccountUtxoInHasherProver.in[1] <== zAccountUtxoInNoteHasher.out;
-    zAccountUtxoInHasherProver.enabled <== zAccountUtxoInCommitment;
+    zAccountUtxoInHasherProver.enabled <== zAccountUtxoInNullifier;
 
     // [6] - Verify zAccountUtxoIn membership
     component zAccountUtxoInMerkleVerifier = MerkleTreeInclusionProofDoubleLeavesSelectable(UtxoLeftMerkleTreeDepth,UtxoMiddleExtraLevels,UtxoRightExtraLevels);
