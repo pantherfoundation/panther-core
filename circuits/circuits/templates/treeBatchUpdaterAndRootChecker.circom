@@ -116,7 +116,7 @@ template TreeBatchUpdaterAndRootChecker(
     batchRoot === batch.root;
 
     // Protect extraInput from cheating
-    extraInput === extraInput * 1;
+    extraInput === extraInput * 0;
 
     // Work-around for recently found groth16 vulnerability
     assert(magicalConstraint != 0);
