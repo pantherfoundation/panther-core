@@ -4,19 +4,16 @@
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import {poseidon} from 'circomlibjs';
 import type {BigNumberish} from 'ethers';
-import {BigNumber, ethers} from 'ethers';
+import {BigNumber} from 'ethers';
 
 import {encodeTokenTypeAndAddress} from '../../test/protocol/helpers/pantherPoolV1Inputs';
 import {pantherCoreZeroLeaf} from '../utilities';
 
-const zkpToken = '0x9C56E89D8Aa0d4A1fB769DfbEa80D6C29e5A2893'; //Internal zkp token address
-const linkToken = '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60';
-const amoyNetworkId = 2;
+import {tokenDetails, NetworkType} from './staticTreeConfig';
 
 function zAssetBatchId(batchIndex: number): bigint {
     // note: 32 LS bits are unused and should be zero that's why we are
     // doing left shift by 32 bits
-    console.log('batch id', BigInt(batchIndex) << 32n);
     return BigInt(batchIndex) << 32n;
 }
 
@@ -42,52 +39,35 @@ type ZAsset = {
     decimals: number;
 };
 
-export const leafs: ZAsset[] = [
-    // zZKP
-    {
-        zAssetbatchId: zAssetBatchId(0),
-        zAssetId: zAssetBatchId(0),
-        // zkp token on amoy
-        token: BigInt(zkpToken),
-        startTokenId: 0,
-        tokenAddrAndType: encodeTokenTypeAndAddress(0, zkpToken),
-        network: amoyNetworkId,
-        tokenIdsRangeSize: 0n,
-        weight: 100,
-        scale: BigInt(1e14),
-        decimals: 18,
-    },
-    // zMatic on amoy
-    {
-        zAssetbatchId: zAssetBatchId(1),
-        zAssetId: zAssetBatchId(1),
-        // MUST be 0 for the native token on all networks
-        token: ethers.constants.AddressZero,
-        startTokenId: 0,
-        tokenAddrAndType: encodeTokenTypeAndAddress(
-            0xff,
-            ethers.constants.AddressZero,
-        ),
-        network: amoyNetworkId,
-        tokenIdsRangeSize: 0n,
-        weight: 5000,
-        scale: BigInt(1e14),
-        decimals: 18,
-    },
-    {
-        zAssetbatchId: zAssetBatchId(2),
-        zAssetId: zAssetBatchId(2),
-        // Link token on amoy
-        token: BigInt(linkToken),
-        startTokenId: 0,
-        tokenAddrAndType: encodeTokenTypeAndAddress(0, linkToken),
-        network: amoyNetworkId,
-        tokenIdsRangeSize: 0n,
-        weight: 1400,
-        scale: BigInt(1e12),
-        decimals: 18,
-    },
-];
+function createLeafs(networkType: NetworkType): ZAsset[] {
+    return Object.entries(tokenDetails[networkType]).map(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ([key, value], index) => {
+            const {address, weight, scale, decimals, type, networkId} = value;
+            const zAssetbatchId = zAssetBatchId(index);
+            const tokenAddrAndType = encodeTokenTypeAndAddress(
+                type === 'Native' ? 0xff : 0,
+                address,
+            );
+
+            return {
+                zAssetbatchId,
+                zAssetId: zAssetbatchId,
+                token: type === 'Native' ? address : BigInt(address),
+                startTokenId: 0,
+                tokenAddrAndType,
+                network: networkId,
+                tokenIdsRangeSize: 0n,
+                weight,
+                scale,
+                decimals,
+            };
+        },
+    );
+}
+
+export const leafs = (networkType: NetworkType): ZAsset[] =>
+    createLeafs(networkType);
 
 export class ZAssetsRegistry {
     leafs: ZAsset[];
