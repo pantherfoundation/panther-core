@@ -36,6 +36,8 @@ contract AppConfiguration is AppStorage, Ownable {
         uint16 txType,
         uint160 circuitId
     ) external onlyOwner {
+        require(circuitId != 0, "Zero circuit id");
+
         circuitIds[txType] = circuitId;
         emit CircuitIdUpdated(txType, circuitId);
     }
@@ -51,6 +53,10 @@ contract AppConfiguration is AppStorage, Ownable {
     function updateMaxBlockTimeOffset(
         uint32 _maxBlockTimeOffset
     ) external onlyOwner {
+        require(
+            _maxBlockTimeOffset <= 60 minutes,
+            "Too high block time offset"
+        );
         maxBlockTimeOffset = _maxBlockTimeOffset;
 
         emit MaxBlockTimeOffsetUpdated(_maxBlockTimeOffset);

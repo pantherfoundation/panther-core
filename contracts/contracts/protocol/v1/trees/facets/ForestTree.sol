@@ -55,6 +55,11 @@ contract ForestTree is
         PantherPoolAuth(utxoInserter)
     {}
 
+    modifier isInitialized() {
+        require(forestRoot != bytes32(0), "FT: Not initialized");
+        _;
+    }
+
     modifier nonZeroUtxosLength(bytes32[] memory utxos) {
         require(utxos.length != 0, "FT: empty utxos");
         _;
@@ -207,6 +212,7 @@ contract ForestTree is
     )
         external
         onlyPantherPool
+        isInitialized
         nonZeroUtxosLength(utxos)
         checkPantherTreesRoots(
             cachedForestRootIndex,
@@ -258,7 +264,7 @@ contract ForestTree is
         uint32 queueId,
         uint256[] memory inputs,
         SnarkProof memory proof
-    ) external {
+    ) external isInitialized {
         // No queue will be exist before initializing
 
         bytes32 busTreeNewRoot = _onboardQueueAndAccountReward(

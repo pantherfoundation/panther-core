@@ -73,6 +73,11 @@ abstract contract RingBufferTree is EightLevelZeroTree {
         uint256 leafIndex,
         bytes32 leaf
     ) internal returns (bytes32 newRoot) {
+        require(
+            leafIndex <= MAX_LEAF_INDEX,
+            "RingBufferTree: too high leaf index"
+        );
+
         bool isLeftLeaf = leafIndex & 1 == 0;
 
         // leaves level

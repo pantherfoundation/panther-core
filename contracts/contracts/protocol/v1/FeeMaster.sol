@@ -139,6 +139,12 @@ contract FeeMaster is
         uint16 _treasuryLockPercentage,
         uint96 _minRewardableZkpAmount
     ) external onlyOwner {
+        require(
+            _treasuryLockPercentage <= HUNDRED_PERCENT,
+            "too high treasury lock percentage"
+        );
+        require(_minRewardableZkpAmount > 0, "zero min rewardable amount");
+
         treasuryLockPercentage = _treasuryLockPercentage;
         minRewardableZkpAmount = _minRewardableZkpAmount;
 
