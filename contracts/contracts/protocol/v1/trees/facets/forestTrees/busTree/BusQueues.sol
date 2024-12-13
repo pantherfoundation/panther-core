@@ -229,8 +229,7 @@ abstract contract BusQueues is DegenerateIncrementalBinaryTree {
         uint16 minEmptyQueueAge
     ) internal {
         require(
-            reservationRate <= HUNDRED_PERCENT &&
-                premiumRate <= HUNDRED_PERCENT,
+            reservationRate < HUNDRED_PERCENT && premiumRate < HUNDRED_PERCENT,
             "BQ:INVALID_PARAMS"
         );
         _reservationRate = reservationRate;
