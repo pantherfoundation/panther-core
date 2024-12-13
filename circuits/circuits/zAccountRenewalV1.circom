@@ -407,6 +407,13 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     kycSignedMessageHashIsEqual.in[0] <== kycSignedMessageHash;
     kycSignedMessageHashIsEqual.in[1] <== kycSignedMessageHashInternal.out;
 
+    // [11.1] - Verify KYC certificate provided is not expired
+    // kycSignedMessageTimestamp + zZoneKycExpiryTime >= zAccountCreateTime
+    component isExpiredKYC = LessEqThanWhenEnabled(252);
+    isExpiredKYC.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
+    isExpiredKYC.in[0] <== zAccountUtxoOutCreateTime;
+    isExpiredKYC.in[1] <== kycSignedMessageTimestamp + zZoneKycExpiryTime;
+
     // [12] - Verify kycEdDSA public key membership
     component kycKycNoteInclusionProver = TrustProvidersNoteInclusionProver(TrustProvidersMerkleTreeDepth);
     kycKycNoteInclusionProver.enabled <== iskycSignedMessageHashIsEqualEnabled.out;
