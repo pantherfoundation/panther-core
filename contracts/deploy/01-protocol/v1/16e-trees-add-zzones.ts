@@ -29,27 +29,35 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     for (const input of inputs) {
         const {currentRoot, currentLeaf, newLeaf, leafIndex, proofSiblings} =
             input;
+        const zZonesRoot = await diamond.getZZonesRoot();
 
-        const tx = await diamond.addZone(
-            currentRoot,
-            currentLeaf,
-            newLeaf,
-            leafIndex,
-            proofSiblings,
-            {
-                gasPrice: GAS_PRICE,
-            },
-        );
+        if (zZonesRoot === currentRoot) {
+            const tx = await diamond.addZone(
+                currentLeaf,
+                newLeaf,
+                leafIndex,
+                proofSiblings,
+                {
+                    gasPrice: GAS_PRICE,
+                },
+            );
 
-        const res = await tx.wait();
-        const newRoot = await diamond.getZZonesRoot();
+            const res = await tx.wait();
+            const newRoot = await diamond.getZZonesRoot();
 
-        console.log(
-            `zzone is added with tx hash ${res.transactionHash}, new zZone root is ${newRoot}`,
-        );
+            console.log(
+                `zzone is added with tx hash ${res.transactionHash}, new zZone root is ${newRoot}`,
+            );
+        } else {
+            console.log('The zZoneRoot does not match the current root');
+        }
     }
 };
 export default func;
 
 func.tags = ['add-zzones', 'trees', 'protocol-v1'];
-func.dependencies = ['add-zzone-registry', 'add-static-tree'];
+func.dependencies = [
+    'add-zzone-registry',
+    'add-static-tree',
+    'init-static-root',
+];

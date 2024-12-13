@@ -33,26 +33,35 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const {currentRoot, currentLeaf, newLeaf, leafIndex, proofSiblings} =
             input;
 
-        const tx = await diamond.addNetwork(
-            currentRoot,
-            currentLeaf,
-            newLeaf,
-            leafIndex,
-            proofSiblings,
-            {
-                gasPrice: GAS_PRICE,
-            },
-        );
+        const zNetworkRoot = await diamond.getZNetworksRoot();
 
-        const res = await tx.wait();
-        const newRoot = await diamond.getStaticRoot();
+        if (zNetworkRoot === currentRoot) {
+            const tx = await diamond.addNetwork(
+                currentLeaf,
+                newLeaf,
+                leafIndex,
+                proofSiblings,
+                {
+                    gasPrice: GAS_PRICE,
+                },
+            );
 
-        console.log(
-            `znetwork is added with tx hash ${res.transactionHash}, new zNetwork root is ${newRoot}`,
-        );
+            const res = await tx.wait();
+            const newRoot = await diamond.getZNetworksRoot();
+
+            console.log(
+                `znetwork is added with tx hash ${res.transactionHash}, new zNetwork root is ${newRoot}`,
+            );
+        } else {
+            console.log('The zNetworkRoot does not match the current root');
+        }
     }
 };
 export default func;
 
 func.tags = ['add-znetworks', 'trees', 'protocol-v1'];
-func.dependencies = ['add-znetworks-registry', 'add-static-tree'];
+func.dependencies = [
+    'add-znetworks-registry',
+    'add-static-tree',
+    'init-static-root',
+];
