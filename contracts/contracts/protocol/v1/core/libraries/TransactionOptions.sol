@@ -17,6 +17,6 @@ library TransactionOptions {
     ) internal pure returns (bool) {
         // The 1 MSB contains the TaxiEnabler
 
-        return (transactionOptions >> 16) == 1;
+        return (transactionOptions >> 16) & 1 == 1;
     }
 }
