@@ -233,6 +233,8 @@ abstract contract FeeAccountant is IProviderFeeDebt {
                 NATIVE_TOKEN,
                 int256(paymasterDebtInNative)
             );
+
+            paymasterFeeInNative = paymasterDebtInNative;
         }
     }
 
