@@ -48,7 +48,9 @@ abstract contract PrpVoucherHandler {
         uint64 prpToGrant = _amount > 0 ? _amount : voucherTerm.amount;
 
         if (voucherTerm.rewardsGranted + prpToGrant > voucherTerm.limit)
-            return 0;
+            prpToGrant = voucherTerm.limit - voucherTerm.rewardsGranted;
+
+        if (prpToGrant == 0) return prpToGrant;
 
         // we are setting the balance to non-zero to save gas
         if (balance[_secretHash] > ZERO_VALUE) {
