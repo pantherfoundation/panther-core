@@ -21,6 +21,8 @@ import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 import "../libraries/ZAssetUtxoGenerator.sol";
 
+import "../../../../common/NonReentrant.sol";
+
 /**
  * @title ZSwap
  * @notice The ZSwap contract facilitates the swapping of zAssets within the Panther ecosystem,
@@ -33,7 +35,8 @@ contract ZSwap is
     Ownable,
     Verifier,
     TransactionNoteEmitter,
-    TransactionChargesHandler
+    TransactionChargesHandler,
+    NonReentrant
 {
     using SwapHandler for address;
     using UtxosInserter for address;
@@ -100,7 +103,7 @@ contract ZSwap is
         uint96 paymasterCompensation,
         bytes memory swapData,
         bytes calldata privateMessages
-    ) external returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         _validateExtraInputs(
             inputs[ZSWAP_EXTRA_INPUTS_HASH_IND],
             transactionOptions,
