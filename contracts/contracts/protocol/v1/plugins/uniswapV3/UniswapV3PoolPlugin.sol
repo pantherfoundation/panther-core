@@ -52,7 +52,7 @@ contract UniswapV3PoolPlugin {
             .getTokenTypeAndAddress();
 
         (uint8 tokenOutType, address tokenOutAddress) = pluginData
-            .tokenInTypeAndAddress
+            .tokenOutTypeAndAddress
             .getTokenTypeAndAddress();
 
         if (tokenInType == NATIVE_TOKEN_TYPE) {
