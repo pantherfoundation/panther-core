@@ -48,11 +48,11 @@ describe('RingBufferRootCache', function () {
 
         const cacheStats = await cachedRoots.getCacheStats();
         const isCached = await cachedRoots.isCachedRoot(
-            ethers.utils.hexlify(forestRoot),
+            ethers.utils.hexZeroPad(ethers.utils.hexlify(forestRoot), 32),
             0xffff,
         );
         const isCachedWithDefinedIndex = await cachedRoots.isCachedRoot(
-            ethers.utils.hexlify(forestRoot),
+            ethers.utils.hexZeroPad(ethers.utils.hexlify(forestRoot), 32),
             cacheIndex,
         );
 
