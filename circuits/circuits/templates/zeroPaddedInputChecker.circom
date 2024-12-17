@@ -2,11 +2,15 @@
 pragma circom 2.1.9;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
 
 // Enforces that for `i >= nInputs` all inputs[i] are zero values
 template ZeroPaddedInputChecker(max_nInputs, zeroValue){
     signal input inputs[max_nInputs];
     signal input nInputs;
+
+    component n2b_nInputs = Num2Bits(252);
+    n2b_nInputs.in <== nInputs;
 
     assert(max_nInputs<=252);
     component isMax_nInputsLessOrEqualTo252;
