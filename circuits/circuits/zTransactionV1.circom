@@ -25,9 +25,9 @@ template ZTransactionV1( nUtxoIn,
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
     // main data-escrow
-    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
-    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     // dao data-escrow
     var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ template ZTransactionV1( nUtxoIn,
     //      1) deposit only tx
     //      2) deposit & zAccount::zkpAmount
     //      3) deposit & zAccount::zkpAmount & withdraw
-    //      4) deposit & withrdaw
+    //      4) deposit & withdraw
     signal input utxoInSpendPrivKey[nUtxoIn];
     signal input utxoInSpendKeyRandom[nUtxoIn];
     signal input utxoInAmount[nUtxoIn];
@@ -145,8 +145,8 @@ template ZTransactionV1( nUtxoIn,
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneSealing;
 
-    signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
-    signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
+    signal input zZoneDataEscrowEncryptedMessage[zZoneDataEscrowEncryptedPoints]; // public
+    signal input zZoneDataEscrowEncryptedMessageHmac; // public
 
     // KYC-KYT
     // to switch-off:
@@ -204,8 +204,8 @@ template ZTransactionV1( nUtxoIn,
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
-    signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
-    signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
+    signal input dataEscrowEncryptedMessage[dataEscrowEncryptedPoints]; // public
+    signal input dataEscrowEncryptedMessageHmac; // public
 
     // dao data escrow
     signal input daoDataEscrowPubKey[2];
@@ -213,8 +213,8 @@ template ZTransactionV1( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx; // public
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
-    signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
+    signal input daoDataEscrowEncryptedMessage[daoDataEscrowEncryptedPoints]; // public
+    signal input daoDataEscrowEncryptedMessageHmac; // public
 
     // output 'zAsset UTXOs'
     // to switch-off:
@@ -391,8 +391,8 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1.zZoneZAccountIDsBlackList <== zZoneZAccountIDsBlackList;
     zTransactionV1.zZoneMaximumAmountPerTimePeriod <== zZoneMaximumAmountPerTimePeriod;
     zTransactionV1.zZoneTimePeriodPerMaximumAmount <== zZoneTimePeriodPerMaximumAmount;
-    zTransactionV1.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
-    zTransactionV1.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+    zTransactionV1.zZoneDataEscrowEncryptedMessage <== zZoneDataEscrowEncryptedMessage;
+    zTransactionV1.zZoneDataEscrowEncryptedMessageHmac <== zZoneDataEscrowEncryptedMessageHmac;
     zTransactionV1.zZoneSealing <== zZoneSealing;
 
     zTransactionV1.kytEdDsaPubKey <== kytEdDsaPubKey;
@@ -444,16 +444,16 @@ template ZTransactionV1( nUtxoIn,
     zTransactionV1.dataEscrowPathElements <== dataEscrowPathElements;
     zTransactionV1.dataEscrowPathIndices <== dataEscrowPathIndices;
 
-    zTransactionV1.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
-    zTransactionV1.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+    zTransactionV1.dataEscrowEncryptedMessage <== dataEscrowEncryptedMessage;
+    zTransactionV1.dataEscrowEncryptedMessageHmac <== dataEscrowEncryptedMessageHmac;
 
     zTransactionV1.daoDataEscrowPubKey <== daoDataEscrowPubKey;
     zTransactionV1.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
     zTransactionV1.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
     zTransactionV1.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
 
-    zTransactionV1.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
-    zTransactionV1.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+    zTransactionV1.daoDataEscrowEncryptedMessage <== daoDataEscrowEncryptedMessage;
+    zTransactionV1.daoDataEscrowEncryptedMessageHmac <== daoDataEscrowEncryptedMessageHmac;
 
     zTransactionV1.utxoOutCreateTime <== utxoOutCreateTime;
     zTransactionV1.utxoOutAmount <== utxoOutAmount;

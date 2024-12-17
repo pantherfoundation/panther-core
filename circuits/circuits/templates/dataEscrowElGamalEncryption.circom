@@ -7,64 +7,67 @@ include "../../node_modules/circomlib/circuits/babyjub.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../node_modules/circomlib/circuits/gates.circom";
 
 // NOTE-1:
-// ** 1. Tx sender computes **
+// ************** 0. Three parties are involved in the data escrow encryption **************
+// 1. DataEscrow - PubKeyEscrow = privKeyEscrow * Base8
+// 2. Dao - PubKeyDao = privKeyDao * Base8
+// 3. Zone - PubKeyZone = privKeyZone * Base8
+//
+// ************** 1. Tx sender computes **************
 // Two ephemeral keys to be published (in clear)
 // EphemeralKeyDao = randomDao * Base8
 // EphemeralKeyZone = randomZone * Base8
-// This key won't be published:
-// instead, it will be encrypted for the DaoController and the ZoneController,
-// and the (two) cipertext(s) will be published
-// EphemeralKeyEsc = randomEsc * Base8
+// This key `EphemeralKeyEscrow` won't be published,
+// instead, it will be encrypted for the Dao operator and the Zone operator,
+// and the (two) ciphertext(s) will be published
+// EphemeralKeyEscrow = randomEscrow * Base8
 // SharedSecretDao = randomDao * PubKeyDao
 // SharedSecretZone = randomZone * PubKeyZone
-// MsgDao = MsgZone = EphemeralKeyEsc
-// CiphertextDao = MsgDao + SharedSecretDao
-// CiphertextZone = MsgZone + SharedSecretZone
-// SharedKeyEsc[0] = randomEsc * PubKeyEsc
-// CiphertextEsc[0] = Msg[0] + SharedKeyEsc[0]
-// for (i = 1; i<n; i++)
-//  SharedKeyEsc[i] = poseidon(SharedKeyEsc[i-1].x, SharedKeyEsc[i-1].y) * Base8
-//  CiphertextEsc[i] = Msg[i] + SharedKeyEsc[i]
-// ** 2. Tx sender publishes (as tx data) **
-//    EphemeralKeyDao, CiphertextDao, EphemeralKeyZone, CiphertextZone, CiphertextEsc[0..n]
-// ** 3. If needed, either the DaoController or the ZoneController **
-//       computes and shares EphemeralKeyEsc with the EscOperator
-// if the DaoController does it
-// SharedSecretDao = privKeyDao * EphemeralKeyDao
-// EphemeralKeyEsc = CiphertextDao + -SharedSecretDao
-// if the ZoneController does it
-// SharedSecretZone = privKeyZone * EphemeralKeyZone
-// EphemeralKeyEsc = CiphertextZone + -SharedSecretZone
-// ** 4. If needed, the EscOperator decrypts Msg[0..n] **
-// SharedKeyEsc[0] = privKeyEsc * EphemeralKeyEsc
-// Msg[0] = CiphertextEsc[0] + -SharedKeyEsc[0]
-// for (i = 1; i<n; i++)
-//   SharedKeyEsc[i] = poseidon(SharedKeyEsc[i-1].x, SharedKeyEsc[i-1].y) * Base8
-//   Msg[i] = CiphertextEsc[i] + -SharedKeyEsc[i]
-// Fix - Hiding Point
-//// For the sender
-// SharedKeyEsc[0] = randomEsc * PubKeyEsc
-// HidingPoint = ls252bits(poseidon(SharedKeyEsc[0].x, SharedKeyEsc[0].y)) * PubKeyEsc
-// CiphertextEsc[0] = Msg[0] + SharedKeyEsc[0] + HidingPoint
-// for (i = 1; i<n; i++)
-//   SharedKeyEsc[i] = ls252bits(poseidon(SharedKeyEsc[i-1].x, SharedKeyEsc[i-1].y)) * Base8
-//   CiphertextEsc[i] = Msg[i] + SharedKeyEsc[i] + HidingPoint
+// MsgDao = MsgZone = EphemeralKeyEscrow (X)
+// SharedKeyEscrow = randomEscrow * PubKeyEscrow
 //
-//// For the safe operator
-// SharedKeyEsc[0] = privKeyEsc * EphemeralKeyEsc
-// HidingPoint = ls252bits(poseidon(SharedKeyEsc[0].x, SharedKeyEsc[0].y)) * PubKeyEsc
-// Msg[0] = CiphertextEsc[0] + -SharedKeyEsc[0] + -HidingPoint
-// for (i = 1; i<n; i++)
-//   SharedKeyEsc[i] = ls252bits(poseidon(SharedKeyEsc[i-1].x, SharedKeyEsc[i-1].y)) * Base8
-//   Msg[i] = CiphertextEsc[i] + -SharedKeyEsc[i] + -HidingPoint
-
+// k-seed = Poseidon( SharedKeyEscrow )
+// for (i = 0; i < n; i++) {
+//   CiphertextEsc[i] = Msg[i] + Poseidon( k-seed, i );
+// }
+//
+// ************** 2. Tx sender publishes (as tx data) **************
+//    1. EphemeralKeyDao (X)
+//    2. CiphertextDao
+//    3. CiphertextDaoHMAC
+//    3. EphemeralKeyZone (X)
+//    4. CiphertextZone
+//    5. CiphertextZoneHMAC
+//    5. CiphertextEscrow[0..n]
+//    6. CiphertextEscrowHMAC
+//
+// ************** 3. If needed, either the DaoController or the ZoneController **************
+//       computes and shares EphemeralKeyEscrow with the EscrowOperator
+//
+// If the DaoController does it
+// SharedSecretDao = privKeyDao * EphemeralKeyDao
+// k-seed = Poseidon( SharedSecretDao )
+// EphemeralKeyEscrow = CiphertextDao - Invert ( Poseidon ( k-seed, 0 ) )
+//
+// If the ZoneController does it
+// SharedSecretZone = privKeyZone * EphemeralKeyZone
+// k-seed = Poseidon( SharedSecretZone )
+// EphemeralKeyEscrow = CiphertextZone - Invert ( Poseidon ( k-seed, 0 ) )
+//
+// ************** 4. If needed, the EscrowOperator decrypts Msg[0..n] **************
+// SharedKeyEscrow = privKeyEscrow * EphemeralKeyEscrow
+// k-seed = Poseidon( SharedKeyEscrow )
+// for (i = 0; i < n; i++) {
+//   Msg[i] = CiphertextEscrow[i] - Invert( Poseidon( k-seed, i ) )
+// }
+//
 // NOTE-2:
 // The scalar multiplication functions from circomlib accept scalar factors
 // of up to 252 bits maximum.
 //
-// Since `n` (Baby Jubjub order) has 254 bits, not all valid scalar factors,
+// Since `n` (Baby JubJub order) has 254 bits, not all valid scalar factors,
 // which are less than n but has 253 bits and more, may be scalar factors for
 // circomlib scalar multiplication functions.
 // Moreover, since `n > SNARK_FIELD`, scalar factors greater than SNARK_FIELD
@@ -75,368 +78,335 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 // having more than 252 bits may be computed by 2 scalar multiplication and
 // one point addition: for `m=l+i`, where l is the suborder, `m*G=l*G+i*G`).
 //
-// This is not a problem, however, for the Baby Jubjub subgroup, which has
+// This is not a problem, however, for the BabyJubJub subgroup, which has
 // the order being the number of 251 bits. In other words, any point in the
 // subgroup may be generated (from Base8) by a single scalar multiplication.
 
-template DataEscrowElGamalEncryption(PaddingPointsSize, ScalarsSize, PointsSize) {
+// NOTE-3:
+//    Encryption Process
+//    The data escrow encryption process is as follows:
+//    ** Step 1 **
+//    First, generate a shared Diffie Hellman key KDH on the BabyJubJub curve, where one of the
+//    Diffie-Hellman public keys is an ephemeral key. (Note that in other documentation, KDH may
+//    be represented by SharedKeyEsc, and is computed as: SharedKeyEsc = randomEsc *
+//    PubKeyEsc, but the nomenclature is simplified here for the reason of brevity.)
+//    ** Step 2 **
+//    Then, from KDH, ‘extract’ a key K-seed as follows:
+//    K-seed=H(KDH),
+//    where H is a hash function (Poseidon).
+//    ** Step 3 **
+//    For a message represented as s+1 blocks (field elements), each message block mi is
+//    encrypted as:
+//    ci = mi + H(K-seed, i)
+//    where i=0, …,s, H is the Poseidon hash function, the plaintext ‘block’ mi is a field element in
+//    the base field of BabyJubJub, and the multiplication is performed in the same field.
+//    The ciphertext C consists of the blocks c0, …,cs.
+//    ** Step 4 **
+//    For some fixed t>s, let K-MAC=H(K-seed, t).
+//    Compute HMAC = Hash ( K-MAC-Outer, Hash( K-MAC-Inner, C ) )
+//    Where:
+//    1) K-MAC-Outer = K-MAC XOR Outer-Pad
+//       Outer-Pad = 0x5C (repeated up-to 254 bits) - b`01011100
+//    2) K-MAC-Inner = K-MAC XOR Inner-Pad
+//       Inner-Pad = 0x36 (repeated up-to 254 bits) - b`00110110
+//    HMAC is included as a public parameter in the proof.
+//    ** Verification **
+//    It is necessary that the HMAC value is verified before attempting decryption.
+
+template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     signal input {sub_order_bj_sf} ephemeralRandom;                               // randomness
-    signal input {uint64}          scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
+    signal input {snark_ff}        scalarMessage[ScalarsSize];                    // scalars up to 64 bit data to encrypt
     signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
     signal input {sub_order_bj_p}  pubKey[2];                                     // public key (assumed to be priv-key * B8)
     signal output {sub_order_bj_p} ephemeralPubKey[2];                            // ephemeral public-key
 
-    var EncryptedPointsSize = PaddingPointsSize + ScalarsSize + PointsSize;
-    signal output                  encryptedMessage[EncryptedPointsSize][2];      // encrypted data
-    signal output                  encryptedMessageHash;                          // multi-poseidon hash
+    var EncryptedDataSize = ScalarsSize + PointsSize;
+    signal output                  encryptedMessage[EncryptedDataSize];           // encrypted data
+    signal output                  encryptedMessageHash;                          // poseidon hash of encrypted data
+    signal output                  hmac;                                          // hmac
 
-    assert(PaddingPointsSize >= 0);
     assert(ScalarsSize > 0);
     assert(PointsSize > 0);
 
     // [0] - Create ephemeral public key
-    component ephemeralPubKeyBuilder = EphemeralPubKeysBuilder(EncryptedPointsSize);
-    ephemeralPubKeyBuilder.pubKey[0] <== pubKey[0];
-    ephemeralPubKeyBuilder.pubKey[1] <== pubKey[1];
+    component ephemeralPubKeyBuilder = EphemeralPubKeysBuilder();
+    ephemeralPubKeyBuilder.pubKey <== pubKey;
     ephemeralPubKeyBuilder.ephemeralRandom <== ephemeralRandom;
+    // ephemeralPubKey output
+    ephemeralPubKey <== ephemeralPubKeyBuilder.ephemeralPubKey;
 
-    ephemeralPubKey[0] <== ephemeralPubKeyBuilder.ephemeralPubKey[0][0];
-    ephemeralPubKey[1] <== ephemeralPubKeyBuilder.ephemeralPubKey[0][1];
+    // [1] - create k-seed
+    component kSeed = Poseidon(2);
+    kSeed.inputs[0] <== ephemeralPubKeyBuilder.sharedPubKey[0];
+    kSeed.inputs[1] <== ephemeralPubKeyBuilder.sharedPubKey[1];
 
-    component drv_mGrY[EncryptedPointsSize];       // M + SharedPubKey
-    component drv_mGrY_final[EncryptedPointsSize]; // M + SharedPubKey + HidingPoint
+    // [2] - encrypted data
+    component helperHash[EncryptedDataSize];
 
-    // Padding Point = Lsb252(Poseidon(ephemeralRandom)) * B8
-    component paddingPointHash[PaddingPointsSize];
-    component n2b_paddingPointHash[PaddingPointsSize];
-    component b2n_paddingPointHash[PaddingPointsSize];
-    component paddingPoint[PaddingPointsSize];
+    // scalars
+    for(var i = 0; i < ScalarsSize; i++) {
+        helperHash[i] = Poseidon(2);
+        helperHash[i].inputs[0] <== kSeed.out;
+        helperHash[i].inputs[1] <== i;
 
-    var offset = 0;
-
-    for(var j = 0; j < PaddingPointsSize; j++) {
-        // first padding point
-        if ( j == 0 ) {
-            paddingPointHash[0] = Poseidon(1);
-            paddingPointHash[0].inputs[0] <== ephemeralRandom;
-
-            n2b_paddingPointHash[0] = Num2Bits_strict();
-            n2b_paddingPointHash[0].in <== paddingPointHash[0].out;
-
-            b2n_paddingPointHash[0] = Bits2Num(252);
-            for(var i = 0; i < 252; i++) {
-                b2n_paddingPointHash[0].in[i] <== n2b_paddingPointHash[0].out[i];
-            }
-        }
-        // M = m * B8
-        paddingPoint[j] = BabyPbk();
-        paddingPoint[j].in <== b2n_paddingPointHash[j].out;
-
-        // ephemeralRandom * pubKey + M + HidingPoint
-        drv_mGrY[j] = BabyAdd();
-        drv_mGrY[j].x1 <== paddingPoint[j].Ax;
-        drv_mGrY[j].y1 <== paddingPoint[j].Ay;
-        drv_mGrY[j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[j][0];
-        drv_mGrY[j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[j][1];
-
-        drv_mGrY_final[j] = BabyAdd();
-        drv_mGrY_final[j].x1 <== drv_mGrY[j].xout;
-        drv_mGrY_final[j].y1 <== drv_mGrY[j].yout;
-        drv_mGrY_final[j].x2 <== ephemeralPubKeyBuilder.hidingPoint[0];
-        drv_mGrY_final[j].y2 <== ephemeralPubKeyBuilder.hidingPoint[1];
-
-        // encrypted data
-        encryptedMessage[j][0] <== drv_mGrY_final[j].xout;
-        encryptedMessage[j][1] <== drv_mGrY_final[j].yout;
-
-        // next padding point
-        if( j < PaddingPointsSize - 1 ) {
-            paddingPointHash[1+j] = Poseidon(2);
-            paddingPointHash[1+j].inputs[0] <== paddingPoint[j].Ax;
-            paddingPointHash[1+j].inputs[1] <== paddingPoint[j].Ay;
-
-            n2b_paddingPointHash[1+j] = Num2Bits_strict();
-            n2b_paddingPointHash[1+j].in <== paddingPointHash[1+j].out;
-
-            b2n_paddingPointHash[1+j] = Bits2Num(252);
-            for(var i = 0; i < 252; i++) {
-                b2n_paddingPointHash[1+j].in[i] <== n2b_paddingPointHash[1+j].out[i];
-            }
-        }
+        encryptedMessage[i] <== scalarMessage[i] + helperHash[i].out;
     }
 
-    // [2] - ephemeralRandom * pubKey + M, where M = m * G
-    component drv_mG[ScalarsSize];
-    offset = offset + PaddingPointsSize;
+    // points
+    for(var i = ScalarsSize; i < ScalarsSize+PointsSize; i++) {
+        helperHash[i] = Poseidon(2);
+        helperHash[i].inputs[0] <== kSeed.out;
+        helperHash[i].inputs[1] <== i;
 
-    for (var j = 0; j < ScalarsSize; j++) {
-        // M = m * B8
-        drv_mG[j] = BabyPbk();
-        drv_mG[j].in <== scalarMessage[j];
-        // require `m < 2^64` - otherwise brute-force will be near to impossible
-        assert(scalarMessage[j] < 2**64);
-
-        // ephemeralRandom * pubKey + M + hidingPoint
-        drv_mGrY[offset+j] = BabyAdd();
-        drv_mGrY[offset+j].x1 <== drv_mG[j].Ax;
-        drv_mGrY[offset+j].y1 <== drv_mG[j].Ay;
-        drv_mGrY[offset+j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[offset + j][0];
-        drv_mGrY[offset+j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[offset + j][1];
-
-        drv_mGrY_final[offset+j] = BabyAdd();
-        drv_mGrY_final[offset+j].x1 <== drv_mGrY[offset+j].xout;
-        drv_mGrY_final[offset+j].y1 <== drv_mGrY[offset+j].yout;
-        drv_mGrY_final[offset+j].x2 <== ephemeralPubKeyBuilder.hidingPoint[0];
-        drv_mGrY_final[offset+j].y2 <== ephemeralPubKeyBuilder.hidingPoint[1];
-
-        // encrypted data
-        encryptedMessage[offset+j][0] <== drv_mGrY_final[offset+j].xout;
-        encryptedMessage[offset+j][1] <== drv_mGrY_final[offset+j].yout;
+        encryptedMessage[i] <== pointMessage[i-ScalarsSize][0] + helperHash[i].out;
     }
 
-    offset = offset + ScalarsSize;
-    for (var j = 0; j < PointsSize; j++) {
-        // ephemeralRandom * pubKey + M
-        drv_mGrY[offset+j] = BabyAdd();
-        drv_mGrY[offset+j].x1 <== pointMessage[j][0];
-        drv_mGrY[offset+j].y1 <== pointMessage[j][1];
-        drv_mGrY[offset+j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[offset+j][0];
-        drv_mGrY[offset+j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[offset+j][1];
+    // [3] - cipher message hash
+    assert(EncryptedDataSize < 15);
+    component cipherMessageHash = Poseidon(EncryptedDataSize);
+    cipherMessageHash.inputs <== encryptedMessage;
+    encryptedMessageHash <== cipherMessageHash.out;
 
-        drv_mGrY_final[offset+j] = BabyAdd();
-        drv_mGrY_final[offset+j].x1 <== drv_mGrY[offset+j].xout;
-        drv_mGrY_final[offset+j].y1 <== drv_mGrY[offset+j].yout;
-        drv_mGrY_final[offset+j].x2 <== ephemeralPubKeyBuilder.hidingPoint[0];
-        drv_mGrY_final[offset+j].y2 <== ephemeralPubKeyBuilder.hidingPoint[1];
+    // [4] - hmac
+    // k-mac = Hash ( k-seed, CipherMessageSize )
+    // HMAC = Hash ( k-mac, Hash ( k-mac, CipherMessage ) )
+    component kMac = Poseidon(2);
+    kMac.inputs[0] <== kSeed.out;
+    kMac.inputs[1] <== EncryptedDataSize;
 
-        // encrypted data
-        encryptedMessage[offset+j][0] <== drv_mGrY_final[offset+j].xout;
-        encryptedMessage[offset+j][1] <== drv_mGrY_final[offset+j].yout;
+    // 0x36 repeated till 248 bits and MSB 6 bits are 0xd8 ( 6 LSBs of 0x36, 0xD8 = 110110, 0x36 = 00110110 )
+    var ipad = 0xd836363636363636363636363636363636363636363636363636363636363636;
+
+    component innerXor = XOR();
+    innerXor.a <== kMac.out;
+    innerXor.b <== ipad;
+
+    signal kMacInner <== innerXor.out;
+
+    var innerHMacSize = 1 + EncryptedDataSize;
+    assert(innerHMacSize < 15);
+    component innerHMacHash = Poseidon(innerHMacSize);
+    innerHMacHash.inputs[0] <== kMacInner;
+    for(var i = 0; i < EncryptedDataSize; i++) {
+        innerHMacHash.inputs[1+i] <== encryptedMessage[i];
     }
 
-    // [3] - Compute data escrow encrypted message hash
-    component encryptedMessageHash_m_poseidon = MultiPoseidon(2 * EncryptedPointsSize);
+    // 0x5c repeated till 248 bits and MSB 6 bits are 0x1c ( 6 LSBs of 0x5c, 0x1c = 011100, 0x5c = 01011100 )
+    var opad = 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
 
-    for(var i = 0, j = 0; i < EncryptedPointsSize; i++) {
-        encryptedMessageHash_m_poseidon.in[j] <== encryptedMessage[i][0];
-        encryptedMessageHash_m_poseidon.in[j+1] <== encryptedMessage[i][1];
-        j = j + 2;
+    component outerXor = XOR();
+    outerXor.a <== kMac.out;
+    outerXor.b <== opad;
+
+    signal kMacOuter <== outerXor.out;
+
+    var hmacSize = 1 + 1;
+    component hmacHash = Poseidon(hmacSize);
+    hmacHash.inputs[0] <== kMacOuter;
+    hmacHash.inputs[1] <== innerHMacHash.out;
+
+    hmac <== hmacHash.out;
+}
+template EphemeralPubKeysBuilder() {
+    signal input pubKey[2];                   // pub-key of trust-providers
+    signal input ephemeralRandom;             // random per transaction
+    signal output ephemeralPubKey[2];         // derived ephemeral pub-key: ePubKey = eRand * B8
+    signal output sharedPubKey[2];            // derived shared pub-key: SharedPubKey = eRand * pubKey (eRand * privKey * B8)
+
+    // shared-key = ephemeralRandom * pubKey
+
+    component sharedKey_eRandMultPubKey = EscalarMulAny(253);
+    sharedKey_eRandMultPubKey.p[0] <== pubKey[0];
+    sharedKey_eRandMultPubKey.p[1] <== pubKey[1];
+
+    // take the random to bits
+    component n2b_eRand = Num2Bits(253);
+    n2b_eRand.in <== ephemeralRandom;
+
+    for (var j = 0; j < 253; j++) {
+        sharedKey_eRandMultPubKey.e[j] <== n2b_eRand.out[j];
     }
-    encryptedMessageHash <== encryptedMessageHash_m_poseidon.out;
+
+    sharedPubKey <== sharedKey_eRandMultPubKey.out;
+
+    // ephemeral pub-key = ephemeralRandom * Base8
+    component ephemeralPubKey_eRandMultG = BabyPbk();
+
+    ephemeralPubKey_eRandMultG.in <== ephemeralRandom;
+
+    ephemeralPubKey[0] <== ephemeralPubKey_eRandMultG.Ax;
+    ephemeralPubKey[1] <== ephemeralPubKey_eRandMultG.Ay;
 }
 
 // ------------- scalars-size --------------------------------
-// 1) 1 x 64 (zAsset)
-// 2) 1 x 64 (utxoInMerkleTreeSelector[0] << 42 | utxoInMerkleTreeSelector[1] << 40 | zAccountId << 16 | zAccountZoneId << 0)
-// 3) 1 x 32 (zAccountNonce)
-// 4) nUtxoIn x 64 amount
-// 5) nUtxoOut x 64 amount
-// 6) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
-// ------------------------------------------------------------
+// Pack all scalars into in 254 bits Field elements
 template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
     signal input {uint64} zAsset;                                            // 64 bit
     signal input {uint24} zAccountId;                                        // 24 bit
     signal input {uint16} zAccountZoneId;                                    // 16 bit
     signal input {uint32} zAccountNonce;                                     // 32 bit
     signal input {binary} utxoInMerkleTreeSelector[nUtxoIn][2];              // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
-    signal input {binary} utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];   // Max 32 bit
+    signal input {binary} utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];   // 32 bit
+    signal input {uint16} utxoInOriginZoneId[nUtxoIn];                       // 16 bit
+    signal input {uint16} utxoOutTargetZoneId[nUtxoOut];                     // 16 bit
 
     signal input {uint64} utxoInAmount[nUtxoIn];                             // 64 bit
     signal input {uint64} utxoOutAmount[nUtxoOut];                           // 64 bit
 
-    signal input          utxoInOriginZoneId[nUtxoIn];                       // 16 bit
-    signal input          utxoOutTargetZoneId[nUtxoOut];                     // 16 bit
+    signal output {snark_ff} out[DataEscrowScalarSize_Fn(nUtxoIn, nUtxoOut,UtxoMerkleTreeDepth)];
 
-    // each signal will be < 2^64
-    signal output {uint64} out[DataEscrowScalarSize_Fn(nUtxoIn, nUtxoOut)];
 
-    // ---------------- Scalars ----------------------
-    // 1) 1 x 64 (zAsset) ----------------------------
-    assert(zAsset < 2**64);
+    component num2bits_zAssetId = Num2Bits(64);
+    num2bits_zAssetId.in <== zAsset;
+
+    component num2bits_zAccountId = Num2Bits(24);
+    num2bits_zAccountId.in <== zAccountId;
+
+    component num2bits_zAccountZoneId = Num2Bits(16);
+    num2bits_zAccountZoneId.in <== zAccountZoneId;
+
+    component num2bits_zAccountNonce = Num2Bits(32);
+    num2bits_zAccountNonce.in <== zAccountNonce;
+
+    component num2bits_utxoInOriginZoneId[nUtxoIn];
+    for (var i = 0; i < nUtxoIn; i++) {
+        num2bits_utxoInOriginZoneId[i] = Num2Bits(16);
+        num2bits_utxoInOriginZoneId[i].in <== utxoInOriginZoneId[i];
+    }
+
+    component num2bits_utxoOutTargetZoneId[nUtxoOut];
+    for (var i = 0; i < nUtxoOut; i++) {
+        num2bits_utxoOutTargetZoneId[i] = Num2Bits(16);
+        num2bits_utxoOutTargetZoneId[i].in <== utxoOutTargetZoneId[i];
+    }
+
+    component num2bits_utxoInAmount[nUtxoIn];
+    for (var i = 0; i < nUtxoIn; i++) {
+        num2bits_utxoInAmount[i] = Num2Bits(64);
+        num2bits_utxoInAmount[i].in <== utxoInAmount[i];
+    }
+
+    component num2bits_utxoOutAmount[nUtxoOut];
+    for (var i = 0; i < nUtxoOut; i++) {
+        num2bits_utxoOutAmount[i] = Num2Bits(64);
+        num2bits_utxoOutAmount[i].in <== utxoOutAmount[i];
+    }
+
+    // serialize phase - bits2num components
+    var scalarSize = DataEscrowScalarSize_Fn(nUtxoIn, nUtxoOut,UtxoMerkleTreeDepth);
+    component bit2num[scalarSize];
+    for (var i = 0; i < scalarSize; i++) {
+        bit2num[i] = Bits2Num(254);
+    }
+    var scalarIndex = 0;
     var offset = 0;
-    out[offset] <== zAsset;
-    offset = offset + 1; // 1
+    var expectedOffset = offset+64;
 
-    // 2) 1 x 64 (utxoInMerkleTreeSelector[..] << 40 | zAccountId << 16 | zAccountZoneId) --
-    assert(zAccountId < 2**24);
-    assert(zAccountZoneId < 2**16);
-    assert(nUtxoIn * 2 < 24); // 64 - 40 ( 24 + 16 ) = 24
-
-    component n2b_zAccountId = Num2Bits(24);
-    n2b_zAccountId.in <== zAccountId;
-
-    component n2b_zAccountZoneId = Num2Bits(16);
-    n2b_zAccountZoneId.in <== zAccountZoneId;
-
-    component b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector = Bits2Num(24+16+2*nUtxoIn);
-
-    for(var i = 0; i < 16; i++) {
-        b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[i] <== n2b_zAccountZoneId.out[i];
+    for (var i = 0; i < 64; i++) {
+        bit2num[scalarIndex].in[offset+i] <== num2bits_zAssetId.out[i];
     }
+    offset = 64; // 64
+    expectedOffset = offset+24; // 88
 
-    for(var i = 0; i < 24; i++) {
-        b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[i+16] <== n2b_zAccountId.out[i];
+    for (var i = 0; i < 24; i++) {
+        bit2num[scalarIndex].in[offset+i] <== num2bits_zAccountId.out[i];
     }
+    offset = 64+24; // 88
+    expectedOffset = offset+16; // 104
 
-    for(var i = 0; i < nUtxoIn; i++) {
-        for(var j = 0; j < 2; j++) {
-            b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.in[16+24 + (i*nUtxoIn) + j] <== utxoInMerkleTreeSelector[i][j];
+    for (var i = 0; i < 16; i++) {
+        bit2num[scalarIndex].in[offset+i] <== num2bits_zAccountZoneId.out[i];
+    }
+    offset = 64+24+16; // 104
+    expectedOffset = offset+32; // 136
+
+    for (var i = 0; i < 32; i++) {
+        bit2num[scalarIndex].in[offset+i] <== num2bits_zAccountNonce.out[i];
+    }
+    offset = 64+24+16+32; // 136
+    assert(nUtxoIn < 3);
+    expectedOffset = offset+nUtxoIn*2; // 136 + 2*nUtxoIn = 140
+
+    for (var i = 0; i < nUtxoIn; i++) {
+        for (var j = 0; j < 2; j++) {
+            bit2num[scalarIndex].in[offset+i*2+j] <== utxoInMerkleTreeSelector[i][j];
+        }
+    }
+    offset = 64+24+16+32+nUtxoIn*2; // 136 + 2*nUtxoIn = 136 + 2*2 = 140
+    assert(UtxoMerkleTreeDepth < 33);
+    expectedOffset = offset+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*2 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*2 + 2*32 = 200 (max 136+2*2+2*32=200)
+
+    for (var i = 0; i < nUtxoIn; i++) {
+        for (var j = 0; j < UtxoMerkleTreeDepth; j++) {
+            bit2num[scalarIndex].in[offset+i*UtxoMerkleTreeDepth+j] <== utxoInPathIndices[i][j];
         }
     }
 
-    out[offset] <== b2n_zAccountId_zAccountZoneId_utxoInMerkleTreeSelector.out;
-    offset = offset + 1; // 2
+    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*2 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*2 + 2*32 = 200 (max 136+2*2+2*32=200)
+    expectedOffset = offset+nUtxoIn*16; // 200 + nUtxoIn*UtxoMerkleTreeDepth = 200 + 2*16 = 232
 
-    // 3) 1 x 32 (zAccountNonce)
-    out[offset] <== zAccountNonce;
-    offset = offset + 1; // 3
-
-    // 4) nUtxoIn x 64 amount
-    for (var j = 0; j < nUtxoIn; j++) {
-        assert(utxoInAmount[j] < 2**64);
-        out[offset+j] <== utxoInAmount[j];
-    }
-    offset = offset + nUtxoIn; // 3 + nUtxoIn
-    // 5) nUtxoOut x 64 amount ------------------
-    for (var j = 0; j < nUtxoOut; j++) {
-        assert(utxoOutAmount[j] < 2**64);
-        out[offset+j] <== utxoOutAmount[j];
-    }
-    offset = offset + nUtxoOut; // 3 + nUtxoIn + nUtxoOut
-
-    // 5) nUtxoIn x originZoneId + nUtxoOut x targetZoneId + nUtxoIn * utxoInPathIndices
-    assert(UtxoMerkleTreeDepth <= 32); // should be less then 32 bit, otherwise serialization will exceed 64 bit per element
-    component n2b_utxoInOriginZoneId[nUtxoIn];
-    for (var j = 0; j < nUtxoIn; j++) {
-        n2b_utxoInOriginZoneId[j] = Num2Bits(16);
-        n2b_utxoInOriginZoneId[j].in <== utxoInOriginZoneId[j];
-    }
-
-    component n2b_utxoOutTargetZoneId[nUtxoOut];
-    for (var j = 0; j < nUtxoOut; j++) {
-        n2b_utxoOutTargetZoneId[j] = Num2Bits(16);
-        n2b_utxoOutTargetZoneId[j].in <== utxoOutTargetZoneId[j];
-    }
-
-    var max_nUtxoIn_nUtxoOut = nUtxoIn > nUtxoOut ? nUtxoIn:nUtxoOut;
-    component b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[max_nUtxoIn_nUtxoOut];
-
-    for (var j = 0; j < max_nUtxoIn_nUtxoOut; j++) {
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j] = Bits2Num(32+UtxoMerkleTreeDepth);
-        if( j < nUtxoIn && j < nUtxoOut ) {
-            for(var i = 0; i < 16; i++) {
-                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
-            }
-            for(var i = 0; i < 16; i++) {
-                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
-            }
-        } else {
-            if( j < nUtxoIn ) { // j > nUtxoOut ---> utxo-out-targetZoneId - set to be zero - asymmetric case
-                for(var i = 0; i < 16; i++) {
-                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== 0;
-                }
-                for(var i = 0; i < 16; i++) {
-                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== n2b_utxoInOriginZoneId[j].out[i];
-                }
-            } else {            // j > nUtxoIn  ---> utxo-in-originZoneId -  set to be zero - asymmetric case
-                for(var i = 0; i < 16; i++) {
-                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[i] <== n2b_utxoOutTargetZoneId[j].out[i];
-                }
-                for(var i = 0; i < 16; i++) {
-                    b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[16+i] <== 0;
-                }
-            }
-        }
-        for(var i = 0; i < UtxoMerkleTreeDepth; i++) {
-            if ( j < nUtxoIn ) {
-                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[32+i] <== utxoInPathIndices[j][i];
-            } else {
-                b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].in[32+i] <== 0;
-            }
-        }
-        out[offset+j] <== b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[j].out;
-    }
-}
-
-template EphemeralPubKeysBuilder(nPubKeys) {
-    signal input pubKey[2];                             // pub-key of trust-providers
-    signal input ephemeralRandom;                       // random per transaction
-    signal output ephemeralPubKey[nPubKeys][2];         // derived ephemeral pub-keys: ePubKey[i] = eRand[i] * G
-    signal output sharedPubKey[nPubKeys][2];            // derived pub-keys: SharedPubKey[i] = eRand[i] * pubKey
-    signal output hidingPoint[2];                       // derived as Lsb252( Poseidon( ephemeralPubKey.X, ephemeralPubKey.Y ) ) * pubKey
-
-    assert(nPubKeys > 0);
-
-    // derived randoms: eRand[i] = Hash_252bits( sharedPubKey[i] = eRand[i-1] * pubKey[i-1] ), eRand[0] = ephemeralRandom
-    signal ephemeralRandoms[nPubKeys];
-    ephemeralRandoms[0] <== ephemeralRandom;
-
-    // shared-key = ephemeralRandom * pubKey
-    component n2b_eRand[nPubKeys];
-    component sharedKey_eRandMultPubKey[nPubKeys];
-    component ephemeralPubKey_eRandMultG[nPubKeys];
-    component hash[nPubKeys-1];
-    component n2b_hash[nPubKeys-1];
-    component b2n_hash[nPubKeys-1];
-
-    for (var i = 0; i < nPubKeys; i++) {
-        // derive shared key
-        sharedKey_eRandMultPubKey[i] = EscalarMulAny(253);
-        sharedKey_eRandMultPubKey[i].p[0] <== pubKey[0];
-        sharedKey_eRandMultPubKey[i].p[1] <== pubKey[1];
-
-        // take the random to bits
-        n2b_eRand[i] = Num2Bits(253);
-        n2b_eRand[i].in <== ephemeralRandoms[i];
-
-        for (var j = 0; j < 253; j++) {
-            sharedKey_eRandMultPubKey[i].e[j] <== n2b_eRand[i].out[j];
-        }
-
-        sharedPubKey[i][0] <== sharedKey_eRandMultPubKey[i].out[0];
-        sharedPubKey[i][1] <== sharedKey_eRandMultPubKey[i].out[1];
-
-        // next ephemeral pub-key
-        ephemeralPubKey_eRandMultG[i] = BabyPbk();
-        ephemeralPubKey_eRandMultG[i].in <== ephemeralRandoms[i];
-        ephemeralPubKey[i][0] <== ephemeralPubKey_eRandMultG[i].Ax;
-        ephemeralPubKey[i][1] <== ephemeralPubKey_eRandMultG[i].Ay;
-
-        // make next e-rand: Poseidon(sharedKey.x, sharedKey.y) - 0..251 bit of it
-        if( i < nPubKeys - 1 ) {
-            hash[i] = Poseidon(2);
-            hash[i].inputs[0] <== sharedKey_eRandMultPubKey[i].out[0];
-            hash[i].inputs[1] <== sharedKey_eRandMultPubKey[i].out[1];
-            n2b_hash[i] = Num2Bits_strict();
-            n2b_hash[i].in <== hash[i].out;
-            b2n_hash[i] = Bits2Num(252);
-
-            for(var j = 0; j < 252; j++) {
-                b2n_hash[i].in[j] <== n2b_hash[i].out[j];
-            }
-            ephemeralRandoms[i+1] <== b2n_hash[i].out;
+    for (var i = 0; i < nUtxoIn; i++) {
+        for (var j = 0; j < 16; j++) {
+            bit2num[scalarIndex].in[offset+i*16+j] <== num2bits_utxoInOriginZoneId[i].out[j];
         }
     }
-    // hidden point = Lsb252 ( Poseidon(sharedPubKey.x,y) ) * PubKey
-    component hiddenPoint_poseidon1 = Poseidon(2);
-    hiddenPoint_poseidon1.inputs[0] <== sharedPubKey[0][0];
-    hiddenPoint_poseidon1.inputs[1] <== sharedPubKey[0][1];
 
-    component hiddenPoint_poseidon = Poseidon(1);
-    hiddenPoint_poseidon.inputs[0] <== hiddenPoint_poseidon1.out;
+    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth+nUtxoIn*16;
+    expectedOffset = offset+nUtxoOut*16; // 232 + nUtxoOut*16 = 232 + 2*16 = 264
 
-    signal hiddenPoint_lsb252 <== ExtractLSBits(252,254)(hiddenPoint_poseidon.out);
+    if ( expectedOffset > 253 ) {
+        for( var i = offset; i < 254; i++ ) {
+            bit2num[scalarIndex].in[i] <== 0;
+        }
+        scalarIndex++;
+        offset = 0;
+        expectedOffset = 0;
+    }
 
-    component hiddenPoint_eMult = EscalarMulAny(253);
-    hiddenPoint_eMult.p[0] <== pubKey[0];
-    hiddenPoint_eMult.p[1] <== pubKey[1];
+    // -------------------------------------------------------------------------------------------------------------- //
+    for (var i = 0; i < nUtxoOut; i++) {
+        for (var j = 0; j < 16; j++) {
+            bit2num[scalarIndex].in[offset+i*16+j] <== num2bits_utxoOutTargetZoneId[i].out[j];
+        }
+    }
+    offset = nUtxoOut*16; // 2*16 = 32
+    expectedOffset = offset+nUtxoIn*64; // 32 + 2*64 = 160
 
-    component hiddenPoint_n2b = Num2Bits(253);
-    hiddenPoint_n2b.in <== hiddenPoint_lsb252;
-    hiddenPoint_eMult.e <== hiddenPoint_n2b.out;
+    for (var i = 0; i < nUtxoIn; i++) {
+        for (var j = 0; j < 64; j++) {
+            bit2num[scalarIndex].in[offset+i*64+j] <== num2bits_utxoInAmount[i].out[j];
+        }
+    }
+    offset = nUtxoOut*16 + nUtxoIn*64; // 32 + 2*64 = 160
+    expectedOffset = offset+nUtxoOut*64; // 160 + 2*64 = 288
 
-    hidingPoint[0] <== hiddenPoint_eMult.out[0];
-    hidingPoint[1] <== hiddenPoint_eMult.out[1];
+    if ( expectedOffset > 253 ) {
+        for( var i = offset; i < 254; i++ ) {
+            bit2num[scalarIndex].in[i] <== 0;
+        }
+        scalarIndex++;
+        offset = 0;
+        expectedOffset = 0;
+    }
+    // -------------------------------------------------------------------------------------------------------------- //
+    assert(nUtxoOut < 3);
+    for (var i = 0; i < nUtxoOut; i++) {
+        for (var j = 0; j < 64; j++) {
+            bit2num[scalarIndex].in[offset+i*64+j] <== num2bits_utxoOutAmount[i].out[j];
+        }
+    }
+    offset = nUtxoOut*64; // 2*64 = 128
+    expectedOffset = offset+0; // END
+    for( var i = offset; i < 254; i++ ) {
+        bit2num[scalarIndex].in[i] <== 0;
+    }
+
+    assert(scalarIndex + 1 == scalarSize);
+
+    // -------------------------------------------------------------------------------------------------------------- //
+    for (var i = 0; i <= scalarIndex; i++ ) {
+        out[i] <== bit2num[i].out;
+    }
 }
 
 template DataEscrowElGamalEncryptionPoint(PointsSize) {
@@ -444,64 +414,81 @@ template DataEscrowElGamalEncryptionPoint(PointsSize) {
     signal input                   pointMessage[PointsSize][2];                   // ec points data to encrypt
     signal input                   pubKey[2];                                     // public key
     signal output                  ephemeralPubKey[2];                            // ephemeral public-key
-    signal output                  encryptedMessage[PointsSize][2];               // encrypted data
+    signal output                  encryptedMessage[PointsSize];                  // encrypted data
+    signal output                  encryptedMessageHash;                          // poseidon hash of encrypted data
+    signal output                  hmac;                                          // hmac
 
     assert(PointsSize > 0);
+    var EncryptedDataSize = PointsSize;
 
     // [0] - Create ephemeral public key
-    component ephemeralPubKeyBuilder = EphemeralPubKeysBuilder(PointsSize);
-    ephemeralPubKeyBuilder.pubKey[0] <== pubKey[0];
-    ephemeralPubKeyBuilder.pubKey[1] <== pubKey[1];
+    component ephemeralPubKeyBuilder = EphemeralPubKeysBuilder();
+    ephemeralPubKeyBuilder.pubKey <== pubKey;
     ephemeralPubKeyBuilder.ephemeralRandom <== ephemeralRandom;
+    // ephemeralPubKey output
+    ephemeralPubKey <== ephemeralPubKeyBuilder.ephemeralPubKey;
 
-    ephemeralPubKey[0] <== ephemeralPubKeyBuilder.ephemeralPubKey[0][0];
-    ephemeralPubKey[1] <== ephemeralPubKeyBuilder.ephemeralPubKey[0][1];
+    // [1] - create k-seed
+    component kSeed = Poseidon(2);
+    kSeed.inputs[0] <== ephemeralPubKeyBuilder.sharedPubKey[0];
+    kSeed.inputs[1] <== ephemeralPubKeyBuilder.sharedPubKey[1];
 
-    component drv_mGrY[PointsSize];
+    // [2] - encrypted data
+    component helperHash[EncryptedDataSize];
 
-    for (var j = 0; j < PointsSize; j++) {
-        // ephemeralRandom * pubKey + M
-        drv_mGrY[j] = BabyAdd();
-        drv_mGrY[j].x1 <== pointMessage[j][0];
-        drv_mGrY[j].y1 <== pointMessage[j][1];
-        drv_mGrY[j].x2 <== ephemeralPubKeyBuilder.sharedPubKey[j][0];
-        drv_mGrY[j].y2 <== ephemeralPubKeyBuilder.sharedPubKey[j][1];
+    // points
+    for(var i = 0; i < EncryptedDataSize; i++) {
+        helperHash[i] = Poseidon(2);
+        helperHash[i].inputs[0] <== kSeed.out;
+        helperHash[i].inputs[1] <== i;
 
-        // encrypted data
-        encryptedMessage[j][0] <== drv_mGrY[j].xout;
-        encryptedMessage[j][1] <== drv_mGrY[j].yout;
+        encryptedMessage[i] <== pointMessage[i][0] + helperHash[i].out;
     }
-}
+    // [3] - cipher message hash
+    assert(EncryptedDataSize < 15);
+    component cipherMessageHash = Poseidon(EncryptedDataSize);
+    cipherMessageHash.inputs <== encryptedMessage;
+    encryptedMessageHash <== cipherMessageHash.out;
 
-template MultiPoseidon(n) {
-    signal input in[n];
-    signal output out;
-    assert(n > 0);
-    component hash;
-    component m_poseidon[2];
-    if ( n <= 15 ) {
-        hash = Poseidon(n);
-        for(var i = 0; i < n; i++) {
-            hash.inputs[i] <== in[i];
-        }
-        out <== hash.out;
-    } else {
-        var n1 = n\2;
-        var n2 = n-n\2;
-        m_poseidon[0] = MultiPoseidon(n1);
-        m_poseidon[1] = MultiPoseidon(n2);
-        for (var i = 0; i < n1; i++) {
-            m_poseidon[0].in[i] <== in[i];
-        }
-        for (var i = 0; i < n2; i++)  {
-            m_poseidon[1].in[i] <== in[n1+i];
-        }
-        hash = Poseidon(2);
-        for(var i = 0; i < 2; i++) {
-            hash.inputs[i] <== m_poseidon[i].out;
-        }
-        out <== hash.out;
+    // [4] - hmac
+    // k-mac = Hash ( k-seed, CipherMessageSize )
+    // HMAC = Hash ( k-mac, Hash ( k-mac, CipherMessage ) )
+    component kMac = Poseidon(2);
+    kMac.inputs[0] <== kSeed.out;
+    kMac.inputs[1] <== EncryptedDataSize;
+
+    // 0x36 repeated till 248 bits and MSB 6 bits are 0xd8 ( 6 LSBs of 0x36, 0xD8 = 110110, 0x36 = 00110110 )
+    var ipad = 0xd836363636363636363636363636363636363636363636363636363636363636;
+
+    component innerXor = XOR();
+    innerXor.a <== kMac.out;
+    innerXor.b <== ipad;
+
+    signal kMacInner <== innerXor.out;
+
+    var innerHMacSize = 1 + EncryptedDataSize;
+    assert(innerHMacSize < 15);
+    component innerHMacHash = Poseidon(innerHMacSize);
+    innerHMacHash.inputs[0] <== kMacInner;
+    for(var i = 0; i < EncryptedDataSize; i++) {
+        innerHMacHash.inputs[1+i] <== encryptedMessage[i];
     }
+
+    // 0x5c repeated till 248 bits and MSB 6 bits are 0x1c ( 6 LSBs of 0x5c, 0x1c = 011100, 0x5c = 01011100 )
+    var opad = 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
+
+    component outerXor = XOR();
+    outerXor.a <== kMac.out;
+    outerXor.b <== opad;
+
+    signal kMacOuter <== outerXor.out;
+
+    var hmacSize = 1 + 1;
+    component hmacHash = Poseidon(hmacSize);
+    hmacHash.inputs[0] <== kMacOuter;
+    hmacHash.inputs[1] <== innerHMacHash.out;
+
+    hmac <== hmacHash.out;
 }
 
 template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
@@ -513,23 +500,21 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     signal input {binary}          utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
     signal input {uint64}          utxoInAmount[nUtxoIn];
     signal input {uint64}          utxoOutAmount[nUtxoOut];
-    signal input                   utxoInOriginZoneId[nUtxoIn];
-    signal input                   utxoOutTargetZoneId[nUtxoOut];
+    signal input {uint16}          utxoInOriginZoneId[nUtxoIn];
+    signal input {uint16}          utxoOutTargetZoneId[nUtxoOut];
     signal input {sub_order_bj_p}  utxoOutRootSpendPubKey[nUtxoOut][2];
 
     // main data-escrow
-    var dataEscrowPaddingSize = DataEscrowPaddingPointSize_Fn();
-    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
-    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
 
     signal input {sub_order_bj_sf} dataEscrowEphemeralRandom;
     signal input {sub_order_bj_p}  dataEscrowPubKey[2];
     signal input                   dataEscrowEphemeralPubKeyAx;
     signal input                   dataEscrowEphemeralPubKeyAy;
-    signal input                   dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints];
-    signal input                   dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
-    signal output                  dataEscrowEncryptedMessage[dataEscrowEncryptedPoints][2];
+    signal input                   dataEscrowEncryptedMessage[dataEscrowEncryptedPoints];
+    signal input                   dataEscrowEncryptedMessageHmac;
     signal output                  dataEscrowEncryptedMessageHash;
 
     // dao data-escrow
@@ -539,8 +524,9 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     signal input {sub_order_bj_p}  daoDataEscrowPubKey[2];
     signal input                   daoDataEscrowEphemeralPubKeyAx;
     signal input                   daoDataEscrowEphemeralPubKeyAy;
-    signal input                   daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints];
-    signal input                   daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
+    signal input                   daoDataEscrowEncryptedMessage[daoDataEscrowEncryptedPoints];
+    signal input                   daoDataEscrowEncryptedMessageHmac;
+
 
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
@@ -549,8 +535,8 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     signal input {sub_order_bj_p}  zZoneDataEscrowPubKey[2];
     signal input                   zZoneDataEscrowEphemeralPubKeyAx;
     signal input                   zZoneDataEscrowEphemeralPubKeyAy;
-    signal input                   zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints];
-    signal input                   zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
+    signal input                   zZoneDataEscrowEncryptedMessage[zZoneDataEscrowEncryptedPoints];
+    signal input                   zZoneDataEscrowEncryptedMessageHmac;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // START OF CODE /////////////////////////////////////////////////////////////////////////////////////////
@@ -558,15 +544,21 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
     // [0] - Data Escrow encryption //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ------------- scalars-size --------------
-    // 1) 1 x 64 (zAsset)
-    // 2) 1 x 64 (utxoInMerkleTreeSelector[0] << 42 | utxoInMerkleTreeSelector[1] << 40 | zAccountId << 16 | zAccountZoneId << 0)
-    // 3) 1 x 32 (zAccountNonce)
-    // 4) nUtxoIn x 64 amount
-    // 5) nUtxoOut x 64 amount
-    // 6) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
+    // -----------------------------------------
+    // 1) zAssetId - 64 bit
+    // 2) zAccountId - 24 bit
+    // 3) zAccountZoneId - 16 bit
+    // 4) zAccountNonce - 32 bit
+    // 5) nUtxoIn x UtxoMerkleTreeSelector - 2 bits
+    // 6) nUtxoIn x UtxoMerkleTreePathIndices - 32 bits
+    // 7) nUtxoIn x UtxoInAmount - 64 bits
+    // 8) nUtxoIn x UtxoInOriginZoneId - 16 bits
+    // 9) nUtxoOut x UtxoOutAmount - 64 bits
+    // 10) nUtxoOut x UtxoOutTargetZoneId - 16 bits
     // ------------- ec-points-size -------------
+    // -----------------------------------------
     // 1) nUtxoOut x SpendPubKeys (x,y) - (already a points on EC)
-    component dataEscrow = DataEscrowElGamalEncryption(dataEscrowPaddingSize,dataEscrowScalarSize,dataEscrowPointSize);
+    component dataEscrow = DataEscrowElGamalEncryption(dataEscrowScalarSize,dataEscrowPointSize);
 
     dataEscrow.ephemeralRandom <== dataEscrowEphemeralRandom;
     dataEscrow.pubKey[0] <== dataEscrowPubKey[0];
@@ -612,11 +604,12 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 
     // verify Encryption
     for (var i = 0; i < dataEscrowEncryptedPoints; i++) {
-        dataEscrowEncryptedMessageAx[i] === dataEscrow.encryptedMessage[i][0];
-        dataEscrowEncryptedMessageAy[i] === dataEscrow.encryptedMessage[i][1];
+        dataEscrowEncryptedMessage[i] === dataEscrow.encryptedMessage[i];
     }
-    dataEscrowEncryptedMessage <== dataEscrow.encryptedMessage;
+    // verify Hash
     dataEscrowEncryptedMessageHash <== dataEscrow.encryptedMessageHash;
+    // verify Hmac
+    dataEscrowEncryptedMessageHmac === dataEscrow.hmac;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [1] - Dao Data Escrow encryption //////////////////////////////////////////////////////////////////////
@@ -637,9 +630,10 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 
     // verify Encryption
     for (var i = 0; i < daoDataEscrowEncryptedPoints; i++) {
-       daoDataEscrowEncryptedMessageAx[i] === daoDataEscrow.encryptedMessage[i][0];
-       daoDataEscrowEncryptedMessageAy[i] === daoDataEscrow.encryptedMessage[i][1];
+       daoDataEscrowEncryptedMessage[i] === daoDataEscrow.encryptedMessage[i];
     }
+    // verify Hmac
+    daoDataEscrowEncryptedMessageHmac === daoDataEscrow.hmac;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [2] - Zone Data Escrow encryption /////////////////////////////////////////////////////////////////////
@@ -660,7 +654,8 @@ template DataEscrow(nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth) {
 
     // verify Encryption
     for (var i = 0; i < zZoneDataEscrowEncryptedPoints; i++) {
-        zZoneDataEscrowEncryptedMessageAx[i] === zZoneDataEscrow.encryptedMessage[i][0];
-        zZoneDataEscrowEncryptedMessageAy[i] === zZoneDataEscrow.encryptedMessage[i][1];
+        zZoneDataEscrowEncryptedMessage[i] === zZoneDataEscrow.encryptedMessage[i];
     }
+    // verify Hmac
+    zZoneDataEscrowEncryptedMessageHmac === zZoneDataEscrow.hmac;
 }
