@@ -248,9 +248,9 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
 
     // [3] - verify ZKP & PRP balance
     // zkp amount, range-checked since zkpAmount is public signal, and zAssetScale controlled by smart-contracts
-    assert(0 <= zAccountZkpAmount < 2**252);
+    assert(0 <= zAccountZkpAmount < 2**64);
     // prp amount decided by the protocol on smart contract level - range is checked since it is public signal
-    assert(0 <= zAccountPrpAmount < 2**64);
+    assert(0 <= zAccountPrpAmount < 2**196);
 
     // verify zAsset
     component zAssetChecker = ZAssetChecker();
