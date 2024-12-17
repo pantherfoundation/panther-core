@@ -66,7 +66,7 @@ template ZSwapV1( nUtxoIn,
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
     // main data-escrow
-    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     // dao data-escrow
     var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
     // misc
@@ -177,8 +177,8 @@ template ZSwapV1( nUtxoIn,
     signal input {uint32}          zZoneTimePeriodPerMaximumAmount;
     signal input {binary}          zZoneSealing;
 
-    signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
-    signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
+    signal input zZoneDataEscrowEncryptedMessage[zZoneDataEscrowEncryptedPoints]; // public
+    signal input zZoneDataEscrowEncryptedMessageHmac; // public
 
     // KYC-KYT
     // to switch-off:
@@ -237,8 +237,8 @@ template ZSwapV1( nUtxoIn,
     signal input                   dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input {binary}          dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
-    signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
-    signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
+    signal input dataEscrowEncryptedMessage[dataEscrowEncryptedPoints]; // public
+    signal input dataEscrowEncryptedMessageHmac; // public
 
     // dao data escrow
     signal input {sub_order_bj_p}  daoDataEscrowPubKey[2];
@@ -246,8 +246,8 @@ template ZSwapV1( nUtxoIn,
     signal input                   daoDataEscrowEphemeralPubKeyAx; // public
     signal input                   daoDataEscrowEphemeralPubKeyAy;
 
-    signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
-    signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
+    signal input daoDataEscrowEncryptedMessage[daoDataEscrowEncryptedPoints]; // public
+    signal input daoDataEscrowEncryptedMessageHmac; // public
 
     // output 'zAsset UTXOs'
     // to switch-off:
@@ -788,22 +788,22 @@ template ZSwapV1( nUtxoIn,
     dataEscrow.dataEscrowPubKey <== dataEscrowPubKey;
     dataEscrow.dataEscrowEphemeralPubKeyAx <== dataEscrowEphemeralPubKeyAx;
     dataEscrow.dataEscrowEphemeralPubKeyAy <== dataEscrowEphemeralPubKeyAy;
-    dataEscrow.dataEscrowEncryptedMessageAx <== dataEscrowEncryptedMessageAx;
-    dataEscrow.dataEscrowEncryptedMessageAy <== dataEscrowEncryptedMessageAy;
+    dataEscrow.dataEscrowEncryptedMessage <== dataEscrowEncryptedMessage;
+    dataEscrow.dataEscrowEncryptedMessageHmac <== dataEscrowEncryptedMessageHmac;
     // dao data escrow
     dataEscrow.daoDataEscrowEphemeralRandom <== daoDataEscrowEphemeralRandom;
     dataEscrow.daoDataEscrowPubKey <== daoDataEscrowPubKey;
     dataEscrow.daoDataEscrowEphemeralPubKeyAx <== daoDataEscrowEphemeralPubKeyAx;
     dataEscrow.daoDataEscrowEphemeralPubKeyAy <== daoDataEscrowEphemeralPubKeyAy;
-    dataEscrow.daoDataEscrowEncryptedMessageAx <== daoDataEscrowEncryptedMessageAx;
-    dataEscrow.daoDataEscrowEncryptedMessageAy <== daoDataEscrowEncryptedMessageAy;
+    dataEscrow.daoDataEscrowEncryptedMessage <== daoDataEscrowEncryptedMessage;
+    dataEscrow.daoDataEscrowEncryptedMessageHmac <== daoDataEscrowEncryptedMessageHmac;
     // zZone data escrow
     dataEscrow.zZoneDataEscrowEphemeralRandom <== zZoneDataEscrowEphemeralRandom;
     dataEscrow.zZoneDataEscrowPubKey <== zZoneEdDsaPubKey;
     dataEscrow.zZoneDataEscrowEphemeralPubKeyAx <== zZoneDataEscrowEphemeralPubKeyAx;
     dataEscrow.zZoneDataEscrowEphemeralPubKeyAy <== zZoneDataEscrowEphemeralPubKeyAy;
-    dataEscrow.zZoneDataEscrowEncryptedMessageAx <== zZoneDataEscrowEncryptedMessageAx;
-    dataEscrow.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
+    dataEscrow.zZoneDataEscrowEncryptedMessage <== zZoneDataEscrowEncryptedMessage;
+    dataEscrow.zZoneDataEscrowEncryptedMessageHmac <== zZoneDataEscrowEncryptedMessageHmac;
 
     // [16] - Verify KYT signature
     component trustProvidersKytRandomHash = Poseidon(1);

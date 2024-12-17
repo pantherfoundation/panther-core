@@ -35,9 +35,9 @@ template ZSwapV1Top( nUtxoIn,
     // zZone data-escrow
     var zZoneDataEscrowEncryptedPoints = ZZoneDataEscrowEncryptedPoints_Fn();
     // main data-escrow
-    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowScalarSize = DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     var dataEscrowPointSize = DataEscrowPointSize_Fn( nUtxoOut );
-    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut );
+    var dataEscrowEncryptedPoints = DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
     // dao data-escrow
     var daoDataEscrowEncryptedPoints = DaoDataEscrowEncryptedPoints_Fn();
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,8 +145,8 @@ template ZSwapV1Top( nUtxoIn,
     signal input zZoneTimePeriodPerMaximumAmount;
     signal input zZoneSealing;
 
-    signal input zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints]; // public
-    signal input zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints];
+    signal input zZoneDataEscrowEncryptedMessage[zZoneDataEscrowEncryptedPoints]; // public
+    signal input zZoneDataEscrowEncryptedMessageHmac; // public
 
     // KYC-KYT
     // to switch-off:
@@ -205,8 +205,8 @@ template ZSwapV1Top( nUtxoIn,
     signal input dataEscrowPathElements[TrustProvidersMerkleTreeDepth];
     signal input dataEscrowPathIndices[TrustProvidersMerkleTreeDepth];
 
-    signal input dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints]; // public
-    signal input dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints];
+    signal input dataEscrowEncryptedMessage[dataEscrowEncryptedPoints]; // public
+    signal input dataEscrowEncryptedMessageHmac; // public
 
     // dao data escrow
     signal input daoDataEscrowPubKey[2];
@@ -214,8 +214,8 @@ template ZSwapV1Top( nUtxoIn,
     signal input daoDataEscrowEphemeralPubKeyAx; // public
     signal input daoDataEscrowEphemeralPubKeyAy;
 
-    signal input daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints]; // public
-    signal input daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints];
+    signal input daoDataEscrowEncryptedMessage[daoDataEscrowEncryptedPoints]; // public
+    signal input daoDataEscrowEncryptedMessageHmac; // public
 
     // output 'zAsset UTXOs'
     // to switch-off:
@@ -379,8 +379,8 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_zZoneMaximumAmountPerTimePeriod <== Uint96Tag(IGNORE_ANCHORED)(zZoneMaximumAmountPerTimePeriod);
     signal rc_zZoneTimePeriodPerMaximumAmount <== Uint32Tag(IGNORE_ANCHORED)(zZoneTimePeriodPerMaximumAmount);
     signal rc_zZoneSealing <== BinaryTag(IGNORE_ANCHORED)(zZoneSealing);
-    signal rc_zZoneDataEscrowEncryptedMessageAx[zZoneDataEscrowEncryptedPoints] <== SnarkFieldTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAx);
-    signal rc_zZoneDataEscrowEncryptedMessageAy[zZoneDataEscrowEncryptedPoints] <== SnarkFieldTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessageAy);
+    signal rc_zZoneDataEscrowEncryptedMessage[zZoneDataEscrowEncryptedPoints] <== SnarkFieldTagArray(zZoneDataEscrowEncryptedPoints)(zZoneDataEscrowEncryptedMessage);
+    signal rc_zZoneDataEscrowEncryptedMessageHmac <== ExternalTag()(zZoneDataEscrowEncryptedMessageHmac);
 
     signal rc_kytEdDsaPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(kytEdDsaPubKey);
     signal rc_kytEdDsaPubKeyExpiryTime <== Uint32Tag(ACTIVE)(kytEdDsaPubKeyExpiryTime);
@@ -440,15 +440,15 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_dataEscrowEphemeralPubKeyAy <== SnarkFieldTag()(dataEscrowEphemeralPubKeyAy);
     signal rc_dataEscrowPathElements[TrustProvidersMerkleTreeDepth] <== SnarkFieldTagArray(TrustProvidersMerkleTreeDepth)(dataEscrowPathElements);
     signal rc_dataEscrowPathIndices[TrustProvidersMerkleTreeDepth] <== BinaryTagArray(ACTIVE,TrustProvidersMerkleTreeDepth)(dataEscrowPathIndices);
-    signal rc_dataEscrowEncryptedMessageAx[dataEscrowEncryptedPoints] <== ExternalTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessageAx);
-    signal rc_dataEscrowEncryptedMessageAy[dataEscrowEncryptedPoints] <== SnarkFieldTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessageAy);
+    signal rc_dataEscrowEncryptedMessage[dataEscrowEncryptedPoints] <== ExternalTagArray(dataEscrowEncryptedPoints)(dataEscrowEncryptedMessage);
+    signal rc_dataEscrowEncryptedMessageHmac <== ExternalTag()(dataEscrowEncryptedMessageHmac);
 
     signal rc_daoDataEscrowPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(daoDataEscrowPubKey);
     signal rc_daoDataEscrowEphemeralRandom <== BabyJubJubSubOrderTag(ACTIVE)(daoDataEscrowEphemeralRandom);
     signal rc_daoDataEscrowEphemeralPubKeyAx <== ExternalTag()(daoDataEscrowEphemeralPubKeyAx);
     signal rc_daoDataEscrowEphemeralPubKeyAy <== SnarkFieldTag()(daoDataEscrowEphemeralPubKeyAy);
-    signal rc_daoDataEscrowEncryptedMessageAx[daoDataEscrowEncryptedPoints] <== ExternalTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessageAx);
-    signal rc_daoDataEscrowEncryptedMessageAy[daoDataEscrowEncryptedPoints] <== SnarkFieldTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessageAy);
+    signal rc_daoDataEscrowEncryptedMessage[daoDataEscrowEncryptedPoints] <== ExternalTagArray(daoDataEscrowEncryptedPoints)(daoDataEscrowEncryptedMessage);
+    signal rc_daoDataEscrowEncryptedMessageHmac <== ExternalTag()(daoDataEscrowEncryptedMessageHmac);
 
     signal rc_utxoOutCreateTime <== Uint32Tag(IGNORE_PUBLIC)(utxoOutCreateTime);
     signal rc_utxoOutAmount[nUtxoOut] <== Uint64TagArray(ACTIVE,nUtxoOut)(utxoOutAmount);
@@ -573,8 +573,8 @@ template ZSwapV1Top( nUtxoIn,
     zSwapV1.zZoneZAccountIDsBlackList <== rc_zZoneZAccountIDsBlackList;
     zSwapV1.zZoneMaximumAmountPerTimePeriod <== rc_zZoneMaximumAmountPerTimePeriod;
     zSwapV1.zZoneTimePeriodPerMaximumAmount <== rc_zZoneTimePeriodPerMaximumAmount;
-    zSwapV1.zZoneDataEscrowEncryptedMessageAx <== rc_zZoneDataEscrowEncryptedMessageAx;
-    zSwapV1.zZoneDataEscrowEncryptedMessageAy <== rc_zZoneDataEscrowEncryptedMessageAy;
+    zSwapV1.zZoneDataEscrowEncryptedMessage <== rc_zZoneDataEscrowEncryptedMessage;
+    zSwapV1.zZoneDataEscrowEncryptedMessageHmac <== rc_zZoneDataEscrowEncryptedMessageHmac;
     zSwapV1.zZoneSealing <== rc_zZoneSealing;
     zSwapV1.kytEdDsaPubKey <== rc_kytEdDsaPubKey;
     zSwapV1.kytEdDsaPubKeyExpiryTime <== rc_kytEdDsaPubKeyExpiryTime;
@@ -621,14 +621,14 @@ template ZSwapV1Top( nUtxoIn,
     zSwapV1.dataEscrowEphemeralPubKeyAy <== rc_dataEscrowEphemeralPubKeyAy;
     zSwapV1.dataEscrowPathElements <== rc_dataEscrowPathElements;
     zSwapV1.dataEscrowPathIndices <== rc_dataEscrowPathIndices;
-    zSwapV1.dataEscrowEncryptedMessageAx <== rc_dataEscrowEncryptedMessageAx;
-    zSwapV1.dataEscrowEncryptedMessageAy <== rc_dataEscrowEncryptedMessageAy;
+    zSwapV1.dataEscrowEncryptedMessage <== rc_dataEscrowEncryptedMessage;
+    zSwapV1.dataEscrowEncryptedMessageHmac <== rc_dataEscrowEncryptedMessageHmac;
     zSwapV1.daoDataEscrowPubKey <== rc_daoDataEscrowPubKey;
     zSwapV1.daoDataEscrowEphemeralRandom <== rc_daoDataEscrowEphemeralRandom;
     zSwapV1.daoDataEscrowEphemeralPubKeyAx <== rc_daoDataEscrowEphemeralPubKeyAx;
     zSwapV1.daoDataEscrowEphemeralPubKeyAy <== rc_daoDataEscrowEphemeralPubKeyAy;
-    zSwapV1.daoDataEscrowEncryptedMessageAx <== rc_daoDataEscrowEncryptedMessageAx;
-    zSwapV1.daoDataEscrowEncryptedMessageAy <== rc_daoDataEscrowEncryptedMessageAy;
+    zSwapV1.daoDataEscrowEncryptedMessage <== rc_daoDataEscrowEncryptedMessage;
+    zSwapV1.daoDataEscrowEncryptedMessageHmac <== rc_daoDataEscrowEncryptedMessageHmac;
     zSwapV1.utxoOutCreateTime <== rc_utxoOutCreateTime;
     zSwapV1.utxoOutAmount <== rc_utxoOutAmount;
     zSwapV1.utxoOutOriginNetworkId <== rc_utxoOutOriginNetworkId;
