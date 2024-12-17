@@ -285,7 +285,7 @@ function getNamedAccounts() {
         pzkp: {
             localhost: 0,
             hardhat: 0,
-            amoy: '0x9C56E89D8Aa0d4A1fB769DfbEa80D6C29e5A2893',
+            amoy: '0xCd85e3E918F1A36F939281d3ca707EE262a364c6',
             polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
         },
 
@@ -335,14 +335,14 @@ function getNamedAccounts() {
         pZkp_native_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
-            amoy: '0xE4F378BF1B3E7d7B92AA2B0ADB5FF4548651Ea36',
+            amoy: '0x201124282bed388550c83BCF083e65dc49368EB8',
             polygon: '0xED151A7637EC45375EB6E39FC596E53CE6ED51FE',
         },
 
         pZkp_link_uniswapV3Pool: {
             localhost: 0,
             hardhat: 0,
-            amoy: '0x79ea0F4f833f1C752c92e5ac6F105f87cd423Af9',
+            amoy: '0xdD556a7f6a88d2dA7d5C7d4c16337C62B34B2dCb',
             polygon: '0x97957C4C96E8A2DB27BF4F1DE565FF6B7096E028',
         },
 
