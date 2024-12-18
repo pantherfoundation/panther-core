@@ -120,7 +120,7 @@ template DataEscrowElGamalEncryption(PaddingPointsSize, ScalarsSize, PointsSize)
             paddingPointHash[0] = Poseidon(1);
             paddingPointHash[0].inputs[0] <== ephemeralRandom;
 
-            n2b_paddingPointHash[0] = Num2Bits(254);
+            n2b_paddingPointHash[0] = Num2Bits_strict();
             n2b_paddingPointHash[0].in <== paddingPointHash[0].out;
 
             b2n_paddingPointHash[0] = Bits2Num(252);
@@ -155,7 +155,7 @@ template DataEscrowElGamalEncryption(PaddingPointsSize, ScalarsSize, PointsSize)
             paddingPointHash[1+j].inputs[0] <== paddingPoint[j].Ax;
             paddingPointHash[1+j].inputs[1] <== paddingPoint[j].Ay;
 
-            n2b_paddingPointHash[1+j] = Num2Bits(254);
+            n2b_paddingPointHash[1+j] = Num2Bits_strict();
             n2b_paddingPointHash[1+j].in <== paddingPointHash[1+j].out;
 
             b2n_paddingPointHash[1+j] = Bits2Num(252);
@@ -407,7 +407,7 @@ template EphemeralPubKeysBuilder(nPubKeys) {
             hash[i] = Poseidon(2);
             hash[i].inputs[0] <== sharedKey_eRandMultPubKey[i].out[0];
             hash[i].inputs[1] <== sharedKey_eRandMultPubKey[i].out[1];
-            n2b_hash[i] = Num2Bits(254);
+            n2b_hash[i] = Num2Bits_strict();
             n2b_hash[i].in <== hash[i].out;
             b2n_hash[i] = Bits2Num(252);
 
