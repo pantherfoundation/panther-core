@@ -71,7 +71,10 @@ template TrustProvidersInternalKyt() {
     kytSignedMessageHashIsEqual.in[1] <== kytSignedMessageHashInternal.out;
 
     // internal package type
-    kytSignedMessagePackageType === 253;
+    component kytInternalPackageTypeIsEqual = ForceEqualIfEnabled();
+    kytInternalPackageTypeIsEqual.enabled <== enabled;
+    kytInternalPackageTypeIsEqual.in[0] <== kytSignedMessagePackageType;
+    kytInternalPackageTypeIsEqual.in[1] <== 253;
 
     // check if signing key is still valid
     component isLessThanEq_InternalTime_kytEdDsaPubKeyExpiryTime = LessEqThanWhenEnabled(252);
@@ -194,7 +197,10 @@ template TrustProvidersDepositWithdrawKyt() {
     isLessThanEq_createTime_DW_Timestamp.in[1] <== kytSignedMessageTimestamp + zZoneKytExpiryTime;
 
     // package type
-    kytSignedMessagePackageType === 2;
+    component kytSignedMessagePackageTypeIsEqual = ForceEqualIfEnabled();
+    kytSignedMessagePackageTypeIsEqual.enabled <== enabled;
+    kytSignedMessagePackageTypeIsEqual.in[0] <== kytSignedMessagePackageType;
+    kytSignedMessagePackageTypeIsEqual.in[1] <== 2;
 
     // inclusion proof
     component kytLeafIdAndRuleInclusionProver = TrustProvidersMerkleTreeLeafIDAndRuleInclusionProver();
