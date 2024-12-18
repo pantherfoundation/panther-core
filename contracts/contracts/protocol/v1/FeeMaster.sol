@@ -261,6 +261,7 @@ contract FeeMaster is
 
         (
             uint256 newNativeTokenReserves,
+            uint256 outputWNative,
             uint256 newProtocolFeeInZkp
         ) = _trySwapProtoclFeesToNativeAndZkp(
                 ZKP_TOKEN,
@@ -294,7 +295,11 @@ contract FeeMaster is
             );
         }
 
-        _grantPrpRewardsToUser(secretHash, GT_FEE_EXCHANGE);
+        uint256 minRewardableNativeAmount = minRewardableZkpAmount /
+            cachedNativeRateInZkp;
+
+        if (outputWNative >= minRewardableNativeAmount)
+            _grantPrpRewardsToUser(secretHash, GT_FEE_EXCHANGE);
     }
 
     function distributeProtocolZkpFees(bytes32 secretHash) external {

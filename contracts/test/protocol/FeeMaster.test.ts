@@ -1881,13 +1881,22 @@ describe('FeeMaster Contract', function () {
                     true,
                 );
 
-            await feeMaster.connect(owner).updateTwapPeriod(twapPeriod);
-
             // weth must be able to convert weth to native
             await owner.sendTransaction({
                 to: weth.address,
                 value: ethers.utils.parseEther('50'),
             });
+
+            await feeMaster.connect(owner).updateTwapPeriod(twapPeriod);
+            await mockUniswapPoolRate(uniswapV3PoolNativeZkp, 1, twapPeriod);
+
+            const minRewardableZkpAmount = ethers.utils.parseEther('1');
+            const treasuryLockPercentage = 100;
+            await feeMaster.updateProtocolZkpFeeDistributionParams(
+                treasuryLockPercentage,
+                minRewardableZkpAmount,
+            );
+            await feeMaster.cacheNativeToZkpRate();
         });
 
         function mockSwap(

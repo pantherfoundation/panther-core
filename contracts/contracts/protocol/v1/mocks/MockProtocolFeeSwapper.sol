@@ -14,7 +14,11 @@ contract MockProtocolFeeSwapper is ProtocolFeeSwapper {
         uint256 nativeTokenReservesTarget
     )
         external
-        returns (uint256 newNativeTokenReserves, uint256 newProtocolFeeInZkp)
+        returns (
+            uint256 newNativeTokenReserves,
+            uint256 outputWNative,
+            uint256 outputZkpToken
+        )
     {
         return
             _trySwapProtoclFeesToNativeAndZkp(
