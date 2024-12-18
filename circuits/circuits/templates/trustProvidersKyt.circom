@@ -32,6 +32,11 @@ template TrustProvidersInternalKyt() {
     signal input                        kytSignedMessageHash;
     signal input                        kytSignature[3];
 
+    component iskytSignedMessageChargedAmountZkpEqualToZero = IsEqual();
+    iskytSignedMessageChargedAmountZkpEqualToZero.in[0] <== kytSignedMessageChargedAmountZkp;
+    iskytSignedMessageChargedAmountZkpEqualToZero.in[1] <== 0;
+    iskytSignedMessageChargedAmountZkpEqualToZero.out === 1;
+
     component kytSignedMessageHashInternal = Poseidon(8);
 
     kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
@@ -124,6 +129,11 @@ template TrustProvidersDepositWithdrawKyt() {
         kytSignedMessageHashInternal.inputs[8] <== kytSignedMessageSigner;
         kytSignedMessageHashInternal.inputs[9] <== kytSignedMessageChargedAmountZkp;
     } else {
+        component iskytSignedMessageChargedAmountZkpEqualToZero = IsEqual();
+        iskytSignedMessageChargedAmountZkpEqualToZero.in[0] <== kytSignedMessageChargedAmountZkp;
+        iskytSignedMessageChargedAmountZkpEqualToZero.in[1] <== 0;
+        iskytSignedMessageChargedAmountZkpEqualToZero.out === 1;
+
         kytSignedMessageHashInternal = Poseidon(9);
 
         kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
