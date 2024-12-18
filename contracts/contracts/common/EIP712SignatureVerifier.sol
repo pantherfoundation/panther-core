@@ -2,7 +2,11 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
+import "./ECDSA.sol";
+
 abstract contract EIP712SignatureVerifier {
+    using ECDSA for bytes32;
+
     bytes private constant EIP191_VERSION = "\x19\x01";
 
     string internal constant EIP712_NAME = "Panther Protocol";
@@ -39,8 +43,7 @@ abstract contract EIP712SignatureVerifier {
         bytes32 r,
         bytes32 s
     ) internal pure returns (address signer) {
-        signer = ecrecover(hash, v, r, s);
-        require(signer != address(0), "ECDSA invalid signature");
+        signer = hash.recover(v, r, s);
     }
 
     function toTypedDataHash(
