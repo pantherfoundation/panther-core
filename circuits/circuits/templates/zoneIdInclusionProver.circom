@@ -17,7 +17,7 @@ template ZoneIdInclusionProver(){
     offset_lessThan_15.in[1] <== 15;
     offset_lessThan_15.out === 1;
 
-    component n2b_zoneIds = Num2Bits(240);
+    component n2b_zoneIds = Num2Bits_strict();
     n2b_zoneIds.in <== zoneIds;
 
     component b2n_zoneIds[15];
