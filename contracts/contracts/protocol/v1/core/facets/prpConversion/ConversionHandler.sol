@@ -59,20 +59,6 @@ abstract contract ConversionHandler {
         amountOut = numerator / denominator;
     }
 
-    function getAmountIn(
-        uint256 amountOut,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) public pure returns (uint256 amountIn) {
-        require(
-            amountOut > 0 && reserveIn > 0 && reserveOut > amountOut,
-            "ERR_INSUFFICIENT_AMOUNT_OUT_OR_RESERVES"
-        );
-        uint256 numerator = reserveIn * amountOut;
-        uint256 denominator = reserveOut - amountOut;
-        amountIn = numerator / denominator;
-    }
-
     function _processConversion(
         address zkpToken,
         uint96 zkpAmountOutMin,

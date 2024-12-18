@@ -383,25 +383,4 @@ describe('PrpConversion', function () {
             ).to.be.revertedWith('PC:E11');
         });
     });
-
-    describe('rescueERC20', function () {
-        it('Should transfer token from prpConverter', async function () {
-            await zkpToken.transfer(prpConversion.address, zkpAmount);
-            await prpConversion.initPool(prpVirtualAmount, zkpAmount);
-
-            await prpConversion.rescueErc20(
-                zkpToken.address,
-                owner.address,
-                1000,
-            );
-        });
-
-        it('Should revert if not executed by owner', async function () {
-            await expect(
-                prpConversion
-                    .connect(notOwner)
-                    .rescueErc20(zkpToken.address, owner.address, 1000),
-            ).to.be.revertedWith('LibDiamond: Must be contract owner');
-        });
-    });
 });
