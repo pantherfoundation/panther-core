@@ -22,14 +22,18 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         uint256 nativeTokenReservesTarget
     )
         internal
-        returns (uint256 newNativeTokenReserves, uint256 newProtocolFeeInZkp)
+        returns (
+            uint256 newNativeTokenReserves,
+            uint256 outputWNative,
+            uint256 outputZkpToken
+        )
     {
         // Converting sellToken for weth
-        uint256 receivedWNative = _convertTokenToNative(sellToken, sellAmount);
+        outputWNative = _convertTokenToNative(sellToken, sellAmount);
 
-        assert(receivedWNative > 0);
+        assert(outputWNative > 0);
 
-        newNativeTokenReserves = nativeTokenReserves + receivedWNative;
+        newNativeTokenReserves = nativeTokenReserves + outputWNative;
 
         if (newNativeTokenReserves > nativeTokenReservesTarget) {
             // Getting the excess amount of Native tokens
@@ -37,7 +41,7 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
                 nativeTokenReservesTarget;
 
             // Converting Native to ZKP
-            newProtocolFeeInZkp = _convertNativeToZkp(zkpToken, excessNative);
+            outputZkpToken = _convertNativeToZkp(zkpToken, excessNative);
 
             newNativeTokenReserves = nativeTokenReservesTarget;
         }
@@ -54,8 +58,8 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         emit ProtocolFeeSwapped(
             sellToken,
             sellAmount,
-            receivedWNative,
-            newProtocolFeeInZkp
+            outputWNative,
+            outputZkpToken
         );
     }
 
