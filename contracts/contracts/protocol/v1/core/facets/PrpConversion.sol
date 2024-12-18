@@ -12,7 +12,6 @@ import "../../verifier/Verifier.sol";
 import "./prpConversion/ConversionHandler.sol";
 import "../utils/TransactionChargesHandler.sol";
 import "../utils/TransactionNoteEmitter.sol";
-import "../../../../common/Claimable.sol";
 
 import "../libraries/UtxosInserter.sol";
 import "../libraries/NullifierSpender.sol";
@@ -32,8 +31,7 @@ contract PrpConversion is
     Verifier,
     ConversionHandler,
     TransactionChargesHandler,
-    TransactionNoteEmitter,
-    Claimable
+    TransactionNoteEmitter
 {
     using UtxosInserter for address;
     using TransferHelper for address;
@@ -263,35 +261,5 @@ contract PrpConversion is
             privateMessages
         );
         extraInputsHash.validateExtraInputHash(extraInp);
-    }
-
-    /**
-     * @notice Rescues ERC20 tokens from the contract.
-     * @param token The address of the ERC20 token to rescue.
-     * @param to The address to send the rescued tokens to.
-     * @param amount The amount of tokens to rescue.
-     * @dev This function can only be called by the contract owner.
-     */
-    function rescueErc20(
-        address token,
-        address to,
-        uint256 amount
-    ) external onlyOwner {
-        require(token == ZKP_TOKEN, ERR_INVALID_TOKEN_ADDRESS);
-
-        uint256 zkpBalance = ZKP_TOKEN.safeBalanceOf(address(this));
-        require(zkpBalance >= amount, ERR_INSUFFICIENT_AMOUNT_OUT);
-
-        uint256 updatedZkpBalance = zkpBalance - amount;
-
-        (uint256 _prpReserve, uint256 _zkpReserve, ) = getReserves();
-
-        uint256 prpAmountIn = getAmountIn(amount, _prpReserve, _zkpReserve);
-
-        uint256 updatedPrpVirtualBalance = _prpReserve + prpAmountIn;
-
-        _claimErc20(token, to, amount);
-
-        _update(updatedPrpVirtualBalance, updatedZkpBalance);
     }
 }

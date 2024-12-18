@@ -3,8 +3,9 @@
 pragma solidity ^0.8.19;
 
 import "../core/facets/PrpConversion.sol";
+import "../../../common/Claimable.sol";
 
-contract MockPrpConversion is PrpConversion {
+contract MockPrpConversion is PrpConversion, Claimable {
     address public owner;
 
     constructor(
