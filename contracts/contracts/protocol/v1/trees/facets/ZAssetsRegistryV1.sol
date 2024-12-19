@@ -310,7 +310,7 @@ contract ZAssetsRegistryV1 is
         else if (tokenType == ERC721_TOKEN_TYPE)
             _sanitizeErc721Params(zAssetInnerParams);
         else if (tokenType == ERC1155_TOKEN_TYPE)
-            _sanitizeErc721Params(zAssetInnerParams);
+            _sanitizeErc721Params(zAssetInnerParams); //TODO: add checks for ERC1155
         else revert("ZAR: invalid token type");
     }
 
@@ -334,7 +334,7 @@ contract ZAssetsRegistryV1 is
         ZAssetInnerParams calldata _zAsset
     ) private pure {
         _checkNonZeroAddress(_zAsset.token);
-        _checkZeroScaleFactor(_zAsset.scale);
+        _checkERC721Scale(_zAsset.scale);
     }
 
     function _checkNonZeroAddress(address token) private pure {
@@ -355,12 +355,12 @@ contract ZAssetsRegistryV1 is
         require(tokenIdsRangeSize == 0, "ZAR: non-zero offset");
     }
 
-    function _checkZeroScaleFactor(uint64 scale) private pure {
-        require(scale == 0, "ZAR: zero scale factor");
+    function _checkNonZeroScale(uint64 scale) private pure {
+        require(scale != 0, "ZAR: non-zero scale");
     }
 
-    function _checkNonZeroScale(uint64 scale) private pure {
-        require(scale != 0, "ZAR: non-zero scale factor");
+    function _checkERC721Scale(uint64 scale) private pure {
+        require(scale == 1, "ZAR: invalid erc721 scale");
     }
 
     function _checkErc20Weight(uint48 weight) private pure {
