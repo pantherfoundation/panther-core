@@ -54,7 +54,7 @@ contract ZAssetsRegistryV1 is
         uint64 batchId;
         uint32 startTokenId;
         uint32 tokenIdsRangeSize;
-        uint8 scaleFactor;
+        uint64 scale;
         uint8 networkId;
         uint8 tokenType;
     }
@@ -290,7 +290,7 @@ contract ZAssetsRegistryV1 is
                             zAssetInnerParams
                                 .tokenIdsRangeSize
                                 .encodeTokenIdRangeSizeWithScale(
-                                    zAssetInnerParams.scaleFactor
+                                    zAssetInnerParams.scale
                                 )
                         )
                     )
@@ -334,7 +334,7 @@ contract ZAssetsRegistryV1 is
         ZAssetInnerParams calldata _zAsset
     ) private pure {
         _checkNonZeroAddress(_zAsset.token);
-        _checkZeroScaleFactor(_zAsset.scaleFactor);
+        _checkZeroScaleFactor(_zAsset.scale);
     }
 
     function _checkNonZeroAddress(address token) private pure {
@@ -355,12 +355,12 @@ contract ZAssetsRegistryV1 is
         require(tokenIdsRangeSize == 0, "ZAR: non-zero offset");
     }
 
-    function _checkZeroScaleFactor(uint8 scaleFactor) private pure {
-        require(scaleFactor == 0, "ZAR: non-zero scale factor");
+    function _checkZeroScaleFactor(uint64 scale) private pure {
+        require(scale == 0, "ZAR: zero scale factor");
     }
 
-    function _checkScaleFactor(uint8 scaleFactor) private pure {
-        require(scaleFactor <= 32, "ZAR: too high scale factor");
+    function _checkNonZeroScale(uint64 scale) private pure {
+        require(scale != 0, "ZAR: non-zero scale factor");
     }
 
     function _checkErc20Weight(uint48 weight) private pure {
