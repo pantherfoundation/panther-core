@@ -189,9 +189,20 @@ contract ZSwap is
      */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
         inputs[ZSWAP_SALT_HASH_IND].validateNonZero(ERR_ZERO_SALT_HASH);
+
         inputs[ZSWAP_MAGICAL_CONSTRAINT_IND].validateNonZero(
             ERR_ZERO_MAGIC_CONSTR
         );
+
+        inputs[ZSWAP_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND]
+            .validateNonZero(ERR_ZERO_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC);
+
+        inputs[ZSWAP_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND].validateNonZero(
+            ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC
+        );
+
+        inputs[ZSWAP_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND]
+            .validateNonZero(ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC);
     }
 
     /**
