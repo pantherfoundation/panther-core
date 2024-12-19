@@ -9,100 +9,76 @@ pragma solidity ^0.8.19;
  * has the capability to facilitate transaction payments.
  * The paymaster knows in advance the requisite network fee that the user will pay in
  * ZKP tokens and gets the exchange rate from the FeeMaster.
- * Upon verification of sufficient funds, transactions proceed successfully, culminating in
- * the settlement of the user's debt to the paymaster in Ethereum as an integral part of
- * the transaction process.
+ * Upon verification of paymasterCompensation and requiredPrefund the user operation
+ * is sponsored by paymaster.
  */
 
 import "./errMsgs/PayMasterErrMsgs.sol";
 
 import "./core/interfaces/IPrpVoucherController.sol";
 import "./interfaces/IPayOff.sol";
-import "./interfaces/IProviderFeeDebt.sol";
 import "./interfaces/ICachedNativeZkpTwap.sol";
 import "../../common/ImmutableOwnable.sol";
 import "../../common/erc4337/contracts/interfaces/IPaymaster.sol";
 import "../../common/erc4337/contracts/interfaces/IEntryPoint.sol";
 import "../../common/erc4337/contracts/interfaces/UserOperation.sol";
-import "../../common/misc/RevertMsgGetter.sol";
-// solhint-disable-next-line max-line-length
-import { GT_PAYMASTER_REFUND, HUNDRED_PERCENT, NATIVE_TOKEN, PROTOCOL_TOKEN_DECIMALS } from "../../common/Constants.sol";
+import { GT_PAYMASTER_REFUND, HUNDRED_PERCENT, PROTOCOL_TOKEN_DECIMALS } from "../../common/Constants.sol";
 
-contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
-    event UserOperationSponsored(
-        uint256 actualGasCost,
-        uint256 requiredPrefundInZKP,
-        uint256 paymasterCompensation
-    );
-
-    event EntryPointDeposited(uint256 refundAmount);
-    event VoucherNotGranted(string reason);
-
-    event ValidatePaymasterUserOpRequested(
+contract PayMaster is ImmutableOwnable, IPaymaster {
+    event UserOperationValidated(
+        bytes32 userOpHash,
         uint256 requiredPreFund,
-        uint256 requiredPrefundInZKP,
-        uint256 maxFeePerGas,
-        uint256 paymasterCompensation
+        uint256 requiredZkpCompensation,
+        uint256 chargedZkpCompensation
     );
-
-    event ConfigUpdated(
-        uint16 postOpGasCost,
-        uint32 extraPct,
-        uint96 depositThreshold
-    );
+    event UserOperationSponsored(bytes32 userOpHash, uint256 actualGasCosts);
+    event EntryPointDeposited(uint256 amount);
+    event BundlerConfigUpdated(address bundler, BundlerConfig config);
+    event VoucherNotGranted(string reason);
 
     address public immutable PRP_VOUCHER_GRANTOR;
     address public immutable ENTRY_POINT;
-    address public immutable ORPHAN_WALLET;
+    address public immutable ACCOUNT;
     address public immutable FEE_MASTER;
 
-    Config public config;
+    // Mapping from Bundler address to params
+    mapping(address => BundlerConfig) public bundlerConfigs;
 
-    /// @dev Struct for storing Paymaster configuration
-    /// @param postOpGasCost Gas cost of postOp execution
-    /// @param extraPct Extra percentage added to requiredPrefund
-    /// to minimize exchange risk. 4-digit precision (5% = 50)
-    /// @param depositThreshold Minimum amount to deposit to an EntryPoint
-    struct Config {
-        uint16 postOpGasCost;
-        uint32 extraPct;
-        uint96 depositThreshold;
+    /// @dev Minimum amount of the EntryPoint deposit to get the reward
+    uint96 public depositThreshold;
+
+    /// @dev Struct for storing configuration for a bundler.
+    /// @param isEnabled True if enabled.
+    /// @param maxExtraGas Maximum allowed gas for verification and post-operation;
+    /// the bundler may be compensated for at most `userOp.callGasLimit + maxExtraGas`.
+    /// @param gasPriceMarkupPct add some gap to current gas price
+    /// @param exchangeRiskPct An additional percentage added to the required prefund
+    /// to mitigate exchange rate risk.Expressed in units of 0.01% (e.g., 500 means 5%).
+    struct BundlerConfig {
+        bool isEnabled;
+        uint24 maxExtraGas;
+        uint16 gasPriceMarkupPct;
+        uint32 exchangeRiskPct;
     }
 
     constructor(
         address _entryPoint,
-        address _orphanWallet,
+        address _account,
         address _feeMaster,
         address _prpVoucherGrantor
     ) ImmutableOwnable(msg.sender) {
-        require(
-            _entryPoint != address(0) &&
-                _orphanWallet != address(0) &&
-                _feeMaster != address(0) &&
-                _prpVoucherGrantor != address(0),
-            ERR_INIT
-        );
+        _ensureNonZeroAddress(_entryPoint);
+        _ensureNonZeroAddress(_account);
+        _ensureNonZeroAddress(_feeMaster);
+        _ensureNonZeroAddress(_prpVoucherGrantor);
+
         ENTRY_POINT = _entryPoint;
-        ORPHAN_WALLET = _orphanWallet;
+        ACCOUNT = _account;
         FEE_MASTER = _feeMaster;
         PRP_VOUCHER_GRANTOR = _prpVoucherGrantor;
     }
 
-    /// @notice Configuration parameters setup
-    /// @param postOpGasCost Gas cost of postOp execution
-    /// @param extraPct Extra ZKP value added to minimize exchange risk. 4-digit precision.
-    /// @param depositThreshold The minimum amount that is efficient to deposit to EntryPoint
-    function updateConfig(
-        uint16 postOpGasCost,
-        uint32 extraPct,
-        uint96 depositThreshold
-    ) external onlyOwner {
-        require(extraPct <= HUNDRED_PERCENT, ERR_WRONG_EXTRA_CHARGE);
-
-        config = Config(postOpGasCost, extraPct, depositThreshold);
-
-        emit ConfigUpdated(postOpGasCost, extraPct, depositThreshold);
-    }
+    receive() external payable {}
 
     /**
      * @dev Validates a user operation to ensure it can be sponsored by the PayMaster.
@@ -119,68 +95,58 @@ contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
      * @param userOp The user operation data.
      *  userOpHash The hash of the user operation (unused in this implementation).
      * @param requiredPreFund The required prefund amount.
-     * @return context The encoded context containing requiredPrefundInZKP and paymasterCompensation.
+     * @return context The encoded context containing requiredZkpCompensation and chargedZkpCompensation.
      * @return validationData The validation data (currently returns 0).
      */
     function validatePaymasterUserOp(
         UserOperation calldata userOp,
-        bytes32 /*userOpHash*/,
+        bytes32 userOpHash,
         uint256 requiredPreFund
     ) external returns (bytes memory context, uint256 validationData) {
-        require(userOp.sender == ORPHAN_WALLET, ERR_NOT_TRUSTED_ACCOUNT);
-        require(
-            userOp.paymasterAndData.length == 20,
-            ERR_WRONG_PAYMASTER_AND_DATA
-        );
+        _ensureEntryPointCall();
+        _sanitizeUserOp(userOp);
+
+        BundlerConfig memory config = _getCallingBundlerConfig();
+        _validateRequiredPrefund(userOp, requiredPreFund, config);
 
         // Retrieve the cached ZKP price in its native decimal format
         uint256 cachedZKPPrice = ICachedNativeZkpTwap(FEE_MASTER)
             .cachedNativeRateInZkp();
 
-        // Calculate the total required prefund with postOpGasCost
-        uint256 requiredTotal = requiredPreFund +
-            (config.postOpGasCost * userOp.maxFeePerGas);
+        // Calculate the paymaster compensation in ZKP
+        uint256 requiredZkpCompensation = _addExtraPct(
+            (requiredPreFund * cachedZKPPrice),
+            config.exchangeRiskPct
+        ) / PROTOCOL_TOKEN_DECIMALS;
 
-        // Add an extra percentage of the requiredTotal
-        uint256 totalWithExtraPct = addExtraPct(requiredTotal);
-
-        // Calculate requiredPreFund in ZKP accounting in protocol token decimals
-        uint256 requiredPrefundInZKP = (cachedZKPPrice * totalWithExtraPct) /
-            PROTOCOL_TOKEN_DECIMALS;
-
-        (, uint256 paymasterCompensation) = abi.decode(
+        (, uint256 chargedZkpCompensation) = abi.decode(
             userOp.signature,
             (uint256, uint256)
         );
 
-        emit ValidatePaymasterUserOpRequested(
-            requiredPreFund,
-            requiredPrefundInZKP,
-            userOp.maxFeePerGas,
-            paymasterCompensation
-        );
-
         require(
-            requiredPrefundInZKP <= paymasterCompensation,
-            ERR_WRONG_ZKP_CHARGED_AMOUNT
+            requiredZkpCompensation <= chargedZkpCompensation,
+            ERR_SMALL_PAYMASTER_COMPENSATION
         );
 
-        bytes memory _context = abi.encode(
-            requiredPrefundInZKP,
-            paymasterCompensation
+        emit UserOperationValidated(
+            userOpHash,
+            requiredPreFund,
+            requiredZkpCompensation,
+            chargedZkpCompensation
         );
 
-        return (_context, 0);
+        context = abi.encode(userOpHash);
+
+        return (context, 0);
     }
 
     /**
      * @dev Handles post-operation actions after a user operation is completed.
      * This function is called by the EntryPoint contract after a user operation has been executed.
-     * It emits an event to log details about the sponsored user operation, including the actual gas cost,
-     * required prefund in ZKP, and the paymaster compensation.
-     * @param mode The mode in which the post-operation is executed (not used in this implementation).
-     * @param context The context data passed from the pre-operation validation,
-     * containing requiredPrefundInZKP and paymasterCompensation.
+     * It emits event containing sponsored user operation actual gas cost and hash
+     * @param mode Post-operation executed mode
+     * @param context The context data passed from the pre-operation validation, it contains userOpHash
      * @param actualGasCost The actual gas cost incurred during the user operation.
      */
     function postOp(
@@ -188,16 +154,14 @@ contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
         bytes calldata context,
         uint256 actualGasCost
     ) external {
-        (mode);
+        _ensureEntryPointCall();
 
-        (uint256 requiredPrefundInZKP, uint256 paymasterCompensation) = abi
-            .decode(context, (uint256, uint256));
-
-        emit UserOperationSponsored(
-            actualGasCost,
-            requiredPrefundInZKP,
-            paymasterCompensation
-        );
+        if (mode == PostOpMode.opSucceeded) {
+            bytes32 userOpHash = abi.decode(context, (bytes32));
+            emit UserOperationSponsored(userOpHash, actualGasCost);
+        } else {
+            revert(ERR_USER_OP_REVERTED);
+        }
     }
 
     /**
@@ -206,31 +170,11 @@ contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
      * by provided saltHash
      */
     function claimEthAndRefundEntryPoint(bytes32 saltHash) external {
-        uint256 nativeTokensDebt = getFeeMasterNativeTokenDebt();
-        _claimCompensationFromFeeMaster();
+        uint256 claimedAmount = _claimCompensationFromFeeMaster();
         _depositAllBalance();
-        if (nativeTokensDebt > config.depositThreshold) {
+        if (depositThreshold > 0 && claimedAmount > depositThreshold) {
             _requestRewardsFromPrpVoucherGrantor(saltHash);
         }
-    }
-
-    /**
-     * @dev Claims the compensation from the FeeMaster contract.
-     */
-    function _claimCompensationFromFeeMaster() internal {
-        IPayOff(FEE_MASTER).payOff(address(this));
-    }
-
-    /**
-     * @dev Deposits the entire balance of this contract to the EntryPoint contract.
-     * This is done to ensure that the PayMaster has sufficient funds to sponsor user operations.
-     * After depositing, an event is emitted to log the deposited amount.
-     */
-    function _depositAllBalance() internal {
-        IEntryPoint(ENTRY_POINT).depositTo{ value: address(this).balance }(
-            address(this)
-        );
-        emit EntryPointDeposited(address(this).balance);
     }
 
     /**
@@ -268,6 +212,81 @@ contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
     }
 
     /**
+     * @dev Withdraw deposit to address
+     * Only contract owner can use
+     * @param withdrawAddress The address to send withdrawn value.
+     * @param withdrawAmount The amount to withdraw.
+     */
+    function withdrawTo(
+        address payable withdrawAddress,
+        uint256 withdrawAmount
+    ) external onlyOwner {
+        IEntryPoint(ENTRY_POINT).withdrawTo(withdrawAddress, withdrawAmount);
+    }
+
+    /// @notice Configuration parameters setup
+    /// @param bundler executor address
+    /// @param newConfig config
+    function updateBundlerConfig(
+        address bundler,
+        BundlerConfig memory newConfig
+    ) public onlyOwner {
+        _ensureNonZeroAddress(bundler);
+        /// @dev no limitations on newConfig fields
+        bundlerConfigs[bundler] = newConfig;
+        emit BundlerConfigUpdated(bundler, newConfig);
+    }
+
+    function updateDepositThreshold(
+        uint96 _depositThreshold
+    ) external onlyOwner {
+        require(_depositThreshold > 0, ERR_THRESHOLD_CANT_BE_ZERO);
+        depositThreshold = _depositThreshold;
+    }
+
+    /**
+     * @dev Ensures the required prefund lies within an affordable range.
+     * Reference:
+     * https://github.com/eth-infinitism/account-abstraction/v0.0.6/contracts/core/EntryPoint.sol#L325
+     */
+    function _validateRequiredPrefund(
+        UserOperation calldata userOp,
+        uint256 requiredPreFund,
+        BundlerConfig memory config
+    ) internal view {
+        uint256 toleratedGasPrice = _addExtraPct(
+            tx.gasprice + block.basefee,
+            config.gasPriceMarkupPct
+        );
+        uint256 toleratedGas = userOp.callGasLimit + config.maxExtraGas;
+        uint256 toleratedGasCosts = toleratedGas * toleratedGasPrice;
+
+        require(
+            requiredPreFund <= toleratedGasCosts,
+            ERR_LARGE_REQUIRED_PREFUND
+        );
+    }
+
+    /**
+     * @dev Claims the compensation from the FeeMaster contract.
+     */
+    function _claimCompensationFromFeeMaster() internal returns (uint256) {
+        return IPayOff(FEE_MASTER).payOff(address(this));
+    }
+
+    /**
+     * @dev Deposits the entire balance of this contract to the EntryPoint contract.
+     * This is done to ensure that the PayMaster has sufficient funds to sponsor user operations.
+     * After depositing, an event is emitted to log the deposited amount.
+     */
+    function _depositAllBalance() internal {
+        IEntryPoint(ENTRY_POINT).depositTo{ value: address(this).balance }(
+            address(this)
+        );
+        emit EntryPointDeposited(address(this).balance);
+    }
+
+    /**
      * @dev Generate rewards for refunding deposit
      * @param saltHash Associated with zAccount that will be
      * granted a voucher for refunding PayMaster
@@ -287,37 +306,43 @@ contract PayMaster is ImmutableOwnable, IPaymaster, RevertMsgGetter {
         }
     }
 
-    /**
-     * @dev Withdraw deposit to address
-     * Only contract owner can use
-     * @param withdrawAddress The address to send withdrawn value.
-     * @param withdrawAmount The amount to withdraw.
-     */
-    function withdrawTo(
-        address payable withdrawAddress,
-        uint256 withdrawAmount
-    ) external onlyOwner {
-        IEntryPoint(ENTRY_POINT).withdrawTo(withdrawAddress, withdrawAmount);
+    function _addExtraPct(
+        uint256 value,
+        uint256 extraPct
+    ) internal pure returns (uint256 increasedValue) {
+        return value + (value * extraPct) / HUNDRED_PERCENT;
     }
 
-    // that will account for both protocol and native tokens FeeMaster debt to PayMaster
-    function getFeeMasterNativeTokenDebt() public view returns (uint256) {
-        return IProviderFeeDebt(FEE_MASTER).debts(address(this), NATIVE_TOKEN);
+    function _sanitizeUserOp(UserOperation calldata userOp) internal view {
+        require(userOp.sender == ACCOUNT, ERR_NOT_TRUSTED_ACCOUNT);
+        require(
+            userOp.paymasterAndData.length == 20,
+            ERR_WRONG_PAYMASTER_AND_DATA
+        );
     }
 
-    /**
-     * @dev Adds an extra percentage to the required total to account for exchange rate fluctuations.
-     * This helps to ensure that the required total is sufficient to cover potential changes in exchange rates.
-     *
-     * @param requiredTotal The initial required total amount.
-     * @return The required total amount with the extra percentage added.
-     */
-    function addExtraPct(uint256 requiredTotal) public view returns (uint256) {
-        // Adding an extra percentage of the requiredTotal
-        uint256 requiredTotalWithPct = requiredTotal +
-            ((requiredTotal * config.extraPct) / HUNDRED_PERCENT);
-        return requiredTotalWithPct;
+    function _ensureEntryPointCall() internal view {
+        require(msg.sender == ENTRY_POINT, ERR_NOT_ALLOWED_CALL);
     }
 
-    receive() external payable {}
+    function _getCallingBundlerConfig()
+        internal
+        view
+        returns (BundlerConfig memory)
+    {
+        // solhint-disable-next-line avoid-tx-origin
+        return _getBundlerConfig(tx.origin);
+    }
+
+    function _getBundlerConfig(
+        address bundler
+    ) internal view returns (BundlerConfig memory) {
+        BundlerConfig memory config = bundlerConfigs[bundler];
+        require(config.isEnabled, ERR_BUNDLER_NOT_ENABLED);
+        return config;
+    }
+
+    function _ensureNonZeroAddress(address _address) internal view {
+        require(_address != address(0), ERR_ZERO_ADDRESS);
+    }
 }
