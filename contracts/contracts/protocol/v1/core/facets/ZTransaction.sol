@@ -192,6 +192,17 @@ contract ZTransaction is
         inputs[MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND].validateNonZero(
             ERR_ZERO_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX
         );
+
+        inputs[MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND]
+            .validateNonZero(ERR_ZERO_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC);
+
+        inputs[MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND].validateNonZero(
+            ERR_ZERO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC
+        );
+
+        inputs[MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND].validateNonZero(
+            ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC
+        );
     }
 
     /**
