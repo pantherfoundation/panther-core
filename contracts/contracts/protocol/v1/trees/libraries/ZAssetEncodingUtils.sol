@@ -25,11 +25,10 @@ library ZAssetEncodingUtils {
 
     function encodeTokenIdRangeSizeWithScale(
         uint32 tokenIdRangeSize,
-        uint8 scaleFactor
+        uint64 scale
     ) internal pure returns (uint96) {
-        require(scaleFactor <= 19, "too high scale factor");
+        require(scale > 0, "zero scale");
 
-        uint64 scale = uint64((10 ** scaleFactor));
         return (uint96(tokenIdRangeSize) << 64) | scale;
     }
 }
