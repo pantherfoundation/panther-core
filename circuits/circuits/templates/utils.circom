@@ -965,6 +965,10 @@ template BabyJubJubSubOrderTag(isActive) {
     signal input in;
     signal output {sub_order_bj_sf} out;
     var suborder = 2736030358979909402780800718157159386076813972158567259200215660948447373041;
+
+    component n2b_in = Num2Bits(251);
+    n2b_in.in <== in;
+
     component n2b;
     if ( isActive ) {
         n2b = LessThan(251);
