@@ -389,6 +389,7 @@ contract FeeMaster is
         uint256 amount
     ) external returns (uint256 debt) {
         debt = debts[msg.sender][tokenAddress];
+        require(amount > 0, "zero amount");
         require(debt >= amount, "zero debt");
 
         _updateDebts(msg.sender, tokenAddress, -int256(amount));
