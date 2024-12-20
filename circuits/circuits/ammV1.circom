@@ -330,7 +330,7 @@ template AmmV1 ( UtxoLeftMerkleTreeDepth,
     zAccountBlackListInlcusionProver.zAccountId <== zAccountUtxoInId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
     zAccountBlackListInlcusionProver.merkleRoot <== zAccountBlackListMerkleRoot;
-    for (var j = 0; j < ZZoneMerkleTreeDepth; j++) {
+    for (var j = 0; j < ZAccountBlackListMerkleTreeDepth; j++) {
         zAccountBlackListInlcusionProver.pathElements[j] <== zAccountBlackListPathElements[j];
     }
 
