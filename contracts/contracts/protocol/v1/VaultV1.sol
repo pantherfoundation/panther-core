@@ -206,5 +206,13 @@ contract VaultV1 is
         );
     }
 
-    receive() external payable {}
+    /**
+     * @dev Reverts any direct ETH transfers to the vault implementation contract.
+     * Since this contract is meant to be used behind a proxy, direct ETH transfers
+     * to the implementation contract should be prevented to avoid locking funds.
+     * ETH transfers should go through the proxy contract instead.
+     */
+    receive() external payable {
+        revert("Direct ETH transfers to implementation not allowed");
+    }
 }
