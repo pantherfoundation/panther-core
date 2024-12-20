@@ -38,4 +38,6 @@ contract MockFeeMaster is FeeMaster {
     function withdrawToken(address token, uint256 amount) external {
         token.safeTransfer(OWNER, amount);
     }
+
+    receive() external payable override {}
 }

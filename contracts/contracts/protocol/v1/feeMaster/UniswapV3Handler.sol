@@ -71,27 +71,53 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         IWETH(WETH).withdraw(wNativeAmount);
     }
 
-    // This function calculates sqrtPriceLimitX96 based on TWAP price
     function getSqrtPriceLimitX96(
-        uint256 twapPrice
-    ) internal pure returns (uint160) {
-        // Step 1: Take the square root of the TWAP price
-        uint256 sqrtPrice = sqrt(twapPrice);
+        Pool memory pool,
+        address inputToken,
+        address outputToken,
+        uint256 slippageTolerance // e.g., 100 = 1%, 10 = 0.1%
+    ) internal view returns (uint160 sqrtPriceLimitX96) {
+        IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool._address);
 
-        // Step 2: Convert it to the Q96 format (scaled by 2^96)
-        uint160 sqrtPriceLimitX96 = uint160((sqrtPrice << 96) / (1 << 48));
+        // Determine tokens in the pool
+        address token0 = pool._token0;
+        address token1 = pool._token1;
 
-        return sqrtPriceLimitX96;
-    }
+        // Determine swap direction
+        bool zeroForOne = inputToken == token0 && outputToken == token1;
 
-    // Internal pure function to calculate square root of a given value
-    function sqrt(uint256 x) internal pure returns (uint256 y) {
-        if (x == 0) return 0;
-        uint256 z = (x + 1) / 2;
-        y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
+        // Validate tokens are in the pool
+        require(
+            (inputToken == token0 || inputToken == token1) &&
+                (outputToken == token0 || outputToken == token1),
+            "Invalid tokens for pool"
+        );
+
+        // Get current price from slot0
+        (uint160 currentSqrtPriceX96, , , , , , ) = uniswapPool.slot0();
+
+        if (zeroForOne) {
+            // Swapping token0 for token1 - set a lower price limit
+            // Calculate the lower bound based on slippage tolerance
+            sqrtPriceLimitX96 = uint160(
+                (currentSqrtPriceX96 * (10000 - slippageTolerance)) / 10000
+            );
+
+            // Ensure the limit is not below the minimum possible sqrt price
+            sqrtPriceLimitX96 = sqrtPriceLimitX96 < TickMath.MIN_SQRT_RATIO
+                ? TickMath.MIN_SQRT_RATIO
+                : sqrtPriceLimitX96;
+        } else {
+            // Swapping token1 for token0 - set an upper price limit
+            // Calculate the upper bound based on slippage tolerance
+            sqrtPriceLimitX96 = uint160(
+                (currentSqrtPriceX96 * (10000 + slippageTolerance)) / 10000
+            );
+
+            // Ensure the limit is not above the maximum possible sqrt price
+            sqrtPriceLimitX96 = sqrtPriceLimitX96 > TickMath.MAX_SQRT_RATIO
+                ? TickMath.MAX_SQRT_RATIO
+                : sqrtPriceLimitX96;
         }
     }
 
@@ -101,18 +127,11 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         address outputToken,
         uint256 swapAmount
     ) internal returns (uint256 outputAmount) {
-        uint256 exchangeRate = getTrustedPoolQuoteAmount(
-            pool,
-            inputToken,
-            outputToken,
-            swapAmount
-        );
-
         outputAmount = pool._address.swapExactInput(
             inputToken,
             outputToken,
             swapAmount,
-            getSqrtPriceLimitX96(exchangeRate)
+            getSqrtPriceLimitX96(pool, inputToken, outputToken, 500)
         );
     }
 
@@ -124,5 +143,13 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         virtual
         returns (address pool, address token0, address token1);
 
-    receive() external payable {}
+    /**
+     * @dev Reverts any direct ETH transfers to the FeeMaster implementation contract.
+     * Since this contract is meant to be used behind a proxy, direct ETH transfers
+     * to the implementation contract should be prevented to avoid locking funds.
+     * ETH transfers should go through the proxy contract instead.
+     */
+    receive() external payable virtual {
+        revert("Direct ETH transfers to implementation not allowed");
+    }
 }
