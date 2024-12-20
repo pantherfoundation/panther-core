@@ -10,7 +10,7 @@ import "./feeMaster/FeeAccountant.sol";
 import "./feeMaster/ProtocolFeeSwapper.sol";
 import "./feeMaster/TotalDebtHandler.sol";
 import "./feeMaster/ProtocolFeeDistributor.sol";
-import { ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
+import { Pool, ChargedFeesPerTx, FeeData, AssetData } from "./feeMaster/Types.sol";
 
 import "./core/utils/Types.sol";
 
@@ -106,15 +106,15 @@ contract FeeMaster is
     function getNativeRateInZkp(
         uint256 nativeAmount
     ) public view returns (uint256) {
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, ZKP_TOKEN);
-        return getQuoteAmount(pool, WETH, ZKP_TOKEN, nativeAmount);
+        Pool memory pool = getEnabledPoolOrRevert(WETH, ZKP_TOKEN);
+        return getTrustedPoolQuoteAmount(pool, WETH, ZKP_TOKEN, nativeAmount);
     }
 
     function getZkpRateInNative(
         uint256 zkpAmount
     ) public view returns (uint256) {
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, ZKP_TOKEN);
-        return getQuoteAmount(pool, ZKP_TOKEN, WETH, zkpAmount);
+        Pool memory pool = getEnabledPoolOrRevert(WETH, ZKP_TOKEN);
+        return getTrustedPoolQuoteAmount(pool, ZKP_TOKEN, WETH, zkpAmount);
     }
 
     /* ========== ONLY FOR OWNER AND CONFIGURATION FUNCTIONS ========== */
@@ -216,11 +216,11 @@ contract FeeMaster is
 
     function updatePool(
         address _pool,
-        address _tokenA,
-        address _tokenB,
+        address _token0,
+        address _token1,
         bool _enabled
     ) external onlyOwner {
-        bytes32 _key = _updatePool(_pool, _tokenA, _tokenB, _enabled);
+        bytes32 _key = _updatePool(_pool, _token0, _token1, _enabled);
 
         emit PoolUpdated(_pool, _key, _enabled);
     }

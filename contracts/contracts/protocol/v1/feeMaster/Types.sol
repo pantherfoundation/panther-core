@@ -2,6 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 pragma solidity ^0.8.19;
 
+struct Pool {
+    address _address;
+    address _token0;
+    address _token1;
+    bool _enabled;
+}
+
 struct Providers {
     address pantherPool;
     address pantherTrees;

@@ -379,53 +379,87 @@ describe('FeeMaster Contract', function () {
     });
 
     describe('#updatePool', () => {
-        const poolAddress = ethers.Wallet.createRandom().address;
-        const tokenA = ethers.Wallet.createRandom().address;
-        const tokenB = ethers.Wallet.createRandom().address;
         const status = true;
+
+        let pool: FakeContract<IUniswapV3Pool>;
+        let tokenA: string;
+        let tokenB: string;
+
+        beforeEach(async () => {
+            pool = uniswapV3Pool;
+            tokenA = weth.address;
+            tokenB = zkp.address;
+        });
 
         it('should add a new pool by owner', async () => {
             const poolKey = getPoolKey(tokenA, tokenB);
 
+            const {token0, token1} = await mockUniswapPoolTokens(
+                pool,
+                weth.address,
+                zkp.address,
+            );
+
             await expect(
                 feeMaster
                     .connect(owner)
-                    .updatePool(poolAddress, tokenA, tokenB, status),
+                    .updatePool(
+                        pool.address,
+                        token0.toString(),
+                        token1.toString(),
+                        status,
+                    ),
             )
                 .to.emit(feeMaster, 'PoolUpdated')
-                .withArgs(poolAddress, poolKey, true);
+                .withArgs(pool.address, poolKey, true);
 
-            const pool = await feeMaster.pools(poolKey);
-            expect(pool._address).to.equal(poolAddress);
-            expect(pool._enabled).to.equal(true);
+            const poolData = await feeMaster.pools(poolKey);
+            expect(poolData._address).to.equal(pool.address);
+            expect(poolData._enabled).to.equal(true);
         });
 
         it('should update the existing pool by owner', async () => {
             const newStatus = false;
             const poolKey = getPoolKey(tokenA, tokenB);
 
+            const {token0, token1} = await mockUniswapPoolTokens(
+                pool,
+                weth.address,
+                zkp.address,
+            );
+
             await feeMaster
                 .connect(owner)
-                .updatePool(poolAddress, tokenA, tokenB, status);
+                .updatePool(
+                    pool.address,
+                    token0.toString(),
+                    token1.toString(),
+                    status,
+                );
 
             await expect(
                 feeMaster
                     .connect(owner)
-                    .updatePool(poolAddress, tokenA, tokenB, newStatus),
+                    .updatePool(
+                        pool.address,
+                        token0.toString(),
+                        token1.toString(),
+                        newStatus,
+                    ),
             )
                 .to.emit(feeMaster, 'PoolUpdated')
-                .withArgs(poolAddress, poolKey, newStatus);
+                .withArgs(pool.address, poolKey, newStatus);
 
-            const pool = await feeMaster.pools(poolKey);
-            expect(pool._address).to.equal(poolAddress);
-            expect(pool._enabled).to.equal(newStatus);
+            const poolData = await feeMaster.pools(poolKey);
+            expect(poolData._address).to.equal(pool.address);
+            expect(poolData._enabled).to.equal(newStatus);
         });
 
         it('should revert when executed by non-owner', async () => {
             await expect(
                 feeMaster
                     .connect(user)
-                    .updatePool(poolAddress, tokenA, tokenB, status),
+                    .updatePool(pool.address, tokenA, tokenB, status),
             ).to.be.revertedWith('ImmOwn: unauthorized');
         });
 
@@ -481,14 +515,15 @@ describe('FeeMaster Contract', function () {
         beforeEach(async () => {
             await feeMaster.connect(owner).updateTwapPeriod(twapPeriod);
 
+            const {token0, token1} = await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                weth.address,
+                zkp.address,
+            );
+
             await feeMaster
                 .connect(owner)
-                .updatePool(
-                    uniswapV3Pool.address,
-                    ZERO_ADDRESS,
-                    zkp.address,
-                    true,
-                );
+                .updatePool(uniswapV3Pool.address, token0, token1, true);
         });
 
         it('should cache the native to ZKP rate correctly when Uniswap returns expected rate', async () => {
@@ -584,20 +619,15 @@ describe('FeeMaster Contract', function () {
         beforeEach(async () => {
             await feeMaster.connect(owner).updateTwapPeriod(twapPeriod);
 
+            const {token0, token1} = await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                weth.address,
+                zkp.address,
+            );
+
             await feeMaster
                 .connect(owner)
-                .updatePool(
-                    uniswapV3Pool.address,
-                    ZERO_ADDRESS,
-                    zkp.address,
-                    true,
-                );
-
-            await mockUniswapPoolTokens(
-                uniswapV3Pool,
-                zkp.address,
-                weth.address,
-            );
+                .updatePool(uniswapV3Pool.address, token0, token1, true);
         });
         async function setUniswapRate(rate: number) {
             await mockUniswapPoolRate(uniswapV3Pool, rate, twapPeriod);
@@ -842,14 +872,15 @@ describe('FeeMaster Contract', function () {
                     protocolFeePercentage,
                 );
 
+            const {token0, token1} = await mockUniswapPoolTokens(
+                uniswapV3Pool,
+                weth.address,
+                zkp.address,
+            );
+
             await feeMaster
                 .connect(owner)
-                .updatePool(
-                    uniswapV3Pool.address,
-                    ZERO_ADDRESS,
-                    zkp.address,
-                    true,
-                );
+                .updatePool(uniswapV3Pool.address, token0, token1, true);
 
             // Impersonate pantherPoolV1.address
             await network.provider.request({
@@ -1851,33 +1882,36 @@ describe('FeeMaster Contract', function () {
             uniswapV3PoolNativeZkp =
                 await smock.fake<IUniswapV3Pool>('IUniswapV3Pool');
 
-            await mockUniswapPoolTokens(
-                uniswapV3PoolUSDTNative,
-                usdt.address,
-                weth.address,
-            );
-            await mockUniswapPoolTokens(
-                uniswapV3PoolNativeZkp,
-                zkp.address,
-                weth.address,
-            );
+            const {token0: token0USDTNativePool, token1: token1USDTNativePool} =
+                await mockUniswapPoolTokens(
+                    uniswapV3PoolUSDTNative,
+                    weth.address,
+                    usdt.address,
+                );
 
             // Update FeeMaster pools
             await feeMaster
                 .connect(owner)
                 .updatePool(
                     uniswapV3PoolUSDTNative.address,
-                    ZERO_ADDRESS,
-                    usdt.address,
+                    token0USDTNativePool,
+                    token1USDTNativePool,
                     true,
+                );
+
+            const {token0: token0NativeZkpPool, token1: token1NativeZkpPool} =
+                await mockUniswapPoolTokens(
+                    uniswapV3PoolNativeZkp,
+                    weth.address,
+                    zkp.address,
                 );
 
             await feeMaster
                 .connect(owner)
                 .updatePool(
                     uniswapV3PoolNativeZkp.address,
-                    ZERO_ADDRESS,
-                    zkp.address,
+                    token0NativeZkpPool,
+                    token1NativeZkpPool,
                     true,
                 );
 
@@ -2298,13 +2332,21 @@ describe('FeeMaster Contract', function () {
         tokenA: BigNumberish,
         tokenB: BigNumberish,
     ) {
+        let token0: string, token1: string;
         if (BigNumber.from(tokenA).lt(BigNumber.from(tokenB))) {
             pool.token0.returns(tokenA);
             pool.token1.returns(tokenB);
+            token0 = tokenA.toString();
+            token1 = tokenB.toString();
         } else {
             pool.token0.returns(tokenB);
             pool.token1.returns(tokenA);
+
+            token0 = tokenB.toString();
+            token1 = tokenA.toString();
         }
+
+        return {token0, token1};
     }
 
     async function mockUniswapPoolRate(
