@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import "./UniswapV3Handler.sol";
 import "./UniswapPoolsList.sol";
-import { NATIVE_TOKEN } from "../../../common/Constants.sol";
+import { Pool } from "./Types.sol";
 
 abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
     event ProtocolFeeSwapped(
@@ -74,10 +74,10 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         }
 
         // getting pool address
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, _token);
+        Pool memory pool = getEnabledPoolOrRevert(WETH, _token);
 
         // Executing the flash swap and receive Natives
-        receivedNative = _flashSwap(pool, _token, NATIVE_TOKEN, _swapAmount);
+        receivedNative = _flashSwap(pool, _token, WETH, _swapAmount);
     }
 
     function _convertNativeToZkp(
@@ -85,10 +85,10 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         uint256 _swapAmount
     ) private returns (uint256 receivedZkp) {
         // getting pool address
-        address pool = getEnabledPoolAddress(NATIVE_TOKEN, _zkpToken);
+        Pool memory pool = getEnabledPoolOrRevert(WETH, _zkpToken);
 
         // Executing the flash swap and receive ZKPs
-        receivedZkp = _flashSwap(pool, NATIVE_TOKEN, _zkpToken, _swapAmount);
+        receivedZkp = _flashSwap(pool, WETH, _zkpToken, _swapAmount);
     }
 
     function _decodeDataAndVerifySender(
@@ -97,15 +97,22 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
         internal
         view
         override
-        returns (address pool, address token0, address token1)
+        returns (address poolAddress, address token0, address token1)
     {
-        (pool, token0, token1) = abi.decode(data, (address, address, address));
-
-        (address _token0, address _token1) = _mapWrappedToNativeToken(
-            token0,
-            token1
+        (poolAddress, token0, token1) = abi.decode(
+            data,
+            (address, address, address)
         );
-        pool = getEnabledPoolAddress(_token0, _token1);
-        require(msg.sender == pool, "uniswapV3SwapCallback::Invalid sender");
+
+        Pool memory pool = getEnabledPoolOrRevert(token0, token1);
+
+        require(
+            pool._address == poolAddress,
+            "uniswapV3SwapCallback::Invalid pool address"
+        );
+        require(
+            msg.sender == poolAddress,
+            "uniswapV3SwapCallback::Invalid sender"
+        );
     }
 }

@@ -10,7 +10,7 @@ import "../../../common/interfaces/IWETH.sol";
 import "../../../common/TransferHelper.sol";
 import "../../../common/Math.sol";
 
-import { NATIVE_TOKEN } from "../../../common/Constants.sol";
+import { Pool } from "./Types.sol";
 
 abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
     using UniswapV3PriceFeed for address;
@@ -26,14 +26,21 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         WETH = weth;
     }
 
-    function getQuoteAmount(
-        address pool,
+    function getTrustedPoolQuoteAmount(
+        Pool memory pool,
         address baseToken,
         address quoteToken,
         uint256 baseAmount
     ) public view returns (uint256) {
         return
-            pool.getQuoteAmount(baseToken, quoteToken, baseAmount, twapPeriod);
+            pool._address.getTrustedPoolQuoteAmount(
+                pool._token0,
+                pool._token1,
+                baseToken,
+                quoteToken,
+                baseAmount,
+                twapPeriod
+            );
     }
 
     function uniswapV3SwapCallback(
@@ -88,53 +95,20 @@ abstract contract UniswapV3Handler is IUniswapV3SwapCallback {
         }
     }
 
-    function _mapNativeToWrappedToken(
-        address inputToken,
-        address outputToken
-    ) internal view returns (address, address) {
-        if (inputToken == NATIVE_TOKEN) {
-            inputToken = WETH;
-        }
-        if (outputToken == NATIVE_TOKEN) {
-            outputToken = WETH;
-        }
-
-        return (inputToken, outputToken);
-    }
-
-    function _mapWrappedToNativeToken(
-        address inputToken,
-        address outputToken
-    ) internal view returns (address, address) {
-        if (inputToken == WETH) {
-            inputToken = NATIVE_TOKEN;
-        }
-        if (outputToken == WETH) {
-            outputToken = NATIVE_TOKEN;
-        }
-
-        return (inputToken, outputToken);
-    }
-
     function _flashSwap(
-        address pool,
+        Pool memory pool,
         address inputToken,
         address outputToken,
         uint256 swapAmount
     ) internal returns (uint256 outputAmount) {
-        (inputToken, outputToken) = _mapNativeToWrappedToken(
-            inputToken,
-            outputToken
-        );
-
-        uint256 exchangeRate = getQuoteAmount(
+        uint256 exchangeRate = getTrustedPoolQuoteAmount(
             pool,
             inputToken,
             outputToken,
             swapAmount
         );
 
-        outputAmount = pool.swapExactInput(
+        outputAmount = pool._address.swapExactInput(
             inputToken,
             outputToken,
             swapAmount,

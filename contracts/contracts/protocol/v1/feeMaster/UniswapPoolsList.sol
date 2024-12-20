@@ -3,35 +3,43 @@
 pragma solidity ^0.8.19;
 
 import "./PoolKey.sol";
+import "../DeFi/uniswap/interfaces/IUniswapV3Pool.sol";
+import { Pool } from "./Types.sol";
 
 abstract contract UniswapPoolsList {
-    struct Pool {
-        address _address;
-        bool _enabled;
-    }
-
     mapping(bytes32 => Pool) public pools;
 
-    function getEnabledPoolAddress(
+    function getEnabledPoolOrRevert(
         address tokenA,
         address tokenB
-    ) public view returns (address) {
+    ) public view returns (Pool memory pool) {
         bytes32 key = PoolKey.getKey(tokenA, tokenB);
-        Pool memory pool = pools[key];
+        pool = pools[key];
 
         require(pool._enabled, "pool is disabled");
-        return pool._address;
     }
 
     function _updatePool(
-        address _pool,
-        address _tokenA,
-        address _tokenB,
-        bool _enabled
+        address pool,
+        address token0,
+        address token1,
+        bool enabled
     ) internal returns (bytes32 key) {
-        require(_pool != address(0), "addPool: zero address");
-        key = PoolKey.getKey(_tokenA, _tokenB);
+        require(pool != address(0), "addPool: zero address");
 
-        pools[key] = Pool({ _address: _pool, _enabled: _enabled });
+        address _token0 = IUniswapV3Pool(pool).token0();
+        address _token1 = IUniswapV3Pool(pool).token1();
+
+        require(token0 == _token0, "invalid token0");
+        require(token1 == _token1, "invalid token1");
+
+        key = PoolKey.getKey(token0, token1);
+
+        pools[key] = Pool({
+            _address: pool,
+            _token0: token0,
+            _token1: token1,
+            _enabled: enabled
+        });
     }
 }

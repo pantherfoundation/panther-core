@@ -8,8 +8,10 @@ import "./uniswap/libraries/FullMath.sol";
 import "./uniswap/libraries/TickMath.sol";
 
 library UniswapV3PriceFeed {
-    function getQuoteAmount(
+    function getTrustedPoolQuoteAmount(
         address pool,
+        address token0,
+        address token1,
         address inputToken,
         address outputToken,
         uint256 inputAmount,
@@ -17,10 +19,6 @@ library UniswapV3PriceFeed {
     ) internal view returns (uint256 quoteAmount) {
         // Interface the Uniswap pool
         IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
-
-        // Retrieve actual token0 and token1 addresses from the pool
-        address token0 = uniswapPool.token0();
-        address token1 = uniswapPool.token1();
 
         // Ensure that the input and output tokens are part of the pool
         require(
