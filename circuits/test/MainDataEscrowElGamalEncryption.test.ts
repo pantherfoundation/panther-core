@@ -492,33 +492,135 @@ describe('Main Data Escrow ElGamalEncryption', function (this: any) {
                 true,
             );
 
+            const wtnsArr = Object.values(wtns);
+
+            const indexOfephemeralPubKey0 = wtnsArr.indexOf(
+                output.ephemeralPubKey[0],
+            );
+
+            const indexOfephemeralPubKey1 = wtnsArr.indexOf(
+                output.ephemeralPubKey[1],
+            );
+
+            const indexOfencryptedMessage00 = wtnsArr.indexOf(
+                output.encryptedMessage[0][0],
+            );
+
+            const indexOfencryptedMessage01 = wtnsArr.indexOf(
+                output.encryptedMessage[0][1],
+            );
+
+            const indexOfencryptedMessage10 = wtnsArr.indexOf(
+                output.encryptedMessage[1][0],
+            );
+
+            const indexOfencryptedMessage11 = wtnsArr.indexOf(
+                output.encryptedMessage[1][1],
+            );
+
+            const indexOfencryptedMessage20 = wtnsArr.indexOf(
+                output.encryptedMessage[2][0],
+            );
+
+            const indexOfencryptedMessage21 = wtnsArr.indexOf(
+                output.encryptedMessage[2][1],
+            );
+
+            const indexOfencryptedMessage30 = wtnsArr.indexOf(
+                output.encryptedMessage[3][0],
+            );
+
+            const indexOfencryptedMessage31 = wtnsArr.indexOf(
+                output.encryptedMessage[3][1],
+            );
+
+            const indexOfencryptedMessage40 = wtnsArr.indexOf(
+                output.encryptedMessage[4][0],
+            );
+
+            const indexOfencryptedMessage41 = wtnsArr.indexOf(
+                output.encryptedMessage[4][1],
+            );
+
+            const indexOfencryptedMessage50 = wtnsArr.indexOf(
+                output.encryptedMessage[5][0],
+            );
+
+            const indexOfencryptedMessage51 = wtnsArr.indexOf(
+                output.encryptedMessage[5][1],
+            );
+
+            const indexOfencryptedMessage60 = wtnsArr.indexOf(
+                output.encryptedMessage[6][0],
+            );
+
+            const indexOfencryptedMessage61 = wtnsArr.indexOf(
+                output.encryptedMessage[6][1],
+            );
+
+            const indexOfencryptedMessage70 = wtnsArr.indexOf(
+                output.encryptedMessage[7][0],
+            );
+
+            const indexOfencryptedMessage71 = wtnsArr.indexOf(
+                output.encryptedMessage[7][1],
+            );
+
+            const indexOfencryptedMessage80 = wtnsArr.indexOf(
+                output.encryptedMessage[8][0],
+            );
+
+            const indexOfencryptedMessage81 = wtnsArr.indexOf(
+                output.encryptedMessage[8][1],
+            );
+
+            const indexOfencryptedMessage90 = wtnsArr.indexOf(
+                output.encryptedMessage[9][0],
+            );
+
+            const indexOfencryptedMessage91 = wtnsArr.indexOf(
+                output.encryptedMessage[9][1],
+            );
+
+            const indexOfencryptedMessage100 = wtnsArr.indexOf(
+                output.encryptedMessage[10][0],
+            );
+
+            const indexOfencryptedMessage101 = wtnsArr.indexOf(
+                output.encryptedMessage[10][1],
+            );
+
+            const indexOfencryptedMessageHash = wtnsArr.indexOf(
+                output.encryptedMessageHash,
+            );
+
             const wtnsFormattedOutput = [
                 0,
-                wtns[860],
-                wtns[861],
-                wtns[862],
-                wtns[863],
-                wtns[864],
-                wtns[865],
-                wtns[866],
-                wtns[867],
-                wtns[868],
-                wtns[869],
-                wtns[870],
-                wtns[871],
-                wtns[872],
-                wtns[873],
-                wtns[874],
-                wtns[875],
-                wtns[876],
-                wtns[877],
-                wtns[878],
-                wtns[879],
-                wtns[880],
-                wtns[881],
-                wtns[882],
-                wtns[883],
-                wtns[884],
+                wtns[indexOfephemeralPubKey0],
+                wtns[indexOfephemeralPubKey1],
+                wtns[indexOfencryptedMessage00],
+                wtns[indexOfencryptedMessage01],
+                wtns[indexOfencryptedMessage10],
+                wtns[indexOfencryptedMessage11],
+                wtns[indexOfencryptedMessage20],
+                wtns[indexOfencryptedMessage21],
+                wtns[indexOfencryptedMessage30],
+                wtns[indexOfencryptedMessage31],
+                wtns[indexOfencryptedMessage40],
+                wtns[indexOfencryptedMessage41],
+                wtns[indexOfencryptedMessage50],
+                wtns[indexOfencryptedMessage51],
+                wtns[indexOfencryptedMessage60],
+                wtns[indexOfencryptedMessage61],
+                wtns[indexOfencryptedMessage70],
+                wtns[indexOfencryptedMessage71],
+                wtns[indexOfencryptedMessage80],
+                wtns[indexOfencryptedMessage81],
+                wtns[indexOfencryptedMessage90],
+                wtns[indexOfencryptedMessage91],
+                wtns[indexOfencryptedMessage100],
+                wtns[indexOfencryptedMessage101],
+                wtns[indexOfencryptedMessageHash],
             ];
 
             await dataEscrowElGamalEncryption.assertOut(

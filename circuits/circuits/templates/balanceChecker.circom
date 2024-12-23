@@ -34,7 +34,7 @@ template BalanceChecker() {
     signal input {non_zero_uint64} zAssetScale;
     signal input {non_zero_uint64} zAssetScaleZkp;
     signal input {uint96}          kytDepositChargedAmountZkp;
-    signal input {uint96}          kytWithdrawChargedAmountZkp;
+    signal input {uint96}          kycWithdrawOrKytChargedAmountZkp;
     signal input {uint96}          kytInternalChargedAmountZkp;
     signal output {uint64}         depositScaledAmount;
     signal output {uint96}         depositWeightedScaledAmount;
@@ -58,7 +58,7 @@ template BalanceChecker() {
     assert(0 <= zAssetScale < 2**64);
     assert(0 <= zAssetScaleZkp < 2**64);
     assert(0 <= kytDepositChargedAmountZkp < 2**96);
-    assert(0 <= kytWithdrawChargedAmountZkp < 2**96);
+    assert(0 <= kycWithdrawOrKytChargedAmountZkp < 2**96);
     assert(0 <= kytInternalChargedAmountZkp < 2**96);
 
     var ACTIVE = Active();
@@ -124,11 +124,11 @@ template BalanceChecker() {
     chargedAmountZkp === chargedScaledAmountZkp * zAssetScaleZkp;
 
     // [2.4] - scaled zZKP deposit KYT amount
-    signal kytWithdrawScaledChargedAmountZkpTmp <-- kytWithdrawChargedAmountZkp \ zAssetScaleZkp;
+    signal kytWithdrawScaledChargedAmountZkpTmp <-- kycWithdrawOrKytChargedAmountZkp \ zAssetScaleZkp;
 
     signal kytWithdrawScaledChargedAmountZkp <== Uint96Tag(ACTIVE)(kytWithdrawScaledChargedAmountZkpTmp);
 
-    kytWithdrawChargedAmountZkp === kytWithdrawScaledChargedAmountZkp * zAssetScaleZkp;
+    kycWithdrawOrKytChargedAmountZkp === kytWithdrawScaledChargedAmountZkp * zAssetScaleZkp;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // End of Withdraw /////////////////////////////////////////////////////////////////////////////////////////////////

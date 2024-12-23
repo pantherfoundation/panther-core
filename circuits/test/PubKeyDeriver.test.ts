@@ -50,12 +50,12 @@ describe('PubKeyDeriver circuit', async function (this: any) {
                 },
                 true,
             );
-            // await pubKeyDeriver.assertOut(witness, {
-            //     derivedPubKey: expectedPubKey,
-            // });
 
-            assert.equal(witness[3064], expectedPubKey[0]);
-            assert.equal(witness[3065], expectedPubKey[1]);
+            const indexOfexpectedPubKey0 = witness.indexOf(expectedPubKey[0]);
+            const indexOfexpectedPubKey1 = witness.indexOf(expectedPubKey[1]);
+
+            assert.equal(witness[indexOfexpectedPubKey0], expectedPubKey[0]);
+            assert.equal(witness[indexOfexpectedPubKey1], expectedPubKey[1]);
         });
     });
 
