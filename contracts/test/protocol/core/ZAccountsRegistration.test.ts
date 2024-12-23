@@ -345,7 +345,7 @@ describe('ZAccountsRegistry', function () {
     });
 
     describe('#getNextZAccountId and #zAccountIdTracker()', () => {
-        const zAccIdCounterJump = 3;
+        const zAccIdCounterJump = 4;
         let zAccIdTracker: number;
 
         it('should get the zAccount id #0 and increment Id tracker by 1', async () => {
@@ -374,21 +374,8 @@ describe('ZAccountsRegistry', function () {
             expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
         });
 
-        it('should get the zAccount id #252 and increment Id tracker by 1', async () => {
+        it('should get the zAccount id #252 and skip 4 numbers', async () => {
             zAccIdTracker = 252;
-
-            await mockZAccountIdTracker(zAccIdTracker);
-
-            const nextId = await internalGetNextZAccountId();
-            const updatedIdTracker =
-                await zAccountsRegistry.zAccountIdTracker();
-
-            expect(nextId).to.be.eq(zAccIdTracker);
-            expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
-        });
-
-        it('should get the zAccount id #253 and skip 3 numbers', async () => {
-            zAccIdTracker = 253;
 
             await mockZAccountIdTracker(zAccIdTracker);
 
@@ -400,6 +387,19 @@ describe('ZAccountsRegistry', function () {
             expect(updatedIdTracker).to.be.eq(
                 zAccIdTracker + zAccIdCounterJump,
             );
+        });
+
+        it('should get the zAccount id #256 and increment Id tracker by 1', async () => {
+            zAccIdTracker = 256;
+
+            await mockZAccountIdTracker(zAccIdTracker);
+
+            const nextId = await internalGetNextZAccountId();
+            const updatedIdTracker =
+                await zAccountsRegistry.zAccountIdTracker();
+
+            expect(nextId).to.be.eq(zAccIdTracker);
+            expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
         });
 
         it('should get the zAccount id #257 and increment Id tracker by 1', async () => {
@@ -428,21 +428,8 @@ describe('ZAccountsRegistry', function () {
             expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
         });
 
-        it('should get the zAccount id #508 and increment Id tracker by 1', async () => {
+        it('should get the zAccount id #508 and skip 4 numbers', async () => {
             zAccIdTracker = 508;
-
-            await mockZAccountIdTracker(zAccIdTracker);
-
-            const nextId = await internalGetNextZAccountId();
-            const updatedIdTracker =
-                await zAccountsRegistry.zAccountIdTracker();
-
-            expect(nextId).to.be.eq(zAccIdTracker);
-            expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
-        });
-
-        it('should get the zAccount id #509 and skip 3 numbers', async () => {
-            zAccIdTracker = 509;
 
             await mockZAccountIdTracker(zAccIdTracker);
 
@@ -469,8 +456,8 @@ describe('ZAccountsRegistry', function () {
             expect(updatedIdTracker).to.be.eq(zAccIdTracker + 1);
         });
 
-        it('should get the zAccount id #765 and skip 3 numbers', async () => {
-            zAccIdTracker = 765;
+        it('should get the zAccount id #764 and skip 4 numbers', async () => {
+            zAccIdTracker = 764;
 
             await mockZAccountIdTracker(zAccIdTracker);
 
