@@ -8,7 +8,8 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
                                      ZAssetMerkleTreeDepth,
                                      ZAccountBlackListMerkleTreeDepth,
                                      ZZoneMerkleTreeDepth,
-                                     TrustProvidersMerkleTreeDepth ) {
+                                     TrustProvidersMerkleTreeDepth,
+                                     IsTestNet ) {
     // external data anchoring
     signal input extraInputsHash;  // public
 
@@ -90,6 +91,7 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
     signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
     signal input kycSignedMessageSigner;
+    signal input kycSignedMessageChargedAmountZkp;
     signal input kycSignedMessageHash;                // public
     signal input kycSignature[3];                     // S,R8x,R8y
 
@@ -216,8 +218,12 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
     signal rc_kycSignedMessageSessionId <== IgnoreTag()(kycSignedMessageSessionId);
     signal rc_kycSignedMessageRuleId <== Uint8Tag(ACTIVE)(kycSignedMessageRuleId);
     signal rc_kycSignedMessageSigner <== Uint160Tag(ACTIVE)(kycSignedMessageSigner);
+    signal rc_kycSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kycSignedMessageChargedAmountZkp);
     signal rc_kycSignedMessageHash <== ExternalTag()(kycSignedMessageHash);
-    signal rc_kycSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kycSignature);
+
+    // Range checking for the signature components (R8 and S) are enforced in the EdDSAPoseidonVerifier() of circomlib itself.
+    // Hence adding additional range checks for signature components (R8 and S) are redundant.
+    signal rc_kycSignature[3] <== kycSignature;
 
     signal rc_zNetworkId <== Uint6Tag(ACTIVE)(zNetworkId);
     signal rc_zNetworkChainId <== ExternalTag()(zNetworkChainId);
@@ -246,7 +252,8 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
                                                                ZAssetMerkleTreeDepth,
                                                                ZAccountBlackListMerkleTreeDepth,
                                                                ZZoneMerkleTreeDepth,
-                                                               TrustProvidersMerkleTreeDepth );
+                                                               TrustProvidersMerkleTreeDepth,
+                                                               IsTestNet );
 
     zAccountRegistrationV1.extraInputsHash <== rc_extraInputsHash;
     zAccountRegistrationV1.addedAmountZkp <== rc_addedAmountZkp;
@@ -321,6 +328,7 @@ template ZAccountRegistrationV1Top ( ZNetworkMerkleTreeDepth,
     zAccountRegistrationV1.kycSignedMessageSessionId <== rc_kycSignedMessageSessionId;
     zAccountRegistrationV1.kycSignedMessageRuleId <== rc_kycSignedMessageRuleId;
     zAccountRegistrationV1.kycSignedMessageSigner <== rc_kycSignedMessageSigner;
+    zAccountRegistrationV1.kycSignedMessageChargedAmountZkp <== rc_kycSignedMessageChargedAmountZkp;
     zAccountRegistrationV1.kycSignedMessageHash <== rc_kycSignedMessageHash;
     zAccountRegistrationV1.kycSignature <== rc_kycSignature;
 

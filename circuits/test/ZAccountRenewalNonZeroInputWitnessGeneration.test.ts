@@ -381,6 +381,7 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
         kycSignedMessageRuleId: 91,
         kycSignedMessageSigner:
             407487970930055136132864974074225519407787604125n,
+        kycSignedMessageChargedAmountZkp: 0,
 
         trustProvidersMerkleRoot:
             675413191976636849763056983375622181122390331630387511499559599588194530856n,

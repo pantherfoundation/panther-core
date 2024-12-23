@@ -11,7 +11,8 @@ template ZTransactionV1( nUtxoIn,
                          ZAssetMerkleTreeDepth,
                          ZAccountBlackListMerkleTreeDepth,
                          ZZoneMerkleTreeDepth,
-                         TrustProvidersMerkleTreeDepth ) {
+                         TrustProvidersMerkleTreeDepth,
+                         IsTestNet ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
@@ -295,7 +296,8 @@ template ZTransactionV1( nUtxoIn,
                                            ZAccountBlackListMerkleTreeDepth,
                                            ZZoneMerkleTreeDepth,
                                            TrustProvidersMerkleTreeDepth,
-                                           notZSwap );
+                                           notZSwap,
+                                           IsTestNet );
 
     zTransactionV1.extraInputsHash <== extraInputsHash;
     zTransactionV1.depositAmount <== depositAmount;

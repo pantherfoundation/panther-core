@@ -110,6 +110,7 @@ describe('ZAccount Registration - ZeroInput - Witness computation', async functi
         kycSignedMessageSessionId: 0,
         kycSignedMessageRuleId: 0,
         kycSignedMessageSigner: 0,
+        kycSignedMessageChargedAmountZkp: 0,
         kycSignedMessageHash: 0,
         kycSignature: [0, 0, 0],
 

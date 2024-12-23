@@ -12,7 +12,8 @@ include "../../node_modules/circomlib/circuits/gates.circom";
 include "../../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 
-template TrustProvidersInternalKyt() {
+template TrustProvidersInternalKyt(IsTestNet) {
+    signal input                        kytRandom;
     signal input {sub_order_bj_p}       kytPubKey[2];
     signal input {uint32}               kytPubKeyExpiryTime;
     signal input {uint32}               zZoneKytExpiryTime;
@@ -32,21 +33,41 @@ template TrustProvidersInternalKyt() {
     signal input                        kytSignedMessageHash;
     signal input                        kytSignature[3];
 
-    component iskytSignedMessageChargedAmountZkpEqualToZero = IsEqual();
-    iskytSignedMessageChargedAmountZkpEqualToZero.in[0] <== kytSignedMessageChargedAmountZkp;
-    iskytSignedMessageChargedAmountZkpEqualToZero.in[1] <== 0;
-    iskytSignedMessageChargedAmountZkpEqualToZero.out === 1;
+    component kytSignedMessageHashInternal;
 
-    component kytSignedMessageHashInternal = Poseidon(8);
+    if (IsTestNet) { // TestNet only
+        // for testnet case require zero
+        kytSignedMessageChargedAmountZkp === 0;
 
-    kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
-    kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
-    kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
-    kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
-    kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageChargedAmountZkp;
-    kytSignedMessageHashInternal.inputs[5] <== kytSignedDepositSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[6] <== kytSignedWithdrawSignedMessageHash;
-    kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageDataEscrowHash;
+        // Signed Hash
+        kytSignedMessageHashInternal = Poseidon(7);
+
+        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
+        kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageSigner;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedDepositSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedWithdrawSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageDataEscrowHash;
+
+    } else { // Production
+        // Modification (instead of `signer`)
+        component kytInternalHash = Poseidon(3);
+        kytInternalHash.inputs[0] <== kytSignedMessageSigner; // same as before
+        kytInternalHash.inputs[1] <== kytSignedMessageChargedAmountZkp; // zkp amount
+        kytInternalHash.inputs[2] <== kytRandom; // random that will be send to KYT
+
+        // Signed Hash
+        kytSignedMessageHashInternal = Poseidon(7);
+
+        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
+        kytSignedMessageHashInternal.inputs[3] <== kytInternalHash.out;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedDepositSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedWithdrawSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageDataEscrowHash;
+    }
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== enabled;
@@ -89,7 +110,8 @@ template TrustProvidersInternalKyt() {
     isLessThanEq_createTime_I_Timestamp.in[1] <== kytSignedMessageTimestamp + zZoneKytExpiryTime;
 }
 
-template TrustProvidersDepositWithdrawKyt() {
+template TrustProvidersDepositWithdrawKyt(IsTestNet) {
+    signal input                        kytRandom;
     signal input {uint160}              kytToken;
     signal input {uint96}               kytAmount;
     signal input {sub_order_bj_p}       kytPubKey[2];
@@ -117,26 +139,12 @@ template TrustProvidersDepositWithdrawKyt() {
     signal input                        kytSignature[3];
 
     component kytSignedMessageHashInternal;
-    var ENABLE_WHEN_IMPLEMENTED = 0;
-    if ( ENABLE_WHEN_IMPLEMENTED ) { // TODO: FIXME - depends on PuriFI to add this
-        kytSignedMessageHashInternal = Poseidon(10);
 
-        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
-        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
-        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSender;
-        kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageReceiver;
-        kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageToken;
-        kytSignedMessageHashInternal.inputs[5] <== kytSignedMessageSessionId;
-        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageRuleId;
-        kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageAmount;
-        kytSignedMessageHashInternal.inputs[8] <== kytSignedMessageSigner;
-        kytSignedMessageHashInternal.inputs[9] <== kytSignedMessageChargedAmountZkp;
-    } else {
-        component iskytSignedMessageChargedAmountZkpEqualToZero = IsEqual();
-        iskytSignedMessageChargedAmountZkpEqualToZero.in[0] <== kytSignedMessageChargedAmountZkp;
-        iskytSignedMessageChargedAmountZkpEqualToZero.in[1] <== 0;
-        iskytSignedMessageChargedAmountZkpEqualToZero.out === 1;
+    if ( IsTestNet ) { // TestNet only
+        // for testnet case require zero
+        kytSignedMessageChargedAmountZkp === 0;
 
+        // Signed hash
         kytSignedMessageHashInternal = Poseidon(9);
 
         kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
@@ -148,7 +156,24 @@ template TrustProvidersDepositWithdrawKyt() {
         kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageRuleId;
         kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageAmount;
         kytSignedMessageHashInternal.inputs[8] <== kytSignedMessageSigner;
+    } else { // Production
+        // Modification (instead of `signer`)
+        component kytInternalHash = Poseidon(3);
+        kytInternalHash.inputs[0] <== kytSignedMessageSigner; // same as before
+        kytInternalHash.inputs[1] <== kytSignedMessageChargedAmountZkp; // zkp amount
+        kytInternalHash.inputs[2] <== kytRandom; // random that will be send to KYT
 
+        kytSignedMessageHashInternal = Poseidon(9);
+
+        kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
+        kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
+        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSender;
+        kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageReceiver;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageToken;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedMessageSessionId;
+        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageRuleId;
+        kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageAmount;
+        kytSignedMessageHashInternal.inputs[8] <== kytInternalHash.out;
     }
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== enabled;
@@ -211,7 +236,8 @@ template TrustProvidersDepositWithdrawKyt() {
     kytLeafIdAndRuleInclusionProver.offset <== kytMerkleTreeLeafIDsAndRulesOffset;
 }
 
-template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
+template TrustProvidersKyt(isSwap, TrustProvidersMerkleTreeDepth, IsTestNet) {
+    signal input                  kytRandom;
     signal input {uint168}        kytToken;
     signal input {uint96}         kytDepositAmount;
     signal input {uint96}         kytWithdrawAmount;
@@ -290,7 +316,8 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
     signal isKytDepositCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  isKytDepositSignedMessageHashIsZero.out * (1 - isZeroDeposit.out) : (1 - isZeroDeposit.out));
 
-    component deposit = TrustProvidersDepositWithdrawKyt();
+    component deposit = TrustProvidersDepositWithdrawKyt(IsTestNet);
+    deposit.kytRandom <== kytRandom;
     deposit.kytToken <== extractedToken;
     deposit.kytAmount <== kytDepositAmount;
     deposit.kytPubKey <== kytEdDsaPubKey;
@@ -329,7 +356,8 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     // in case of swap, we allow to disable kyt-verification check by zero-hash (unless smart-contract side agree to zero-hash)
     signal isKytWithdrawCheckEnabled <== BinaryTag(ACTIVE)(isSwap ? iskytWithdrawSignedMessageHashIsZero.out * (1 - isZeroWithdraw.out) : (1 - isZeroWithdraw.out));
 
-    component withdraw = TrustProvidersDepositWithdrawKyt();
+    component withdraw = TrustProvidersDepositWithdrawKyt(IsTestNet);
+    withdraw.kytRandom <== kytRandom;
     withdraw.kytToken <== extractedToken;
     withdraw.kytAmount <== kytWithdrawAmount;
     withdraw.kytPubKey <== kytEdDsaPubKey;
@@ -368,7 +396,8 @@ template TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth) {
     // internal KYT
     signal isKytInternalCheckEnabled <== BinaryTag(ACTIVE)(isSwap ?  isKytSignedMessageHashIsZero.out * (1 - isZeroInternal.out) : (1 - isZeroInternal.out));
 
-    component internal = TrustProvidersInternalKyt();
+    component internal = TrustProvidersInternalKyt(IsTestNet);
+    internal.kytRandom <== kytRandom;
     internal.kytPubKey <== kytEdDsaPubKey;
     internal.kytPubKeyExpiryTime <== kytEdDsaPubKeyExpiryTime;
     internal.zZoneKytExpiryTime <== zZoneKytExpiryTime;

@@ -72,12 +72,27 @@ describe('DAO Data Escrow ElGamalEncryption', function (this: any) {
                 true,
             );
 
+            const wtnsArr = Object.values(wtns);
+
+            const indexOfephemeralPubKey0 = wtnsArr.indexOf(
+                output.ephemeralPubKey[0],
+            );
+            const indexOfephemeralPubKey1 = wtnsArr.indexOf(
+                output.ephemeralPubKey[1],
+            );
+            const indexOfencryptedMessage0 = wtnsArr.indexOf(
+                output.encryptedMessage[0][0],
+            );
+            const indexOfencryptedMessage1 = wtnsArr.indexOf(
+                output.encryptedMessage[0][1],
+            );
+
             const wtnsFormattedOutput = [
                 0,
-                wtns[261],
-                wtns[262],
-                wtns[263],
-                wtns[264],
+                wtns[indexOfephemeralPubKey0],
+                wtns[indexOfephemeralPubKey1],
+                wtns[indexOfencryptedMessage0],
+                wtns[indexOfencryptedMessage1],
             ];
 
             await daoDataEscrowElGamalEncryption.assertOut(

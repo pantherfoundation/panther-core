@@ -517,6 +517,7 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
             407487970930055136132864974074225519407787604125n,
         kycSignedMessageSigner:
             407487970930055136132864974074225519407787604125n,
+        kycSignedMessageChargedAmountZkp: 0,
         kycSignedMessageReceiver: 0,
         kycSignedMessageSessionId: 3906,
         kycSignedMessageRuleId: 91,
