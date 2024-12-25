@@ -140,7 +140,7 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
      */
     function releaseZkps(bytes32 saltHash) external {
         uint256 contractBalance = ZKP_TOKEN.safeBalanceOf(address(this));
-        require(contractBalance > 0, "no zkp is available");
+        require(contractBalance > SCALE, "no zkp is available");
 
         uint64 _scReleasable = _scReleasableAmount();
         uint256 _releasable = _scReleasable.scaleUpBy1e12();
