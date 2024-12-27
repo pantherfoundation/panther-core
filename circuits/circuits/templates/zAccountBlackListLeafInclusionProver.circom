@@ -55,7 +55,7 @@ template ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth){
     zAccountId_lessThan_253.out === 1;
 
     // switch-on single bit
-    component n2b_leaf = Num2Bits_strict();
+    component n2b_leaf = Num2Bits(253);
     n2b_leaf.in <== leaf;
 
     component is_zero[253];
