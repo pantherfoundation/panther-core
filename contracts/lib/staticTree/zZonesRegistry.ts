@@ -77,7 +77,7 @@ export const leafs: ZZone[] = [
         // - bit #0 - undefined (reserved)
         // - bit #1 - mainnet (zNetworkId = 1) enabled
         // - bit #2 - sepolia (zNetworkId = 2) enabled
-        zZoneNetworkIDsBitMap: 6n,
+        zZoneNetworkIDsBitMap: '0b10',
         // 2 elements defined:
         // - 1st element, in LS bits 0-23:
         //   - KYC rule ID, 91 ('0b01011011'), in 8 LS bits,
@@ -92,11 +92,11 @@ export const leafs: ZZone[] = [
         // 24 hours
         zZoneKytExpiryTime: 86400n,
         // expressed in the "weighted units"
-        zZoneDepositMaxAmount: BigInt(2e12),
+        zZoneDepositMaxAmount: BigInt(3e10),
         // expressed in the "weighted units"
-        zZoneWithrawMaxAmount: BigInt(2e12),
+        zZoneWithrawMaxAmount: BigInt(3e10),
         // expressed in the "weighted units"
-        zZoneInternalMaxAmount: BigInt(2e12),
+        zZoneInternalMaxAmount: BigInt(3e10),
         // "no zAccounts are blacklisted")
         // The value is  240 bits set to 1:
         zZoneZAccountIDsBlackList:

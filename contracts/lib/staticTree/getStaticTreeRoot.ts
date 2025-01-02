@@ -10,10 +10,7 @@ import {
 } from './providersKeys';
 import {NetworkType} from './staticTreeConfig';
 import {ZAssetsRegistry, leafs as zAssetsLeafs} from './zAssetsRegistry';
-import {
-    ZNetworksRegistry,
-    testnetLeafs as zNetworkLeafs,
-} from './zNetworksRegistry';
+import {ZNetworksRegistry, canary as zNetworkLeafs} from './zNetworksRegistry';
 import {ZZonesRegistry, leafs as zZoneLeafs} from './zZonesRegistry';
 
 function computeRegistryRoot(leafs: any, RegistryClass: any) {
@@ -58,8 +55,9 @@ export function getStaticTreeRoot(networkType: NetworkType) {
         zZoneRoot,
         providersKeyRoot,
     ]);
+    console.log('staticTreeRoot', BigNumber.from(staticTreeRoot).toHexString());
 
     return BigNumber.from(staticTreeRoot).toHexString();
 }
 
-// getStaticTreeRoot('canary');
+//getStaticTreeRoot('canary');
