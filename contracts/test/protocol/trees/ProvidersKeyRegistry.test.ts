@@ -56,7 +56,7 @@ describe('ProvidersKeys contract', function () {
         };
         pubKeyPacked =
             '0x2cf8bc5fc9c122f6cc883988fd57e45ad086ec2785d2dfbfa85032373f90aca2';
-        expiryDate = 1735689600;
+        expiryDate = 1893436200; //Jan 1, 2030
         newExpiryDate = 1935689800;
         invalidExpiry = 1708006666;
 
