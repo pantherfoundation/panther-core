@@ -60,8 +60,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['add-znetworks', 'trees', 'protocol-v1'];
-func.dependencies = [
-    'add-znetworks-registry',
-    'add-static-tree',
-    'init-static-root',
-];
+func.dependencies = ['add-znetworks-registry', 'add-static-tree'];
