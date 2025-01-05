@@ -37,4 +37,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['add-keyring', 'trees', 'protocol-v1'];
-func.dependencies = ['add-providers-keys-registry', 'add-static-tree'];
+func.dependencies = ['add-providers-keys-registry'];

@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {maxBlocktimeOffset} from './parameters';
+import {maxBlocktimeOffset, GAS_PRICE} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -18,7 +18,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('updating max blocktime offset');
 
-    const tx = await diamond.updateMaxBlockTimeOffset(maxBlocktimeOffset);
+    const tx = await diamond.updateMaxBlockTimeOffset(maxBlocktimeOffset, {
+        gasPrice: GAS_PRICE,
+    });
     const res = await tx.wait();
 
     console.log('max blocktime offset is updated', res.transactionHash);

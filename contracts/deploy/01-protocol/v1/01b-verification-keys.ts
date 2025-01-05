@@ -23,6 +23,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         __dirname,
         `../../../test/protocol/data/verificationKeys/VK_zAccountsRegistration.json`,
     );
+    const zAccountRenewalVKFilePath = join(
+        __dirname,
+        `../../../test/protocol/data/verificationKeys/VK_zAccountsRenewal.json`,
+    );
     const zSwapVKFilePath = join(
         __dirname,
         `../../../test/protocol/data/verificationKeys/VK_zswap.json`,
@@ -95,6 +99,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         if (isReused)
             console.log('zAccount registration vk was already deployed!');
+    }
+
+    {
+        console.log('deploying zAccount renewal vk...');
+
+        const verificationKey = JSON.parse(
+            await promises.readFile(zAccountRenewalVKFilePath, {
+                encoding: 'utf8',
+            }),
+        );
+
+        const {pointer, isReused} = await deployContentDeterministically(
+            hre,
+            encodeVerificationKey(verificationKey),
+        );
+
+        verificationKeys.push({key: 'zAccountRenewal', pointer});
+
+        if (isReused) console.log('zAccount renewal vk was already deployed!');
     }
 
     {

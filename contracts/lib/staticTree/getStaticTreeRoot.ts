@@ -56,8 +56,6 @@ export function getStaticTreeRoot(networkType: NetworkType) {
         providersKeyRoot,
     ]);
     console.log('staticTreeRoot', BigNumber.from(staticTreeRoot).toHexString());
-
-    return BigNumber.from(staticTreeRoot).toHexString();
 }
 
-//getStaticTreeRoot('canary');
+getStaticTreeRoot('testnet');
