@@ -6,6 +6,7 @@ import "../interfaces/IUtxoInserter.sol";
 
 import "./TransactionOptions.sol";
 import "../publicSignals/ZAccountActivationPublicSignals.sol";
+import "../publicSignals/ZAccountRenewalPublicSignals.sol";
 import "../publicSignals/PrpAccountingPublicSignals.sol";
 import "../publicSignals/PrpConversionPublicSignals.sol";
 import "../publicSignals/MainPublicSignals.sol";
@@ -17,6 +18,88 @@ string constant ERR_ZERO_COMITMENT = "UI:E1";
 
 library UtxosInserter {
     using TransactionOptions for uint32;
+
+    /**
+     * @notice Inserts UTXOs related to ZAccount renewal.
+     * @param pantherTrees The address of the Panther Trees Diamond proxy.
+     * @param inputs Array containing necessary inputs for ZAccount activation.
+     * @param transactionOptions Options for the transaction.
+     * @param miningRewards The mining rewards to include in the UTXO insertion.
+     * @return zAccountUtxoQueueId The queue ID of the inserted UTXO.
+     * @return zAccountUtxoIndexInQueue The index of the inserted UTXO in the queue.
+     * @return zAccountUtxoBusQueuePos The bus queue position of the inserted UTXO.
+     * @dev Inserts two UTXOs for ZAccount activation. Requires a non-zero zAccount
+     * commitment and KYC signed message hash.
+     */
+    function insertZAccountRenewalUtxos(
+        address pantherTrees,
+        uint256[] calldata inputs,
+        uint32 transactionOptions,
+        uint96 miningRewards
+    )
+        internal
+        returns (
+            uint32 zAccountUtxoQueueId,
+            uint8 zAccountUtxoIndexInQueue,
+            uint256 zAccountUtxoBusQueuePos
+        )
+    {
+        bytes32[] memory utxos = new bytes32[](2);
+
+        {
+            bytes32 zAccountUtxoOutCommitment = bytes32(
+                inputs[ZACCOUNT_RENEWAL_UTXO_OUT_COMMITMENT_IND]
+            );
+            bytes32 kycSignedMessageHash = bytes32(
+                inputs[ZACCOUNT_RENEWAL_KYC_SIGNED_MESSAGE_HASH_IND]
+            );
+            require(
+                zAccountUtxoOutCommitment != 0 && kycSignedMessageHash != 0,
+                ERR_ZERO_COMITMENT
+            );
+
+            utxos[0] = zAccountUtxoOutCommitment;
+            utxos[1] = kycSignedMessageHash;
+        }
+
+        bytes32 forestRoot = bytes32(
+            inputs[ZACCOUNT_RENEWAL_FOREST_MERKLE_ROOT_IND]
+        );
+        bytes32 staticRoot = bytes32(
+            inputs[ZACCOUNT_RENEWAL_STATIC_MERKLE_ROOT_IND]
+        );
+
+        if (transactionOptions.isTaxiApplicable()) {
+            // first utxo in the utxos[] shall be added to taxi
+            uint8 numTaxiUtxos = 1;
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueueAndTaxiTree(
+                pantherTrees,
+                utxos,
+                numTaxiUtxos,
+                transactionOptions.cachedForestRootIndex(),
+                forestRoot,
+                staticRoot,
+                miningRewards
+            );
+        } else {
+            (
+                zAccountUtxoQueueId,
+                zAccountUtxoIndexInQueue,
+                zAccountUtxoBusQueuePos
+            ) = _addUtxosToBusQueue(
+                pantherTrees,
+                utxos,
+                transactionOptions.cachedForestRootIndex(),
+                forestRoot,
+                staticRoot,
+                miningRewards
+            );
+        }
+    }
 
     /**
      * @notice Inserts UTXOs related to ZAccount activation.
