@@ -8,6 +8,7 @@ import "../../interfaces/IFeeAccountant.sol";
 import "./Types.sol";
 import "../publicSignals/MainPublicSignals.sol";
 import "../publicSignals/ZAccountActivationPublicSignals.sol";
+import "../publicSignals/ZAccountRenewalPublicSignals.sol";
 import "../publicSignals/PrpAccountingPublicSignals.sol";
 import "../publicSignals/PrpConversionPublicSignals.sol";
 import "../publicSignals/ZSwapPublicSignals.sol";
@@ -152,7 +153,10 @@ abstract contract TransactionChargesHandler {
             .scaleDownBy1e12()
             .safe40();
 
-        if (txType.isActivationOrReactivationOrRenewal()) {
+        if (
+            txType == TT_ZACCOUNT_ACTIVATION ||
+            txType == TT_ZACCOUNT_REACTIVATION
+        ) {
             numOutputUtxos = 2;
             scAddedZkpAmount = inputs[ZACCOUNT_ACTIVATION_ADDED_AMOUNT_ZKP_IND]
                 .scaleDownBy1e12()
@@ -160,6 +164,16 @@ abstract contract TransactionChargesHandler {
             scChargedZkpAmount = inputs[
                 ZACCOUNT_ACTIVATION_CHARGED_AMOUNT_ZKP_IND
             ].scaleDownBy1e12().safe40();
+        }
+
+        if (txType == TT_ZACCOUNT_RENEWAL) {
+            numOutputUtxos = 2;
+            scAddedZkpAmount = inputs[ZACCOUNT_RENEWAL_ADDED_AMOUNT_ZKP_IND]
+                .scaleDownBy1e12()
+                .safe40();
+            scChargedZkpAmount = inputs[ZACCOUNT_RENEWAL_CHARGED_AMOUNT_ZKP_IND]
+                .scaleDownBy1e12()
+                .safe40();
         }
 
         if (txType == TT_PRP_ACCOUNTING) {

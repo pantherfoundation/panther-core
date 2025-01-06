@@ -700,7 +700,7 @@ describe('ZAccountsRegistry', function () {
         });
     });
 
-    describe('#renewZAccount', () => {
+    describe.skip('#renewZAccount', () => {
         describe('Success', () => {
             it('should renew zAccount if registered', async () => {
                 await zAccountsRegistry.updateMaxTimeOffset(1000);

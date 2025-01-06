@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+pragma solidity ^0.8.19;
+
+// Indexes of public input for the zAccountRenewal zk-circuit follows
+
+uint256 constant ZACCOUNT_RENEWAL_EXTRA_INPUT_HASH_IND = 0;
+uint256 constant ZACCOUNT_RENEWAL_ADDED_AMOUNT_ZKP_IND = 1;
+uint256 constant ZACCOUNT_RENEWAL_CHARGED_AMOUNT_ZKP_IND = 2;
+uint256 constant ZACCOUNT_RENEWAL_UTXO_IN_NULLIFIER_IND = 3;
+uint256 constant ZACCOUNT_RENEWAL_UTXO_OUT_COMMITMENT_IND = 4;
+uint256 constant ZACCOUNT_RENEWAL_UTXO_OUT_CREATE_TIME_IND = 5;
+uint256 constant ZACCOUNT_RENEWAL_KYC_SIGNED_MESSAGE_HASH_IND = 6;
+uint256 constant ZACCOUNT_RENEWAL_STATIC_MERKLE_ROOT_IND = 7;
+uint256 constant ZACCOUNT_RENEWAL_FOREST_MERKLE_ROOT_IND = 8;
+uint256 constant ZACCOUNT_RENEWAL_SALT_HASH_IND = 9;
+uint256 constant ZACCOUNT_RENEWAL_MAGICAL_CONSTRAINT_IND = 10;

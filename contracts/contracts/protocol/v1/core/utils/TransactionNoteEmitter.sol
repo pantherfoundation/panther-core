@@ -5,6 +5,7 @@ pragma solidity ^0.8.19;
 import "./Types.sol";
 import "../publicSignals/MainPublicSignals.sol";
 import "../publicSignals/ZAccountActivationPublicSignals.sol";
+import "../publicSignals/ZAccountRenewalPublicSignals.sol";
 import "../publicSignals/PrpAccountingPublicSignals.sol";
 import "../publicSignals/PrpConversionPublicSignals.sol";
 import "../publicSignals/ZSwapPublicSignals.sol";
@@ -277,12 +278,12 @@ abstract contract TransactionNoteEmitter {
     */
 
     /**
-     * @notice Sanitizes private msg for zAccountActivation tx
+     * @notice Sanitizes private msg for zAccountActivation, reactivation and renewal tx
      * @param privateMessages the message to be sanitized
      * @dev privateMessages for zAccountActivation tx is expected to contain a MT_UTXO_ZACCOUNT.
      * MT_UTXO_ZACCOUNT is checked in the `_sanitizePrivateMessage` function.
      */
-    function _sanitizeZAccountActivationMessage(
+    function _sanitizeZAccountActivationOrReactivationOrRenewalMessage(
         bytes memory privateMessages
     ) private pure {
         require(
@@ -434,8 +435,14 @@ abstract contract TransactionNoteEmitter {
             ERR_INVALID_MT_UTXO_ZACCOUNT
         );
 
-        if (txType.isActivationOrReactivationOrRenewal()) {
-            _sanitizeZAccountActivationMessage(privateMessages);
+        if (
+            txType == TT_ZACCOUNT_ACTIVATION ||
+            txType == TT_ZACCOUNT_REACTIVATION ||
+            txType == TT_ZACCOUNT_RENEWAL
+        ) {
+            _sanitizeZAccountActivationOrReactivationOrRenewalMessage(
+                privateMessages
+            );
         }
 
         if (txType == TT_PRP_ACCOUNTING) {
@@ -475,6 +482,25 @@ abstract contract TransactionNoteEmitter {
         );
 
         emit TransactionNote(txType, transactionNoteContent);
+    }
+
+    function _emitZAccountRenewalNote(
+        uint256[] calldata inputs,
+        uint32 zAccountUtxoQueueId,
+        uint8 zAccountUtxoIndexInQueue,
+        bytes calldata privateMessages
+    ) internal {
+        bytes memory transactionNoteContent = abi.encodePacked(
+            MT_UTXO_CREATE_TIME,
+            UtilsLib.safe32(inputs[ZACCOUNT_RENEWAL_UTXO_OUT_CREATE_TIME_IND]),
+            MT_UTXO_BUSTREE_IDS,
+            inputs[ZACCOUNT_RENEWAL_UTXO_OUT_COMMITMENT_IND],
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            privateMessages
+        );
+
+        emit TransactionNote(TT_ZACCOUNT_RENEWAL, transactionNoteContent);
     }
 
     function _emitPrpAccountingNote(
