@@ -23,8 +23,16 @@ default:
   - time yarn lint
   - time yarn build:types
   - time yarn test:ci
+
+.build_then_deploy_staging_internal: &build_then_deploy_staging_internal
   - cp dapp/.env.staging.internal dapp/.env
   - time yarn run build:dapp:staging:internal
+  - time yarn deploy:dapp:ci:ipfs
+
+.build_then_deploy_canary_internal: &build_then_deploy_canary_internal
+  - cp dapp/.env.canary.internal dapp/.env
+  - time yarn run build:dapp:canary:internal
+  - time yarn deploy:dapp:ci:ipfs --canary
 
 .combined_job_template:
   cache:
@@ -44,7 +52,8 @@ job-on-MR:
   interruptible: true
   script:
     - *base_scripts
-    - *ipfs_deploy_script
+    - *build_then_deploy_staging_internal
+    - *build_then_deploy_canary_internal
   artifacts:
     when: always
     reports:
