@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "auth": "graph auth --product hosted-service",
-    "build": "graph codegen && graph deploy --node https://api.thegraph.com/deploy/",
+    "build": "yarn graph codegen && yarn graph build",
     "deploy": "graph deploy --studio",
     "deploy:staging:internal": "graph deploy --studio amoy-internal-testnet",
     "deploy:staging:public": "graph deploy --studio amoy-public-testnet",
@@ -15,7 +15,7 @@
     "stats:count:users": "sh scripts/countUsers.sh"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.55.0",
+    "@graphprotocol/graph-cli": "0.69.0",
     "@graphprotocol/graph-ts": "0.31.0"
   },
   "devDependencies": {
