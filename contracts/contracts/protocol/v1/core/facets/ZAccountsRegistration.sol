@@ -206,7 +206,7 @@ contract ZAccountsRegistration is
     }
 
     /**
-     * @notice Creates a ZAccount UTXO to activate the zAccount.
+     * @notice Creates a ZAccount UTXO.
      * @param inputs The public input parameters to be passed to verifier.
      * (see `ZAccountActivationPublicSignals.sol`).
      * @param proof The zero knowledge proof
@@ -227,16 +227,27 @@ contract ZAccountsRegistration is
         uint96 paymasterCompensation,
         bytes calldata privateMessages
     ) external returns (uint256 utxoBusQueuePos) {
-        (
-            address zAccountMasterEOA,
-            uint24 zAccountId,
-            ZACCOUNT_STATUS zAccountStatus
-        ) = _verifyZAccount(inputs);
-
-        uint16 transactionType = _activateZAccountStatusAndReturnTxType(
-            zAccountMasterEOA,
-            zAccountStatus
+        _validateExtraInputs(
+            inputs[ZACCOUNT_ACTIVATION_EXTRA_INPUT_HASH_IND],
+            transactionOptions,
+            paymasterCompensation,
+            privateMessages
         );
+
+        _checkNonZeroPublicInputs(inputs);
+
+        {
+            uint256 creationTime = inputs[
+                ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND
+            ];
+            creationTime.validateCreationTime(maxBlockTimeOffset);
+        }
+
+        _sanitizePrivateMessage(privateMessages, TT_ZACCOUNT_ACTIVATION);
+
+        _validateAndSpendNullifiers(inputs);
+
+        uint16 transactionType = _verifyAndActivateZAccount(inputs);
 
         {
             if (transactionType == TT_ZACCOUNT_ACTIVATION) {
@@ -247,55 +258,38 @@ contract ZAccountsRegistration is
             }
         }
 
-        utxoBusQueuePos = _processActivation(
+        {
+            uint160 circuitId = circuitIds[transactionType];
+            verifyOrRevert(circuitId, inputs, proof);
+        }
+
+        uint96 miningReward = accountFeesAndReturnMiningReward(
+            feeMasterDebt,
+            inputs,
+            paymasterCompensation,
+            transactionType
+        );
+
+        uint32 zAccountUtxoQueueId;
+        uint8 zAccountUtxoIndexInQueue;
+
+        (
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
+            utxoBusQueuePos
+        ) = PANTHER_TREES.insertZAccountActivationUtxos(
+            inputs,
+            transactionOptions,
+            miningReward
+        );
+
+        _emitZAccountActivationNote(
+            inputs,
+            zAccountUtxoQueueId,
+            zAccountUtxoIndexInQueue,
             transactionType,
-            inputs,
-            proof,
-            transactionOptions,
-            paymasterCompensation,
             privateMessages
         );
-
-        emit ZAccountActivated(zAccountId);
-    }
-
-    /**
-     * @notice Creates a ZAccount UTXO to renew the zAccount.
-     * @param inputs The public input parameters to be passed to verifier.
-     * (see `ZAccountActivationPublicSignals.sol`).
-     * @param proof The zero knowledge proof
-     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
-     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
-     * @param paymasterCompensation The compensation for the paymaster.
-     * @param privateMessages The private messages.
-     * (see `TransactionNoteEmitter.sol`).
-     * @return utxoBusQueuePos The position in the UTXO bus queue.
-     * @dev It can be executed only after activating the ZAccount. It throws
-     * if the ZAccount has not been activated so far or it has been
-     * blacklisted.
-     */
-    function renewZAccount(
-        uint256[] calldata inputs,
-        SnarkProof calldata proof,
-        uint32 transactionOptions,
-        uint96 paymasterCompensation,
-        bytes calldata privateMessages
-    ) external returns (uint256 utxoBusQueuePos) {
-        (, uint24 zAccountId, ZACCOUNT_STATUS zAccountStatus) = _verifyZAccount(
-            inputs
-        );
-        require(zAccountStatus == ZACCOUNT_STATUS.ACTIVATED, ERR_NOT_ACTIVATED);
-
-        utxoBusQueuePos = _processActivation(
-            TT_ZACCOUNT_RENEWAL,
-            inputs,
-            proof,
-            transactionOptions,
-            paymasterCompensation,
-            privateMessages
-        );
-
-        emit ZAccountRenewed(zAccountId);
     }
 
     // /* ========== ONLY FOR OWNER FUNCTIONS ========== */
@@ -464,52 +458,21 @@ contract ZAccountsRegistration is
     }
 
     /**
-     * @notice Activates the ZAccount status and returns the transaction type.
-     * @dev Updates the ZAccount status based on the previous status and emits an event.
-     * @param zAccountMasterEOA EOA address of the zAccount.
-     * @param prevStatus The previous status of the ZAccount.
-     * @return transactionType The type of transaction after activation.
-     */
-    function _activateZAccountStatusAndReturnTxType(
-        address zAccountMasterEOA,
-        ZACCOUNT_STATUS prevStatus
-    ) private returns (uint16 transactionType) {
-        // if the status is registered, then change it to activate.
-        // If status is already activated, it means  Zaccount is activated at least in 1 zone.
-        if (prevStatus == ZACCOUNT_STATUS.REGISTERED) {
-            zAccounts[zAccountMasterEOA].status = ZACCOUNT_STATUS.ACTIVATED;
-
-            transactionType = TT_ZACCOUNT_ACTIVATION;
-        } else {
-            transactionType = TT_ZACCOUNT_REACTIVATION;
-        }
-    }
-
-    /**
-     * @notice Verifies a ZAccount based on the provided inputs.
+     * @notice Verifies and activates a ZAccount based on the provided inputs.
      * @dev Checks various conditions including blacklisting and key validation
      * before activating the ZAccount.
      * @param inputs An array of inputs required for verification and activation.
-     * @return zAccountMasterEOA EOA address of the zAccount.
-     * @return zAccountId Id of the zAccount.
-     * @return zAccountStatus the current status of zAccount, can be registered
-     * or activated
+     * @return transactionType The type of transaction, can be TT_ZACCOUNT_ACTIVATION
+     * or TT_ZACCOUNT_REACTIVATION.
      */
-    function _verifyZAccount(
+    function _verifyAndActivateZAccount(
         uint256[] calldata inputs
-    )
-        private
-        view
-        returns (
-            address zAccountMasterEOA,
-            uint24 zAccountId,
-            ZACCOUNT_STATUS zAccountStatus
-        )
-    {
-        zAccountMasterEOA = inputs[ZACCOUNT_ACTIVATION_MASTER_EOA_IND]
+    ) private returns (uint16 transactionType) {
+        address zAccountMasterEOA = inputs[ZACCOUNT_ACTIVATION_MASTER_EOA_IND]
             .safeAddress();
 
-        zAccountId = inputs[ZACCOUNT_ACTIVATION_ZACCOUNT_ID_IND].safe24();
+        uint24 zAccountId = inputs[ZACCOUNT_ACTIVATION_ZACCOUNT_ID_IND]
+            .safe24();
 
         require(
             masterEOAs[zAccountId] == zAccountMasterEOA,
@@ -519,7 +482,7 @@ contract ZAccountsRegistration is
         ZAccount memory _zAccount = zAccounts[zAccountMasterEOA];
         bytes32 rootSpendingKey = _zAccount.pubRootSpendingKey;
         bytes32 readingKey = _zAccount.pubReadingKey;
-        zAccountStatus = _zAccount.status;
+        ZACCOUNT_STATUS zAccountStatus = _zAccount.status;
 
         (bool isBlacklisted, string memory errMsg) = _isBlacklisted(
             zAccountId,
@@ -529,6 +492,12 @@ contract ZAccountsRegistration is
         require(!isBlacklisted, errMsg);
 
         _validateSpendingAndReadingKeys(inputs, rootSpendingKey, readingKey);
+
+        transactionType = _activateZAccountStatusAndReturnTxType(
+            zAccountStatus,
+            zAccountMasterEOA,
+            zAccountId
+        );
     }
 
     /**
@@ -572,69 +541,6 @@ contract ZAccountsRegistration is
     }
 
     /**
-     * @notice Inserts utxos into the panther trees and emit tx note event
-     * @param transactionType the tx type, can be activation, reactivation, or,
-     * renewal
-     * @param inputs The public input parameters to be passed to verifier.
-     * (see `ZAccountActivationPublicSignals.sol`).
-     * @param proof The zero knowledge proof
-     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
-     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
-     * @param paymasterCompensation The compensation for the paymaster.
-     * @param privateMessages The private messages.
-     * (see `TransactionNoteEmitter.sol`).
-     * @return utxoBusQueuePos The position in the UTXO bus queue.
-     */
-    function _processActivation(
-        uint16 transactionType,
-        uint256[] calldata inputs,
-        SnarkProof calldata proof,
-        uint32 transactionOptions,
-        uint96 paymasterCompensation,
-        bytes calldata privateMessages
-    ) private returns (uint256 utxoBusQueuePos) {
-        _validateExtraInputs(
-            inputs[ZACCOUNT_ACTIVATION_EXTRA_INPUT_HASH_IND],
-            transactionOptions,
-            paymasterCompensation,
-            privateMessages
-        );
-
-        _checkNonZeroPublicInputs(inputs);
-
-        {
-            uint256 creationTime = inputs[
-                ZACCOUNT_ACTIVATION_UTXO_OUT_CREATE_TIME_IND
-            ];
-            creationTime.validateCreationTime(maxBlockTimeOffset);
-        }
-
-        _validateAndSpendNullifiers(inputs);
-
-        _sanitizePrivateMessage(privateMessages, transactionType);
-
-        {
-            uint160 circuitId = circuitIds[transactionType];
-            verifyOrRevert(circuitId, inputs, proof);
-        }
-
-        uint96 miningReward = accountFeesAndReturnMiningReward(
-            feeMasterDebt,
-            inputs,
-            paymasterCompensation,
-            transactionType
-        );
-
-        utxoBusQueuePos = _insertUtxosAndEmitZAccountActivationNote(
-            transactionType,
-            inputs,
-            transactionOptions,
-            miningReward,
-            privateMessages
-        );
-    }
-
-    /**
      * @notice Validates and spends nullifiers for ZAccount activation.
      * @dev Checks the nullifiers to prevent double activation in the same zone and network.
      * @param inputs An array of inputs that include nullifier keys.
@@ -657,44 +563,29 @@ contract ZAccountsRegistration is
     }
 
     /**
-     * @notice Inserts utxos into the panther trees and emit tx note event
-     * @param transactionType the tx type, can be activation, reactivation, or,
-     * renewal
-     * @param inputs The public input parameters to be passed to verifier.
-     * (see `ZAccountActivationPublicSignals.sol`).
-     * @param transactionOptions A 17-bit number where the 8 LSB defines the cachedForestRootIndex,
-     * the 1 MSB enables/disables the taxi tree, and other bits are reserved.
-     * @param privateMessages The private messages.
-     * (see `TransactionNoteEmitter.sol`).
-     * @return utxoBusQueuePos The position in the UTXO bus queue.
+     * @notice Activates the ZAccount status and returns the transaction type.
+     * @dev Updates the ZAccount status based on the previous status and emits an event.
+     * @param prevStatus The previous status of the ZAccount.
+     * @param zAccountEoa The address of the ZAccount EOA.
+     * @param zAccountId The ID of the ZAccount being activated.
+     * @return transactionType The type of transaction after activation.
      */
-    function _insertUtxosAndEmitZAccountActivationNote(
-        uint16 transactionType,
-        uint256[] calldata inputs,
-        uint32 transactionOptions,
-        uint96 miningReward,
-        bytes calldata privateMessages
-    ) private returns (uint256 utxoBusQueuePos) {
-        uint32 zAccountUtxoQueueId;
-        uint8 zAccountUtxoIndexInQueue;
+    function _activateZAccountStatusAndReturnTxType(
+        ZACCOUNT_STATUS prevStatus,
+        address zAccountEoa,
+        uint24 zAccountId
+    ) private returns (uint16 transactionType) {
+        // if the status is registered, then change it to activate.
+        // If status is already activated, it means  Zaccount is activated at least in 1 zone.
+        if (prevStatus == ZACCOUNT_STATUS.REGISTERED) {
+            zAccounts[zAccountEoa].status = ZACCOUNT_STATUS.ACTIVATED;
 
-        (
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            utxoBusQueuePos
-        ) = PANTHER_TREES.insertZAccountActivationUtxos(
-            inputs,
-            transactionOptions,
-            miningReward
-        );
+            transactionType = TT_ZACCOUNT_ACTIVATION;
+        } else {
+            transactionType = TT_ZACCOUNT_REACTIVATION;
+        }
 
-        _emitZAccountActivationNote(
-            inputs,
-            zAccountUtxoQueueId,
-            zAccountUtxoIndexInQueue,
-            transactionType,
-            privateMessages
-        );
+        emit ZAccountActivated(zAccountId);
     }
 
     /**
