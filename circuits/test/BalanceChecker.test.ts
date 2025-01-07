@@ -36,7 +36,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             zAssetScale: BigInt(0),
             zAssetScaleZkp: BigInt(0),
             kytDepositChargedAmountZkp: BigInt(0),
-            kytWithdrawChargedAmountZkp: BigInt(0),
+            kycWithdrawOrKytChargedAmountZkp: BigInt(0),
             kytInternalChargedAmountZkp: BigInt(0),
         };
     });
@@ -219,7 +219,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             });
         });
 
-        it('balance should tally for native token withdraw transaction without kytWithdrawChargedAmountZkp', async () => {
+        it('balance should tally for native token withdraw transaction without kycWithdrawOrKytChargedAmountZkp', async () => {
             balanceCheckerSignals.isZkpToken = 1; // Native token
             balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
@@ -257,7 +257,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             });
         });
 
-        it('balance should tally for native token withdraw transaction with kytWithdrawChargedAmountZkp', async () => {
+        it('balance should tally for native token withdraw transaction with kycWithdrawOrKytChargedAmountZkp', async () => {
             balanceCheckerSignals.isZkpToken = 1; // zZKP tokenId
             balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
@@ -269,7 +269,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetWeight = 1;
-            balanceCheckerSignals.kytWithdrawChargedAmountZkp = BigInt(
+            balanceCheckerSignals.kycWithdrawOrKytChargedAmountZkp = BigInt(
                 10 ** 13,
             );
 
@@ -298,7 +298,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             });
         });
 
-        it('balance should tally for ERC20 token withdraw transaction without kytWithdrawChargedAmountZkp', async () => {
+        it('balance should tally for ERC20 token withdraw transaction without kycWithdrawOrKytChargedAmountZkp', async () => {
             balanceCheckerSignals.isZkpToken = 0;
             balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
@@ -336,7 +336,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             });
         });
 
-        it('balance should tally for ERC20 token withdraw transaction with kytWithdrawChargedAmountZkp', async () => {
+        it('balance should tally for ERC20 token withdraw transaction with kycWithdrawOrKytChargedAmountZkp', async () => {
             balanceCheckerSignals.isZkpToken = 0;
             balanceCheckerSignals.withdrawAmount = BigInt(10 ** 13);
             balanceCheckerSignals.chargedAmountZkp = BigInt(10 ** 15);
@@ -348,7 +348,7 @@ describe('BalanceChecker circuit', async function (this: any) {
             balanceCheckerSignals.zAssetScale = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetScaleZkp = BigInt(10 ** 12);
             balanceCheckerSignals.zAssetWeight = 1;
-            balanceCheckerSignals.kytWithdrawChargedAmountZkp = BigInt(
+            balanceCheckerSignals.kycWithdrawOrKytChargedAmountZkp = BigInt(
                 10 ** 13,
             );
 

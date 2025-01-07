@@ -13,7 +13,8 @@ template ZSwapV1Top( nUtxoIn,
                      ZAccountBlackListMerkleTreeDepth,
                      ZZoneMerkleTreeDepth,
                      TrustProvidersMerkleTreeDepth,
-                     isSwap ) {
+                     isSwap,
+                     IsTestNet ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
@@ -399,7 +400,11 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_kytDepositSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kytDepositSignedMessageChargedAmountZkp);
     signal rc_kytDepositSignedMessageSigner <== Uint160Tag(ACTIVE)(kytDepositSignedMessageSigner);
     signal rc_kytDepositSignedMessageHash <== ExternalTag()(kytDepositSignedMessageHash);
-    signal rc_kytDepositSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytDepositSignature);
+
+    // Range checking for the signature components (R8 and S) are enforced in the EdDSAPoseidonVerifier() of circomlib itself.
+    // Hence adding additional range checks for signature components (R8 and S) are redundant.
+    signal rc_kytDepositSignature[3] <== kytDepositSignature;
+
     signal rc_kytWithdrawSignedMessagePackageType <== IgnoreTag()(kytWithdrawSignedMessagePackageType);
     signal rc_kytWithdrawSignedMessageTimestamp <== IgnoreTag()(kytWithdrawSignedMessageTimestamp);
     signal rc_kytWithdrawSignedMessageSender <== ExternalTag()(kytWithdrawSignedMessageSender);
@@ -411,7 +416,11 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_kytWithdrawSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kytWithdrawSignedMessageChargedAmountZkp);
     signal rc_kytWithdrawSignedMessageSigner <== Uint160Tag(ACTIVE)(kytWithdrawSignedMessageSigner);
     signal rc_kytWithdrawSignedMessageHash <== ExternalTag()(kytWithdrawSignedMessageHash);
-    signal rc_kytWithdrawSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytWithdrawSignature);
+
+    // Range checking for the signature components (R8 and S) are enforced in the EdDSAPoseidonVerifier() of circomlib itself.
+    // Hence adding additional range checks for signature components (R8 and S) are redundant.
+    signal rc_kytWithdrawSignature[3] <== kytWithdrawSignature;
+
     signal rc_kytSignedMessagePackageType <== IgnoreTag()(kytSignedMessagePackageType);
     signal rc_kytSignedMessageTimestamp <== IgnoreTag()(kytSignedMessageTimestamp);
     signal rc_kytSignedMessageSessionId <== IgnoreTag()(kytSignedMessageSessionId);
@@ -419,7 +428,10 @@ template ZSwapV1Top( nUtxoIn,
     signal rc_kytSignedMessageSigner <== Uint160Tag(ACTIVE)(kytSignedMessageSigner);
     signal rc_kytSignedMessageDataEscrowHash <== SnarkFieldTag()(kytSignedMessageDataEscrowHash);
     signal rc_kytSignedMessageHash <== ExternalTag()(kytSignedMessageHash);
-    signal rc_kytSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kytSignature);
+
+    // Range checking for the signature components (R8 and S) are enforced in the EdDSAPoseidonVerifier() of circomlib itself.
+    // Hence adding additional range checks for signature components (R8 and S) are redundant.
+    signal rc_kytSignature[3] <== kytSignature;
 
     signal rc_dataEscrowPubKey[2] <== BabyJubJubSubGroupPointTag(IGNORE_ANCHORED)(dataEscrowPubKey);
     signal rc_dataEscrowPubKeyExpiryTime <== Uint32Tag(IGNORE_ANCHORED)(dataEscrowPubKeyExpiryTime);
@@ -481,7 +493,8 @@ template ZSwapV1Top( nUtxoIn,
                                  ZAccountBlackListMerkleTreeDepth,
                                  ZZoneMerkleTreeDepth,
                                  TrustProvidersMerkleTreeDepth,
-                                 isSwap );
+                                 isSwap,
+                                 IsTestNet );
 
     zSwapV1.extraInputsHash <== rc_extraInputsHash;
     zSwapV1.depositAmount <== rc_depositAmount;

@@ -44,7 +44,8 @@ template ZSwapV1( nUtxoIn,
                   ZAccountBlackListMerkleTreeDepth,
                   ZZoneMerkleTreeDepth,
                   TrustProvidersMerkleTreeDepth,
-                  isSwap ) {
+                  isSwap,
+                  IsTestNet ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
@@ -370,7 +371,7 @@ template ZSwapV1( nUtxoIn,
     totalBalanceChecker.zAssetScale <== zAssetScale[transactedToken];
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale[zkpToken];
     totalBalanceChecker.kytDepositChargedAmountZkp <== kytDepositSignedMessageChargedAmountZkp;
-    totalBalanceChecker.kytWithdrawChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
+    totalBalanceChecker.kycWithdrawOrKytChargedAmountZkp <== kytWithdrawSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== kytSignedMessageChargedAmountZkp;
 
     // [3] - Verify zAsset's membership and decode its weight
@@ -805,7 +806,11 @@ template ZSwapV1( nUtxoIn,
     dataEscrow.zZoneDataEscrowEncryptedMessageAy <== zZoneDataEscrowEncryptedMessageAy;
 
     // [16] - Verify KYT signature
-    component trustProvidersKyt = TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth);
+    component trustProvidersKytRandomHash = Poseidon(1);
+    trustProvidersKytRandomHash.inputs[0] <== zAccountUtxoOutSpendKeyRandom;
+
+    component trustProvidersKyt = TrustProvidersKyt(isSwap,TrustProvidersMerkleTreeDepth, IsTestNet);
+    trustProvidersKyt.kytRandom <== trustProvidersKytRandomHash.out;
     trustProvidersKyt.kytToken <== token[transactedToken];
     trustProvidersKyt.kytDepositAmount <== depositAmount;
     trustProvidersKyt.kytWithdrawAmount <== withdrawAmount;

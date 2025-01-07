@@ -123,6 +123,7 @@ describe('ZAccount Renewal - ZeroInput - Witness computation', async function (t
         kycSignedMessageReceiver: 0,
         kycSignedMessageSessionId: 0,
         kycSignedMessageRuleId: 0,
+        kycSignedMessageChargedAmountZkp: 0,
         kycSignedMessageSigner: 0,
         kycSignedMessageHash: 0,
         kycSignature: [0, 0, 0],
