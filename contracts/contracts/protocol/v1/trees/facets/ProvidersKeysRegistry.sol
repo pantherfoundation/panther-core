@@ -417,6 +417,7 @@ contract ProvidersKeysRegistry is
                 (numAllocatedKeys - keyringUnusedKeys);
 
             numAllocatedKeys = MAX_KEYS;
+            keyring.numAllocKeys = keyringUnusedKeys;
         }
 
         keyring.status = STATUS.ACTIVE;
@@ -501,7 +502,7 @@ contract ProvidersKeysRegistry is
         );
 
         require(
-            keyring.numAllocKeys >= keyring.numKeys,
+            keyring.numAllocKeys > keyring.numKeys,
             ERR_INSUFFICIENT_ALLOCATION
         );
 
