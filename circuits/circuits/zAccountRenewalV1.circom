@@ -193,7 +193,7 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // [0] - Extra inputs hash anchoring
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    extraInputsHash === 0 * extraInputsHash;
+    0 === 0 * extraInputsHash;
 
     // [1] - Verify zAsset's membership and decode its weight
     component zAssetNoteInclusionProver = ZAssetNoteInclusionProver(ZAssetMerkleTreeDepth);
