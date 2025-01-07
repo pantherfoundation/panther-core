@@ -160,11 +160,11 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
         1, // utxoOutTargetZoneId
         1702652400, // zAccountUtxoInExpiryTime
         3, // zAccountUtxoInNonce + 1
-        0, // zAccountUtxoInTotalAmountPerTimePeriod
+        20200, // zAccountUtxoInTotalAmountPerTimePeriod
         1700020032, // utxoOutCreateTime - same time as zAssetUTXO got created
         2,
     ]);
-    // 186692839770280082029534744794227910179413518867095586852939524001158859102n
+    // 252201640316781803990098408451884564126495501953986423034221778417602805405n
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
     /* 4. END ===== zAccountUtxoOutCommitment commitment  ===== */
 
@@ -282,16 +282,15 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
     /* 9. START ===== kytSignature computation ===== */
     // kytSealing is on - so we need to compute kytSignature
     const kytSignedMessageHashInternal = poseidon([
-        253, // kytDepositSignedMessagePackageType
-        1735689600, // GMT: Wednesday, 15 November 2023 09:30:50 // kytDepositSignedMessageTimestamp,
-        0, // kytDepositSignedMessageSessionId
-        407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSigner,
-        0, // kytSignedMessageChargedAmountZkp
-        11414055436252469190302359091033835024927400459109861183593842730825233492110n,
-        0,
+        253, // kytSignedMessagePackageType
+        1735689600, // GMT: Wednesday, 15 November 2023 09:30:50 // kytSignedMessageTimestamp,
+        0, // kytSignedMessageSessionId
+        407487970930055136132864974074225519407787604125n, // kytSignedMessageSigner,
+        11414055436252469190302359091033835024927400459109861183593842730825233492110n, // kytSignedDepositSignedMessageHash
+        0, // kytSignedWithdrawSignedMessageHash
         0,
     ]);
-    // 17343381775669547334154555828448003882211749363034312912087105549049669873844n
+    // 10871340331885256431278624916326348800305970927288404928803426704104907714755n
     // console.log('kytSignedMessageHashInternal=>', kytSignedMessageHashInternal);
 
     const signatureForKyt = eddsa.signPoseidon(
@@ -665,11 +664,11 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
             407487970930055136132864974074225519407787604125n,
         kytSignedMessageDataEscrowHash: 0,
         kytSignedMessageHash:
-            17343381775669547334154555828448003882211749363034312912087105549049669873844n,
+            10871340331885256431278624916326348800305970927288404928803426704104907714755n,
         kytSignature: [
-            1274394554768015659590584811063143506078334279263666516573503060655548176515n,
-            10219847358695369492004840544367110689728432669905401780948462529998244872573n,
-            21585094286463689967810469791845641244760397366353081365159817802986532154396n,
+            2163996551500115987162659470431303811822255881696998782254730354781965720291n,
+            4008870922861756284322138966299502689772832661081100151154866467584529767215n,
+            5887921670378127600380008956170858108390418789054788743586829354217032338977n,
         ],
 
         dataEscrowPubKey: [
@@ -778,7 +777,7 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
             1215795509656177802870041674430711702496004716229829094660171184836034819583n,
 
         zAccountUtxoOutCommitment:
-            186692839770280082029534744794227910179413518867095586852939524001158859102n,
+            252201640316781803990098408451884564126495501953986423034221778417602805405n,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,

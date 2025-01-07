@@ -166,11 +166,11 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
         1, // utxoOutTargetZoneId
         1702652400, // zAccountUtxoInExpiryTime
         3, // zAccountUtxoInNonce + 1
-        0, // zAccountUtxoInTotalAmountPerTimePeriod
+        20200, // zAccountUtxoInTotalAmountPerTimePeriod
         1700020032, // utxoOutCreateTime - same time as zAssetUTXO got created
         2,
     ]);
-    // 186692839770280082029534744794227910179413518867095586852939524001158859102n
+    // 252201640316781803990098408451884564126495501953986423034221778417602805405n
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
     /* 4. END ===== zAccountUtxoOutCommitment commitment  ===== */
 
@@ -779,7 +779,7 @@ describe('Main z-transaction - Non ZeroInput - Without ZZoneSealing - Witness co
             1215795509656177802870041674430711702496004716229829094660171184836034819583n,
 
         zAccountUtxoOutCommitment:
-            186692839770280082029534744794227910179413518867095586852939524001158859102n,
+            252201640316781803990098408451884564126495501953986423034221778417602805405n,
 
         zNetworkChainId: 80001,
         zNetworkIDsBitMap: 5,

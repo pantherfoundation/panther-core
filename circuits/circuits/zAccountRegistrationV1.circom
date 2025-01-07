@@ -28,7 +28,8 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
                                   ZAssetMerkleTreeDepth,
                                   ZAccountBlackListMerkleTreeDepth,
                                   ZZoneMerkleTreeDepth,
-                                  TrustProvidersMerkleTreeDepth ) {
+                                  TrustProvidersMerkleTreeDepth,
+                                  IsTestNet ) {
     // external data anchoring
     signal input extraInputsHash;  // public
 
@@ -110,6 +111,7 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     signal input           kycSignedMessageSessionId;
     signal input {uint8}   kycSignedMessageRuleId;
     signal input {uint160} kycSignedMessageSigner;
+    signal input {uint96}  kycSignedMessageChargedAmountZkp;
     signal input           kycSignedMessageHash;                // public
     signal input           kycSignature[3];                     // S,R8x,R8y
 
@@ -282,7 +284,7 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     totalBalanceChecker.zAssetScale <== zAssetScale;
     totalBalanceChecker.zAssetScaleZkp <== zAssetScale;
     totalBalanceChecker.kytDepositChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
-    totalBalanceChecker.kytWithdrawChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
+    totalBalanceChecker.kycWithdrawOrKytChargedAmountZkp <== kycSignedMessageChargedAmountZkp;
     totalBalanceChecker.kytInternalChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(0);
 
     // verify deposit limit
@@ -311,7 +313,7 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     zAccountNullifierHasherProver.in[1] <== zAccountNullifierHasher.out;
     zAccountNullifierHasherProver.enabled <== zAccountNullifier;
 
-    // [6] - Verify zAccoutId exclusion proof
+    // [6] - Verify zAccountId exclusion proof
     component zAccountBlackListInlcusionProver = ZAccountBlackListLeafInclusionProver(ZAccountBlackListMerkleTreeDepth);
     zAccountBlackListInlcusionProver.zAccountId <== zAccountId;
     zAccountBlackListInlcusionProver.leaf <== zAccountBlackListLeaf;
@@ -321,16 +323,39 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
     }
 
     // [7] - Verify KYC signature
-    component kycSignedMessageHashInternal = Poseidon(7);
+    component kycSignedMessageHashInternal;
 
-    kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
-    kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
-    kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
-    kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
-    kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
-    kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
-    kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageSigner;
+    if ( IsTestNet ) { // TestNet only
+        kycSignedMessageHashInternal = Poseidon(7);
 
+        kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
+        kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
+        kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
+        kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
+        kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
+        kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
+        kycSignedMessageHashInternal.inputs[6] <== kycSignedMessageSigner;
+    } else { // Production
+        // Random
+        component kycRandom = Poseidon(1);
+        kycRandom.inputs[0] <== zAccountSpendKeyRandom;
+        // Modification (instead of `signer`)
+        component kycInternalHash = Poseidon(3);
+        kycInternalHash.inputs[0] <== kycSignedMessageSigner; // same as before
+        kycInternalHash.inputs[1] <== kycSignedMessageChargedAmountZkp;
+        kycInternalHash.inputs[2] <== kycRandom.out; // random that will be send to KYC
+
+        // Signed Hash
+        kycSignedMessageHashInternal = Poseidon(7);
+
+        kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
+        kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
+        kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
+        kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
+        kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
+        kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
+        kycSignedMessageHashInternal.inputs[6] <== kycInternalHash.out;
+    }
     // verify required values
     kycSignedMessagePackageType === 1; // KYC pkg type
     kycSignedMessageSender === zAccountMasterEOA;

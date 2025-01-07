@@ -18,7 +18,7 @@ template BalanceCheckerTop () {
     signal input zAssetScale;
     signal input zAssetScaleZkp;
     signal input kytDepositChargedAmountZkp;
-    signal input kytWithdrawChargedAmountZkp;
+    signal input kycWithdrawOrKytChargedAmountZkp;
     signal input kytInternalChargedAmountZkp;
     signal output depositScaledAmount;
     signal output depositWeightedScaledAmount;
@@ -44,7 +44,7 @@ template BalanceCheckerTop () {
     signal rc_zAssetScale <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScale);
     signal rc_zAssetScaleZkp <== NonZeroUint64Tag(IGNORE_ANCHORED)(zAssetScaleZkp);
     signal rc_kytDepositChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(kytDepositChargedAmountZkp);
-    signal rc_kytWithdrawChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(kytWithdrawChargedAmountZkp);
+    signal rc_kycWithdrawOrKytChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(kycWithdrawOrKytChargedAmountZkp);
     signal rc_kytInternalChargedAmountZkp <== Uint96Tag(IGNORE_CONSTANT)(kytInternalChargedAmountZkp);
 
     component balanceChecker = BalanceChecker();
@@ -61,6 +61,6 @@ template BalanceCheckerTop () {
     balanceChecker.zAssetScale <== rc_zAssetScale;
     balanceChecker.zAssetScaleZkp <== rc_zAssetScaleZkp;
     balanceChecker.kytDepositChargedAmountZkp <== rc_kytDepositChargedAmountZkp;
-    balanceChecker.kytWithdrawChargedAmountZkp <== rc_kytWithdrawChargedAmountZkp;
+    balanceChecker.kycWithdrawOrKytChargedAmountZkp <== rc_kycWithdrawOrKytChargedAmountZkp;
     balanceChecker.kytInternalChargedAmountZkp <== rc_kytInternalChargedAmountZkp;
 }

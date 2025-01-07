@@ -10,7 +10,8 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
                                 ZAssetMerkleTreeDepth,
                                 ZAccountBlackListMerkleTreeDepth,
                                 ZZoneMerkleTreeDepth,
-                                TrustProvidersMerkleTreeDepth ) {
+                                TrustProvidersMerkleTreeDepth,
+                                IsTestNet ) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Ferry MT size
     var UtxoRightMerkleTreeDepth = UtxoRightMerkleTreeDepth_Fn( UtxoMiddleMerkleTreeDepth, ZNetworkMerkleTreeDepth);
@@ -110,6 +111,7 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
     signal input kycSignedMessageSessionId;
     signal input kycSignedMessageRuleId;
     signal input kycSignedMessageSigner;
+    signal input kycSignedMessageChargedAmountZkp;
     signal input kycSignedMessageHash;                // public
     signal input kycSignature[3];                     // S,R8x,R8y
 
@@ -244,8 +246,12 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
     signal rc_kycSignedMessageSessionId <== IgnoreTag()(kycSignedMessageSessionId);
     signal rc_kycSignedMessageRuleId <== Uint8Tag(ACTIVE)(kycSignedMessageRuleId);
     signal rc_kycSignedMessageSigner <== Uint160Tag(ACTIVE)(kycSignedMessageSigner);
+    signal rc_kycSignedMessageChargedAmountZkp <== Uint96Tag(ACTIVE)(kycSignedMessageChargedAmountZkp);
     signal rc_kycSignedMessageHash <== ExternalTag()(kycSignedMessageHash);
-    signal rc_kycSignature[3] <== BabyJubJubSubOrderTagArray(IGNORE_CHECKED_IN_CIRCOMLIB,3)(kycSignature);
+
+    // Range checking for the signature components (R8 and S) are enforced in the EdDSAPoseidonVerifier() of circomlib itself.
+    // Hence adding additional range checks for signature components (R8 and S) are redundant.
+    signal rc_kycSignature[3] <== kycSignature;
 
     signal rc_zNetworkId <== Uint6Tag(ACTIVE)(zNetworkId);
     signal rc_zNetworkChainId <== ExternalTag()(zNetworkChainId);
@@ -276,7 +282,8 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
                                                      ZAssetMerkleTreeDepth,
                                                      ZAccountBlackListMerkleTreeDepth,
                                                      ZZoneMerkleTreeDepth,
-                                                     TrustProvidersMerkleTreeDepth );
+                                                     TrustProvidersMerkleTreeDepth,
+                                                     IsTestNet );
 
     zAccountRenewalV1.extraInputsHash <== rc_extraInputsHash;
     zAccountRenewalV1.addedAmountZkp <== rc_addedAmountZkp;
@@ -358,6 +365,7 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
     zAccountRenewalV1.kycSignedMessageSessionId <== rc_kycSignedMessageSessionId;
     zAccountRenewalV1.kycSignedMessageRuleId <== rc_kycSignedMessageRuleId;
     zAccountRenewalV1.kycSignedMessageSigner <== rc_kycSignedMessageSigner;
+    zAccountRenewalV1.kycSignedMessageChargedAmountZkp <== rc_kycSignedMessageChargedAmountZkp;
     zAccountRenewalV1.kycSignedMessageHash <== rc_kycSignedMessageHash;
     zAccountRenewalV1.kycSignature <== rc_kycSignature;
 

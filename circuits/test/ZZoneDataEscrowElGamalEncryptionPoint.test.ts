@@ -72,15 +72,26 @@ describe('ZZone Data Escrow ElGamal Encryption', function (this: any) {
                     input,
                     true,
                 );
-            // await zZoneDataEscrowElGamalEncryption.assertOut(wtns, output);
 
-            // console.log('wtns=>', wtns[261], wtns[262], wtns[263], wtns[264]);
+            const indexOfephemeralPubKey0 = wtns.indexOf(
+                output.ephemeralPubKey[0],
+            );
+            const indexOfephemeralPubKey1 = wtns.indexOf(
+                output.ephemeralPubKey[1],
+            );
+            const indexOfencryptedMessage00 = wtns.indexOf(
+                output.encryptedMessage[0][0],
+            );
+            const indexOfencryptedMessage01 = wtns.indexOf(
+                output.encryptedMessage[0][1],
+            );
+
             const wtnsFormattedOutput = [
                 0,
-                wtns[261],
-                wtns[262],
-                wtns[263],
-                wtns[264],
+                wtns[indexOfephemeralPubKey0],
+                wtns[indexOfephemeralPubKey1],
+                wtns[indexOfencryptedMessage00],
+                wtns[indexOfencryptedMessage01],
             ];
 
             await zZoneDataEscrowElGamalEncryption.assertOut(
