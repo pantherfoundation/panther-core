@@ -95,7 +95,7 @@ describe('ZTransactions', function () {
                 kytWithdrawSignedMessageSender: vault.address,
             });
 
-            const chargedZkp = inputs[36];
+            const chargedZkp = inputs[33];
 
             await expect(
                 zTransaction.main(
@@ -145,9 +145,9 @@ describe('ZTransactions', function () {
                 tokenType: 0,
                 kytWithdrawSignedMessageSender: vault.address,
             });
-            const chargedZkp = inputs[36];
+            const chargedZkp = inputs[33];
             const KytWithdrawMessageHash = ethers.utils.hexZeroPad(
-                BigNumber.from(inputs[17]),
+                BigNumber.from(inputs[18]),
                 32,
             );
 
@@ -177,7 +177,7 @@ describe('ZTransactions', function () {
                 tokenType: 0,
                 token: zkpToken.address,
                 tokenId: BigNumber.from('0'),
-                extAccount: inputs[16],
+                extAccount: inputs[17],
                 extAmount: inputs[2],
             };
 
@@ -195,9 +195,9 @@ describe('ZTransactions', function () {
                 kytDepositSignedMessageSender: owner.address,
                 kytDepositSignedMessageReceiver: vault.address,
             });
-            const chargedZkp = inputs[36];
+            const chargedZkp = inputs[33];
             const KytDepositMessageHash = ethers.utils.hexZeroPad(
-                BigNumber.from(inputs[14]),
+                BigNumber.from(inputs[15]),
                 32,
             );
 
@@ -227,7 +227,7 @@ describe('ZTransactions', function () {
                 tokenType: 0,
                 token: zkpToken.address,
                 tokenId: BigNumber.from('0'),
-                salt: inputs[40],
+                salt: inputs[37],
                 extAccount: owner.address,
                 extAmount: inputs[1],
             };

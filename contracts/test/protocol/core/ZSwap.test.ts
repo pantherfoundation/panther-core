@@ -210,7 +210,7 @@ describe('ZSwap', function () {
                 expect(await zSwap.internalIsSpent(inputs[12])).to.be.gt(0); //zAssetUtxoInNullifier1
                 expect(
                     await zSwap.internalFeeMasterDebt(zkpToken.address),
-                ).to.be.equal(inputs[41]); //chargedAmountZkp
+                ).to.be.equal(inputs[38]); //chargedAmountZkp
             });
         });
 
