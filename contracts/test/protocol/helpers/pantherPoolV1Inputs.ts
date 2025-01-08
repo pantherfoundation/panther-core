@@ -84,7 +84,7 @@ interface MainOptions {
     zAssetUtxoInNullifier2?: string;
     zAccountUtxoInNullifier?: BigNumber;
     ZoneDataEscrowEphimeralPubKeyAx?: string;
-    zZoneDataEscrowEncryptedMessageAx?: string;
+    zZoneDataEscrowEncryptedMessage?: string;
     kytDepositSignedMessageSender?: string;
     kytDepositSignedMessageReceiver?: string;
     kytDepositSignedMessageHash?: string;
@@ -395,7 +395,8 @@ export async function getMainInputs(options: MainOptions) {
     const tokenId = options.tokenId || 0;
     const zNetworkChainId = options.zNetworkChainId || 31337;
     const ZoneDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
-    const zZoneDataEscrowEncryptedMessageAx = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND
+    const zZoneDataEscrowEncryptedMessage = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_IND
+    const zZoneDataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes(); // MAIN_ZZONE_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND
     const kytDepositSignedMessageSender =
         options.kytDepositSignedMessageSender ||
         ethers.Wallet.createRandom().address; // MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_SENDER_IND
@@ -411,20 +412,18 @@ export async function getMainInputs(options: MainOptions) {
         ethers.Wallet.createRandom().address; // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_RECEIVER_IND
     const kytWithdrawSignedMessageHash =
         options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes(); // MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND
-    const kytInternalSignedMessageHash = getSnarkFriendlyBytes();
+    const kytInternalSignedMessageHash = getSnarkFriendlyBytes(); // MAIN_KYT_INTERNAL_SIGNED_MESSAGE_HASH_IND
     const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
     const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX0_IND
     const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX1_IND
     const dataEscrowEncryptedMessageAx3 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX2_IND
     const dataEscrowEncryptedMessageAx4 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX3_IND
-    const dataEscrowEncryptedMessageAx5 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX4_IND
-    const dataEscrowEncryptedMessageAx6 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX5_IND
-    const dataEscrowEncryptedMessageAx7 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX6_IND
-    const dataEscrowEncryptedMessageAx8 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX7_IND
-    const dataEscrowEncryptedMessageAx10 = getSnarkFriendlyBytes();
-    const dataEscrowEncryptedMessageAx9 = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_AX8_IND
+
+    const dataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes(); // MAIN_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND
+
     const daoDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes(); // MAIN_DAO_DATA_ESCROW_EPHIMERAL_PUB_KEY_AX_IND
     const daoDataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes(); // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_AX_IND_1
+    const daoDataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes(); // MAIN_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND
     const staticTreeMerkleRoot =
         options.staticTreeMerkleRoot || ethers.utils.id('staticTreeMerkleRoot');
     const forestMerkleRoot =
@@ -447,7 +446,8 @@ export async function getMainInputs(options: MainOptions) {
         zAssetUtxoInNullifier2,
         zAccountUtxoInNullifier,
         ZoneDataEscrowEphimeralPubKeyAx,
-        zZoneDataEscrowEncryptedMessageAx,
+        zZoneDataEscrowEncryptedMessage,
+        zZoneDataEscrowEncryptedMessageHmac,
         kytDepositSignedMessageSender,
         kytDepositSignedMessageReceiver,
         kytDepositSignedMessageHash,
@@ -460,14 +460,10 @@ export async function getMainInputs(options: MainOptions) {
         dataEscrowEncryptedMessageAx2,
         dataEscrowEncryptedMessageAx3,
         dataEscrowEncryptedMessageAx4,
-        dataEscrowEncryptedMessageAx5,
-        dataEscrowEncryptedMessageAx6,
-        dataEscrowEncryptedMessageAx7,
-        dataEscrowEncryptedMessageAx8,
-        dataEscrowEncryptedMessageAx9,
-        dataEscrowEncryptedMessageAx10,
+        dataEscrowEncryptedMessageHmac,
         daoDataEscrowEphimeralPubKeyAx,
         daoDataEscrowEncryptedMessageAx1,
+        daoDataEscrowEncryptedMessageHmac,
         zAccountCreateTime,
         zAccountUtxoOutCommitment,
         zAccountUtxoOutCommitment,
@@ -545,7 +541,8 @@ export async function getSwapInputs(options: SwapOptions) {
         options.incomingZassetScale || ethers.utils.parseUnits('1', 18);
     const zzkpScale = options.zzkpScale || ethers.utils.parseUnits('1', 18);
     const ZoneDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
-    const zZoneDataEscrowEncryptedMessageAx = getSnarkFriendlyBytes();
+    const zZoneDataEscrowEncryptedMessage = getSnarkFriendlyBytes();
+    const zZoneDataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes();
     const kytDepositSignedMessageSender =
         options.kytDepositSignedMessageSender ||
         ethers.Wallet.createRandom().address;
@@ -562,17 +559,15 @@ export async function getSwapInputs(options: SwapOptions) {
     const kytWithdrawSignedMessageHash =
         options.kytWithdrawSignedMessageHash || getSnarkFriendlyBytes();
     const kytInternalSignedMessageHash = getSnarkFriendlyBytes();
-    const dataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx2 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx3 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx4 = getSnarkFriendlyBytes();
     const dataEscrowEncryptedMessageAx5 = getSnarkFriendlyBytes();
-    const dataEscrowEncryptedMessageAx6 = getSnarkFriendlyBytes();
-    const dataEscrowEncryptedMessageAx7 = getSnarkFriendlyBytes();
-    const dataEscrowEncryptedMessageAx8 = getSnarkFriendlyBytes();
+    const dataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes();
     const daoDataEscrowEphimeralPubKeyAx = getSnarkFriendlyBytes();
-    const daoDataEscrowEncryptedMessageAx1 = getSnarkFriendlyBytes();
+    const daoDataEscrowEncryptedMessage = getSnarkFriendlyBytes();
+    const daoDataEscrowEncryptedMessageHmac = getSnarkFriendlyBytes();
     const staticTreeMerkleRoot =
         options.staticTreeMerkleRoot || ethers.utils.id('staticTreeMerkleRoot');
     const forestMerkleRoot =
@@ -597,39 +592,36 @@ export async function getSwapInputs(options: SwapOptions) {
         zzkpScale, //10
         spendTime, //11
         zAssetUtxoInNullifier1, //12
-        zAssetUtxoInNullifier2, //13 // Assuming the same nullifier is used twice
-        zAccountUtxoInNullifier, //14 // Assuming the same nullifier is used three times
+        zAssetUtxoInNullifier2, //13
+        zAccountUtxoInNullifier, //14
         ZoneDataEscrowEphimeralPubKeyAx, //15
-        zZoneDataEscrowEncryptedMessageAx, //16
-        kytDepositSignedMessageSender, //17
-        kytDepositSignedMessageReceiver, //18
-        kytDepositSignedMessageHash, //19
-        kytWithdrawSignedMessageSender, //20
-        kytWithdrawSignedMessageReceiver, //21
-        kytWithdrawSignedMessageHash, //22
-        kytInternalSignedMessageHash, //23
-        dataEscrowEncryptedMessageAx1, //24
-        dataEscrowEncryptedMessageAx2, //25
-        dataEscrowEncryptedMessageAx3, //26
-        dataEscrowEncryptedMessageAx4, //27
-        dataEscrowEncryptedMessageAx5, //28
-        dataEscrowEncryptedMessageAx6, //29
-        dataEscrowEncryptedMessageAx7, //30
-        dataEscrowEncryptedMessageAx8, //31
-        daoDataEscrowEphimeralPubKeyAx, //32
-        daoDataEscrowEncryptedMessageAx1, //33
-        daoDataEscrowEncryptedMessageAx1, //34
-        dataEscrowEphimeralPubKeyAx,
-        daoDataEscrowEncryptedMessageAx1, //35
-        (await getBlockTimestamp()) + 10, //36 // Assuming zAccountCreateTime is calculated like this
+        zZoneDataEscrowEncryptedMessage, //16
+        zZoneDataEscrowEncryptedMessageHmac, //17
+        kytDepositSignedMessageSender, //18
+        kytDepositSignedMessageReceiver, //19
+        kytDepositSignedMessageHash, //20
+        kytWithdrawSignedMessageSender, //21
+        kytWithdrawSignedMessageReceiver, //22
+        kytWithdrawSignedMessageHash, //23
+        kytInternalSignedMessageHash, //24
+        dataEscrowEncryptedMessageAx1, //25
+        dataEscrowEncryptedMessageAx2, //26
+        dataEscrowEncryptedMessageAx3, //27
+        dataEscrowEncryptedMessageAx4, //28
+        dataEscrowEncryptedMessageAx5, //29
+        dataEscrowEncryptedMessageHmac, //30
+        daoDataEscrowEphimeralPubKeyAx, //31
+        daoDataEscrowEncryptedMessage, //32
+        daoDataEscrowEncryptedMessageHmac, //33
+        (await getBlockTimestamp()) + 10, //34 // Assuming zAccountCreateTime is calculated like this
+        zAccountUtxoOutCommitment, //35
+        zAccountUtxoOutCommitmentPvrt, //36
         zAccountUtxoOutCommitment, //37
-        zAccountUtxoOutCommitmentPvrt, //38
-        zAccountUtxoOutCommitment, //39
-        chargedAmountZkp, //40
-        zNetworkChainId, //41
-        staticTreeMerkleRoot, //42
-        forestMerkleRoot, //43
-        saltHash, //44
-        magicalConstraint, //45
+        chargedAmountZkp, //38
+        zNetworkChainId, //39
+        staticTreeMerkleRoot, //40
+        forestMerkleRoot, //41
+        saltHash, //42
+        magicalConstraint, //43
     ];
 }
