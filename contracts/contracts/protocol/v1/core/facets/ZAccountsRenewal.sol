@@ -154,7 +154,7 @@ contract ZAccountsRenewal is
      * @param inputs An array of public input values to validate.
      */
     function _checkNonZeroPublicInputs(uint256[] calldata inputs) private pure {
-        inputs[ZACCOUNT_RENEWAL_UTXO_IN_NULLIFIER_IND].validateNonZero(
+        inputs[ZACCOUNT_RENEWAL_SALT_HASH_IND].validateNonZero(
             "ERR_ZERO_SALT_HASH"
         );
         inputs[ZACCOUNT_RENEWAL_MAGICAL_CONSTRAINT_IND].validateNonZero(

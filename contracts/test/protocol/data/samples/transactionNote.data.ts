@@ -5,6 +5,7 @@ import {utils} from 'ethers';
 
 export enum TransactionTypes {
     zAccountActivation = 0x100,
+    zAccountRenewal = 0x102,
     prpClaim = 0x103,
     prpConversion = 0x104,
     main = 0x105,
@@ -49,6 +50,9 @@ export function generatePrivateMessage(txType: TransactionTypes): string {
     let privateMessage = '0x';
 
     if (txType === TransactionTypes.zAccountActivation)
+        privateMessage += zAccountMessage;
+
+    if (txType === TransactionTypes.zAccountRenewal)
         privateMessage += zAccountMessage;
 
     if (txType === TransactionTypes.prpClaim) privateMessage += zAccountMessage;
