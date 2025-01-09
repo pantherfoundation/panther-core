@@ -152,6 +152,74 @@ interface SwapOptions {
     magicalConstraint?: string;
 }
 
+interface zAccountRenewalOptions {
+    extraInputsHash?: BigNumber;
+    addedAmountZkp?: number;
+    chargedAmountZkp?: BigNumber;
+    nullifier?: number;
+    commitment?: string;
+    utxoOutCreateTime?: number;
+    kycSignedMessageHash?: string;
+    staticTreeMerkleRoot?: string;
+    forestMerkleRoot?: string;
+    saltHash?: string;
+    magicalConstraint?: string;
+}
+
+export async function getzAccountRenewalInputs(
+    options: zAccountRenewalOptions,
+) {
+    const addedAmountZkp = options.addedAmountZkp || 0;
+    const chargedAmountZkp =
+        options.chargedAmountZkp || ethers.utils.parseEther('10');
+    const privateMessages = generatePrivateMessage(
+        TransactionTypes.zAccountRenewal,
+    );
+    const utxoOutCreateTime =
+        options.utxoOutCreateTime || (await getBlockTimestamp()) + 10;
+    const nullifier = options.nullifier || BigNumber.from(1);
+    const commitment = options.commitment || ethers.utils.id('commitment');
+    const kycSignedMessageHash =
+        options.kycSignedMessageHash || getSnarkFriendlyBytes();
+    const staticTreeMerkleRoot =
+        options.staticTreeMerkleRoot || ethers.utils.id('staticTreeMerkleRoot');
+    const forestMerkleRoot =
+        options.forestMerkleRoot || ethers.utils.id('forestMerkleRoot');
+    const saltHash =
+        options.saltHash ||
+        ethers.utils.keccak256(
+            ethers.utils.toUtf8Bytes('PANTHER_EIP712_DOMAIN_SALT'),
+        );
+    const magicalConstraint =
+        options.magicalConstraint || ethers.utils.id('magicalConstraint');
+    const transactionOptions = 0x102;
+
+    const paymasterCompensation = ethers.BigNumber.from('10');
+    const extraInput = ethers.utils.solidityPack(
+        ['uint32', 'uint96', 'bytes'],
+        [transactionOptions, paymasterCompensation, privateMessages],
+    );
+    const calculatedExtraInputHash = BigNumber.from(
+        ethers.utils.solidityKeccak256(['bytes'], [extraInput]),
+    ).mod(SNARK_FIELD_SIZE);
+
+    const extraInputsHash = options.extraInputsHash || calculatedExtraInputHash;
+
+    return [
+        extraInputsHash,
+        addedAmountZkp,
+        chargedAmountZkp,
+        nullifier,
+        commitment,
+        utxoOutCreateTime,
+        kycSignedMessageHash,
+        staticTreeMerkleRoot,
+        forestMerkleRoot,
+        saltHash,
+        magicalConstraint,
+    ];
+}
+
 export async function getPrpClaimandConversionInputs(
     options: PrpClaimandConversionOptions,
 ) {
