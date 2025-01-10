@@ -417,9 +417,7 @@ contract ProvidersKeysRegistry is
                 (numAllocatedKeys - keyringUnusedKeys);
 
             numAllocatedKeys = MAX_KEYS;
-            keyring.numAllocKeys = keyringUnusedKeys > keyring.numKeys
-                ? keyringUnusedKeys
-                : keyring.numKeys;
+            keyring.numAllocKeys = keyring.numKeys + keyringUnusedKeys;
         }
 
         keyring.status = STATUS.ACTIVE;
