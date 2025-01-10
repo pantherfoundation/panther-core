@@ -267,7 +267,6 @@ function parseSegments(
     segments: Segment[],
 ): string[] {
     let startStrIndex = 1 * BYTES_TO_STRING_LENGTH_FACTOR;
-    console.log(segments);
 
     return segments.map(({type, length}, index) => {
         const lengthInStr = length * BYTES_TO_STRING_LENGTH_FACTOR;
