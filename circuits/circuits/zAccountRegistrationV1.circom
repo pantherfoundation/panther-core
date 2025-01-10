@@ -340,21 +340,20 @@ template ZAccountRegistrationV1 ( ZNetworkMerkleTreeDepth,
         component kycRandom = Poseidon(1);
         kycRandom.inputs[0] <== zAccountSpendKeyRandom;
         // Modification (instead of `signer`)
-        component kycInternalHash = Poseidon(3);
+        component kycInternalHash = Poseidon(5);
         kycInternalHash.inputs[0] <== kycSignedMessageSigner; // same as before
         kycInternalHash.inputs[1] <== kycSignedMessageChargedAmountZkp;
         kycInternalHash.inputs[2] <== kycRandom.out; // random that will be send to KYC
+        kycInternalHash.inputs[3] <== kycSignedMessageSessionId;
+        kycInternalHash.inputs[4] <== kycSignedMessageRuleId;
 
         // Signed Hash
-        kycSignedMessageHashInternal = Poseidon(7);
-
+        kycSignedMessageHashInternal = Poseidon(5);
         kycSignedMessageHashInternal.inputs[0] <== kycSignedMessagePackageType;
         kycSignedMessageHashInternal.inputs[1] <== kycSignedMessageTimestamp;
         kycSignedMessageHashInternal.inputs[2] <== kycSignedMessageSender;
         kycSignedMessageHashInternal.inputs[3] <== kycSignedMessageReceiver;
-        kycSignedMessageHashInternal.inputs[4] <== kycSignedMessageSessionId;
-        kycSignedMessageHashInternal.inputs[5] <== kycSignedMessageRuleId;
-        kycSignedMessageHashInternal.inputs[6] <== kycInternalHash.out;
+        kycSignedMessageHashInternal.inputs[4] <== kycInternalHash.out;
     }
     // verify required values
     kycSignedMessagePackageType === 1; // KYC pkg type

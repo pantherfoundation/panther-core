@@ -52,21 +52,20 @@ template TrustProvidersInternalKyt(IsTestNet) {
 
     } else { // Production
         // Modification (instead of `signer`)
-        component kytInternalHash = Poseidon(3);
+        component kytInternalHash = Poseidon(4);
         kytInternalHash.inputs[0] <== kytSignedMessageSigner; // same as before
         kytInternalHash.inputs[1] <== kytSignedMessageChargedAmountZkp; // zkp amount
         kytInternalHash.inputs[2] <== kytRandom; // random that will be send to KYT
+        kytInternalHash.inputs[3] <== kytSignedMessageSessionId;
 
         // Signed Hash
-        kytSignedMessageHashInternal = Poseidon(7);
-
+        kytSignedMessageHashInternal = Poseidon(6);
         kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
         kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
-        kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSessionId;
-        kytSignedMessageHashInternal.inputs[3] <== kytInternalHash.out;
-        kytSignedMessageHashInternal.inputs[4] <== kytSignedDepositSignedMessageHash;
-        kytSignedMessageHashInternal.inputs[5] <== kytSignedWithdrawSignedMessageHash;
-        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageDataEscrowHash;
+        kytSignedMessageHashInternal.inputs[2] <== kytInternalHash.out;
+        kytSignedMessageHashInternal.inputs[3] <== kytSignedDepositSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[4] <== kytSignedWithdrawSignedMessageHash;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedMessageDataEscrowHash;
     }
 
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
@@ -158,22 +157,22 @@ template TrustProvidersDepositWithdrawKyt(IsTestNet) {
         kytSignedMessageHashInternal.inputs[8] <== kytSignedMessageSigner;
     } else { // Production
         // Modification (instead of `signer`)
-        component kytInternalHash = Poseidon(3);
+        component kytInternalHash = Poseidon(5);
         kytInternalHash.inputs[0] <== kytSignedMessageSigner; // same as before
         kytInternalHash.inputs[1] <== kytSignedMessageChargedAmountZkp; // zkp amount
         kytInternalHash.inputs[2] <== kytRandom; // random that will be send to KYT
+        kytInternalHash.inputs[3] <== kytSignedMessageSessionId;
+        kytInternalHash.inputs[4] <== kytSignedMessageRuleId;
 
-        kytSignedMessageHashInternal = Poseidon(9);
+        kytSignedMessageHashInternal = Poseidon(7);
 
         kytSignedMessageHashInternal.inputs[0] <== kytSignedMessagePackageType;
         kytSignedMessageHashInternal.inputs[1] <== kytSignedMessageTimestamp;
         kytSignedMessageHashInternal.inputs[2] <== kytSignedMessageSender;
         kytSignedMessageHashInternal.inputs[3] <== kytSignedMessageReceiver;
         kytSignedMessageHashInternal.inputs[4] <== kytSignedMessageToken;
-        kytSignedMessageHashInternal.inputs[5] <== kytSignedMessageSessionId;
-        kytSignedMessageHashInternal.inputs[6] <== kytSignedMessageRuleId;
-        kytSignedMessageHashInternal.inputs[7] <== kytSignedMessageAmount;
-        kytSignedMessageHashInternal.inputs[8] <== kytInternalHash.out;
+        kytSignedMessageHashInternal.inputs[5] <== kytSignedMessageAmount;
+        kytSignedMessageHashInternal.inputs[6] <== kytInternalHash.out;
     }
     component kytSignatureVerifier = EdDSAPoseidonVerifier();
     kytSignatureVerifier.enabled <== enabled;
