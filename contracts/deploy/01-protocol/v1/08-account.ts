@@ -19,6 +19,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     await deploy('Account', {
         from: deployer,
+        // TODO: delete proxy
+        proxy: {
+            proxyContract: 'EIP173Proxy',
+            owner: deployer,
+        },
         args: [
             [
                 coreDiamond,
@@ -26,27 +31,27 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 coreDiamond,
                 coreDiamond,
                 coreDiamond,
-                ACCOUNT.ADDRESS_ONE,
+                coreDiamond,
                 ACCOUNT.ADDRESS_ONE,
                 ACCOUNT.ADDRESS_ONE,
             ],
             [
-                ACCOUNT.zSwap.selector,
+                ACCOUNT.zTxnMain.selector,
                 ACCOUNT.prpConversion.selector,
                 ACCOUNT.voucherController.selector,
                 ACCOUNT.zAccountRegistration.selector,
                 ACCOUNT.zSwap.selector,
-                ACCOUNT.BYTES_ONE,
+                ACCOUNT.zAccountRenewal.selector,
                 ACCOUNT.BYTES_ONE,
                 ACCOUNT.BYTES_ONE,
             ],
             [
-                ACCOUNT.zSwap.payCompOffset,
+                ACCOUNT.zTxnMain.payCompOffset,
                 ACCOUNT.prpConversion.payCompOffset,
                 ACCOUNT.voucherController.payCompOffset,
                 ACCOUNT.zAccountRegistration.payCompOffset,
                 ACCOUNT.zSwap.payCompOffset,
-                0,
+                ACCOUNT.zAccountRenewal.payCompOffset,
                 0,
                 0,
             ],

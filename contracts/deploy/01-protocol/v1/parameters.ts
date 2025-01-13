@@ -113,6 +113,19 @@ export const ACCOUNT = {
             )
             .slice(0, 10),
     },
+    zAccountRenewal: {
+        /**
+         * @dev The `uint96` field in the zAccountRenewal `renewZAccount` function calldata
+         * renewZAccount(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)
+         * paymasterCompensation offset  -> `uint96` = 4 + 32 + 256 + 32 = 324 bytes
+         */
+        payCompOffset: 324,
+        selector: ethers.utils
+            .id(
+                'renewZAccount(uint256[],((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint96,bytes)',
+            )
+            .slice(0, 10),
+    },
 };
 
 export const FOREST_TREE = {
