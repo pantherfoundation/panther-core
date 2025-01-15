@@ -67,9 +67,9 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
     // zAccount Output
     signal input zAccountUtxoOutZkpAmount;
     signal input zAccountUtxoOutExpiryTime;
-    signal input zAccountUtxoOutCreateTime; // public
-    signal input zAccountUtxoOutSpendKeyRandom;
     signal input zAccountUtxoOutCommitment; // public
+    signal input zAccountUtxoOutSpendKeyRandom;
+    signal input zAccountUtxoOutCreateTime; // public
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
@@ -206,9 +206,9 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
 
     signal rc_zAccountUtxoOutZkpAmount <==  Uint64Tag(ACTIVE)(zAccountUtxoOutZkpAmount);
     signal rc_zAccountUtxoOutExpiryTime <== Uint32Tag(ACTIVE)(zAccountUtxoOutExpiryTime);
-    signal rc_zAccountUtxoOutCreateTime <== Uint32Tag(ACTIVE)(zAccountUtxoOutCreateTime);
-    signal rc_zAccountUtxoOutSpendKeyRandom <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoOutSpendKeyRandom);
     signal rc_zAccountUtxoOutCommitment <== ExternalTag()(zAccountUtxoOutCommitment);
+    signal rc_zAccountUtxoOutSpendKeyRandom <== BabyJubJubSubOrderTag(ACTIVE)(zAccountUtxoOutSpendKeyRandom);
+    signal rc_zAccountUtxoOutCreateTime <== Uint32Tag(ACTIVE)(zAccountUtxoOutCreateTime);
 
     signal rc_zAccountBlackListLeaf <== SnarkFieldTag()(zAccountBlackListLeaf);
     signal rc_zAccountBlackListMerkleRoot <== SnarkFieldTag()(zAccountBlackListMerkleRoot);
@@ -324,9 +324,9 @@ template ZAccountRenewalV1Top ( UtxoLeftMerkleTreeDepth,
 
     zAccountRenewalV1.zAccountUtxoOutZkpAmount <== rc_zAccountUtxoOutZkpAmount;
     zAccountRenewalV1.zAccountUtxoOutExpiryTime <== rc_zAccountUtxoOutExpiryTime;
-    zAccountRenewalV1.zAccountUtxoOutCreateTime <== rc_zAccountUtxoOutCreateTime;
-    zAccountRenewalV1.zAccountUtxoOutSpendKeyRandom <== rc_zAccountUtxoOutSpendKeyRandom;
     zAccountRenewalV1.zAccountUtxoOutCommitment <== rc_zAccountUtxoOutCommitment;
+    zAccountRenewalV1.zAccountUtxoOutSpendKeyRandom <== rc_zAccountUtxoOutSpendKeyRandom;
+    zAccountRenewalV1.zAccountUtxoOutCreateTime <== rc_zAccountUtxoOutCreateTime;
 
     zAccountRenewalV1.zAccountBlackListLeaf <== rc_zAccountBlackListLeaf;
     zAccountRenewalV1.zAccountBlackListMerkleRoot <== rc_zAccountBlackListMerkleRoot;
