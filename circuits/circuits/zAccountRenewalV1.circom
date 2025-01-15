@@ -90,9 +90,9 @@ template ZAccountRenewalV1 ( UtxoLeftMerkleTreeDepth,
     // zAccount Output
     signal input {uint64}           zAccountUtxoOutZkpAmount;
     signal input {uint32}           zAccountUtxoOutExpiryTime;
-    signal input {uint32}           zAccountUtxoOutCreateTime; // public
-    signal input {sub_order_bj_sf}  zAccountUtxoOutSpendKeyRandom;
     signal input {external}         zAccountUtxoOutCommitment; // public
+    signal input {sub_order_bj_sf}  zAccountUtxoOutSpendKeyRandom;
+    signal input {uint32}           zAccountUtxoOutCreateTime; // public
 
     // blacklist merkle tree & proof of non-inclusion - zAccountId is the index-path
     signal input zAccountBlackListLeaf;
