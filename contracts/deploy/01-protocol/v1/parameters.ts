@@ -25,6 +25,8 @@ export const FEE_MASTER = {
     twap: '30',
     txTypes: [
         '0x100',
+        '0x101',
+        '0x102',
         '0x103',
         '0x104',
         '0x105',
@@ -34,6 +36,8 @@ export const FEE_MASTER = {
         '0x106',
     ],
     donateAmounts: [
+        ethers.utils.parseEther('100'),
+        ethers.utils.parseEther('100'),
         ethers.utils.parseEther('100'),
         ethers.utils.parseEther('100'),
         ethers.utils.parseEther('100'),
