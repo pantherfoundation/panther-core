@@ -3,10 +3,12 @@
 
 import {
     ZAccountActivationNote,
+    ZAccountRenewalNote,
     PrpConversionNote,
     ZTransactionNote,
     ZSwapNote,
     TxNote,
+    PrpClaimingNote,
 } from 'types/note';
 
 import {TxType} from '../types/transaction';
@@ -127,6 +129,7 @@ export function decodeTxNote(
 
     switch (txType) {
         case TxType.ZAccountActivation:
+        case TxType.ZAccountRenewal:
         case TxType.PrpClaiming:
             return decodeZAccountActivationNote(segments, txType);
         case TxType.PrpConversion:
@@ -145,7 +148,7 @@ export function decodeTxNote(
 function decodeZAccountActivationNote(
     segments: string[],
     txType: TxType,
-): ZAccountActivationNote {
+): ZAccountActivationNote | ZAccountRenewalNote | PrpClaimingNote {
     const [createTime, busTreeIds, zAccountMsg] = segments;
     return {
         createTime: parseInt(createTime, 16),

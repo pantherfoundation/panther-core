@@ -14,6 +14,7 @@ export type BaseTxNote = {
 
 export type ZAccountActivationNote = BaseTxNote;
 export type PrpClaimingNote = BaseTxNote;
+export type ZAccountRenewalNote = BaseTxNote;
 
 export type PrpConversionNote = BaseTxNote & {
     zkpAmountScaled: bigint;
@@ -35,6 +36,8 @@ export type ZSwapNote = BaseTxNote & {
 
 export type TxNote =
     | ZAccountActivationNote
+    | ZAccountRenewalNote
+    | PrpClaimingNote
     | PrpConversionNote
     | ZTransactionNote
     | ZSwapNote;
