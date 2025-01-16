@@ -6,6 +6,8 @@ pragma solidity ^0.8.19;
 import "../storage/AppStorage.sol";
 import "../storage/ZAccountsRenewalStorageGap.sol";
 
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "../utils/TransactionNoteEmitter.sol";
@@ -29,7 +31,8 @@ contract ZAccountsRenewal is
     ZAccountsRenewalStorageGap,
     Verifier,
     TransactionNoteEmitter,
-    TransactionChargesHandler
+    TransactionChargesHandler,
+    SelfReentrant
 {
     using PublicInputGuard for uint256;
     using UtxosInserter for address;
@@ -71,7 +74,7 @@ contract ZAccountsRenewal is
         uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
-    ) external returns (uint256 utxoBusQueuePos) {
+    ) external selfReentrant returns (uint256 utxoBusQueuePos) {
         _validateExtraInputs(
             inputs[ZACCOUNT_RENEWAL_EXTRA_INPUT_HASH_IND],
             transactionOptions,

@@ -9,6 +9,8 @@ import "../storage/AppStorage.sol";
 import "../storage/PrpVoucherControllerStorageGap.sol";
 
 import "../../diamond/utils/Ownable.sol";
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "./prpVoucherController/PrpVoucherHandler.sol";
@@ -40,7 +42,8 @@ contract PrpVoucherController is
     PrpVoucherHandler,
     TransactionNoteEmitter,
     TransactionChargesHandler,
-    IPrpVoucherController
+    IPrpVoucherController,
+    SelfReentrant
 {
     using UtilsLib for uint256;
     using PublicInputGuard for uint256;
@@ -162,7 +165,7 @@ contract PrpVoucherController is
         uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
-    ) external returns (uint256 utxoBusQueuePos) {
+    ) external selfReentrant returns (uint256 utxoBusQueuePos) {
         _validateExtraInputs(
             inputs[PRP_ACCOUNTING_EXTRA_INPUT_HASH_IND],
             transactionOptions,

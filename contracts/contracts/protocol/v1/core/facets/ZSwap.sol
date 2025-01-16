@@ -7,6 +7,8 @@ import "../storage/AppStorage.sol";
 import "../storage/ZSwapStorageGap.sol";
 
 import "../../diamond/utils/Ownable.sol";
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "../errMsgs/ZSwapErrMsgs.sol";
@@ -21,8 +23,6 @@ import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 import "../libraries/ZAssetUtxoGenerator.sol";
 
-import "../../../../common/NonReentrant.sol";
-
 /**
  * @title ZSwap
  * @notice The ZSwap contract facilitates the swapping of zAssets within the Panther ecosystem,
@@ -36,7 +36,7 @@ contract ZSwap is
     Verifier,
     TransactionNoteEmitter,
     TransactionChargesHandler,
-    NonReentrant
+    SelfReentrant
 {
     using SwapHandler for address;
     using UtxosInserter for address;
@@ -103,7 +103,7 @@ contract ZSwap is
         uint96 paymasterCompensation,
         bytes memory swapData,
         bytes calldata privateMessages
-    ) external nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external selfReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         _validateExtraInputs(
             inputs[ZSWAP_EXTRA_INPUTS_HASH_IND],
             transactionOptions,

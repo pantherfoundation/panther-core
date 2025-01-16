@@ -28,6 +28,10 @@ library LibDiamond {
     bytes32 constant OWNER_POSITION =
         0x727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44;
 
+    // keccak256("reentrancy.status.position");
+    bytes32 constant REENTRANCY_STATUS_POSITION =
+        0xa2d689582372faaaa3b92103e3057ffde86663fa2f4d2f6c8f9da8a22702278d;
+
     struct DiamondStorage {
         // maps function selectors to the facets that execute the functions.
         // and maps the selectors to their position in the selectorSlots array.
@@ -51,6 +55,23 @@ library LibDiamond {
         bytes32 position = DIAMOND_STORAGE_POSITION;
         assembly {
             ds.slot := position
+        }
+    }
+
+    function reentrancyStatus()
+        internal
+        view
+        returns (uint256 _reentrancyStatus)
+    {
+        bytes32 position = REENTRANCY_STATUS_POSITION;
+        assembly {
+            _reentrancyStatus := sload(position)
+        }
+    }
+
+    function setReentrancyStatus(uint256 status) internal {
+        assembly {
+            sstore(REENTRANCY_STATUS_POSITION, status)
         }
     }
 
