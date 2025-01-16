@@ -7,6 +7,8 @@ import "../storage/AppStorage.sol";
 import "../storage/PrpConversionStorageGap.sol";
 
 import "../../diamond/utils/Ownable.sol";
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "./prpConversion/ConversionHandler.sol";
@@ -31,7 +33,8 @@ contract PrpConversion is
     Verifier,
     ConversionHandler,
     TransactionChargesHandler,
-    TransactionNoteEmitter
+    TransactionNoteEmitter,
+    SelfReentrant
 {
     using UtxosInserter for address;
     using TransferHelper for address;
@@ -139,7 +142,7 @@ contract PrpConversion is
         uint96 zkpAmountOutMin,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
-    ) external returns (uint256 firstUtxoBusQueuePos) {
+    ) external selfReentrant returns (uint256 firstUtxoBusQueuePos) {
         _validateExtraInputs(
             inputs[PRP_CONVERSION_EXTRA_INPUT_HASH_IND],
             transactionOptions,

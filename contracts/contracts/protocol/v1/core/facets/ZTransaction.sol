@@ -6,6 +6,8 @@ pragma solidity ^0.8.19;
 import "../storage/AppStorage.sol";
 import "../storage/ZTransactionStorageGap.sol";
 
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "./zTransaction/DepositAndWithdrawalHandler.sol";
@@ -17,8 +19,6 @@ import "../libraries/UtxosInserter.sol";
 import "../libraries/NullifierSpender.sol";
 import "../libraries/PublicInputGuard.sol";
 import "../libraries/TokenTypeAndAddressDecoder.sol";
-
-import "../../../../common/NonReentrant.sol";
 
 /**
  * @title ZTransaction
@@ -33,7 +33,7 @@ contract ZTransaction is
     TransactionNoteEmitter,
     TransactionChargesHandler,
     DepositAndWithdrawalHandler,
-    NonReentrant
+    SelfReentrant
 {
     using UtxosInserter for address;
     using PublicInputGuard for address;
@@ -79,7 +79,7 @@ contract ZTransaction is
         uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
-    ) external payable nonReentrant returns (uint256 zAccountUtxoBusQueuePos) {
+    ) external payable selfReentrant returns (uint256 zAccountUtxoBusQueuePos) {
         // The content of data escrow encrypted messages are checked by the circuit
 
         _validateExtraInputs(

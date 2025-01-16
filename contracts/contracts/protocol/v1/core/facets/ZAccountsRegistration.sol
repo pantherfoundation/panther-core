@@ -6,6 +6,8 @@ import "../storage/AppStorage.sol";
 import "../storage/ZAccountsRegistrationStorageGap.sol";
 
 import "../../diamond/utils/Ownable.sol";
+import "../../diamond/utils/SelfReentrant.sol";
+
 import "../../verifier/Verifier.sol";
 
 import "../interfaces/IPrpVoucherController.sol";
@@ -40,7 +42,8 @@ contract ZAccountsRegistration is
     Verifier,
     ZAccountsRegeistrationSignatureVerifier,
     TransactionNoteEmitter,
-    TransactionChargesHandler
+    TransactionChargesHandler,
+    SelfReentrant
 {
     using UtilsLib for uint256;
     using PublicInputGuard for uint256;
@@ -226,7 +229,7 @@ contract ZAccountsRegistration is
         uint32 transactionOptions,
         uint96 paymasterCompensation,
         bytes calldata privateMessages
-    ) external returns (uint256 utxoBusQueuePos) {
+    ) external selfReentrant returns (uint256 utxoBusQueuePos) {
         _validateExtraInputs(
             inputs[ZACCOUNT_ACTIVATION_EXTRA_INPUT_HASH_IND],
             transactionOptions,
