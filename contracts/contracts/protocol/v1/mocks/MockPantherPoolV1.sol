@@ -18,7 +18,7 @@ contract MockPantherPoolV1 {
         bytes32 _secretHash,
         uint64 _amount,
         bytes4 _voucherType
-    ) external returns (uint256) {
+    ) external {
         emit LogGenerateRewards(_secretHash, _amount, _voucherType);
     }
 

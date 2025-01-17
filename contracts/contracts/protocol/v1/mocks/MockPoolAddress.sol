@@ -39,7 +39,7 @@ library MockPoolAddress {
     function computeAddress(
         address factory,
         PoolKey memory key
-    ) internal view returns (address _pool) {
+    ) internal pure returns (address _pool) {
         require(key.token0 < key.token1, "token0 > token1");
         bytes32 poolHash = keccak256(
             abi.encodePacked(
