@@ -255,7 +255,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         BundlerConfig memory config
     ) internal view {
         uint256 toleratedGasPrice = _addExtraPct(
-            tx.gasprice + block.basefee,
+            block.basefee,
             config.gasPriceMarkupPct
         );
         uint256 toleratedGas = userOp.callGasLimit + config.maxExtraGas;
@@ -342,7 +342,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         return config;
     }
 
-    function _ensureNonZeroAddress(address _address) internal view {
+    function _ensureNonZeroAddress(address _address) internal pure {
         require(_address != address(0), ERR_ZERO_ADDRESS);
     }
 }
