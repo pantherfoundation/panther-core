@@ -22,7 +22,7 @@ contract MockStaticRootGetter is IStaticSubtreesRootsGetter {
         return getRoot();
     }
 
-    function getProvidersKeysRoot() external view returns (bytes32) {
+    function getProvidersKeysRoot() external pure returns (bytes32) {
         return SIX_LEVEL_EMPTY_TREE_ROOT;
     }
 

@@ -57,7 +57,7 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
         UserOperation calldata userOperation,
         bytes32,
         uint256
-    ) external returns (uint256 validationData) {
+    ) external view returns (uint256 validationData) {
         _validateUserOpDataFormat(userOperation);
         _validateAllowedCallData(userOperation);
         return 0;
@@ -111,7 +111,9 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
         }
     }
 
-    function _validateUserOpDataFormat(UserOperation calldata userOp) internal {
+    function _validateUserOpDataFormat(
+        UserOperation calldata userOp
+    ) internal view {
         /// only Account smart contract can be a sender
         require(userOp.sender == address(this), ERR_NOT_SELF);
 
@@ -137,7 +139,9 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
     /// paymasterCompensation in  signature and callData must match
     /// @param userOp UserOperation to be executed throgh
 
-    function _validateAllowedCallData(UserOperation calldata userOp) internal {
+    function _validateAllowedCallData(
+        UserOperation calldata userOp
+    ) internal view {
         (address[] memory destinations, bytes[] memory calls) = abi.decode(
             userOp.callData[4:],
             (address[], bytes[])
@@ -173,7 +177,10 @@ contract Account is OffsetGetter, RevertMsgGetter, NonReentrant {
     /// @param to destination contract address
     /// @param callData allowed call callData
 
-    function _requireAllowedCall(address to, bytes memory callData) internal {
+    function _requireAllowedCall(
+        address to,
+        bytes memory callData
+    ) internal view {
         require(getOffset(to, bytes4(callData)) > 0, ERR_NOT_SPONSORED_CALL);
     }
 
