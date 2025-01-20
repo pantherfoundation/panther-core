@@ -6,7 +6,10 @@ import {poseidon} from 'circomlibjs';
 import type {BigNumberish} from 'ethers';
 import {BigNumber} from 'ethers';
 
-import {encodeTokenTypeAndAddress} from '../../test/protocol/helpers/pantherPoolV1Inputs';
+import {
+    encodeTokenTypeAndAddress,
+    decodeTokenTypeAndAddress,
+} from '../../test/protocol/helpers/pantherPoolV1Inputs';
 import {pantherCoreZeroLeaf} from '../utilities';
 
 import {tokenDetails, NetworkType} from './staticTreeConfig';
@@ -73,6 +76,7 @@ export class ZAssetsRegistry {
     leafs: ZAsset[];
     commitments: string[] = [];
     root: string | null = null;
+    zAssetRegistryParams: any[] = [];
     zAssetRegistryInsertionInputs: any[] = [];
 
     levels = 16;
@@ -113,17 +117,32 @@ export class ZAssetsRegistry {
                 BigNumber.from(pantherCoreZeroLeaf).toHexString();
             const newLeaf = BigNumber.from(commitment).toHexString();
             const leafIndex = BigNumber.from(index).toHexString();
+            const weight = this.leafs[index].weight;
 
             merkleTree.insert(commitment);
             const proofSiblings = merkleTree
                 .createProof(index)
                 .siblingNodes.map(x => BigNumber.from(x).toHexString());
 
+            this.zAssetRegistryParams.push({
+                token: decodeTokenTypeAndAddress(this.leafs[index].token)
+                    .address,
+                batchId: this.leafs[index].zAssetbatchId,
+                startTokenId: this.leafs[index].startTokenId,
+                tokenIdsRangeSize: Number(this.leafs[index].tokenIdsRangeSize),
+                scale: this.leafs[index].scale,
+                networkId: Number(this.leafs[index].network),
+                tokenType: decodeTokenTypeAndAddress(this.leafs[index].token)
+                    .type,
+            });
+
             this.zAssetRegistryInsertionInputs.push({
+                zAssetRegistryParams: this.zAssetRegistryParams,
                 currentRoot,
                 currentLeaf,
                 newLeaf,
                 leafIndex,
+                weight,
                 proofSiblings,
             });
         });

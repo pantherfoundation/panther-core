@@ -30,6 +30,21 @@ export const encodeTokenTypeAndAddress = (
     return BigNumber.from(type).shl(160).add(BigNumber.from(address));
 };
 
+export const decodeTokenTypeAndAddress = (
+    encoded: BigNumberish,
+): {type: BigNumberish; address: BigNumberish} => {
+    const encodedValue = BigNumber.from(encoded);
+    const type = encodedValue.shr(160);
+    const address =
+        '0x' +
+        encodedValue
+            .and(BigNumber.from('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'))
+            .toHexString()
+            .slice(2)
+            .padStart(40, '0');
+    return {type, address};
+};
+
 export type ForestTreesStruct = {
     taxiTree: string;
     busTree: string;
