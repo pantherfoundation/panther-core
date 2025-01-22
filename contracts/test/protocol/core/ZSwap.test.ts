@@ -9,6 +9,7 @@ import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
 import {getPoseidonT3Contract} from '../../../lib/poseidonBuilder';
+import {encodeTokenTypeAndAddress} from '../../../lib/token';
 import {
     MockZSwap,
     VaultV1,
@@ -23,10 +24,7 @@ import {
     TransactionTypes,
 } from '../data/samples/transactionNote.data';
 import {revertSnapshot, takeSnapshot} from '../helpers/hardhat';
-import {
-    encodeTokenTypeAndAddress,
-    getSwapInputs,
-} from '../helpers/pantherPoolV1Inputs';
+import {getSwapInputs} from '../helpers/pantherPoolV1Inputs';
 
 describe('ZSwap', function () {
     let zSwap: MockZSwap;
@@ -167,8 +165,6 @@ describe('ZSwap', function () {
                     '0x00',
                     linkToken.address,
                 );
-
-                console.log({tokenInTypeAndAddress, tokenOutTypeAndAddress});
 
                 const inputs = await getSwapInputs({
                     extraInputsHash: calculatedExtraInputHash,

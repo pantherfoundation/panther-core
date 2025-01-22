@@ -21,7 +21,7 @@ type ZNetwork = {
     daoDataEscrowPubKeyX: BigNumberish;
     daoDataEscrowPubKeyY: BigNumberish;
 };
-export const canary: {[key: string]: ZNetwork} = {
+export const polygonLeaf: {[key: string]: ZNetwork} = {
     polygon: {
         active: 1n,
         chainId: 137,

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
 
-import {BigNumberish} from '@ethersproject/bignumber/lib/bignumber';
 import {SNARK_FIELD_SIZE} from '@panther-core/crypto/src/utils/constants';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
+import {encodeTokenTypeAndAddress} from '../../../lib/token';
 import {
     generatePrivateMessage,
     TransactionTypes,
@@ -21,28 +21,6 @@ const getSnarkFriendlyBytes = (length = 32) => {
     return ethers.BigNumber.from(ethers.utils.randomBytes(length))
         .mod(SNARK_FIELD_SIZE)
         .toString();
-};
-
-export const encodeTokenTypeAndAddress = (
-    type: BigNumberish,
-    address: BigNumberish,
-): BigNumberish => {
-    return BigNumber.from(type).shl(160).add(BigNumber.from(address));
-};
-
-export const decodeTokenTypeAndAddress = (
-    encoded: BigNumberish,
-): {type: BigNumberish; address: BigNumberish} => {
-    const encodedValue = BigNumber.from(encoded);
-    const type = encodedValue.shr(160);
-    const address =
-        '0x' +
-        encodedValue
-            .and(BigNumber.from('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'))
-            .toHexString()
-            .slice(2)
-            .padStart(40, '0');
-    return {type, address};
 };
 
 export type ForestTreesStruct = {
@@ -410,7 +388,7 @@ export async function getMainInputs(options: MainOptions) {
         ethers.utils.id('zAccountUtxoOutCommitment');
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const token = await encodeTokenTypeAndAddress(
+    const token = encodeTokenTypeAndAddress(
         options.tokenType,
         BigNumber.from(options.token),
     );
@@ -549,11 +527,11 @@ export async function getSwapInputs(options: SwapOptions) {
     const zAccountUtxoOutCommitmentPvrt = getSnarkFriendlyBytes();
     const chargedAmountZkp =
         options.chargedAmountZkp || ethers.utils.parseEther('10');
-    const existingToken = await encodeTokenTypeAndAddress(
+    const existingToken = encodeTokenTypeAndAddress(
         options.existingTokenType,
         BigNumber.from(options.existingToken),
     );
-    const incomingToken = await encodeTokenTypeAndAddress(
+    const incomingToken = encodeTokenTypeAndAddress(
         options.incomingTokenType,
         BigNumber.from(options.incomingToken),
     );
