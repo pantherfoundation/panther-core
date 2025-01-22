@@ -12,6 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
         deployments: {get},
         ethers,
+        network,
     } = hre;
 
     const {abi} = await get('ZAssetsRegistryV1');
@@ -20,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('adding zAssets');
 
-    const zAssetsLeafs = leafs('canary');
+    const zAssetsLeafs = leafs(network.name.toLowerCase());
     const zAssetsTree = new ZAssetsRegistry(zAssetsLeafs);
     const inputs = zAssetsTree
         .computeCommitments()

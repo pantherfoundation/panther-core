@@ -8,10 +8,15 @@ import {
     ProvidersKeys,
     testnetLeafs as providersKeyLeafs,
 } from './providersKeys';
-import {NetworkType} from './staticTreeConfig';
 import {ZAssetsRegistry, leafs as zAssetsLeafs} from './zAssetsRegistry';
-import {ZNetworksRegistry, canary as zNetworkLeafs} from './zNetworksRegistry';
+import {
+    ZNetworksRegistry,
+    testnetLeafs as zNetworkLeafs,
+} from './zNetworksRegistry';
 import {ZZonesRegistry, leafs as zZoneLeafs} from './zZonesRegistry';
+
+const blacklistZAccountRoot =
+    '0x2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323';
 
 function computeRegistryRoot(leafs: any, RegistryClass: any) {
     const registry = new RegistryClass(leafs);
@@ -20,9 +25,9 @@ function computeRegistryRoot(leafs: any, RegistryClass: any) {
     return registry.root;
 }
 
-export function getStaticTreeRoot(networkType: NetworkType) {
+export function getStaticTreeRoot(network: string) {
     const zAssetsRoot = computeRegistryRoot(
-        zAssetsLeafs(networkType),
+        zAssetsLeafs(network),
         ZAssetsRegistry,
     );
     const zNetworkRoot = computeRegistryRoot(
@@ -37,9 +42,6 @@ export function getStaticTreeRoot(networkType: NetworkType) {
         Object.values(providersKeyLeafs),
         ProvidersKeys,
     );
-
-    const blacklistZAccountRoot =
-        '0x2a7c7c9b6ce5880b9f6f228d72bf6a575a526f29c66ecceef8b753d38bba7323';
 
     console.log({
         zAssetsRoot,
@@ -58,4 +60,4 @@ export function getStaticTreeRoot(networkType: NetworkType) {
     console.log('staticTreeRoot', BigNumber.from(staticTreeRoot).toHexString());
 }
 
-getStaticTreeRoot('testnet');
+getStaticTreeRoot('amoy');
