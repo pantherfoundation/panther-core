@@ -334,7 +334,7 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
     }
     offset = 64+24+16+32+nUtxoIn*2; // 136 + 2*nUtxoIn = 136 + 2*2 = 140
     assert(UtxoMerkleTreeDepth < 33);
-    expectedOffset = offset+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*2 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*2 + 2*32 = 200 (max 136+2*2+2*32=200)
+    expectedOffset = offset+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*32 = 204
 
     for (var i = 0; i < nUtxoIn; i++) {
         for (var j = 0; j < UtxoMerkleTreeDepth; j++) {
@@ -342,8 +342,8 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
         }
     }
 
-    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*2 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*2 + 2*32 = 200 (max 136+2*2+2*32=200)
-    expectedOffset = offset+nUtxoIn*16; // 200 + nUtxoIn*UtxoMerkleTreeDepth = 200 + 2*16 = 232
+    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth; // 140 + nUtxoIn*UtxoMerkleTreeDepth = 140 + 2*32 = 204
+    expectedOffset = offset+nUtxoIn*16; // 204 + nUtxoIn*UtxoMerkleTreeDepth = 200 + 2*16 = 235
 
     for (var i = 0; i < nUtxoIn; i++) {
         for (var j = 0; j < 16; j++) {
@@ -351,8 +351,8 @@ template DataEscrowSerializer(nUtxoIn,nUtxoOut,UtxoMerkleTreeDepth) {
         }
     }
 
-    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth+nUtxoIn*16;
-    expectedOffset = offset+nUtxoOut*16; // 232 + nUtxoOut*16 = 232 + 2*16 = 264
+    offset = 64+24+16+32+nUtxoIn*2+nUtxoIn*UtxoMerkleTreeDepth+nUtxoIn*16; // 235
+    expectedOffset = offset+nUtxoOut*16; // 235 + nUtxoOut*16 = 235 + 2*16 = 267
 
     if ( expectedOffset > 253 ) {
         for( var i = offset; i < 254; i++ ) {
