@@ -24,4 +24,4 @@ component main {
                                16,    // ZAccountBlackListMerkleTreeDepth - depends on zAccountID size
                                16,    // ZZoneMerkleTreeDepth - depends on zoneID size
                                16,    // TrustProvidersMerkleTreeDepth
-                               1 );   // IsTestNet - for production it should be `1`
+                               0 );   // IsTestNet - for production it should be `1`
