@@ -15,27 +15,30 @@ component main {
         utxoInNullifier,                       // [8] - nUtxoIn = 2
         zAccountUtxoInNullifier,               // [9]
         zZoneDataEscrowEphemeralPubKeyAx,      // [10] - 1 (NOTE: only x-coordinate)
-        zZoneDataEscrowEncryptedMessageAx,     // [11] - 1 (NOTE: only x-coordinate)
-        kytDepositSignedMessageSender,         // [12]
-        kytDepositSignedMessageReceiver,       // [13]
-        kytDepositSignedMessageHash,           // [14]
-        kytWithdrawSignedMessageSender,        // [15]
-        kytWithdrawSignedMessageReceiver,      // [16]
-        kytWithdrawSignedMessageHash,          // [17]
-        kytSignedMessageHash,                  // [18]
-        dataEscrowEncryptedMessageAx,          // [19] - 11 (NOTE: only x-coordinate)
-        daoDataEscrowEphemeralPubKeyAx,        // [20] - 1 (NOTE: only x-coordinate)
-        daoDataEscrowEncryptedMessageAx,       // [21] - 1 (NOTE: only x-coordinate)
-        utxoOutCreateTime,                     // [22]
-        utxoOutCommitment,                     // [23] - nUtxoOut = 2
-        zAccountUtxoOutCommitment,             // [24]
-        chargedAmountZkp,                      // [25]
-        zNetworkChainId,                       // [26]
-        staticTreeMerkleRoot,                  // [27]
-        forestMerkleRoot,                      // [28]
-        saltHash,                              // [29]
-        magicalConstraint                      // [30]
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 30 + 1 + 10 + 1 = 42
+        zZoneDataEscrowEncryptedMessage,       // [11]
+        zZoneDataEscrowEncryptedMessageHmac,   // [12]
+        kytDepositSignedMessageSender,         // [13]
+        kytDepositSignedMessageReceiver,       // [14]
+        kytDepositSignedMessageHash,           // [15]
+        kytWithdrawSignedMessageSender,        // [16]
+        kytWithdrawSignedMessageReceiver,      // [17]
+        kytWithdrawSignedMessageHash,          // [18]
+        kytSignedMessageHash,                  // [19]
+        dataEscrowEncryptedMessage,            // [20]
+        dataEscrowEncryptedMessageHmac,        // [21]
+        daoDataEscrowEphemeralPubKeyAx,        // [22] - 1 (NOTE: only x-coordinate)
+        daoDataEscrowEncryptedMessage,         // [23]
+        daoDataEscrowEncryptedMessageHmac,     // [24]
+        utxoOutCreateTime,                     // [25]
+        utxoOutCommitment,                     // [26] - nUtxoOut = 2
+        zAccountUtxoOutCommitment,             // [27]
+        chargedAmountZkp,                      // [28]
+        zNetworkChainId,                       // [29]
+        staticTreeMerkleRoot,                  // [30]
+        forestMerkleRoot,                      // [31]
+        saltHash,                              // [32]
+        magicalConstraint                      // [33]
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ // TOTAL: 39
     ]} = ZTransactionV1 ( 2,     // nUtxoIn
                           2,     // nUtxoOut
                           8,     // UtxoLeftMerkleTreeDepth

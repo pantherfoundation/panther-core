@@ -6,20 +6,19 @@ include "../../circuits/templates/utils.circom";
 
 template DataEscrowElGamalEncryptionPointTop ( PointsSize ) {
 
-    signal input ephemeralRandom;                               // randomness
-    signal input pointMessage[PointsSize][2];                   // ec points data to encrypt
-    signal input pubKey[2];                                     // public key
-    signal output ephemeralPubKey[2];                            // ephemeral public-key
-    signal output encryptedMessage[PointsSize][2];               // encrypted data
+    signal input ephemeralRandom;
+    signal input pointMessage[PointsSize][2];
+    signal input pubKey[2];
+    signal output ephemeralPubKey[2];
+    signal output encryptedMessage[PointsSize];
+    signal output encryptedMessageHash;
+    signal output hmac;   
 
     var ACTIVE = Active();
 
     signal rc_ephemeralRandom <== BabyJubJubSubOrderTag(ACTIVE)(ephemeralRandom);
-    // signal rc_pointMessage[1] <== pointMessage;
-    // signal rc_pubKey[2] <== pubKey;
 
     component dataEscrowElGamalEncryptionPoint = DataEscrowElGamalEncryptionPoint(PointsSize);
-
     dataEscrowElGamalEncryptionPoint.ephemeralRandom <== rc_ephemeralRandom;
     dataEscrowElGamalEncryptionPoint.pointMessage <== pointMessage;
     dataEscrowElGamalEncryptionPoint.pubKey <== pubKey;

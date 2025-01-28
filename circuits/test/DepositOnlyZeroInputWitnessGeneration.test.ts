@@ -163,8 +163,11 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         zZoneTimePeriodPerMaximumAmount: 0,
         zZoneSealing: 0,
 
-        zZoneDataEscrowEncryptedMessageAx: [0],
-        zZoneDataEscrowEncryptedMessageAy: [1],
+        zZoneDataEscrowEncryptedMessage: [
+            12531734342052619194565643021324392392429746097842075389394984433885012062201n,
+        ],
+        zZoneDataEscrowEncryptedMessageHmac:
+            12615678265422541918405830028245524229811524395346364975171331380877069928137n,
 
         kytEdDsaPubKey: [0, 0],
         kytEdDsaPubKeyExpiryTime: 0,
@@ -218,16 +221,26 @@ describe('Main z-transaction - ZeroInput - Witness computation', async function 
         ],
         dataEscrowPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
-        dataEscrowEncryptedMessageAx: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        dataEscrowEncryptedMessageAy: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        dataEscrowEncryptedMessage: [
+            12531734342052619194565643021324392392429746097842075389394984433885012062201n,
+            17943901642092756540532360474161569402553221410028090072917443956036363428842n,
+            11790059851550142146278072775670916642282838830554510149311470233718605478544n,
+            3837132928506022228781468748174933227664304248895366259202309016817149117447n,
+            13203026333203916959031401688301750700471853677775311097828007874250103222348n,
+        ],
+        dataEscrowEncryptedMessageHmac:
+            19251155291555727708798681491093233010298594703193855852166404348166211448494n,
 
         daoDataEscrowPubKey: [0, 0],
         daoDataEscrowEphemeralRandom: 0,
         daoDataEscrowEphemeralPubKeyAx: 0,
         daoDataEscrowEphemeralPubKeyAy: 1,
 
-        daoDataEscrowEncryptedMessageAx: [0],
-        daoDataEscrowEncryptedMessageAy: [1],
+        daoDataEscrowEncryptedMessage: [
+            12531734342052619194565643021324392392429746097842075389394984433885012062201n,
+        ],
+        daoDataEscrowEncryptedMessageHmac:
+            12615678265422541918405830028245524229811524395346364975171331380877069928137n,
 
         utxoOutCreateTime: 0,
         utxoOutAmount: [0, 0],

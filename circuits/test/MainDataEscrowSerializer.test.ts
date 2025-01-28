@@ -22,6 +22,7 @@ describe('DataEscrowSerializer circuit', function (this: any) {
     const zAssetID = 0;
     const zAccountId = 33;
     const zAccountZoneId = 1;
+    const zAccountNonce = 2;
     const utxoInMerkleTreeSelector = [
         [0, 0],
         [0, 0],
@@ -36,139 +37,151 @@ describe('DataEscrowSerializer circuit', function (this: any) {
             0, 0, 0, 0, 0, 0, 0, 0, 0,
         ],
     ];
-    const utxoInAmount = [0, 0];
-    const utxoOutAmount = [10, 0];
     const utxoInOriginZoneId = [0, 0];
     const utxoOutTargetZoneId = [1, 0];
 
-    const out: any = [];
-    out[0] = zAssetID;
-    // console.log('out[0]=>', out[0]);
+    const utxoInAmount = [0, 0];
+    const utxoOutAmount = [10, 0];
 
-    // out[1] computation
-    // 0 - 15 (16 bits) of zAccountZoneId
-    // 16 - 39 (24 bits) of zAccountId
-    // 40 - 43 (4 bits) of utxoInMerkleTreeSelector
-
-    const zAccountZoneIdBits = zAccountZoneId.toString(2);
-    const zAccountIdBits = zAccountId.toString(2);
-    const zAccountIdBitsArray = zAccountIdBits.split('').map(Number);
-    const finalzAccountIdBits = zAccountIdBitsArray.reverse();
-
-    const out1Computation: any[] = new Array(44).fill(0);
-    for (let i = 0; i < 16; i++) {
-        out1Computation[i] =
-            zAccountZoneIdBits[i] === undefined ? 0 : zAccountZoneIdBits[i];
+    function toBinaryWithBits(number: any, bits: any) {
+        let binary = number.toString(2); // Convert number to binary
+        return binary.padStart(bits, '0'); // Pad with leading zeros to the specified number of bits
     }
 
-    for (var i = 0; i < 24; i++) {
-        out1Computation[i + 16] =
-            finalzAccountIdBits[i] === undefined ? 0 : finalzAccountIdBits[i];
+    function reverseBinaryString(binary: any) {
+        return binary.split('').reverse().join('');
     }
 
-    for (var i = 0; i < 2; i++) {
-        for (var j = 0; j < 2; j++) {
-            out1Computation[16 + 24 + i * 2 + j] =
-                utxoInMerkleTreeSelector[i][j] === undefined
-                    ? 0
-                    : utxoInMerkleTreeSelector[i][j];
-        }
-    }
-    const bitArray = out1Computation;
+    function appendBinaryStrings(
+        binary1: any,
+        binary2: any,
+        binary3: any,
+        binary4: any,
+        binary5: any,
+        binary6: any,
+        binary7: any,
+    ) {
+        // Append the binary strings
+        let result =
+            binary1 + binary2 + binary3 + binary4 + binary5 + binary6 + binary7;
 
-    function bitArrayToDecimal(bitArray: any) {
-        let decimal = 0;
-        for (let i = 0; i < bitArray.length; i++) {
-            decimal += bitArray[i] * Math.pow(2, i);
-        }
-        return decimal;
-    }
-
-    const decimalNumber = bitArrayToDecimal(bitArray);
-
-    out[1] = decimalNumber;
-    // console.log('out[1]=>', out[1]);
-
-    out[2] = utxoInAmount[0];
-    // console.log('out[2]=>', out[2]);
-
-    out[3] = utxoInAmount[1];
-    // console.log('out[3]=>', out[3]);
-
-    out[4] = utxoOutAmount[0];
-    // console.log('out[4]=>', out[4]);
-
-    out[5] = utxoOutAmount[1];
-    // console.log('out[5]=>', out[5]);
-
-    // out[6] and out[7] computation
-    // out[6]
-    const utxoOutTargetZoneId0 = utxoOutTargetZoneId[0];
-    const utxoOutTargetZoneId0Bits = utxoOutTargetZoneId0.toString(2);
-
-    const utxoInOriginZoneId0 = utxoInOriginZoneId[0];
-    const utxoInOriginZoneId0Bits = utxoInOriginZoneId0.toString(2);
-    const utxoInOriginZoneId0BitsArray = utxoInOriginZoneId0Bits
-        .split('')
-        .map(Number);
-    const finalUtxoOutOriginZoneId0Bit = utxoInOriginZoneId0BitsArray.reverse();
-
-    const b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId: any[] =
-        new Array(32).fill(0);
-    for (let i = 0; i < 16; i++) {
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[i] =
-            utxoOutTargetZoneId0Bits[i] === undefined
-                ? 0
-                : utxoOutTargetZoneId0Bits[i];
+        // Return the combined binary string
+        return result;
     }
 
-    for (var i = 0; i < 24; i++) {
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId[i + 16] =
-            finalUtxoOutOriginZoneId0Bit[i] === undefined
-                ? 0
-                : finalUtxoOutOriginZoneId0Bit[i];
-    }
+    // 1. serialize bit2num0
+    // zAsset - 64 bits
+    const zAssetInBits = toBinaryWithBits(zAssetID, 64);
+    // console.log('zAssetInBits=>', zAssetInBits);
 
-    const decimalNumber0 = bitArrayToDecimal(
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId,
+    // zAccountId - 24 bits
+    const zAccountIdInBits = toBinaryWithBits(zAccountId, 24);
+    // console.log('zAccountIdInBits=>', zAccountIdInBits);
+
+    // zAccountZoneId - 16 bits
+    const zAccountZoneIdInBits = toBinaryWithBits(zAccountZoneId, 16);
+    // console.log('zAccountZoneIdInBits=>', zAccountZoneIdInBits);
+
+    // zAccountNonce - 32 bits
+    const zAccountNonceIdInBits = toBinaryWithBits(zAccountNonce, 32);
+    // console.log('zAccountNonceIdInBits=>', zAccountNonceIdInBits);
+
+    // utxoInMerkleTreeSelector[nUtxoIn][2] - 2 * 2 = 4 bits
+    const utxoInMerkleTreeSelectorInBits = toBinaryWithBits(0x0000, 4); // utxoInMerkleTreeSelector - [[0,0],[0,0]]
+    // console.log(
+    //     'utxoInMerkleTreeSelectorInBits=>',
+    //     utxoInMerkleTreeSelectorInBits,
+    // );
+
+    // utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth] - 32 * 2
+    // [
+    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    //     0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // ],
+    // [
+    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    //     0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // ],
+    const utxoInPathIndicesInBits = toBinaryWithBits(
+        0x0000000000000000000000000000000000000000000000000000000000000000,
+        64,
+    );
+    // console.log('utxoInPathIndicesInBits=>', utxoInPathIndicesInBits);
+
+    // const utxoInOriginZoneId - 16 * 2
+    // [0, 0]
+    const utxoInOriginZoneIdInBits = toBinaryWithBits(
+        0x00000000000000000000000000000000,
+        32,
     );
 
-    out[6] = decimalNumber0;
-    // console.log('out[6]=>', out[6]);
+    const finalBinaryString = appendBinaryStrings(
+        zAssetInBits,
+        reverseBinaryString(zAccountIdInBits),
+        reverseBinaryString(zAccountZoneIdInBits),
+        reverseBinaryString(zAccountNonceIdInBits),
+        reverseBinaryString(utxoInMerkleTreeSelectorInBits),
+        reverseBinaryString(utxoInPathIndicesInBits),
+        reverseBinaryString(utxoInOriginZoneIdInBits),
+    );
+    // console.log(
+    //     'finalBinaryString=>',
+    //     finalBinaryString,
+    //     typeof finalBinaryString,
+    // );
 
-    // out[7]
-    const utxoOutTargetZoneId1 = utxoOutTargetZoneId[1];
-    const utxoOutTargetZoneId1Bits = utxoOutTargetZoneId1.toString(2);
-
-    const utxoInOriginZoneId1 = utxoInOriginZoneId[1];
-    const utxoInOriginZoneId1Bits = utxoInOriginZoneId1.toString(2);
-    const utxoInOriginZoneId1BitsArray = utxoInOriginZoneId1Bits
-        .split('')
-        .map(Number);
-    const finalUtxoOutOriginZoneId1Bit = utxoInOriginZoneId1BitsArray.reverse();
-
-    const b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId1: any[] =
-        new Array(32).fill(0);
-    for (let i = 0; i < 16; i++) {
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId1[i] =
-            utxoOutTargetZoneId1Bits[i] === undefined
-                ? 0
-                : utxoOutTargetZoneId1Bits[i];
+    let bit2num0 = 0;
+    for (let i = 0; i < 236; i++) {
+        bit2num0 += finalBinaryString[i] == 0 ? 0 : 2 ** i;
     }
+    // 40565128692921904747395642556416n
+    // console.log('final sum=>', BigInt(bit2num0));
 
-    for (var i = 0; i < 24; i++) {
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId1[i + 16] =
-            finalUtxoOutOriginZoneId1Bit[i] === undefined
-                ? 0
-                : finalUtxoOutOriginZoneId1Bit[i];
-    }
-
-    const decimalNumber1 = bitArrayToDecimal(
-        b2n_utxoInPathIndices_utxoInOriginZoneId_utxoOutTargetZoneId1,
+    // 2. serialize bit2num1
+    // utxoOutTargetZoneId - 16 bits
+    const utxoOutTargetZoneIdInBits0 = toBinaryWithBits(
+        utxoOutTargetZoneId[0],
+        16,
+    );
+    const utxoOutTargetZoneIdInBits1 = toBinaryWithBits(
+        utxoOutTargetZoneId[1],
+        16,
     );
 
-    out[7] = decimalNumber1;
-    // console.log('out[7]=>', out[7]);
+    // utxoInAmount - 64 bits
+    const utxoInAmount0 = toBinaryWithBits(utxoInAmount[0], 64);
+    const utxoInAmount1 = toBinaryWithBits(utxoInAmount[1], 64);
+
+    const finalBinaryString1 =
+        reverseBinaryString(utxoOutTargetZoneIdInBits0) +
+        reverseBinaryString(utxoOutTargetZoneIdInBits1) +
+        reverseBinaryString(utxoInAmount0) +
+        reverseBinaryString(utxoInAmount1);
+    // console.log('finalBinaryString1=>', finalBinaryString1);
+
+    let bit2num1 = 0;
+    for (let i = 0; i < 160; i++) {
+        bit2num1 += finalBinaryString1[i] == 0 ? 0 : 2 ** i;
+    }
+    // 1
+    // console.log('final sum=>', BigInt(bit2num1));
+
+    // 3. serialize bit2num2
+    // utxoOutAmount - 64 bits
+    const utxoOutAmount0InBits = toBinaryWithBits(utxoOutAmount[0], 64);
+    const utxoOutAmount1InBits = toBinaryWithBits(utxoOutAmount[1], 64);
+
+    const finalBinaryString2 =
+        reverseBinaryString(utxoOutAmount0InBits) +
+        reverseBinaryString(utxoOutAmount1InBits);
+    // console.log('finalBinaryString2=>', finalBinaryString2);
+
+    let bit2num2 = 0;
+    for (let i = 0; i < 128; i++) {
+        bit2num2 += finalBinaryString2[i] == 0 ? 0 : 2 ** i;
+    }
+    // 10
+    // console.log('final sum=>', BigInt(bit2num2));
 
     const input = {
         zAsset: zAssetID,
@@ -184,7 +197,7 @@ describe('DataEscrowSerializer circuit', function (this: any) {
     };
 
     const output = {
-        out: [0, 2162689, 2, 0, 0, 10, 0, 1, 0],
+        out: [40565128692921904747395642556416n, 1, 10],
     };
 
     describe('Valid input signals', function () {
