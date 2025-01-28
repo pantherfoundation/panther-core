@@ -90,15 +90,32 @@ function ZZoneDataEscrowEncryptedPoints_Fn() {
 function DataEscrowPaddingPointSize_Fn() {
     return 0;
 }
+
+// ------------- scalars-size in bits ------------
+function DataEscrowScalarBitSize_Fn(  nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth ) {
+    var bits = 64 +                             // zAsset (64 bits)
+               24 +                             // zAccountId (24 bits)
+               16 +                             // zAccountZoneId (16 bits)
+               32 +                             // zAccountNonce (32 bits)
+               nUtxoIn * 2 +                    // nUtxoIn * utxoInMerkleTreeSelector (2 bits)
+               nUtxoIn * UtxoMerkleTreeDepth +  // nUtxoIn * utxoInPathIndices ( UtxoMerkleTreeDepth bits )
+               nUtxoIn * 64 +                   // nUtxoIn * utxoInAmount (64 bits)
+               nUtxoOut * 64 +                  // nUtxoOut * utxoOutAmount (64 bits)
+               nUtxoIn * 16 +                   // nUtxoIn * utxoInOriginZoneId (16 bits)
+               nUtxoOut * 16;                   // nUtxoOut * utxoOutTargetZoneId (16 bits)
+    return bits;
+}
+
 // ------------- scalars-size --------------------------------
-// 1) 1 x 64 (zAsset)
-// 2) 1 x 64 (zAccountId << 16 | zAccountZoneId)
-// 3) 1 x 32 (zAccountNonce)
-// 4) nUtxoIn x 64 amount
-// 5) nUtxoOut x 64 amount
-// 6) MAX(nUtxoIn,nUtxoOut) x ( , utxoInPathIndices[..] << 32 bit | utxo-in-origin-zones-ids << 16 | utxo-out-target-zone-ids << 0 )
-function DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut ) {
-    var dataEscrowScalarSize =  1 + 1 + 1 + nUtxoIn + nUtxoOut + MaxUtxoInOut_Fn(nUtxoIn,nUtxoOut);
+function DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth ) {
+    var bits = DataEscrowScalarBitSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth );
+    var reminder = bits % 254;
+    var fieldElements = ( bits - reminder ) / 254;
+    // plus 1 for the reminder
+    if ( reminder > 0 ) {
+        fieldElements += 1;
+    }
+    var dataEscrowScalarSize = fieldElements;
     return dataEscrowScalarSize;
 }
 // ------------- ec-points-size -------------
@@ -107,8 +124,10 @@ function DataEscrowPointSize_Fn( nUtxoOut ) {
     return nUtxoOut;
 }
 
-function DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut ) {
-    return DataEscrowPaddingPointSize_Fn() + DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut ) + DataEscrowPointSize_Fn( nUtxoOut );
+function DataEscrowEncryptedPoints_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth ) {
+    return DataEscrowPaddingPointSize_Fn() +
+           DataEscrowScalarSize_Fn( nUtxoIn, nUtxoOut, UtxoMerkleTreeDepth ) +
+           DataEscrowPointSize_Fn( nUtxoOut );
 }
 
 // the only 1 point in the Dao data-escrow is the ephemeral pub-key of the main data-escrow safe
