@@ -1,0 +1,154 @@
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
+
+import {babyjub} from 'circomlibjs';
+
+import {CommonEscrowData, EscrowType} from '../../../src/types/escrow';
+import {PublicKey} from '../../../src/types/keypair';
+
+const BASE_PATH_INDICES = Array(32).fill(0).map(BigInt);
+const ZERO_AMOUNTS = [0n, 0n];
+export const DEFAULT_EPHEMERAL_PUB_KEY = [
+    4301916310975298895721162797900971043392040643140207582177965168853046592976n,
+    815388028464849479935447593762613752978886104243152067307597626016673798528n,
+];
+
+export const ESCROW_PUBLIC_KEYS = {
+    [EscrowType.Data]: [
+        6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+    ],
+    [EscrowType.DAO]: [
+        6744227429794550577826885407270460271570870592820358232166093139017217680114n,
+        12531080428555376703723008094946927789381711849570844145043392510154357220479n,
+    ],
+    [EscrowType.Zone]: [
+        13969057660566717294144404716327056489877917779406382026042873403164748884885n,
+        11069452135192839850369824221357904553346382352990372044246668947825855305207n,
+    ],
+} as const;
+
+export const MOCKED_EPHEMERAL_RANDOM = {
+    [EscrowType.Data]:
+        2508770261742365048726528579942226801565607871885423400214068953869627805520n,
+    [EscrowType.DAO]:
+        2486295975768183987242341265649589729082265459252889119245150374183802141273n,
+    [EscrowType.Zone]:
+        790122152066676684676093302872898287841903882354339429497975929636832086290n,
+};
+
+const EXPECTED_ENCRYPTED_MESSAGE = {
+    [EscrowType.Data]: [
+        13973906650312005559740103459142173934644708673918954222819765580848202548082n,
+        473107879088864817427941367142854458250433871003316364107425192816097535880n,
+        5494747578719849743514538994145141818891361484689613558464885736461065634004n,
+        17478869179407600441624504783451962827747408866666665035038148654122072068560n,
+        3979705822755801962959100881652950811750399282785018064249634205385110664507n,
+    ],
+    [EscrowType.DAO]: [
+        3231509157406275324672292283075363620846365487114545308584982449118638448232n,
+    ],
+    [EscrowType.Zone]: [
+        21022076763366182175477357918933442131485472229146225036655452082762082124322n,
+    ],
+};
+
+const EXPECTED_ENCRYPTED_MESSAGE_HASH = {
+    [EscrowType.Data]:
+        17431852224035844003444238676031633071279400495847152424744415324178614660594n,
+    [EscrowType.DAO]:
+        8548020980957111797668615943249179300643837380790248422888287045915233337316n,
+    [EscrowType.Zone]:
+        12444185887568679379186315345524877022401565154030591259044587421593238202125n,
+};
+
+const EXPECTED_HMAC = {
+    [EscrowType.Data]:
+        16173453699681308235983358702598840259709871730589036009107448797585163632418n,
+    [EscrowType.DAO]:
+        8440119056753462523052864914696055620425883804111543984578190069357722526741n,
+    [EscrowType.Zone]:
+        11881728848936312288293767908225444888306857512351728722791695602487731265197n,
+};
+
+export const EXPECTED_SCALARS = [
+    1685022377705623131022875130951608445782729827683826481307588755456n,
+    1n,
+    10n,
+    9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+    0n,
+];
+
+export const ESCROW_TYPE_MAP = {
+    [EscrowType.Data]: {
+        key: EscrowType.Data,
+        publicKey: ESCROW_PUBLIC_KEYS[EscrowType.Data],
+        mockRandom: MOCKED_EPHEMERAL_RANDOM[EscrowType.Data],
+        encryptedMessage: EXPECTED_ENCRYPTED_MESSAGE[EscrowType.Data],
+        messageHash: EXPECTED_ENCRYPTED_MESSAGE_HASH[EscrowType.Data],
+        hmac: EXPECTED_HMAC[EscrowType.Data],
+    },
+    [EscrowType.DAO]: {
+        key: EscrowType.DAO,
+        publicKey: ESCROW_PUBLIC_KEYS[EscrowType.DAO],
+        mockRandom: MOCKED_EPHEMERAL_RANDOM[EscrowType.DAO],
+        encryptedMessage: EXPECTED_ENCRYPTED_MESSAGE[EscrowType.DAO],
+        messageHash: EXPECTED_ENCRYPTED_MESSAGE_HASH[EscrowType.DAO],
+        hmac: EXPECTED_HMAC[EscrowType.DAO],
+    },
+    [EscrowType.Zone]: {
+        key: EscrowType.Zone,
+        publicKey: ESCROW_PUBLIC_KEYS[EscrowType.Zone],
+        mockRandom: MOCKED_EPHEMERAL_RANDOM[EscrowType.Zone],
+        encryptedMessage: EXPECTED_ENCRYPTED_MESSAGE[EscrowType.Zone],
+        messageHash: EXPECTED_ENCRYPTED_MESSAGE_HASH[EscrowType.Zone],
+        hmac: EXPECTED_HMAC[EscrowType.Zone],
+    },
+} as const;
+
+export function createMockCommonData(): CommonEscrowData {
+    return {
+        zAssetID: 8589934592n,
+        zAccountID: 0n,
+        zAccountZoneId: 1n,
+        zAccountNonce: 21n,
+        utxoInMerkleTreeSelector: [
+            [1n, 0n],
+            [1n, 0n],
+        ],
+        utxoInPathIndices: [
+            [
+                0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ].map(BigInt),
+            BASE_PATH_INDICES,
+        ],
+        utxoInAmounts: ZERO_AMOUNTS,
+        utxoOutAmounts: [10n, 0n],
+        utxoInOriginZoneIds: [1n, 1n],
+        utxoOutTargetZoneIds: [1n, 0n],
+        utxoOutSpendingPublicKeys: [
+            [
+                9665449196631685092819410614052131494364846416353502155560380686439149087040n,
+                13931233598534410991314026888239110837992015348186918500560502831191846288865n,
+            ],
+            [0n, 1n],
+        ],
+        ephemeralPubKey: DEFAULT_EPHEMERAL_PUB_KEY as PublicKey,
+    };
+}
+
+export function createEncryptionExpectation(escrowType: EscrowType) {
+    const {mockRandom, encryptedMessage, messageHash, hmac} =
+        ESCROW_TYPE_MAP[escrowType];
+
+    return {
+        ephemeralKeypair: {
+            privateKey: mockRandom,
+            publicKey: babyjub.mulPointEscalar(babyjub.Base8, mockRandom),
+        },
+        encryptedMessages: encryptedMessage,
+        encryptedMessageHash: messageHash,
+        hmac: hmac,
+    };
+}
