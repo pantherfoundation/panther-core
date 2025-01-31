@@ -47,4 +47,4 @@ export type DataEscrowData = {
     utxoOutSpendingPublicKeys: PublicKey[];
 };
 
-export type EscrowEncryptedPoints = [bigint[], bigint[]];
+export type EscrowEncryptedMessages = bigint[];
