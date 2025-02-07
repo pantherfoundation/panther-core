@@ -9,7 +9,6 @@ export type PrivateKey = bigint;
 export type PublicKeyX = bigint;
 export type PublicKeyY = bigint;
 export type PublicKey = [bigint, bigint]; // [y, x]
-export type Point = [bigint, bigint]; // [y, x]
 
 export type Keypair = {
     publicKey: PublicKey;

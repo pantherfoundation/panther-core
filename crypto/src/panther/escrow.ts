@@ -1,69 +1,55 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
-import {babyjub as bbj, poseidon} from 'circomlibjs';
+import {babyjub, poseidon} from 'circomlibjs';
 
 import {generateRandomInBabyJubSubField} from '../base/field-operations';
 import {
     CommonEscrowData,
     DAOEscrowData,
     DataEscrowData,
-    EscrowEncryptedPoints,
+    EscrowEncryptedMessages,
     EscrowType,
+    ZoneEscrowData,
 } from '../types/escrow';
-import {Keypair, Point, PublicKey} from '../types/keypair';
+import {Keypair, PublicKey} from '../types/keypair';
+import {OPAD_MODULAR, IPAD_MODULAR, SNARK_FIELD_SIZE} from '../utils/constants';
 
-const LSB_252_BITS_MASK = (1n << 252n) - 1n;
+// Constants for bit manipulation configurations
+const BIT_CONFIG = {
+    Z_ASSET_ID: 64,
+    Z_ACCOUNT_ID: 24,
+    ZONE_ID: 16,
+    NONCE: 32,
+    MERKLE_SELECTOR: 2,
+    AMOUNT: 64,
+    TARGET_ZONE: 16,
+};
 
 /**
- * Encrypts data for escrow.
- * @param data - Data to be encrypted.
- * @param dataEscrowPublicKey - PublicKey for the escrow.
- * @param escrowType - Type of the escrow.
- * @returns Object containing ephemeral keypair and encrypted points.
+ * Encrypts data for escrow using ephemeral key derivation and HMAC verification
  */
 export function encryptDataForEscrow(
     data: CommonEscrowData,
     dataEscrowPublicKey: PublicKey,
     escrowType: EscrowType,
-): {ephemeralKeypair: Keypair; escrowEncryptedPoints: EscrowEncryptedPoints} {
-    const {ephemeralKeypair, encryptedPoints} = encryptDataIntoPointsOnBJJ(
-        data,
-        dataEscrowPublicKey,
-        escrowType,
-    );
-
-    const escrowEncryptedPoints: EscrowEncryptedPoints = [
-        encryptedPoints.map((p: Point) => p[0]),
-        encryptedPoints.map((p: Point) => p[1]),
-    ];
-
-    return {ephemeralKeypair, escrowEncryptedPoints};
-}
-
-function shiftAndBitwiseOr(a: bigint, b: bigint, shift: number): bigint {
-    return (a << BigInt(shift)) | b;
-}
-
-function encryptDataIntoPointsOnBJJ(
-    data: CommonEscrowData,
-    dataEscrowPublicKey: PublicKey,
-    escrowType: EscrowType,
-): {ephemeralKeypair: Keypair; encryptedPoints: Point[]} {
+): {
+    ephemeralKeypair: Keypair;
+    encryptedMessages: EscrowEncryptedMessages;
+    encryptedMessageHash: bigint;
+    hmac: bigint;
+} {
+    const {sharedPubKey, ephemeralKeypair} =
+        deriveSharedKey(dataEscrowPublicKey);
     const scalars = convertEscrowDataToScalars(data, escrowType);
-    const points: Point[] = scalars.map(
-        scalar => bbj.mulPointEscalar(bbj.Base8, scalar) as Point,
-    );
+    const encryptedMessages = encryptScalars(scalars, sharedPubKey);
 
-    if (escrowType === EscrowType.DAO || escrowType === EscrowType.Zone) {
-        points.push((data as DAOEscrowData).ephemeralPubKey);
-    } else if (escrowType === EscrowType.Data) {
-        points.push(...(data as DataEscrowData).utxoOutSpendingPublicKeys);
-    }
-
-    return encryptPointsElGamal(points, dataEscrowPublicKey, escrowType);
+    return {ephemeralKeypair, ...encryptedMessages};
 }
 
+/**
+ * Converts escrow data to cryptographic scalars based on escrow type
+ */
 function convertEscrowDataToScalars(
     data: CommonEscrowData,
     escrowType: EscrowType,
@@ -71,172 +57,167 @@ function convertEscrowDataToScalars(
     switch (escrowType) {
         case EscrowType.Zone:
         case EscrowType.DAO:
-            return [];
+            return [
+                (data as DAOEscrowData | ZoneEscrowData).ephemeralPubKey[0],
+            ];
         case EscrowType.Data:
             return convertDataEscrowToScalars(data as DataEscrowData);
         default:
-            throw new Error('Invalid escrow type');
+            throw new Error(`Unsupported escrow type: ${escrowType}`);
     }
 }
 
 /**
- * Converts Data escrow to scalars.
- * @param data - The Data escrow data.
- * @returns An array of bigints representing the scalar values.
+ * Processes DataEscrowData into cryptographic scalars for encryption
  */
 export function convertDataEscrowToScalars(data: DataEscrowData): bigint[] {
-    const {
-        zAccountID,
-        zAccountZoneId,
-        zAccountNonce,
-        zAssetID,
-        utxoInAmounts,
-        utxoOutAmounts,
-        utxoInOriginZoneIds,
-        utxoOutTargetZoneIds,
-        utxoInMerkleTreeSelector,
-        utxoInPathIndices,
-    } = data;
-
-    const treeSelectors = convertToLittleEndianBigInts(
-        utxoInMerkleTreeSelector,
-    );
-    const leafIndices = convertToLittleEndianBigInts(utxoInPathIndices);
-
     return [
-        zAssetID,
-        combineZAccountInfo(treeSelectors, zAccountID, zAccountZoneId),
-        zAccountNonce,
-        ...utxoInAmounts,
-        ...utxoOutAmounts,
-        ...combineUtxoInfo(
-            leafIndices,
-            utxoInOriginZoneIds,
-            utxoOutTargetZoneIds,
-        ),
+        calculateCompositeBitNumber(data, [
+            ['zAssetID', BIT_CONFIG.Z_ASSET_ID],
+            ['zAccountID', BIT_CONFIG.Z_ACCOUNT_ID],
+            ['zAccountZoneId', BIT_CONFIG.ZONE_ID],
+            ['zAccountNonce', BIT_CONFIG.NONCE],
+            ['utxoInMerkleTreeSelector.0', 'array'],
+            ['utxoInMerkleTreeSelector.1', 'array'],
+            ['utxoInPathIndices.0', 'array'],
+            ['utxoInPathIndices.1', 'array'],
+            ['utxoInOriginZoneIds.0', BIT_CONFIG.ZONE_ID],
+            ['utxoInOriginZoneIds.1', BIT_CONFIG.ZONE_ID],
+        ]),
+        calculateCompositeBitNumber(data, [
+            ['utxoOutTargetZoneIds.0', BIT_CONFIG.TARGET_ZONE],
+            ['utxoOutTargetZoneIds.1', BIT_CONFIG.TARGET_ZONE],
+            ['utxoInAmounts.0', BIT_CONFIG.AMOUNT],
+            ['utxoInAmounts.1', BIT_CONFIG.AMOUNT],
+        ]),
+        calculateCompositeBitNumber(data, [
+            ['utxoOutAmounts.0', BIT_CONFIG.AMOUNT],
+            ['utxoOutAmounts.1', BIT_CONFIG.AMOUNT],
+        ]),
+        data.utxoOutSpendingPublicKeys[0][0],
+        data.utxoOutSpendingPublicKeys[1][0],
     ];
 }
 
-function convertToLittleEndianBigInts(arrays: bigint[][]): bigint[] {
-    return arrays.map(arr => BigInt('0b' + arr.slice().reverse().join('')));
-}
-
-function combineZAccountInfo(
-    treeSelectors: bigint[],
-    zAccountID: bigint,
-    zAccountZoneId: bigint,
-): bigint {
-    return shiftAndBitwiseOr(
-        treeSelectors[1],
-        shiftAndBitwiseOr(
-            treeSelectors[0],
-            shiftAndBitwiseOr(zAccountID, zAccountZoneId, 16),
-            40,
-        ),
-        42,
-    );
-}
-
-function combineUtxoInfo(
-    leafIndices: bigint[],
-    utxoInOriginZoneIds: bigint[],
-    utxoOutTargetZoneIds: bigint[],
-): bigint[] {
-    return leafIndices.map((leafIndex, i) =>
-        shiftAndBitwiseOr(
-            leafIndex,
-            shiftAndBitwiseOr(
-                utxoInOriginZoneIds[i],
-                utxoOutTargetZoneIds[i],
-                16,
-            ),
-            32,
-        ),
-    );
-}
-
-export function maskPoint(originalPoint: Point, maskingPoint: Point): Point {
-    return bbj.addPoint(originalPoint, maskingPoint) as Point;
-}
-
-export function unmaskPoint(encryptedPoint: Point, maskingPoint: Point): Point {
-    const negatedMaskingPoint = [bbj.p - maskingPoint[0], maskingPoint[1]];
-    return bbj.addPoint(encryptedPoint, negatedMaskingPoint) as Point;
-}
-
-function encryptPointsElGamal(
-    originalPoints: Point[],
-    publicKey: PublicKey,
-    escrowType: EscrowType,
-): {encryptedPoints: Point[]; ephemeralKeypair: Keypair} {
+/**
+ * Derives shared public key using ECDH key exchange
+ */
+export function deriveSharedKey(publicKey: PublicKey): {
+    ephemeralKeypair: Keypair;
+    sharedPubKey: PublicKey;
+} {
     const ephemeralRandom = generateRandomInBabyJubSubField();
-    const ephemeralKeys = ephemeralPublicKeyBuilder(
+    const ephemeralPubKey = babyjub.mulPointEscalar(
+        babyjub.Base8,
         ephemeralRandom,
+    ) as PublicKey;
+    const sharedPubKey = babyjub.mulPointEscalar(
         publicKey,
-        originalPoints.length,
-    );
-
-    const encryptedPoints = originalPoints.map((p0, idx) => {
-        const p1 = maskPoint(p0, ephemeralKeys.sharedPubKeys[idx] as Point);
-        return escrowType === EscrowType.Data
-            ? maskPoint(p1, ephemeralKeys.hidingPoint)
-            : p1;
-    });
+        ephemeralRandom,
+    ) as PublicKey;
 
     return {
-        encryptedPoints,
         ephemeralKeypair: {
             privateKey: ephemeralRandom,
-            publicKey: ephemeralKeys.ephemeralPubKeys[0],
+            publicKey: ephemeralPubKey,
         },
+        sharedPubKey,
     };
 }
 
-export function ephemeralPublicKeyBuilder(
-    ephemeralRandom: bigint,
-    publicKey: PublicKey,
-    length: number,
+/**
+ * Encrypts scalar messages with hierarchical deterministic encryption
+ */
+function encryptScalars(
+    scalarMessages: bigint[],
+    sharedPubKey: PublicKey,
 ): {
-    ephemeralPubKeys: PublicKey[];
-    sharedPubKeys: PublicKey[];
-    hidingPoint: Point;
+    encryptedMessages: bigint[];
+    encryptedMessageHash: bigint;
+    hmac: bigint;
 } {
-    const ephemeralPubKeys: PublicKey[] = [];
-    const sharedPubKeys: PublicKey[] = [];
+    const keySeed = poseidon(sharedPubKey);
+    const encryptedMessages = scalarMessages.map((msg, i) =>
+        encryptSingleMessage(keySeed, msg, i),
+    );
 
-    for (let i = 0; i < length; i++) {
-        const {ephemeralPubKey, sharedPubKey} = generateKeyPair(
-            ephemeralRandom,
-            publicKey,
-        );
-        ephemeralPubKeys.push(ephemeralPubKey);
-        sharedPubKeys.push(sharedPubKey);
-        ephemeralRandom = generateNewEphemeralRandom(sharedPubKey);
-    }
-
-    const hidingPoint = bbj.mulPointEscalar(
-        publicKey,
-        generateNewEphemeralRandom([poseidon(sharedPubKeys[0])]),
-    ) as PublicKey;
-
-    return {ephemeralPubKeys, sharedPubKeys, hidingPoint};
+    const {encryptedMessageHash, hmac} = computeMessageDigests(
+        encryptedMessages,
+        keySeed,
+    );
+    return {encryptedMessages, encryptedMessageHash, hmac};
 }
 
-function generateKeyPair(
-    ephemeralRandom: bigint,
-    publicKey: PublicKey,
-): {ephemeralPubKey: PublicKey; sharedPubKey: PublicKey} {
-    const ephemeralPubKey = bbj.mulPointEscalar(
-        bbj.Base8,
-        ephemeralRandom,
-    ) as PublicKey;
-    const sharedPubKey = bbj.mulPointEscalar(
-        publicKey,
-        ephemeralRandom,
-    ) as PublicKey;
-    return {ephemeralPubKey, sharedPubKey};
+/**
+ * Computes HMAC-SHA256 equivalent using Poseidon hash
+ */
+function computeMessageDigests(
+    messages: bigint[],
+    keySeed: bigint,
+): {encryptedMessageHash: bigint; hmac: bigint} {
+    const encryptedMessageHash = poseidon(messages);
+    const kMac = poseidon([keySeed, BigInt(messages.length)]);
+
+    const innerHash = poseidon([
+        snarkFieldXOR(kMac, IPAD_MODULAR),
+        ...messages,
+    ]);
+    return {
+        encryptedMessageHash,
+        hmac: poseidon([snarkFieldXOR(kMac, OPAD_MODULAR), innerHash]),
+    };
 }
 
-function generateNewEphemeralRandom(seed: bigint[]): bigint {
-    return poseidon(seed) & LSB_252_BITS_MASK;
+/**
+ * Generic bit composition function with automatic reversal handling
+ */
+function calculateCompositeBitNumber(
+    data: DataEscrowData,
+    components: Array<[string, number | 'array']>,
+): bigint {
+    const binaryString = components
+        .map(([path, bits]) => {
+            const value = path
+                .split('.')
+                .reduce((obj, key) => obj[key], data as any);
+
+            // Skip reversal for array values
+            const skipReverse = bits === 'array';
+
+            const binaryValue =
+                bits === 'array'
+                    ? (value as bigint[]).join('')
+                    : toPaddedBinary(value, bits as number);
+
+            return skipReverse ? binaryValue : reverseString(binaryValue);
+        })
+        .join('');
+
+    return BigInt(`0b${reverseString(binaryString)}`);
+}
+
+// Helper functions
+function encryptSingleMessage(
+    kSeed: bigint,
+    message: bigint,
+    index: number,
+): bigint {
+    const hidingScalar = poseidon([kSeed, BigInt(index)]);
+    return (message + hidingScalar) % SNARK_FIELD_SIZE;
+}
+
+function toPaddedBinary(value: bigint, bits: number): string {
+    return value.toString(2).padStart(bits, '0');
+}
+
+function reverseString(str: string): string {
+    return [...str].reverse().join('');
+}
+
+function snarkFieldXOR(a: bigint, b: bigint): bigint {
+    const product = (a * b) % SNARK_FIELD_SIZE;
+    return (
+        (((a + b - 2n * product) % SNARK_FIELD_SIZE) + SNARK_FIELD_SIZE) %
+        SNARK_FIELD_SIZE
+    );
 }
