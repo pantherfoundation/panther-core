@@ -21,7 +21,7 @@ contract MockStealthDelegate is DelegatecallAware, Multicall, StealthDelegate {
         )
     {
         // console.log("delegatedMulticall");
-        return _multicall(data);
+        return multicall(data);
     }
 }
 // solhint-disable max-line-length
