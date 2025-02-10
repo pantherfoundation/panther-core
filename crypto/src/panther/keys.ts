@@ -41,9 +41,8 @@ export function generateChildSpendingPublicKey(
 export const extractSecretsPair = (
     signature: string,
 ): [r: bigint, s: bigint] => {
-    if (!signature) {
-        throw new Error('Signature must be provided');
-    }
+    if (!signature) throw new Error('Signature must be provided');
+
     assert(
         signature.length === 132,
         `Tried to create keypair from signature of length '${signature.length}'`,
@@ -63,7 +62,7 @@ export const extractSecretsPair = (
     ];
 };
 
-export const derivePrivKeyFromSignature = (signature: string): bigint => {
+export function derivePrivKeyFromSignature(signature: string): bigint {
     const pair = extractSecretsPair(signature);
     if (!pair) {
         throw new Error('Failed to extract secrets pair from signature');
@@ -71,12 +70,27 @@ export const derivePrivKeyFromSignature = (signature: string): bigint => {
     const privKey = moduloBabyJubSubFieldPrime(poseidon(pair));
     assertInBabyJubJubSubOrder(privKey, 'privateKey');
     return privKey;
-};
+}
 
-export const deriveKeypairFromSignature = (signature: string): Keypair => {
-    const pKey = derivePrivKeyFromSignature(signature);
-    return deriveKeypairFromPrivKey(pKey);
-};
+export const KEY_INDEX_MAP = {
+    ROOT_SPENDING: 1,
+    ROOT_READING: 2,
+    STORAGE_ENCRYPTION: 3,
+    NULLIFIER_ROOT: 4,
+} as const;
+
+export type KeyIndex = (typeof KEY_INDEX_MAP)[keyof typeof KEY_INDEX_MAP];
+export const VALID_INDICES = new Set<number>(Object.values(KEY_INDEX_MAP));
+
+export function deriveKeypair(seed: bigint, index: number): Keypair {
+    assert(seed != BigInt(0), 'Zero seed is not allowed');
+    assert(VALID_INDICES.has(index), `Index ${index} out of derivation bounds`);
+
+    const privateKey = moduloBabyJubSubFieldPrime(
+        poseidon([seed, BigInt(index)]),
+    );
+    return deriveKeypairFromPrivKey(privateKey);
+}
 
 export async function deriveRootKeypairs(
     signer: Signer,
@@ -91,12 +105,35 @@ Keypair version: 1`;
 
     const signature = await signer.signMessage(derivationMessage);
     const hashedSignature: bigint = poseidon([signature]);
-    const hashOfHashedSignature: bigint = poseidon([hashedSignature]);
+    const derive = (index: number) => deriveKeypair(hashedSignature, index);
 
     return {
-        rootSpendingKeypair: deriveKeypairFromSignature(signature),
-        rootReadingKeypair: deriveKeypairFromSeed(hashedSignature),
-        storageEncryptionKeypair: deriveKeypairFromSeed(hashOfHashedSignature),
+        rootSpendingKeypair: derive(1),
+        rootReadingKeypair: derive(2),
+        storageEncryptionKeypair: derive(3),
+        nullifierRootKeypair: derive(4),
+    };
+}
+
+export function deriveZoneNullifierKeypair(
+    rootNullifierKeypair: Keypair,
+    zoneId: bigint,
+): Keypair {
+    const zoneScalar = moduloBabyJubSubFieldPrime(poseidon([zoneId]));
+
+    const zonePrivKey = deriveChildPrivKeyFromRootPrivKey(
+        rootNullifierKeypair.privateKey,
+        zoneScalar,
+    );
+
+    const zonePubKey = deriveChildPubKeyFromRootPubKey(
+        rootNullifierKeypair.publicKey,
+        zoneScalar,
+    );
+
+    return {
+        privateKey: zonePrivKey,
+        publicKey: zonePubKey,
     };
 }
 
