@@ -149,7 +149,14 @@ export const ZKP_RESERVE_CONTROLLER = {
 };
 
 export const PAYMASTER = {
-    depositValue: ethers.utils.parseEther('5'),
+    depositValue: ethers.utils.parseEther('15'),
     unstakeDelaySec: 87400,
     addStakeValue: ethers.utils.parseEther('5'),
+    maxExtraGas: 500000,
+    gasPriceMarkupPct: 333333333333400,
+    exchangeRiskPct: 1000,
+    bundlerAddresses: [
+        '0x319fe457676941EA433770802c3e5Ac6FFAA401A',
+        '0x7d53502B713058F7C22EAd5Ff97A88b7c9dec542',
+    ],
 };
