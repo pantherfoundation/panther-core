@@ -36,7 +36,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [multisig, providers, pzkp, weth9, vaultV1, pantherTreasury],
         proxy: {
-            proxyContract: 'EIP173Proxy',
+            proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
         },
         log: true,

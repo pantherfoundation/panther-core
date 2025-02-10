@@ -96,6 +96,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         );
 
         verificationKeys.push({key: 'zAccountRegistration', pointer});
+        verificationKeys.push({key: 'zAccountReactivation', pointer});
 
         if (isReused)
             console.log('zAccount registration vk was already deployed!');

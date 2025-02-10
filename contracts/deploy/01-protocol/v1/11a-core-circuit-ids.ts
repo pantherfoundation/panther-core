@@ -22,6 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const txTypes = {
         zAccountRegistration: '0x100',
+        zAccountReactivation: '0x101',
         zAccountRenewal: '0x102',
         prpAccounting: '0x103',
         prpConversion: '0x104',
@@ -44,6 +45,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             const res = await tx.wait();
             console.log(
                 'zAccount registration vk pointer updated',
+                res.transactionHash,
+            );
+        }
+    }
+
+    {
+        const txType = txTypes.zAccountReactivation;
+        const pointer = verificationKeys.filter(
+            (x: any) => x.key === 'zAccountReactivation',
+        )[0].pointer;
+
+        const circuitId = await diamond.getCircuitIds(txType);
+
+        if (circuitId != BigInt(pointer)) {
+            const tx = await diamond.updateCircuitId(txType, pointer, {
+                gasPrice: GAS_PRICE,
+            });
+            const res = await tx.wait();
+            console.log(
+                'zAccount reactivation vk pointer updated',
                 res.transactionHash,
             );
         }
