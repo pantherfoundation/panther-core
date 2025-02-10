@@ -9,9 +9,9 @@ import { RevertMsgGetter } from "./misc/RevertMsgGetter.sol";
 string constant ERR_ZERO_TO_ADDR = "MC:E2";
 
 contract Multicall is RevertMsgGetter {
-    function _multicall(
+    function multicall(
         bytes[] calldata data
-    ) internal returns (bytes[] memory results) {
+    ) public returns (bytes[] memory results) {
         results = new bytes[](data.length);
 
         for (uint256 i = 0; i < data.length; i++) {
