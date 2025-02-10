@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-24 Panther Ventures Limited Gibraltar
 
 import {describe, expect} from '@jest/globals';
+import {poseidon} from 'circomlibjs';
 import {Wallet} from 'ethers';
 
 import {Keypair} from '../../lib/types/keypair';
@@ -9,7 +10,7 @@ import {generateRandomInBabyJubSubField} from '../../src/base/field-operations';
 import {
     deriveRootKeypairs,
     generateSpendingChildKeypair,
-    deriveKeypairFromSignature,
+    deriveKeypair,
 } from '../../src/panther/keys';
 import {SNARK_FIELD_SIZE} from '../../src/utils/constants';
 
@@ -22,7 +23,7 @@ describe('Spending child keypair', () => {
         const seedSpendingMsg = `I'm creating a spending root keypair for ${randomAccount.address}`;
         const spendingSignature =
             await randomAccount.signMessage(seedSpendingMsg);
-        spendingRootKeypair = deriveKeypairFromSignature(spendingSignature);
+        spendingRootKeypair = deriveKeypair(poseidon([spendingSignature]), 1);
 
         const r = generateRandomInBabyJubSubField();
         spendingChildKeypair = generateSpendingChildKeypair(

@@ -16,6 +16,9 @@ export type Keypair = {
 };
 
 export type WalletKeypairs = Record<
-    'rootSpendingKeypair' | 'rootReadingKeypair' | 'storageEncryptionKeypair',
+    | 'rootSpendingKeypair'
+    | 'rootReadingKeypair'
+    | 'storageEncryptionKeypair'
+    | 'nullifierRootKeypair',
     Keypair
 >;
