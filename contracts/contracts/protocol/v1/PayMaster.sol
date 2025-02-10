@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
+// solhint-disable avoid-tx-origin
 pragma solidity ^0.8.19;
 
 /**
@@ -25,6 +26,9 @@ import "../../common/erc4337/contracts/interfaces/UserOperation.sol";
 import { GT_PAYMASTER_REFUND, HUNDRED_PERCENT, PROTOCOL_TOKEN_DECIMALS } from "../../common/Constants.sol";
 
 contract PayMaster is ImmutableOwnable, IPaymaster {
+    event ConfigUpdated(BundlerConfig config);
+    event DepositThresholdUpdated(uint256 depositThreshold);
+
     event UserOperationValidated(
         bytes32 userOpHash,
         uint256 requiredPreFund,
@@ -33,7 +37,6 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     );
     event UserOperationSponsored(bytes32 userOpHash, uint256 actualGasCosts);
     event EntryPointDeposited(uint256 amount);
-    event BundlerConfigUpdated(address bundler, BundlerConfig config);
     event VoucherNotGranted(string reason);
 
     address public immutable PRP_VOUCHER_GRANTOR;
@@ -41,25 +44,25 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     address public immutable ACCOUNT;
     address public immutable FEE_MASTER;
 
-    // Mapping from Bundler address to params
-    mapping(address => BundlerConfig) public bundlerConfigs;
-
-    /// @dev Minimum amount of the EntryPoint deposit to get the reward
-    uint96 public depositThreshold;
-
     /// @dev Struct for storing configuration for a bundler.
-    /// @param isEnabled True if enabled.
     /// @param maxExtraGas Maximum allowed gas for verification and post-operation;
     /// the bundler may be compensated for at most `userOp.callGasLimit + maxExtraGas`.
     /// @param gasPriceMarkupPct add some gap to current gas price
     /// @param exchangeRiskPct An additional percentage added to the required prefund
     /// to mitigate exchange rate risk.Expressed in units of 0.01% (e.g., 500 means 5%).
     struct BundlerConfig {
-        bool isEnabled;
         uint24 maxExtraGas;
-        uint16 gasPriceMarkupPct;
+        uint64 gasPriceMarkupPct;
         uint32 exchangeRiskPct;
     }
+
+    /// @dev Minimum amount of the EntryPoint deposit to get the reward
+    uint96 public depositThreshold;
+
+    BundlerConfig public bundlerConfig;
+
+    // @dev Mapping of authorized bundlers who can call the PayMaster
+    mapping(address => bool) public authorizedBundlres;
 
     constructor(
         address _entryPoint,
@@ -103,10 +106,11 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         bytes32 userOpHash,
         uint256 requiredPreFund
     ) external returns (bytes memory context, uint256 validationData) {
+        _ensureAuthorizedBundlerOrigin();
         _ensureEntryPointCall();
         _sanitizeUserOp(userOp);
 
-        BundlerConfig memory config = _getCallingBundlerConfig();
+        BundlerConfig memory config = bundlerConfig;
         _validateRequiredPrefund(userOp, requiredPreFund, config);
 
         // Retrieve the cached ZKP price in its native decimal format
@@ -129,16 +133,15 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
             ERR_SMALL_PAYMASTER_COMPENSATION
         );
 
+        context = abi.encode(userOpHash);
+        validationData = 0;
+
         emit UserOperationValidated(
             userOpHash,
             requiredPreFund,
             requiredZkpCompensation,
             chargedZkpCompensation
         );
-
-        context = abi.encode(userOpHash);
-
-        return (context, 0);
     }
 
     /**
@@ -154,6 +157,7 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         bytes calldata context,
         uint256 actualGasCost
     ) external {
+        _ensureAuthorizedBundlerOrigin();
         _ensureEntryPointCall();
 
         if (mode == PostOpMode.opSucceeded) {
@@ -225,16 +229,28 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     }
 
     /// @notice Configuration parameters setup
-    /// @param bundler executor address
     /// @param newConfig config
     function updateBundlerConfig(
-        address bundler,
-        BundlerConfig memory newConfig
-    ) public onlyOwner {
-        _ensureNonZeroAddress(bundler);
+        BundlerConfig calldata newConfig
+    ) external onlyOwner {
         /// @dev no limitations on newConfig fields
-        bundlerConfigs[bundler] = newConfig;
-        emit BundlerConfigUpdated(bundler, newConfig);
+        bundlerConfig = newConfig;
+        emit ConfigUpdated(newConfig);
+    }
+
+    /// @notice whitelist bundler addresses
+    /// @param bundlerAddresses list of bundler addresses
+    function updateBundlerAuthorizationStatus(
+        address[] calldata bundlerAddresses,
+        bool[] calldata statuses
+    ) external onlyOwner {
+        require(
+            bundlerAddresses.length == statuses.length,
+            ERR_MISMATCHED_ARRAY_LENGTH
+        );
+        for (uint256 i = 0; i < bundlerAddresses.length; i++) {
+            authorizedBundlres[bundlerAddresses[i]] = statuses[i];
+        }
     }
 
     function updateDepositThreshold(
@@ -242,6 +258,8 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     ) external onlyOwner {
         require(_depositThreshold > 0, ERR_THRESHOLD_CANT_BE_ZERO);
         depositThreshold = _depositThreshold;
+
+        emit DepositThresholdUpdated(_depositThreshold);
     }
 
     /**
@@ -254,6 +272,8 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         uint256 requiredPreFund,
         BundlerConfig memory config
     ) internal view {
+        if (_isSimulation()) return;
+
         uint256 toleratedGasPrice = _addExtraPct(
             block.basefee,
             config.gasPriceMarkupPct
@@ -322,27 +342,26 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     }
 
     function _ensureEntryPointCall() internal view {
-        require(msg.sender == ENTRY_POINT, ERR_NOT_ALLOWED_CALL);
+        require(
+            msg.sender == ENTRY_POINT || _isSimulation(),
+            ERR_UNAUTHORIZED_ENTRYPOINT
+        );
     }
 
-    function _getCallingBundlerConfig()
-        internal
-        view
-        returns (BundlerConfig memory)
-    {
-        // solhint-disable-next-line avoid-tx-origin
-        return _getBundlerConfig(tx.origin);
-    }
-
-    function _getBundlerConfig(
-        address bundler
-    ) internal view returns (BundlerConfig memory) {
-        BundlerConfig memory config = bundlerConfigs[bundler];
-        require(config.isEnabled, ERR_BUNDLER_NOT_ENABLED);
-        return config;
+    function _ensureAuthorizedBundlerOrigin() internal view {
+        require(
+            authorizedBundlres[tx.origin] ||
+                _isSimulation() ||
+                tx.origin == address(0),
+            ERR_UNAUTHORIZED_BUNDLER
+        );
     }
 
     function _ensureNonZeroAddress(address _address) internal pure {
         require(_address != address(0), ERR_ZERO_ADDRESS);
+    }
+
+    function _isSimulation() internal view returns (bool) {
+        return block.basefee == 0;
     }
 }
