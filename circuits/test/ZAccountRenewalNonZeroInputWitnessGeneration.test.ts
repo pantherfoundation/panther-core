@@ -176,35 +176,24 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
     /* END ===== zAccountUtxoOutCommitment computation ===== */
 
     /* START ===== kycSignedMessageHashInternal calculation ===== */
-    const kycSignedMessagePackageType = BigInt(1);
-    const kycSignedMessageTimestamp = BigInt(1700040650n);
-
-    const kycSignedMessageSender =
-        BigInt(407487970930055136132864974074225519407787604125n);
-    const kycSignedMessageSigner =
-        BigInt(407487970930055136132864974074225519407787604125n);
-    const kycSignedMessageReceiver =
-        BigInt(0xfdfd920f2152565e9d7b589e4e9faee6699ad4bdn);
-    const kycSignedMessageSessionId = toBeHex(1_000_000);
-    const kycSignedMessageRuleId = BigInt(91);
-
-    const sessionId = uint8ArrayToBigInt(
-        bigIntToUint8Array(BigInt(kycSignedMessageSessionId), 32).slice(0, 31),
-    );
-    // console.log('sessionId=>', sessionId); //3906n
-
-    // 6034194261754299281155503217674551331783912633604032814568402206279157838412n
-    const kycSignedMessageHashInternal = poseidon([
-        kycSignedMessagePackageType,
-        kycSignedMessageTimestamp,
-        kycSignedMessageSender,
-        kycSignedMessageReceiver,
-        sessionId,
-        kycSignedMessageRuleId,
-        kycSignedMessageSigner,
+    const kycInternalHash = poseidon([
+        407487970930055136132864974074225519407787604125n, // kycSignedMessageSigner
+        0, // kycSignedMessageChargedAmountZkp
+        7686429681932554954007871512358605507940456302471152854331556707893096677155n, // kycRandom.out
+        3906, // kycSignedMessageSessionId
+        91, // kycSignedMessageRuleId
     ]);
 
+    const kycSignedMessageHashInternal = poseidon([
+        1, // kycSignedMessagePackageType
+        1700040650, // kycSignedMessageTimestamp
+        407487970930055136132864974074225519407787604125n, // kycSignedMessageSender
+        1450029477095933232082594829807950192184596812989n, // kycSignedMessageReceiver
+        5100078306009080923529159435762651516474284868126105542847067445480752488909n, // kycInternalHash.out
+    ]);
+    //18535562494299536781448984561031364239619510106978690377772228421523490353994
     // console.log('kycSignedMessageHashInternal=>', kycSignedMessageHashInternal);
+
     // private key - purefi
     const prvKey = Buffer.from(
         '0001020304050607080900010203040506070809000102030405060708090001',
@@ -222,10 +211,10 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
 
     // signature=> {
     //     R8: [
-    //       16590765397609422238632074689051779736628424960204330294991066431201090184646n,
-    //       21829746206346616319794155734503799899797944312552920032658662509096035110715n
+    //       16334499872280079201573474058390719355785518509807366331261704014816124359771n,
+    //       5064801994934989502249947265208525310608209143825475239738452043069483448116n
     //     ],
-    //     S: 2425607054711425321292767094874913634676093732638786371864372002385481755950n
+    //     S: 2338005884576391832899921850202151515839759988146487096728596770812160413223n
     //   }
     // console.log('signature=>', signature);
     /* END ===== kycSignedMessageHashInternal calculator ===== */
@@ -390,12 +379,12 @@ describe('ZAccount Renewal - Non Zero Input - Witness computation', async functi
             13622229784656158136036771217484571176836296686641868549125388198837476602820n,
         ],
         kycSignature: [
-            2315328367732811383010309322323617755388298800945548130516828730549550832783n,
-            11854775008406359680763374010886877924854398424641515439363493375213470459374n,
-            875384155739781110074479927530533891237863238147939556855424038852224286302n,
+            2338005884576391832899921850202151515839759988146487096728596770812160413223n,
+            16334499872280079201573474058390719355785518509807366331261704014816124359771n,
+            5064801994934989502249947265208525310608209143825475239738452043069483448116n,
         ],
         kycSignedMessageHash:
-            6034194261754299281155503217674551331783912633604032814568402206279157838412n,
+            18535562494299536781448984561031364239619510106978690377772228421523490353994n,
         kycEdDsaPubKeyExpiryTime: 1735689600,
 
         kycPathElements: [
