@@ -13,7 +13,7 @@ import {UserOperationStruct} from '../../types/contracts/Account';
 
 const ERR_SMALL_PAYMASTER_COMPENSATION = 'PM:E3';
 const ERR_USER_OP_REVERTED = 'PM:E4';
-const ERR_NOT_ALLOWED_CALL = 'PM:E9';
+const ERR_UNAUTHORIZED_BUNDLER = 'PM:E10';
 
 const oneToken = ethers.constants.WeiPerEther;
 const testCallGasCost = 1000000n;
@@ -50,14 +50,10 @@ describe('Paymaster contract', function () {
             prpVoucherGrantor.address,
         );
 
-        await paymaster.updateBundlerConfig(
-            bundlerWallet.address,
-            bundlerConfig,
-        );
-
-        await paymaster.updateBundlerConfig(
-            entryPointSender.address,
-            bundlerConfig,
+        await paymaster.updateBundlerConfig(bundlerConfig);
+        await paymaster.updateBundlerAuthorizationStatus(
+            [bundlerWallet.address, entryPointSender.address],
+            [true, true],
         );
 
         feeMaster['payOff(address)'].returns(ethers.constants.WeiPerEther);
@@ -147,7 +143,7 @@ describe('Paymaster contract', function () {
                         ethers.utils.hexZeroPad(ethers.utils.hexlify(0), 32),
                         requiredPrefund,
                     ),
-            ).to.be.revertedWith(ERR_NOT_ALLOWED_CALL);
+            ).to.be.revertedWith(ERR_UNAUTHORIZED_BUNDLER);
         });
 
         it.skip('should fail when paymasterCompensation is zero', async () => {
