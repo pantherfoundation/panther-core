@@ -343,7 +343,6 @@ function getNamedAccounts() {
             localhost: 0,
             hardhat: 0,
             amoy: '0xdD556a7f6a88d2dA7d5C7d4c16337C62B34B2dCb',
-            polygon: '0x97957C4C96E8A2DB27BF4F1DE565FF6B7096E028',
         },
 
         link_native_uniswapV3Pool: {
@@ -353,8 +352,8 @@ function getNamedAccounts() {
             polygon: '0x0A28C2F5E0E8463E047C203F00F649812AE67E4F',
         },
         entryPoint: {
-            polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
             amoy: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+            polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
         },
 
         uniswapV3NonfungiblePositionManager: {
