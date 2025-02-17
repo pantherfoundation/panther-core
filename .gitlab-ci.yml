@@ -97,3 +97,29 @@ build-cache:
   allow_failure:
     exit_codes: 10
   timeout: 30m
+
+circom-test:
+  image: node:18-bullseye
+  stage: test
+  rules:
+    - if: $CI_COMMIT_TITLE !~ /^Merge branch/ && $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - circuits/**/*
+  before_script:
+    - apt-get update && apt-get install -y curl git build-essential
+    - npm install -g typescript
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - source ~/.profile
+    - cargo --version
+    - git clone --branch v2.1.9 https://github.com/iden3/circom.git
+    - cd circom && cargo build --release
+    - cargo install --path circom
+    - circom --version
+
+  script:
+    - cd .. && cd crypto/ && yarn && yarn build
+    - cd ../circuits/test
+    - rm -rf lib/*
+    - yarn && yarn install
+    - yarn test
+  timeout: 30m
