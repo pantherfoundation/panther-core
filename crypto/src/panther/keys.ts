@@ -75,8 +75,8 @@ export function derivePrivKeyFromSignature(signature: string): bigint {
 export const KEY_INDEX_MAP = {
     ROOT_SPENDING: 1,
     ROOT_READING: 2,
-    STORAGE_ENCRYPTION: 3,
-    NULLIFIER_ROOT: 4,
+    ROOT_NULLIFIER: 3,
+    STORAGE_ENCRYPTION: 4,
 } as const;
 
 export type KeyIndex = (typeof KEY_INDEX_MAP)[keyof typeof KEY_INDEX_MAP];
@@ -108,10 +108,10 @@ Keypair version: 1`;
     const derive = (index: number) => deriveKeypair(hashedSignature, index);
 
     return {
-        rootSpendingKeypair: derive(1),
-        rootReadingKeypair: derive(2),
-        storageEncryptionKeypair: derive(3),
-        nullifierRootKeypair: derive(4),
+        rootSpendingKeypair: derive(KEY_INDEX_MAP.ROOT_SPENDING),
+        rootReadingKeypair: derive(KEY_INDEX_MAP.ROOT_READING),
+        rootNullifierKeypair: derive(KEY_INDEX_MAP.ROOT_NULLIFIER),
+        storageEncryptionKeypair: derive(KEY_INDEX_MAP.STORAGE_ENCRYPTION),
     };
 }
 
