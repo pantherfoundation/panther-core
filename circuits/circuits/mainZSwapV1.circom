@@ -50,4 +50,4 @@ component main {
                      16,    // ZZoneMerkleTreeDepth - depends on zoneID size
                      16,    // TrustProvidersMerkleTreeDepth
                      1,     // is zSwap { 0,1 }
-                     1 );   // IsTestNet - for production should be `1`
+                     0 );   // IsTestNet - for production should be `1`

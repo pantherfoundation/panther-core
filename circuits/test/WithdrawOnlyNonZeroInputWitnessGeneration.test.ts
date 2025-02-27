@@ -118,23 +118,27 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
     // console.log('zAccountUtxoOutCommitment=>', zAccountUtxoOutCommitment);
 
     // kytWithdrawSignedMessageHashInternal computation
-    const kytWithdrawSignedMessageHashInternal = poseidon([
-        2, // kytDepositSignedMessagePackageType
-        1700040650, // GMT: Wednesday, 15 November 2023 09:30:50 // kytDepositSignedMessageTimestamp,
-        407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSender,
-        0xfdfd920f2152565e9d7b589e4e9faee6699ad4bdn, // kytDepositSignedMessageReceiver,
-        365481738974395054943628650313028055219811856521n, // kytDepositSignedMessageToken,
-        3906, // kytDepositSignedMessageSessionId
-        94, // kytDepositSignedMessageRuleId,
-        10 ** 13, // kytDepositSignedMessageAmount,
-        407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSigner,
+    const kytInternalHash = poseidon([
+        407487970930055136132864974074225519407787604125n, //kytSignedMessageSigner
+        0, // kytSignedMessageChargedAmountZkp
+        12128823829173701788001909641509651255938470268911483357449094841840648166805n, //kytRandom
+        3906, // kytSignedMessageSessionId
+        94, // kytSignedMessageRuleId
     ]);
+    // 21517393508298632987465105067221304097454022922689391716223207710054445559156n
+    // console.log('kytInternalHash=>', kytInternalHash);
 
-    // 11414055436252469190302359091033835024927400459109861183593842730825233492110n
-    // console.log(
-    //     'kytWithdrawSignedMessageHashInternal=>',
-    //     kytWithdrawSignedMessageHashInternal,
-    // );
+    const kytSignedMessageHashInternal = poseidon([
+        2, // kytSignedMessagePackageType
+        1700040650, // kytSignedMessageTimestamp
+        407487970930055136132864974074225519407787604125n, //kytSignedMessageSender
+        1450029477095933232082594829807950192184596812989n, //kytSignedMessageReceiver
+        365481738974395054943628650313028055219811856521n, //kytSignedMessageToken
+        10000000000000, // kytSignedMessageAmount
+        21517393508298632987465105067221304097454022922689391716223207710054445559156n, // kytInternalHash
+    ]);
+    // 21540057369321434352591187935244495420192369850497338219405584088894986826953n
+    // console.log('kytSignedMessageHashInternal=>', kytSignedMessageHashInternal);
 
     // private key - purefi
     const prvKey = Buffer.from(
@@ -156,11 +160,7 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
     //     ],
     //     S: 228519168819850535888269245438180975823377305571674917848861106312767793014n
     //   }
-    // const signature = eddsa.signPoseidon(
-    //     prvKey,
-    //     kytWithdrawSignedMessageHashInternal,
-    // );
-
+    const signature = eddsa.signPoseidon(prvKey, kytSignedMessageHashInternal);
     // console.log('signature=>', signature);
 
     const nonZeroInput = {
@@ -531,7 +531,8 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
         kytDepositSignedMessageAmount: 0,
         kytDepositSignedMessageSigner: 0,
         kytDepositSignedMessageChargedAmountZkp: 0,
-        kytDepositSignedMessageHash: 0,
+        kytDepositSignedMessageHash:
+            21540057369321434352591187935244495420192369850497338219405584088894986826953n,
         kytDepositSignature: [0, 0, 0],
 
         kytWithdrawSignedMessagePackageType: 2,
@@ -549,12 +550,12 @@ describe('Withdraw z-transaction - Non Zero Input - Witness computation', async 
         kytWithdrawSignedMessageSigner:
             407487970930055136132864974074225519407787604125n,
         kytWithdrawSignedMessageHash:
-            11414055436252469190302359091033835024927400459109861183593842730825233492110n,
+            21540057369321434352591187935244495420192369850497338219405584088894986826953n,
 
         kytWithdrawSignature: [
-            228519168819850535888269245438180975823377305571674917848861106312767793014n,
-            4353440918973062733960013422674371466955029547032484043442674801197101759743n,
-            16857710248851335426527318000586828936537419385345595521592380210664119712140n,
+            2479432935070963826687685642649683056605195613879162969770582531965235065085n,
+            2713646752230385474083947918836379748536552226321688471277348010648437244134n,
+            17117834020132832891473662406241442914051359749317369316936650868036362327832n,
         ],
 
         kytSignedMessagePackageType: 253,

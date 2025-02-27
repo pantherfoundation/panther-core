@@ -280,17 +280,22 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         );
         // console.log('sessionId=>', sessionId); 3906n
 
-        const kycSignedMessageHashInternal = poseidon([
-            kycSignedMessagePackageType,
-            kycSignedMessageTimestamp,
-            kycSignedMessageSender,
-            kycSignedMessageReceiver,
-            sessionId,
-            kycSignedMessageRuleId,
-            kycSignedMessageSigner,
+        const kycInternalHash = poseidon([
+            407487970930055136132864974074225519407787604125n, // kycSignedMessageSigner
+            0, // kycSignedMessageChargedAmountZkp
+            3921603612932224306595949725127137695974712460839654848258529095410281311710n, // kycRandom.out
+            3906, // kycSignedMessageSessionId
+            91, // kycSignedMessageRuleId
         ]);
 
-        // 5661532785846654761449575403229102333505550309557882408602178839516031482757n
+        const kycSignedMessageHashInternal = poseidon([
+            1, // kycSignedMessagePackageType
+            1687489200, // kycSignedMessageTimestamp
+            407487970930055136132864974074225519407787604125n, // kycSignedMessageSender
+            0, // kycSignedMessageReceiver
+            kycInternalHash, // kycInternalHash.out
+        ]);
+        // 11353517910100684237562258118810380115702305237521660987456739857956558634843
         // console.log(
         //     'kycSignedMessageHashInternal=>',
         //     kycSignedMessageHashInternal,
@@ -303,10 +308,10 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
 
         // signature=> {
         //     R8: [
-        //       11019469704926125664550728735213125647501490479460797831114453229899757579689n,
-        //       13854963995377807573540546718176146863402996159127153864764353046667588731001n
+        //       18623664753584306059223363790617512845950744770430784598808548057101166065133n,
+        //       9546500408344544710732313666644222702707421748957802176300626558191754605310n
         //     ],
-        //     S: 2121005999002044499564841405347448402555587723184039422438334688521918381259n
+        //     S: 1510576581260116189472741111329078633885564720866504617126254506579227308110n
         //   }
         // console.log('signature=>', signature);
         /* END ========== kycSignedMessageHashInternal calculator ========== */
@@ -522,14 +527,12 @@ describe('ZAccount Registration - Non-Zero Input - Witness computation', async f
         kycSignedMessageSessionId: 3906,
         kycSignedMessageRuleId: 91,
         kycSignedMessageHash:
-            5661532785846654761449575403229102333505550309557882408602178839516031482757n,
+            11353517910100684237562258118810380115702305237521660987456739857956558634843n,
 
         kycSignature: [
-            1812000999324420728259700135438660838005897705501062460679287721161731979555n,
-
-            4559107604430004632244280095156850697909372641433125571245690397503888093500n,
-
-            6334572607518453922269802055781522287805808959894493783287394842907733005571n,
+            1510576581260116189472741111329078633885564720866504617126254506579227308110n,
+            18623664753584306059223363790617512845950744770430784598808548057101166065133n,
+            9546500408344544710732313666644222702707421748957802176300626558191754605310n,
         ],
 
         // KYCEdDSA public key membership verification
