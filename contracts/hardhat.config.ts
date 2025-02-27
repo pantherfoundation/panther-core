@@ -252,7 +252,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
             sepolia: 0,
 
-            polygon: '0xB846A8098552013393f1E3db18e4cEc6856411ea',
+            polygon: '0x512af2A515f6670bfE08F305Dd18E58b47bE64F2',
             amoy: 0,
         },
 
@@ -262,7 +262,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
             sepolia: 0,
 
-            polygon: '0xB846A8098552013393f1E3db18e4cEc6856411ea', // TODO: replace
+            polygon: '0x781E4F7f41779d8b8bED1bA0b32D4BBB87d8194D', //* Purify
             amoy: 0,
         },
 
@@ -272,7 +272,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
             sepolia: 0,
 
-            polygon: '0xB846A8098552013393f1E3db18e4cEc6856411ea', // TODO: replace
+            polygon: '0x512af2A515f6670bfE08F305Dd18E58b47bE64F2', // TODO: replace
             amoy: 0,
         },
 
