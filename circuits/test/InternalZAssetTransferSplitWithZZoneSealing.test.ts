@@ -257,22 +257,22 @@ const zAccountUtxoOutCommitment = poseidon([
 /* 6. END ===== zAccountUtxoOutCommitment computation  ===== */
 
 /* 7. START ===== kytSignedMessageHashInternal Computation  ===== */
-// const kytSignedMessageSessionId = toBeHex(1_000_000);
-// const sessionId = uint8ArrayToBigInt(
-//     bigIntToUint8Array(BigInt(kytSignedMessageSessionId), 32).slice(0, 31),
-// );
-// console.log("sessionId=>",sessionId); - 3906
+const kytInternalHash = poseidon([
+    407487970930055136132864974074225519407787604125n, //kytSignedMessageSigner
+    0, // kytSignedMessageChargedAmountZkp
+    12128823829173701788001909641509651255938470268911483357449094841840648166805n, // kytRandom
+    3906, // kytSignedMessageSessionId
+]);
+// console.log('kytInternalHash=>', kytInternalHash);
 
 const kytSignedMessageHashInternal = poseidon([
     253, // kytSignedMessagePackageType
-    1700909000, // kytSignedMessageTimestamp, Sat Nov 25 2023 10:43:20 GMT+0000
-    3906, // kytSignedMessageSessionId
-    407487970930055136132864974074225519407787604125n, // kytSignedMessageSigner,
+    1700909000, // kytSignedMessageTimestamp
+    14918308012303488442645506905955594492423851038927621292518815452571456998663n, // kytInternalHash
     0, // kytSignedDepositSignedMessageHash
     0, // kytSignedWithdrawSignedMessageHash
     7900408686472851955277170838819221703960891303279062551834214967963834802174n, // kytSignedMessageDataEscrowHash
 ]);
-// 135403012218054341454426232827529412794287407448635472981845339781580338048n
 // console.log('kytSignedMessageHashInternal=>', kytSignedMessageHashInternal);
 
 // assumed private key - purefi
@@ -695,11 +695,11 @@ describe('Internal ZAsset transfer - Non ZeroInput - With ZZoneSealing - Witness
         kytSignedMessageDataEscrowHash:
             7900408686472851955277170838819221703960891303279062551834214967963834802174n,
         kytSignedMessageHash:
-            135403012218054341454426232827529412794287407448635472981845339781580338048n,
+            4004657598032282143834418437479595415746227272547552527245410199430494214564n,
         kytSignature: [
-            1587085189054350608534305794573138689277645790394536516001141585334777554478n,
-            5279987493866351992477369197335746574214535803846106570729518801480508369151n,
-            15272738314568442823335117419766722135706954373100102466325325358773049340989n,
+            1984868205393726099378041888290946193610641586194221626571191108939079515472n,
+            16670902368943863170502287393626193345733052184595164838214342418814217634734n,
+            7952839273946562681167289493706941470490320497984031023071688157413764651188n,
         ],
 
         dataEscrowPubKey: [

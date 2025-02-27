@@ -202,57 +202,6 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
     // console.log(busMerkleTree.createProof(2));
     /* 5. END ===== State of UTXO tree ===== */
 
-    /* 6. START ===== kytDepositSignedMessageHashInternal Computation  ===== */
-    const kytSignedMessageSessionId = toBeHex(1_000_000);
-    const sessionId = uint8ArrayToBigInt(
-        bigIntToUint8Array(BigInt(kytSignedMessageSessionId), 32).slice(0, 31),
-    );
-    // console.log("sessionId=>",sessionId); - 3906
-
-    const kytDepositSignedMessageHashInternal = poseidon([
-        2, // kytDepositSignedMessagePackageType
-        1700040650, // GMT: Wednesday, 15 November 2023 09:30:50 // kytDepositSignedMessageTimestamp,
-        407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSender,
-        0xfdfd920f2152565e9d7b589e4e9faee6699ad4bdn, // kytDepositSignedMessageReceiver,
-        365481738974395054943628650313028055219811856521n, // kytDepositSignedMessageToken,
-        3906, // kytDepositSignedMessageSessionId
-        94, // kytDepositSignedMessageRuleId,
-        10 ** 13, // kytDepositSignedMessageAmount,
-        407487970930055136132864974074225519407787604125n, // kytDepositSignedMessageSigner,
-    ]);
-    // 11414055436252469190302359091033835024927400459109861183593842730825233492110n
-    // console.log(
-    //     'kytDepositSignedMessageHashInternal=>',
-    //     kytDepositSignedMessageHashInternal,
-    // );
-
-    // assumed private key - purefi
-    const prvKey = Buffer.from(
-        '0001020304050607080900010203040506070809000102030405060708090001',
-        'hex',
-    );
-
-    const pubKey = eddsa.prv2pub(prvKey);
-    // 13277427435165878497778222415993513565335242147425444199013288855685581939618n
-    const kycEdDsaPubKey0 = pubKey[0];
-
-    // 13622229784656158136036771217484571176836296686641868549125388198837476602820n
-    const kycEdDsaPubKey1 = pubKey[1];
-
-    const signature = eddsa.signPoseidon(
-        prvKey,
-        kytDepositSignedMessageHashInternal,
-    );
-    // signature=> {
-    //     R8: [
-    //       4353440918973062733960013422674371466955029547032484043442674801197101759743n,
-    //       16857710248851335426527318000586828936537419385345595521592380210664119712140n
-    //     ],
-    //     S: 228519168819850535888269245438180975823377305571674917848861106312767793014n
-    //   }
-    // console.log('signature=>', signature);
-    /* 6. END ===== kytDepositSignedMessageHashInternal Computation ===== */
-
     /* 7. START ===== dataEscrowEphimeralRandom + dataEscrowEphemeralPubKeyAx + dataEscrowEphemeralPubKeyAy  ===== */
     const dataEscrowEphimeralRandom =
         2508770261742365048726528579942226801565607871885423400214068953869627805520n;
@@ -280,32 +229,53 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
     /* 8. END ===== daoDataEscrowEphimeralRandom + daoDataEscrowEphemeralPubKeyAx + daoDataEscrowEphemeralPubKeyAy ===== */
 
     /* 9. START ===== kytSignature computation ===== */
-    // kytSealing is on - so we need to compute kytSignature
+    const kytInternalHash = poseidon([
+        407487970930055136132864974074225519407787604125n, // kytSignedMessageSigner
+        0n, // kytSignedMessageChargedAmountZkp
+        poseidon([
+            1215795509656177802870041674430711702496004716229829094660171184836034819583n, // zAccountUtxoOutSpendKeyRandom
+        ]),
+        0, // kytSignedMessageSession
+    ]);
+    // 7971180363495038711635172034442113396859363503742890497288334338069717985253
+    // console.log('kytInternalHash=>', kytInternalHash);
+
     const kytSignedMessageHashInternal = poseidon([
         253, // kytSignedMessagePackageType
-        1735689600, // GMT: Wednesday, 15 November 2023 09:30:50 // kytSignedMessageTimestamp,
-        0, // kytSignedMessageSessionId
-        407487970930055136132864974074225519407787604125n, // kytSignedMessageSigner,
-        11414055436252469190302359091033835024927400459109861183593842730825233492110n, // kytSignedDepositSignedMessageHash
+        1735689600, // kytSignedMessageTimestamp
+        7971180363495038711635172034442113396859363503742890497288334338069717985253n, // kytInternalHash
+        10423494343006799813370996707236493762718882344186851738760354027050895770547n, // kytDepositSignedMessageReceiver
         0, // kytSignedWithdrawSignedMessageHash
-        0,
+        0, // kytSignedMessageDataEscrowHash
     ]);
-    // 10871340331885256431278624916326348800305970927288404928803426704104907714755n
+    // 6099429931396121996657066805913447529635090159324513955306339471985599147963n
     // console.log('kytSignedMessageHashInternal=>', kytSignedMessageHashInternal);
 
-    const signatureForKyt = eddsa.signPoseidon(
-        prvKey,
-        kytSignedMessageHashInternal,
+    // assumed private key - purefi
+    const prvKey = Buffer.from(
+        '0001020304050607080900010203040506070809000102030405060708090001',
+        'hex',
     );
-    // signatureForKyt=> {
+
+    const pubKey = eddsa.prv2pub(prvKey);
+    // 13277427435165878497778222415993513565335242147425444199013288855685581939618n
+    const kycEdDsaPubKey0 = pubKey[0];
+
+    // 13622229784656158136036771217484571176836296686641868549125388198837476602820n
+    const kycEdDsaPubKey1 = pubKey[1];
+
+    const signature = eddsa.signPoseidon(prvKey, kytSignedMessageHashInternal);
+    // signature=> {
     //     R8: [
-    //       10219847358695369492004840544367110689728432669905401780948462529998244872573n,
-    //       21585094286463689967810469791845641244760397366353081365159817802986532154396n
+    //       7248046211883189204026564017222357952032425034486643207391252095407290468285n,
+    //       8732982225844251514845234508320910044066797888045792804410516501305721796165n
     //     ],
-    //     S: 1274394554768015659590584811063143506078334279263666516573503060655548176515n
+    //     S: 2305533273584353825739435722420744759947022991637956155259409042540895942602n
     //   }
-    // console.log('signatureForKyt=>', signatureForKyt);
+    // console.log('signature=>', signature);
+
     /* 9. END ===== kytSignature computation ===== ===== */
+
     const nonZeroInput = {
         extraInputsHash: 0,
 
@@ -634,12 +604,12 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
         kytDepositSignedMessageSigner:
             407487970930055136132864974074225519407787604125n,
         kytDepositSignedMessageHash:
-            11414055436252469190302359091033835024927400459109861183593842730825233492110n,
+            10423494343006799813370996707236493762718882344186851738760354027050895770547n,
 
         kytDepositSignature: [
-            228519168819850535888269245438180975823377305571674917848861106312767793014n,
-            4353440918973062733960013422674371466955029547032484043442674801197101759743n,
-            16857710248851335426527318000586828936537419385345595521592380210664119712140n,
+            289458614423130873546006790728948359058809006695210921445230119397470500492n,
+            143164985595862467910878192043505987425723304380527310972509234107092651167n,
+            20845142422496963901478555469221071616674097321612537654153624746373740325087n,
         ],
 
         kytWithdrawSignedMessagePackageType: 2,
@@ -663,11 +633,11 @@ describe('Main z-transaction - Non ZeroInput - With ZZoneSealing - Witness compu
             407487970930055136132864974074225519407787604125n,
         kytSignedMessageDataEscrowHash: 0,
         kytSignedMessageHash:
-            10871340331885256431278624916326348800305970927288404928803426704104907714755n,
+            6099429931396121996657066805913447529635090159324513955306339471985599147963n,
         kytSignature: [
-            2163996551500115987162659470431303811822255881696998782254730354781965720291n,
-            4008870922861756284322138966299502689772832661081100151154866467584529767215n,
-            5887921670378127600380008956170858108390418789054788743586829354217032338977n,
+            2305533273584353825739435722420744759947022991637956155259409042540895942602n,
+            7248046211883189204026564017222357952032425034486643207391252095407290468285n,
+            8732982225844251514845234508320910044066797888045792804410516501305721796165n,
         ],
 
         dataEscrowPubKey: [
