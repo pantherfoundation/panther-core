@@ -52,5 +52,5 @@ export async function cutDiamond(
 
     return await diamond
         .connect(signer)
-        .diamondCut(cuts, initAddress, initData, {gasPrice: 30000000000});
+        .diamondCut(cuts, initAddress, initData, {gasPrice: 300e9});
 }

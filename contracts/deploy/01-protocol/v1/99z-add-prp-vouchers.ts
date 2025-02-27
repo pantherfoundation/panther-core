@@ -26,31 +26,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             name: 'Onboarding',
             type: '0x93b212ae',
             allowedContract: pantherPoolV1.address,
-            amount: ethers.BigNumber.from(5000),
+            amount: ethers.BigNumber.from(50),
         },
         {
             name: 'ZkpRelease',
             type: '0x53a1eb85',
             allowedContract: zkpReserveController,
-            amount: ethers.BigNumber.from(3000),
+            amount: ethers.BigNumber.from(20),
         },
         {
             name: 'ZkpDistribute',
             type: '0xd48cb9c0',
             allowedContract: feeMaster,
-            amount: ethers.BigNumber.from(3000),
+            amount: ethers.BigNumber.from(10),
         },
         {
             name: 'FeeExchange',
             type: '0x1d91a712',
             allowedContract: feeMaster,
-            amount: ethers.BigNumber.from(4000),
+            amount: ethers.BigNumber.from(10),
         },
         {
             name: 'PaymasterRefund',
             type: '0x3002a002',
             allowedContract: paymaster,
-            amount: ethers.BigNumber.from(1000),
+            amount: ethers.BigNumber.from(10),
         },
     ];
 
@@ -60,7 +60,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         allowedContract: string,
         amount: BigNumber,
     ) => {
-        const limit = amount.mul(10000000);
+        const limit = amount.mul(100);
         const enabled = true;
 
         console.log(`Updating ${name} voucher terms`);
