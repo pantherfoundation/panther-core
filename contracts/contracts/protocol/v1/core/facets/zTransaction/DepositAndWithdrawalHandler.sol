@@ -80,6 +80,10 @@ abstract contract DepositAndWithdrawalHandler {
                 )
             );
         }
+
+        if (transactionType.isInternal()) {
+            _validateKytInternalSignedMessageHash(inputs);
+        }
     }
 
     function _processDeposit(
@@ -130,5 +134,21 @@ abstract contract DepositAndWithdrawalHandler {
         seenKytMessageHashes[kytWithdrawSignedMessageHash] = block.number;
         VAULT.unlockAsset(lockData);
         emit SeenKytMessageHash(kytWithdrawSignedMessageHash);
+    }
+
+    function _validateKytInternalSignedMessageHash(
+        uint256[] calldata inputs
+    ) private {
+        bytes32 kytInternalSignedMessageHash = bytes32(
+            inputs[MAIN_KYT_INTERNAL_SIGNED_MESSAGE_HASH_IND]
+        );
+        require(
+            seenKytMessageHashes[kytInternalSignedMessageHash] == 0,
+            ERR_DUPLICATED_KYT_MESSAGE_HASH
+        );
+
+        seenKytMessageHashes[kytInternalSignedMessageHash] = block.number;
+
+        emit SeenKytMessageHash(kytInternalSignedMessageHash);
     }
 }

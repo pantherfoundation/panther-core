@@ -203,6 +203,10 @@ contract ZSwap is
 
         inputs[ZSWAP_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC_IND]
             .validateNonZero(ERR_ZERO_DAO_DATA_ESCROW_ENCRYPTED_MESSAGE_HMAC);
+
+        inputs[ZSWAP_KYT_INTERNAL_SIGNED_MESSAGE_HASH_IND].validateNonZero(
+            ERR_ZERO_KYT_INTERNAL_SIGNED_MESSAGE_HASH
+        );
     }
 
     /**
