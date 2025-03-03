@@ -7,6 +7,7 @@ import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
 
+import {getPoseidonT4Contract} from '../../../lib/poseidonBuilder';
 import {
     MockZTransaction,
     VaultV1,
@@ -62,8 +63,18 @@ describe('ZTransactions', function () {
     beforeEach(async () => {
         snapshot = await takeSnapshot();
 
-        const ZTransaction =
-            await ethers.getContractFactory('MockZTransaction');
+        const PoseidonT4 = await getPoseidonT4Contract();
+        const poseidonT4 = await PoseidonT4.deploy();
+        await poseidonT4.deployed();
+
+        const ZTransaction = await ethers.getContractFactory(
+            'MockZTransaction',
+            {
+                libraries: {
+                    PoseidonT4: poseidonT4.address,
+                },
+            },
+        );
 
         zTransaction = (await ZTransaction.connect(owner).deploy(
             pantherTrees.address,
@@ -322,9 +333,6 @@ describe('ZTransactions', function () {
                 tokenType: 0,
                 withdrawPrpAmount: BigNumber.from('100'),
                 kytWithdrawSignedMessageSender: vault.address,
-                kytWithdrawSignedMessageHash: ethers.utils.id(
-                    'kytWithdrawSignedMessageHash',
-                ),
             });
 
             await zTransaction.main(

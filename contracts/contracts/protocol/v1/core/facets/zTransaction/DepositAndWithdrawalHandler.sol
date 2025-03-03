@@ -28,6 +28,7 @@ abstract contract DepositAndWithdrawalHandler {
     mapping(bytes32 => uint256) public seenKytMessageHashes;
     // Events
     event SeenKytMessageHash(bytes32 indexed kytMessageHash);
+    event KytMessageHashes(bytes32[3] kytMessageHashes);
 
     constructor(address vault) {
         VAULT = vault;
@@ -84,6 +85,14 @@ abstract contract DepositAndWithdrawalHandler {
         if (transactionType.isInternal()) {
             _validateKytInternalSignedMessageHash(inputs);
         }
+
+        emit KytMessageHashes(
+            [
+                bytes32(inputs[MAIN_KYT_DEPOSIT_SIGNED_MESSAGE_HASH_IND]),
+                bytes32(inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]),
+                bytes32(inputs[MAIN_KYT_INTERNAL_SIGNED_MESSAGE_HASH_IND])
+            ]
+        );
     }
 
     function _processDeposit(
