@@ -91,37 +91,37 @@ describe('DAO Data Escrow ElGamalEncryption', function (this: any) {
     let ipad =
         97795359191332584535587663717355991292619291276890730051339681934624425391670n;
 
-    let ipadModular = ipad % SNARK_FIELD;
+    // let ipadModular = ipad % SNARK_FIELD;
 
-    function bigIntXOR(a: bigint, b: bigint) {
-        let abMul2 = (2n * a * b) % SNARK_FIELD;
-        let aplusb = a + b;
-        let aplusBMinusAbMul2 = aplusb - abMul2;
-        let resultOfXor =
-            ((aplusBMinusAbMul2 % SNARK_FIELD) + SNARK_FIELD) % SNARK_FIELD;
-        return resultOfXor;
-    }
+    // function bigIntXOR(a: bigint, b: bigint) {
+    //     let abMul2 = (2n * a * b) % SNARK_FIELD;
+    //     let aplusb = a + b;
+    //     let aplusBMinusAbMul2 = aplusb - abMul2;
+    //     let resultOfXor =
+    //         ((aplusBMinusAbMul2 % SNARK_FIELD) + SNARK_FIELD) % SNARK_FIELD;
+    //     return resultOfXor;
+    // }
 
-    const kMacInner = bigIntXOR(kMac, ipadModular);
+    // const kMacInner = bigIntXOR(kMac, ipadModular);
     // 6925611723450430582691980965493394553822066518673126279541304893051063232587n
     // console.log('kMacInner=>', kMacInner);
 
     const innerHMacSize = 2;
-    const innerHMacHash = poseidon([kMacInner, moduloEncryptedMessage]);
+    const innerHMacHash = poseidon([kMac, moduloEncryptedMessage]);
     // 18542453698443514108306900604965174804407245441875486693387851602742667558917n
     // console.log('innerHMacHash=>', innerHMacHash);
 
     // outerXor computation
     // 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
-    let opad =
-        12827947140996794198885805201942876066097557124722925231822261757739395734620n;
-    let opadModular = opad % SNARK_FIELD;
-    // console.log("opadModular=>",opadModular);
+    // let opad =
+    //     12827947140996794198885805201942876066097557124722925231822261757739395734620n;
+    // let opadModular = opad % SNARK_FIELD;
+    // // console.log("opadModular=>",opadModular);
 
-    const kMacOuter = bigIntXOR(kMac, opadModular);
+    // const kMacOuter = bigIntXOR(kMac, opadModular);
 
     const hmacSize = 2;
-    const hmacHash = poseidon([kMacOuter, innerHMacHash]);
+    const hmacHash = poseidon([kMac, innerHMacHash]);
     // 8440119056753462523052864914696055620425883804111543984578190069357722526741n
     // console.log('hmacHash=>', hmacHash);
 
@@ -135,7 +135,7 @@ describe('DAO Data Escrow ElGamalEncryption', function (this: any) {
         ephemeralPubKey: [ephemeralPubKey[0], ephemeralPubKey[1]], // 18172727478723733672122242648004425580927771110712257632781054272274332874233n, 18696859439217809465524370245449396885627295546811556940609392448191776076084n
         encryptedMessage: [moduloEncryptedMessage], // 3231509157406275324672292283075363620846365487114545308584982449118638448232n
         encryptedMessageHash: encryptedMessageHash, // 8548020980957111797668615943249179300643837380790248422888287045915233337316n
-        hmac: hmacHash, // 8440119056753462523052864914696055620425883804111543984578190069357722526741n
+        hmac: hmacHash, // 8081035620019166524915505925588464047085389491348593371364462372175687710253n
     };
 
     describe('Valid input signals', function () {
