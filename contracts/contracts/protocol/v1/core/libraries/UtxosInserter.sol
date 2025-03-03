@@ -382,21 +382,30 @@ library UtxosInserter {
             bytes32 kytWithdrawSignedMessageHash = bytes32(
                 inputs[MAIN_KYT_WITHDRAW_SIGNED_MESSAGE_HASH_IND]
             );
+            bytes32 kytInternalSignedMessageHash = bytes32(
+                inputs[MAIN_KYT_INTERNAL_SIGNED_MESSAGE_HASH_IND]
+            );
 
             require(
                 zAccountUtxoOutCommitment != 0 &&
                     zAssetUtxoOutCommitment1 != 0 &&
                     zAssetUtxoOutCommitment2 != 0 &&
                     kytDepositSignedMessageHash != 0 &&
-                    kytWithdrawSignedMessageHash != 0,
+                    kytWithdrawSignedMessageHash != 0 &&
+                    kytInternalSignedMessageHash != 0,
                 ERR_ZERO_COMITMENT
             );
 
             utxos[0] = zAccountUtxoOutCommitment;
             utxos[1] = zAssetUtxoOutCommitment1;
             utxos[2] = zAssetUtxoOutCommitment2;
-            utxos[3] = kytDepositSignedMessageHash;
-            utxos[4] = kytWithdrawSignedMessageHash;
+            utxos[3] = PoseidonHashers.poseidonT4(
+                [
+                    kytDepositSignedMessageHash,
+                    kytWithdrawSignedMessageHash,
+                    kytInternalSignedMessageHash
+                ]
+            );
         }
 
         bytes32 forestRoot = bytes32(inputs[MAIN_FOREST_MERKLE_ROOT_IND]);
