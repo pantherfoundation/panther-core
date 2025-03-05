@@ -48,8 +48,7 @@
     "prettier:check": "cd .. && yarn prettier --check circuits",
     "prettier:fix": "cd .. && yarn prettier --write circuits",
     "prettier:list-different": "cd .. && yarn prettier --list-different circuits",
-    "test": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 60000 && cd test && ./run-all-tests.sh",
-    "test:only-ts": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 60000 --exit",
+    "test": "yarn build && mocha 'lib/**/*.js' --max-old-space-size=4000 --timeout 60000 --exit",
     "test:long": "export RUN_LONG_TESTS=TRUE && cd test && ./run-all-tests.sh",
     "test:docker": "export CIRCOM_DOCKER=yes && mocha --timeout 15000"
   },
