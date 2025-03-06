@@ -19,10 +19,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treesDiamond = (await get('PantherTrees')).address;
     const vaultV1 = (await get('VaultV1')).address;
     const feeMaster = (await get('FeeMaster')).address;
+    const poseidonT4 = (await get('PoseidonT4')).address;
 
     await deploy('ZTransaction', {
         from: deployer,
         args: [treesDiamond, vaultV1, feeMaster, pzkp],
+        libraries: {PoseidonT4: poseidonT4},
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
