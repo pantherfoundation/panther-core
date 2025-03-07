@@ -13,7 +13,7 @@ import {
     ZoneEscrowData,
 } from '../types/escrow';
 import {Keypair, PublicKey} from '../types/keypair';
-import {OPAD_MODULAR, IPAD_MODULAR, SNARK_FIELD_SIZE} from '../utils/constants';
+import {SNARK_FIELD_SIZE} from '../utils/constants';
 
 // Constants for bit manipulation configurations
 const BIT_CONFIG = {
@@ -149,7 +149,7 @@ function encryptScalars(
 }
 
 /**
- * Computes HMAC-SHA256 equivalent using Poseidon hash
+ * Computes custom enveloped HMAC using Poseidon hash
  */
 function computeMessageDigests(
     messages: bigint[],
@@ -158,13 +158,11 @@ function computeMessageDigests(
     const encryptedMessageHash = poseidon(messages);
     const kMac = poseidon([keySeed, BigInt(messages.length)]);
 
-    const innerHash = poseidon([
-        snarkFieldXOR(kMac, IPAD_MODULAR),
-        ...messages,
-    ]);
+    const innerMacHash = poseidon([kMac, ...messages]);
+
     return {
         encryptedMessageHash,
-        hmac: poseidon([snarkFieldXOR(kMac, OPAD_MODULAR), innerHash]),
+        hmac: poseidon([kMac, innerMacHash]),
     };
 }
 
@@ -212,12 +210,4 @@ function toPaddedBinary(value: bigint, bits: number): string {
 
 function reverseString(str: string): string {
     return [...str].reverse().join('');
-}
-
-function snarkFieldXOR(a: bigint, b: bigint): bigint {
-    const product = (a * b) % SNARK_FIELD_SIZE;
-    return (
-        (((a + b - 2n * product) % SNARK_FIELD_SIZE) + SNARK_FIELD_SIZE) %
-        SNARK_FIELD_SIZE
-    );
 }
