@@ -80,40 +80,40 @@ describe('ZZone Data Escrow ElGamal Encryption', function (this: any) {
     const kMac = poseidon([kSeed, 1]);
 
     // 0xd836363636363636363636363636363636363636363636363636363636363636
-    let ipad =
-        97795359191332584535587663717355991292619291276890730051339681934624425391670n;
+    // let ipad =
+    //     97795359191332584535587663717355991292619291276890730051339681934624425391670n;
 
-    let ipadModular = ipad % SNARK_FIELD;
+    // let ipadModular = ipad % SNARK_FIELD;
 
-    function bigIntXOR(a: bigint, b: bigint) {
-        let abMul2 = (2n * a * b) % SNARK_FIELD;
-        let aplusb = a + b;
-        let aplusBMinusAbMul2 = aplusb - abMul2;
-        let resultOfXor =
-            ((aplusBMinusAbMul2 % SNARK_FIELD) + SNARK_FIELD) % SNARK_FIELD;
-        return resultOfXor;
-    }
+    // function bigIntXOR(a: bigint, b: bigint) {
+    //     let abMul2 = (2n * a * b) % SNARK_FIELD;
+    //     let aplusb = a + b;
+    //     let aplusBMinusAbMul2 = aplusb - abMul2;
+    //     let resultOfXor =
+    //         ((aplusBMinusAbMul2 % SNARK_FIELD) + SNARK_FIELD) % SNARK_FIELD;
+    //     return resultOfXor;
+    // }
 
-    const kMacInner = bigIntXOR(kMac, ipadModular);
-    // 21797284874701574539809215683527628528498093308347464104746414623680031777585n
-    // console.log('kMacInner=>', kMacInner);
+    // const kMacInner = bigIntXOR(kMac, ipadModular);
+    // // 21797284874701574539809215683527628528498093308347464104746414623680031777585n
+    // // console.log('kMacInner=>', kMacInner);
 
     let innerHMacSize = 2; // 1+1
-    const innerHMacHash = poseidon([kMacInner, moduloEncryptedMessage]);
+    const innerHMacHash = poseidon([kMac, moduloEncryptedMessage]);
     // 19457888664929498929543237240690469023928612450344569641056481447681365892438n
     // console.log('innerHMacHash=>', innerHMacHash);
 
-    // outerXor computation
-    // 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
-    let opad =
-        12827947140996794198885805201942876066097557124722925231822261757739395734620n;
-    let opadModular = opad % SNARK_FIELD;
-    // console.log("opadModular=>",opadModular);
+    // // outerXor computation
+    // // 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
+    // let opad =
+    //     12827947140996794198885805201942876066097557124722925231822261757739395734620n;
+    // let opadModular = opad % SNARK_FIELD;
+    // // console.log("opadModular=>",opadModular);
 
-    const kMacOuter = bigIntXOR(kMac, opadModular);
+    // const kMacOuter = bigIntXOR(kMac, opadModular);
 
-    const hmacHash = poseidon([kMacOuter, innerHMacHash]); // hmacSize = 2
-    // 11881728848936312288293767908225444888306857512351728722791695602487731265197n
+    const hmacHash = poseidon([kMac, innerHMacHash]); // hmacSize = 2
+    // 14496019412495389807807919111786846616937183677820347136868875172131919005507
     // console.log('hmacHash=>', hmacHash);
 
     const input = {
@@ -126,7 +126,7 @@ describe('ZZone Data Escrow ElGamal Encryption', function (this: any) {
         ephemeralPubKey: [ephemeralPubKey[0], ephemeralPubKey[1]], // 8203289148254703516772267706874329469330087297928457772489392227653451244213n, 19998992060707539017877331634603765261877243592349009808298088607668947098216n
         encryptedMessage: [encryptedMessage], // 21022076763366182175477357918933442131485472229146225036655452082762082124322n
         encryptedMessageHash: encryptedMessageHash, // 12444185887568679379186315345524877022401565154030591259044587421593238202125n
-        hmac: hmacHash, // 11881728848936312288293767908225444888306857512351728722791695602487731265197n
+        hmac: hmacHash, // 14496019412495389807807919111786846616937183677820347136868875172131919005507
     };
 
     describe('Valid input signals', function () {

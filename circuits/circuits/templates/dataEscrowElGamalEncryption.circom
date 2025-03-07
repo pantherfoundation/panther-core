@@ -103,13 +103,9 @@ include "../../node_modules/circomlib/circuits/gates.circom";
 //    The ciphertext C consists of the blocks c0, …,cs.
 //    ** Step 4 **
 //    For some fixed t>s, let K-MAC=H(K-seed, t).
-//    Compute HMAC = Hash ( K-MAC-Outer, Hash( K-MAC-Inner, C ) )
-//    Where:
-//    1) K-MAC-Outer = K-MAC XOR Outer-Pad
-//       Outer-Pad = 0x5C (repeated up-to 254 bits) - b`01011100
-//    2) K-MAC-Inner = K-MAC XOR Inner-Pad
-//       Inner-Pad = 0x36 (repeated up-to 254 bits) - b`00110110
-//    HMAC is included as a public parameter in the proof.
+//    Compute envelop MAC = Hash ( K-MAC, Hash( K-MAC, C ) )
+//    MAC is included as a public parameter in the proof.
+//    Note: MAC is called `hmac` in the code but this is only the naming issue that maybe corrected in the future.
 //    ** Verification **
 //    It is necessary that the HMAC value is verified before attempting decryption.
 
@@ -167,42 +163,24 @@ template DataEscrowElGamalEncryption(ScalarsSize, PointsSize) {
     cipherMessageHash.inputs <== encryptedMessage;
     encryptedMessageHash <== cipherMessageHash.out;
 
-    // [4] - hmac
+    // [4] - hmac (envelop mac)
     // k-mac = Hash ( k-seed, CipherMessageSize )
     // HMAC = Hash ( k-mac, Hash ( k-mac, CipherMessage ) )
     component kMac = Poseidon(2);
     kMac.inputs[0] <== kSeed.out;
     kMac.inputs[1] <== EncryptedDataSize;
 
-    // 0x36 repeated till 248 bits and MSB 6 bits are 0xd8 ( 6 LSBs of 0x36, 0xD8 = 110110, 0x36 = 00110110 )
-    var ipad = 0xd836363636363636363636363636363636363636363636363636363636363636;
-
-    component innerXor = XOR();
-    innerXor.a <== kMac.out;
-    innerXor.b <== ipad;
-
-    signal kMacInner <== innerXor.out;
-
     var innerHMacSize = 1 + EncryptedDataSize;
     assert(innerHMacSize < 15);
     component innerHMacHash = Poseidon(innerHMacSize);
-    innerHMacHash.inputs[0] <== kMacInner;
+    innerHMacHash.inputs[0] <== kMac.out;
     for(var i = 0; i < EncryptedDataSize; i++) {
         innerHMacHash.inputs[1+i] <== encryptedMessage[i];
     }
 
-    // 0x5c repeated till 248 bits and MSB 6 bits are 0x1c ( 6 LSBs of 0x5c, 0x1c = 011100, 0x5c = 01011100 )
-    var opad = 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
-
-    component outerXor = XOR();
-    outerXor.a <== kMac.out;
-    outerXor.b <== opad;
-
-    signal kMacOuter <== outerXor.out;
-
     var hmacSize = 1 + 1;
     component hmacHash = Poseidon(hmacSize);
-    hmacHash.inputs[0] <== kMacOuter;
+    hmacHash.inputs[0] <== kMac.out;
     hmacHash.inputs[1] <== innerHMacHash.out;
 
     hmac <== hmacHash.out;
@@ -442,6 +420,8 @@ template DataEscrowElGamalEncryptionPoint(PointsSize) {
         helperHash[i].inputs[0] <== kSeed.out;
         helperHash[i].inputs[1] <== i;
 
+        // Only the X-coordinate of pointMessage (utxoOutRootSpendPubKey) is used during encryption. 
+        // This is intentional by design, as the Y-coordinate can be derived from the elliptic curve equation and is therefore omitted.
         encryptedMessage[i] <== pointMessage[i][0] + helperHash[i].out;
     }
     // [3] - cipher message hash
@@ -450,42 +430,24 @@ template DataEscrowElGamalEncryptionPoint(PointsSize) {
     cipherMessageHash.inputs <== encryptedMessage;
     encryptedMessageHash <== cipherMessageHash.out;
 
-    // [4] - hmac
+    // [4] - hmac ( envelop mac )
     // k-mac = Hash ( k-seed, CipherMessageSize )
     // HMAC = Hash ( k-mac, Hash ( k-mac, CipherMessage ) )
     component kMac = Poseidon(2);
     kMac.inputs[0] <== kSeed.out;
     kMac.inputs[1] <== EncryptedDataSize;
 
-    // 0x36 repeated till 248 bits and MSB 6 bits are 0xd8 ( 6 LSBs of 0x36, 0xD8 = 110110, 0x36 = 00110110 )
-    var ipad = 0xd836363636363636363636363636363636363636363636363636363636363636;
-
-    component innerXor = XOR();
-    innerXor.a <== kMac.out;
-    innerXor.b <== ipad;
-
-    signal kMacInner <== innerXor.out;
-
     var innerHMacSize = 1 + EncryptedDataSize;
     assert(innerHMacSize < 15);
     component innerHMacHash = Poseidon(innerHMacSize);
-    innerHMacHash.inputs[0] <== kMacInner;
+    innerHMacHash.inputs[0] <== kMac.out;
     for(var i = 0; i < EncryptedDataSize; i++) {
         innerHMacHash.inputs[1+i] <== encryptedMessage[i];
     }
 
-    // 0x5c repeated till 248 bits and MSB 6 bits are 0x1c ( 6 LSBs of 0x5c, 0x1c = 011100, 0x5c = 01011100 )
-    var opad = 0x1c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c;
-
-    component outerXor = XOR();
-    outerXor.a <== kMac.out;
-    outerXor.b <== opad;
-
-    signal kMacOuter <== outerXor.out;
-
     var hmacSize = 1 + 1;
     component hmacHash = Poseidon(hmacSize);
-    hmacHash.inputs[0] <== kMacOuter;
+    hmacHash.inputs[0] <== kMac.out;
     hmacHash.inputs[1] <== innerHMacHash.out;
 
     hmac <== hmacHash.out;
