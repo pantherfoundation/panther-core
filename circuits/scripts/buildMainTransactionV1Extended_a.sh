@@ -7,7 +7,7 @@ if [ "$1" ]; then
 fi
 
 if [ "$2" ]; then
-    SNARKJS=$1
+    SNARKJS=$2
 fi
 
 circom_compile_v1_extended_step0 () {
