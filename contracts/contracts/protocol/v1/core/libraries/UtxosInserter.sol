@@ -364,7 +364,7 @@ library UtxosInserter {
             uint256 zAccountUtxoBusQueuePos
         )
     {
-        bytes32[] memory utxos = new bytes32[](5);
+        bytes32[] memory utxos = new bytes32[](4);
 
         {
             bytes32 zAccountUtxoOutCommitment = bytes32(

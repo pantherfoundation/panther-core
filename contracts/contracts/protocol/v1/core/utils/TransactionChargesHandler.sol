@@ -76,7 +76,7 @@ abstract contract TransactionChargesHandler {
             .safe40();
 
         if (txType.isMain()) {
-            numOutputUtxos = 5;
+            numOutputUtxos = 4;
 
             scAddedZkpAmount = inputs[MAIN_ADDED_AMOUNT_ZKP_IND]
                 .scaleDownBy1e12()
