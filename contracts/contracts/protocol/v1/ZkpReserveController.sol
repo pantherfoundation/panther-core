@@ -90,7 +90,10 @@ contract ZkpReserveController is ImmutableOwnable, Claimable {
      * @return uint64 The amount of ZKP tokens that can currently be released.
      */
     function releasableAmount() external view returns (uint256) {
-        return _scReleasableAmount().scaleUpBy1e12();
+        uint256 contractBalance = ZKP_TOKEN.safeBalanceOf(address(this));
+        uint256 releasable = _scReleasableAmount().scaleUpBy1e12();
+
+        return releasable > contractBalance ? contractBalance : releasable;
     }
 
     /**
