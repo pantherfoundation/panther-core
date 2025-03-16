@@ -19,6 +19,7 @@ import './tasks/get-deployment-addresses.ts';
 import './tasks/protocol/grant-issue';
 import './tasks/protocol/pool-time-update.ts';
 import './tasks/protocol/pubkey-register';
+import './tasks/protocol/uniswap-router-plugin-swap.ts';
 import './tasks/protocol/zAsset-add';
 import './tasks/staking/commitments-list';
 import './tasks/staking/matic-reward-pool-init';
@@ -308,7 +309,7 @@ function getNamedAccounts() {
             localhost: 0,
             hardhat: 0,
             amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
-            polygon: '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45',
+            polygon: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
         },
 
         uniswapQuoterV2: {

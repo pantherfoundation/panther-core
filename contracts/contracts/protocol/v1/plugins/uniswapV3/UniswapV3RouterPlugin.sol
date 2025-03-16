@@ -108,15 +108,19 @@ contract UniswapV3RouterPlugin {
             amountIn
         );
 
-        (uint24 feeForTokenInNativePool, ) = _findOptimalSwapParameters(
-            tokenInToNativeQuotes
-        );
+        uint24 feeForTokenInNativePool;
+        uint256 intermediateAmount;
 
-        //
+        (
+            feeForTokenInNativePool,
+            intermediateAmount
+        ) = _findOptimalSwapParameters(tokenInToNativeQuotes);
+
+        // Use the intermediate amount (WETH) for the second quote
         Quote[4] memory nativeToTokenOutQuotes = quoteExactInputSingle(
             WETH,
             tokenOut,
-            amountIn
+            intermediateAmount
         );
 
         uint24 feeForTokenOutNativePool;
