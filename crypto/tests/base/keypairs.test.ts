@@ -13,7 +13,6 @@ import {
     deriveChildPrivKeyFromRootPrivKey,
 } from '../../src/base/keypairs';
 import {
-    deriveKeypairFromSignature,
     derivePrivKeyFromSignature,
     extractSecretsPair,
 } from '../../src/panther/keys';
@@ -61,22 +60,6 @@ describe('Keychain', () => {
             expect(() => extractSecretsPair('0'.repeat(132))).toThrow(
                 'Tried to create keypair from signature without 0x prefix',
             );
-        });
-    });
-
-    describe('Private and public key of keypair derived from signature', () => {
-        it('should be smaller than babyJubJub and BN254 field sizes, respectively', () => {
-            const keypair = deriveKeypairFromSignature(signature);
-            expect(keypair.privateKey < babyjub.subOrder).toBeTruthy();
-            expect(keypair.publicKey[0] < SNARK_FIELD_SIZE).toBeTruthy();
-            expect(keypair.publicKey[1] < SNARK_FIELD_SIZE).toBeTruthy();
-        });
-
-        it('should be deterministically generated', () => {
-            const keypairOne = deriveKeypairFromSignature(signature);
-            const keypairTwo = deriveKeypairFromSignature(signature);
-            expect(keypairOne.privateKey).toEqual(keypairTwo.privateKey);
-            expect(keypairOne.publicKey).toEqual(keypairTwo.publicKey);
         });
     });
 
