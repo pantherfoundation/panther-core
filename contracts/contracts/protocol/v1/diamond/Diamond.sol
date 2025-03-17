@@ -30,6 +30,12 @@ contract Diamond {
         LibDiamond.diamondCut(cut, address(0), "");
     }
 
+    // Transfer ownership of the diamond proxy
+    function transferOwnership(address newOwner) external {
+        LibDiamond.enforceOwner();
+        LibDiamond.setContractOwner(newOwner);
+    }
+
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable {

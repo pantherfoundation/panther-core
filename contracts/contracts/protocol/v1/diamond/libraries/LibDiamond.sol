@@ -85,9 +85,6 @@ library LibDiamond {
     event OwnershipUpdated(address owner);
 
     function setContractOwner(address _owner) internal {
-        address previousOwner = owner();
-        require(previousOwner == address(0), "Owner is immutable");
-
         assembly {
             sstore(OWNER_POSITION, _owner)
         }
