@@ -11,4 +11,5 @@ compiled/*
 !compiled/zSwap
 !compiled/treeBatchUpdaterAndRootChecker
 !compiled/generate_witness.js
+!compiled/initial
 *.ptau
