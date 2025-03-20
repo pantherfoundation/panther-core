@@ -11,14 +11,17 @@ This subgraph indexes Panther Protocol smart contract events for different envir
 ## Setup
 
 1. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 2. Authenticate with Graph CLI:
+
 ```bash
 yarn auth
 ```
+
 When prompted, enter your Graph CLI authentication token.
 
 ## Environment Generation
@@ -26,6 +29,7 @@ When prompted, enter your Graph CLI authentication token.
 Generate subgraph configuration for different environments:
 
 ### Staging Environment
+
 - Internal testnet:
   ```bash
   yarn generate:staging:internal
@@ -36,9 +40,16 @@ Generate subgraph configuration for different environments:
   ```
 
 ### Canary Environment
+
 - Internal network:
+
   ```bash
   yarn generate:canary:internal
+  ```
+
+- Public network:
+  ```bash
+  yarn generate:canary:public
   ```
 
 ## Building
@@ -54,6 +65,7 @@ yarn build
 Deploy to different environments using the following commands:
 
 ### Staging Environment
+
 - Internal testnet:
   ```bash
   yarn deploy:staging:internal
@@ -64,14 +76,22 @@ Deploy to different environments using the following commands:
   ```
 
 ### Canary Environment
+
 - Internal network:
+
   ```bash
   yarn deploy:canary:internal
+  ```
+
+- Public network:
+  ```bash
+  yarn deploy:canary:public
   ```
 
 ## Utilities
 
 Count distinct protocol users via the subgraph:
+
 ```bash
 yarn stats:count:users
 ```
@@ -79,6 +99,7 @@ yarn stats:count:users
 ## Environment Files
 
 Make sure to create the following environment files with appropriate values:
+
 - `.env.staging.internal`
 - `.env.staging.public`
 - `.env.canary.internal`
