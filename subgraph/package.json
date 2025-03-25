@@ -9,7 +9,9 @@
     "deploy:staging:internal": "graph deploy --studio amoy-internal-testnet",
     "deploy:staging:public": "graph deploy --studio amoy-public-testnet",
     "deploy:canary:internal": "graph deploy --studio panther-canary-internal",
+    "deploy:canary:public": "graph deploy --studio panther-canary-public",
     "generate:canary:internal": "ts-node setupSubgraph.ts --env=.env.canary.internal",
+    "generate:canary:public": "ts-node setupSubgraph.ts --env=.env.canary.public",
     "generate:staging:internal": "ts-node setupSubgraph.ts --env=.env.staging.internal",
     "generate:staging:public": "ts-node setupSubgraph.ts --env=.env.staging.public",
     "stats:count:users": "sh scripts/countUsers.sh"
