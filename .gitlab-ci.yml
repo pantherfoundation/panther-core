@@ -29,9 +29,9 @@ default:
   - time yarn run build:dapp:staging:internal
   - time yarn deploy:dapp:ci:ipfs
 
-.build_then_deploy_canary_internal: &build_then_deploy_canary_internal
-  - cp dapp/.env.canary.internal dapp/.env
-  - time yarn run build:dapp:canary:internal
+.build_then_deploy_canary_public: &build_then_deploy_canary_public
+  - cp dapp/.env.canary.public dapp/.env
+  - time yarn run build:dapp:canary:public
   - time yarn deploy:dapp:ci:ipfs --canary
 
 .combined_job_template:
@@ -53,7 +53,7 @@ job-on-MR:
   script:
     - *base_scripts
     - *build_then_deploy_staging_internal
-    - *build_then_deploy_canary_internal
+    - *build_then_deploy_canary_public
   artifacts:
     when: always
     reports:
