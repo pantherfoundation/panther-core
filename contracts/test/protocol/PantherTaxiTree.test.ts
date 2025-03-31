@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar"
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation"
 
 import {MerkleTree} from '@zk-kit/merkle-tree';
 import {expect} from 'chai';

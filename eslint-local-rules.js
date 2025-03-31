@@ -2,7 +2,7 @@
 
 function validateFirstLine(firstLine, context, node) {
     const isValidFirstLine = [
-        '// SPDX-License-Identifier: BUSL-1.1',
+        '// SPDX-License-Identifier: GPL-3.0-only',
         '// SPDX-License-Identifier: MIT',
     ].some(header => firstLine.includes(header));
 
@@ -10,10 +10,11 @@ function validateFirstLine(firstLine, context, node) {
         context.report({
             node,
             message:
-                'The first line should be "// SPDX-License-Identifier: BUSL-1.1" or "// SPDX-License-Identifier: MIT"',
+                'The first line should be "// SPDX-License-Identifier: GPL-3.0-only" or "// SPDX-License-Identifier: MIT"',
             loc: {line: 1, column: 0},
             fix(fixer) {
-                const correctFirstLine = '// SPDX-License-Identifier: BUSL-1.1';
+                const correctFirstLine =
+                    '// SPDX-License-Identifier: GPL-3.0-only';
                 if (firstLine.startsWith('// SPDX')) {
                     return fixer.replaceTextRange(
                         [0, firstLine.length],
@@ -31,14 +32,14 @@ function validateFirstLine(firstLine, context, node) {
 }
 
 const fileCopyRightTextRegExp = new RegExp(
-    /SPDX-FileCopyrightText: Copyright 2021-\d+ Panther Ventures Limited Gibraltar/,
+    /SPDX-FileCopyrightText: Copyright 2021-\d+ Panther Protocol Foundation/,
 );
 
 function validateSecondLine(secondLine, context, node) {
     const isValidSecondLine = fileCopyRightTextRegExp.test(secondLine);
 
     const year = new Date().getFullYear() - 2000;
-    const correctSecondLine = `// SPDX-FileCopyrightText: Copyright 2021-${year} Panther Ventures Limited Gibraltar`;
+    const correctSecondLine = `// SPDX-FileCopyrightText: Copyright 2021-${year} Panther Protocol Foundation`;
 
     if (!isValidSecondLine) {
         context.report({
