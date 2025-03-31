@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 // Implementer name - yondonfu
 // Link to the implementation - https://github.com/yondonfu/sol-baby-jubjub/blob/master/contracts/CurveBabyJubJub.sol
 pragma solidity ^0.8.16;
