@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 // solhint-disable max-line-length
 pragma solidity ^0.8.19;

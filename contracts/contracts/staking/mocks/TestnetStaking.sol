@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-3.0-only
 // slither-disable-next-line solc-version
 pragma solidity ^0.8.4;
 
