@@ -4,8 +4,9 @@ pragma solidity ^0.8.19;
 
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
 import "../interfaces/IVaultV1.sol";
+import "../interfaces/IEthEscrow.sol";
 
-contract FakeVault is IVaultV1 {
+contract FakeVault is IVaultV1, IEthEscrow {
     event DebugData(bytes32 data);
     event DebugData(LockData data);
     event DebugSaltedData(SaltedLockData data);
@@ -16,7 +17,7 @@ contract FakeVault is IVaultV1 {
         emit DebugSaltedData(data);
     }
 
-    function lockAsset(LockData calldata data) external override {
+    function lockAsset(LockData calldata data) external payable override {
         emit DebugData(data);
     }
 

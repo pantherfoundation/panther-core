@@ -20,6 +20,7 @@ circuits/.gitattributes
 contracts/artifacts/
 contracts/cache/
 contracts/contracts/common/proxy/
+contracts/contracts/protocol/v1/erc4337/contracts/
 contracts/coverage.json
 contracts/coverage/
 contracts/deployments/
@@ -28,6 +29,7 @@ contracts/staging/
 contracts/scripts/slither.patch
 contracts/tenderly.yaml
 contracts/test/advanced-staking/assets/*.ods
+contracts/test/protocol/data/circuits
 contracts/test/protocol/data/wasm
 contracts/test/protocol/data/verificationKeys
 contracts/test/protocol/data/provingKeys
@@ -37,7 +39,8 @@ contracts/typechain/
 contracts/types/
 contracts/typing/
 contracts/LICENSE*
-
+contracts/.solhintignore
+contracts/slither.Dockerfile
 
 crypto/coverage/
 crypto/lib/

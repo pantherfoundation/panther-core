@@ -21,6 +21,23 @@ type ZNetwork = {
     daoDataEscrowPubKeyX: BigNumberish;
     daoDataEscrowPubKeyY: BigNumberish;
 };
+export const polygonLeaf: {[key: string]: ZNetwork} = {
+    polygon: {
+        active: 1n,
+        chainId: 137,
+        networkId: 1n,
+        // (network with ID 0 is enabled)
+        networkIDsBitMap: '0b10',
+        forTxReward: 10n,
+        forUtxoReward: 33235n,
+        forDepositReward: 1048110459n,
+        daoDataEscrowPubKeyX:
+            6744227429794550577826885407270460271570870592820358232166093139017217680114n,
+        daoDataEscrowPubKeyY:
+            12531080428555376703723008094946927789381711849570844145043392510154357220479n,
+    },
+};
+
 export const localLeafs: {[key: string]: ZNetwork} = {
     localhost: {
         active: 1n,
@@ -39,29 +56,29 @@ export const localLeafs: {[key: string]: ZNetwork} = {
 };
 
 export const testnetLeafs: {[key: string]: ZNetwork} = {
-    reserved: {
+    sepoila: {
         active: 1n,
-        chainId: 1n,
+        chainId: 11155111n,
         networkId: 1n,
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
-        forUtxoReward: 1828n,
-        forDepositReward: 57646075n,
+        forUtxoReward: 36559n,
+        forDepositReward: 1152921505n,
         daoDataEscrowPubKeyX:
             6744227429794550577826885407270460271570870592820358232166093139017217680114n,
         daoDataEscrowPubKeyY:
             12531080428555376703723008094946927789381711849570844145043392510154357220479n,
     },
-    sepoila: {
+    reserved: {
         active: 1n,
-        chainId: 11155111n,
+        chainId: 80002n,
         networkId: 2n,
         // (networks with IDs 1 and 2 are enabled)
         networkIDsBitMap: 6n,
         forTxReward: 10n,
-        forUtxoReward: 1828n,
-        forDepositReward: 57646075n,
+        forUtxoReward: 36559n,
+        forDepositReward: 1152921505n,
         daoDataEscrowPubKeyX:
             6744227429794550577826885407270460271570870592820358232166093139017217680114n,
         daoDataEscrowPubKeyY:

@@ -45,9 +45,9 @@ library TransferHelper {
     function safeBalanceOf(
         address token,
         address account
-    ) internal returns (uint256 balance) {
+    ) internal view returns (uint256 balance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('balanceOf(address)')));
             abi.encodeWithSelector(0x70a08231, account)
         );
@@ -64,9 +64,9 @@ library TransferHelper {
     function safe721OwnerOf(
         address token,
         uint256 tokenId
-    ) internal returns (address owner) {
+    ) internal view returns (address owner) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('ownerOf(uint256)')));
             abi.encodeWithSelector(0x6352211e, tokenId)
         );
@@ -83,9 +83,9 @@ library TransferHelper {
         address token,
         address account,
         uint256 tokenId
-    ) internal returns (uint256 balance) {
+    ) internal view returns (uint256 balance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256(bytes('balanceOf(address,uint256)')));
             abi.encodeWithSelector(0x00fdd58e, account, tokenId)
         );
@@ -102,9 +102,9 @@ library TransferHelper {
         address token,
         address owner,
         address spender
-    ) internal onlyDeployedToken(token) returns (uint256 allowance) {
+    ) internal view onlyDeployedToken(token) returns (uint256 allowance) {
         // slither-disable-next-line low-level-calls
-        (bool success, bytes memory data) = token.call(
+        (bool success, bytes memory data) = token.staticcall(
             // bytes4(keccak256("allowance(address,address)"));
             abi.encodeWithSelector(0xdd62ed3e, owner, spender)
         );
@@ -204,6 +204,17 @@ library TransferHelper {
             abi.encodeWithSelector(0xf242432a, from, to, tokenId, amount, _data)
         );
         _requireSuccess(success, data);
+    }
+
+    /// @dev Get the Native balance of `_contract`
+    function safeContractBalance(
+        address _contract
+    ) internal view returns (uint256) {
+        require(
+            isDeployedContract(_contract),
+            "TransferHelper: Only contract address"
+        );
+        return _contract.balance;
     }
 
     /// @dev Transfer `value` Ether from caller to `to`.

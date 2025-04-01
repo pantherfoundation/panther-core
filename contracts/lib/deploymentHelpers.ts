@@ -8,6 +8,8 @@ import {Contract, ethers} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import inq from 'inquirer';
 
+import {cutDiamond, getSelectors} from './diamond';
+
 function logInfo(message: string) {
     console.log('\x1b[32m', message, '\x1b[0m');
 }
@@ -509,6 +511,143 @@ function getDefaultSalt() {
     return ethers.utils.id('pantherprotocol');
 }
 
+export async function attemptVerify(
+    hre: HardhatRuntimeEnvironment,
+    artifactName: string,
+    address: string,
+): Promise<void> {
+    const {args} = await hre.deployments.get(artifactName);
+
+    try {
+        await hre.run('verify:verify', {
+            address: address,
+            constructorArguments: args,
+        });
+    } catch (error) {
+        console.error('Error during run verification:', error);
+    }
+}
+
+export async function isFacetAlreadyAdded(
+    hre: HardhatRuntimeEnvironment,
+    diamondAddress: string,
+    facetAddress: string,
+) {
+    const diamond = await hre.ethers.getContractAt(
+        'DiamondLoupeFacet',
+        diamondAddress,
+    );
+
+    const facetAddresses = await diamond.facetAddresses();
+    console.log({facetAddresses});
+
+    return facetAddresses.includes(facetAddress);
+}
+
+export async function safeAddFacetToDiamond(
+    hre: HardhatRuntimeEnvironment,
+    diamondAddress: string,
+    facetName: string,
+) {
+    const [signer] = await hre.ethers.getSigners();
+    const action = 0;
+
+    const facetDeployment = await hre.deployments.get(facetName);
+    const facet = await hre.ethers.getContractAt(
+        facetDeployment.abi,
+        facetDeployment.address,
+    );
+
+    if (await isFacetAlreadyAdded(hre, diamondAddress, facet.address)) {
+        console.log(`${facetName} was already added`);
+        return;
+    }
+
+    console.log(`Adding ${facetName} facet`);
+
+    const facetCut = {
+        facetAddress: facet.address,
+        action,
+        functionSelectors: getSelectors(facet),
+    };
+
+    const tx = await cutDiamond(signer, diamondAddress, facetCut);
+    const res = await tx.wait();
+    console.log('Transaction confirmed', res.transactionHash);
+}
+
+export async function addFacetToDiamond(
+    hre: HardhatRuntimeEnvironment,
+    diamondAddress: string,
+    facetName: string,
+) {
+    const [signer] = await hre.ethers.getSigners();
+    const action = 0;
+
+    const facetDeployment = await hre.deployments.get(facetName);
+    const facet = await hre.ethers.getContractAt(
+        facetDeployment.abi,
+        facetDeployment.address,
+    );
+
+    const facetCut = {
+        facetAddress: facet.address,
+        action,
+        functionSelectors: getSelectors(facet),
+    };
+
+    const tx = await cutDiamond(signer, diamondAddress, facetCut);
+    return tx.wait();
+}
+
+export async function replaceFacetInDiamond(
+    hre: HardhatRuntimeEnvironment,
+    diamondAddress: string,
+    facetName: string,
+) {
+    const [signer] = await hre.ethers.getSigners();
+    const action = 1;
+
+    const facetDeployment = await hre.deployments.get(facetName);
+    const facet = await hre.ethers.getContractAt(
+        facetDeployment.abi,
+        facetDeployment.address,
+    );
+
+    const facetCut = {
+        facetAddress: facet.address,
+        action,
+        functionSelectors: getSelectors(facet),
+    };
+
+    const tx = await cutDiamond(signer, diamondAddress, facetCut);
+    return tx.wait();
+}
+
+export async function removeFacetFromDiamond(
+    hre: HardhatRuntimeEnvironment,
+    diamondAddress: string,
+    facetName: string,
+) {
+    const [signer] = await hre.ethers.getSigners();
+    const action = 2;
+
+    const facetDeployment = await hre.deployments.get(facetName);
+    const facet = await hre.ethers.getContractAt(
+        facetDeployment.abi,
+        facetDeployment.address,
+    );
+
+    const facetCut = {
+        facetAddress: ethers.constants.AddressZero,
+        action,
+        functionSelectors: getSelectors(facet),
+    };
+
+    const tx = await cutDiamond(signer, diamondAddress, facetCut);
+    return tx.wait();
+}
+
 export {
     reuseEnvAddress,
     logInfo,
@@ -527,4 +666,5 @@ export {
     setDeterministicDeploymentProxy,
     deployBytecodeDeterministically,
     deployContentDeterministically,
+    getDeterministicDeploymentProxyAddressAndCode,
 };

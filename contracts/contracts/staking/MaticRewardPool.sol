@@ -3,8 +3,8 @@
 // slither-disable-next-line solc-version
 pragma solidity 0.8.4;
 
-import "./interfaces/IErc20Min.sol";
 import "./interfaces/IRewardPool.sol";
+import "../common/interfaces/IErc20Min.sol";
 import "../common/Claimable.sol";
 import "../common/ImmutableOwnable.sol";
 import "../common/Utils.sol";

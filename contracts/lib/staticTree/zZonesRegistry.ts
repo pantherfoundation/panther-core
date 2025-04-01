@@ -8,6 +8,8 @@ import {BigNumber} from 'ethers';
 
 import {pantherCoreZeroLeaf} from '../utilities';
 
+const sealing = 0n;
+
 type ZZone = {
     // ID of the zone currently active
     zoneId: BigNumberish;
@@ -45,6 +47,23 @@ type ZZone = {
     zZoneTimePeriodPerMaximumAmount: BigNumberish;
 };
 
+type TrustProviderTreeLeaf = {
+    publicKeyX: BigNumberish;
+    publicKeyY: BigNumberish;
+    expiryTime: BigNumberish;
+};
+
+const providerleafs: TrustProviderTreeLeaf[] = [
+    //PrimeSafeOperator
+    {
+        publicKeyX:
+            6461944716578528228684977568060282675957977975225218900939908264185798821478n,
+        publicKeyY:
+            6315516704806822012759516718356378665240592543978605015143731597167737293922n,
+        expiryTime: 1735689600n,
+    },
+];
+
 export const leafs: ZZone[] = [
     {
         zoneId: 1n,
@@ -58,7 +77,7 @@ export const leafs: ZZone[] = [
         // - bit #0 - undefined (reserved)
         // - bit #1 - mainnet (zNetworkId = 1) enabled
         // - bit #2 - sepolia (zNetworkId = 2) enabled
-        zZoneNetworkIDsBitMap: 6n,
+        zZoneNetworkIDsBitMap: '0b10',
         // 2 elements defined:
         // - 1st element, in LS bits 0-23:
         //   - KYC rule ID, 91 ('0b01011011'), in 8 LS bits,
@@ -73,11 +92,11 @@ export const leafs: ZZone[] = [
         // 24 hours
         zZoneKytExpiryTime: 86400n,
         // expressed in the "weighted units"
-        zZoneDepositMaxAmount: BigInt(1e12),
+        zZoneDepositMaxAmount: BigInt(3e10),
         // expressed in the "weighted units"
-        zZoneWithrawMaxAmount: BigInt(1e12),
+        zZoneWithrawMaxAmount: BigInt(3e10),
         // expressed in the "weighted units"
-        zZoneInternalMaxAmount: BigInt(1e12),
+        zZoneInternalMaxAmount: BigInt(3e10),
         // "no zAccounts are blacklisted")
         // The value is  240 bits set to 1:
         zZoneZAccountIDsBlackList:
@@ -111,8 +130,14 @@ export class ZZonesRegistry {
 
     computeCommitments(): ZZonesRegistry {
         this.commitments = this.leafs.map(leaf =>
-            poseidon(Object.values(leaf)),
+            poseidon([
+                providerleafs[0].publicKeyX,
+                providerleafs[0].publicKeyY,
+                sealing,
+                poseidon(Object.values(leaf)),
+            ]),
         );
+
         return this;
     }
 

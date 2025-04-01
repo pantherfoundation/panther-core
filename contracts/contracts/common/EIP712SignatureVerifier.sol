@@ -2,14 +2,18 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
+import "./ECDSA.sol";
+
 abstract contract EIP712SignatureVerifier {
+    using ECDSA for bytes32;
+
     bytes private constant EIP191_VERSION = "\x19\x01";
 
-    string public constant EIP712_NAME = "Panther Protocol";
-    string public constant EIP712_VERSION = "1";
+    string internal constant EIP712_NAME = "Panther Protocol";
+    string internal constant EIP712_VERSION = "1";
 
     // keccak256(bytes("PANTHER_EIP712_DOMAIN_SALT"));
-    bytes32 public constant EIP712_SALT =
+    bytes32 internal constant EIP712_SALT =
         0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b;
 
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
@@ -19,7 +23,7 @@ abstract contract EIP712SignatureVerifier {
             )
         );
 
-    function getDomainSeperator() public view returns (bytes32) {
+    function getDomainSeperator() internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
@@ -39,8 +43,7 @@ abstract contract EIP712SignatureVerifier {
         bytes32 r,
         bytes32 s
     ) internal pure returns (address signer) {
-        signer = ecrecover(hash, v, r, s);
-        require(signer != address(0), "ECDSA invalid signature");
+        signer = hash.recover(v, r, s);
     }
 
     function toTypedDataHash(

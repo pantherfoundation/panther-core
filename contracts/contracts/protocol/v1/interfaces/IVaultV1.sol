@@ -3,9 +3,10 @@
 pragma solidity ^0.8.19;
 
 import { LockData, SaltedLockData } from "../../../common/Types.sol";
-import { IEthEscrow } from "./IEthEscrow.sol";
 
-interface IVaultV1 is IEthEscrow {
+// import { IEthEscrow } from "./IEthEscrow.sol";
+
+interface IVaultV1 {
     /***
       @notice Transfers token from account defined by `salt` to this contract.
       Only the owner may call.
@@ -23,12 +24,12 @@ interface IVaultV1 is IEthEscrow {
       May only be used if other means/contracts provide the adequate protection.
       @dev The comment above on the re-entrance is applicable for this function.
      */
-    function lockAsset(LockData calldata lData) external;
+    function lockAsset(LockData calldata lData) external payable;
 
     /***
       @notice Transfers token from this contract to the given account.
       Only the owner may call.
-      @dev The comment above on the re-entrance is applicable for this function.
+      @dev The comment above on the re-entrance is applicable for9 this function.
      */
     function unlockAsset(LockData calldata lData) external;
 

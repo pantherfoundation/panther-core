@@ -18,9 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const fxRoot = getContractEnvAddress(hre, 'FX_ROOT');
     const childChainManager = process.env.CHILD_CHAIN_MANAGER;
-    const zkp = '0x542c2c3e6BBfD5979E5FEC6708764B93Ba210c51';
-
-    console.log({fxRoot, childChainManager, zkp});
+    const zkp = '<ADDRESS>';
 
     await deploy('MockRootChainManager_Implementation', {
         contract: 'MockRootChainManager',

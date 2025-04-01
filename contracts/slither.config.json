@@ -1,0 +1,7 @@
+{
+  "exclude_informational": true,
+  "exclude_low": true,
+  "exclude_medium": true,
+  "filter_paths": "(DeFi|mocks|MultiDelegatecall|staking|Proxy|@openzeppelin)",
+  "compile_force_framework": "Hardhat"
+}

@@ -4,6 +4,11 @@
 pragma solidity ^0.8.16;
 
 library UtilsLib {
+    function safe8(uint256 n) internal pure returns (uint8) {
+        require(n < 2 ** 8, "UNSAFE24");
+        return uint8(n);
+    }
+
     function safe24(uint256 n) internal pure returns (uint24) {
         require(n < 2 ** 24, "UNSAFE24");
         return uint24(n);
@@ -39,6 +44,24 @@ library UtilsLib {
         return uint160(n);
     }
 
+    function safe168(uint256 n) internal pure returns (uint168) {
+        require(n < 2 ** 168, "UNSAFE168");
+        return uint168(n);
+    }
+
+    function safeScaleDownBy1e12(uint256 n) internal pure returns (uint256) {
+        require(n >= 1e12, "UNSAFE12");
+        return n / 1e12;
+    }
+
+    function scaleDownBy1e12(uint256 n) internal pure returns (uint256) {
+        return n / 1e12;
+    }
+
+    function scaleUpBy1e12(uint256 n) internal pure returns (uint256) {
+        return n * 1e12;
+    }
+
     function safe32TimeNow() internal view returns (uint32) {
         uint256 t = block.timestamp;
         require(t < 2 ** 32, "UNSAFE32TIME");
@@ -53,5 +76,9 @@ library UtilsLib {
 
     function revertZeroAddress(address account) internal pure {
         require(account != address(0), "UNEXPECTED_ZERO_ADDRESS");
+    }
+
+    function safeAddress(uint256 n) internal pure returns (address _address) {
+        _address = address(safe160(n));
     }
 }
