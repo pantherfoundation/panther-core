@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 // solhint-disable explicit-types
 pragma solidity ^0.8.19;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright 2021-23 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 
 import {PublicKey} from '@panther-core/crypto/lib/types/keypair';
 import {MerkleTree} from '@zk-kit/merkle-tree';
