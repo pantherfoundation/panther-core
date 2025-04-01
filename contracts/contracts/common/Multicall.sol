@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
 pragma solidity ^0.8.19;
