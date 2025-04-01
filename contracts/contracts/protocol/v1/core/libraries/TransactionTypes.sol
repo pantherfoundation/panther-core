@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
 import { MAIN_DEPOSIT_AMOUNT_IND, MAIN_WITHDRAW_AMOUNT_IND } from "../publicSignals/MainPublicSignals.sol";
