@@ -1,5 +1,6 @@
 test/protocol/data/busTreeScenario.js
 contracts/common/proxy/
+contracts/protocol/v1/erc4337/contracts/interfaces/
 artifacts/
 build/
 dist/

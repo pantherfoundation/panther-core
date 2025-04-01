@@ -15,9 +15,11 @@ import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
+import './tasks/get-deployment-addresses.ts';
 import './tasks/protocol/grant-issue';
 import './tasks/protocol/pool-time-update.ts';
 import './tasks/protocol/pubkey-register';
+import './tasks/protocol/uniswap-router-plugin-swap.ts';
 import './tasks/protocol/zAsset-add';
 import './tasks/staking/commitments-list';
 import './tasks/staking/matic-reward-pool-init';
@@ -81,6 +83,7 @@ const config: HardhatUserConfig = {
                 ? forkingConfig
                 : undefined,
             chainId: parseInt(process.env.HARDHAT_CHAIN_ID || '31337'),
+            allowUnlimitedContractSize: true,
         },
         pchain: {url: 'http://127.0.0.1:8545'},
 
@@ -250,19 +253,115 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
             sepolia: 0,
 
-            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0',
+            polygon: '0x512af2A515f6670bfE08F305Dd18E58b47bE64F2',
+            amoy: 0,
+        },
+
+        trustProvider: {
+            localhost: 0,
+            hardhat: 0,
+            mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
+            sepolia: 0,
+
+            polygon: '0x781E4F7f41779d8b8bED1bA0b32D4BBB87d8194D', //* Purify
+            amoy: 0,
+        },
+
+        pantherTreasury: {
+            localhost: 0,
+            hardhat: 0,
+            mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
+            sepolia: 0,
+
+            polygon: '0x512af2A515f6670bfE08F305Dd18E58b47bE64F2', // TODO: replace
             amoy: 0,
         },
 
         zkp: {
+            localhost: 0,
+            hardhat: 0,
             mainnet: '0x909E34d3f6124C324ac83DccA84b74398a6fa173',
         },
-        pzk: {
+
+        pzkp: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xCd85e3E918F1A36F939281d3ca707EE262a364c6',
             polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
         },
+
         weth9: {
+            localhost: 0,
+            hardhat: 0,
             sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
             amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
+            polygon: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+        },
+
+        link: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xA82B5942DD61949Fd8A2993dCb5Ae6736F8F9E60',
+            polygon: '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39',
+        },
+
+        uniswapRouter: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
+            polygon: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
+        },
+
+        uniswapQuoterV2: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
+            polygon: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e',
+        },
+
+        quickswapRouter02: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xf253c47dcD36Ab80BAB5731f548fd818551f1c16',
+            polygon: '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff',
+        },
+
+        quickswapFactory: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
+            polygon: '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32',
+        },
+
+        pZkp_native_uniswapV3Pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0x201124282bed388550c83BCF083e65dc49368EB8',
+            polygon: '0xED151A7637EC45375EB6E39FC596E53CE6ED51FE',
+        },
+
+        pZkp_link_uniswapV3Pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xdD556a7f6a88d2dA7d5C7d4c16337C62B34B2dCb',
+        },
+
+        link_native_uniswapV3Pool: {
+            localhost: 0,
+            hardhat: 0,
+            amoy: '0xd61679A9cD1152bdfA9Ce2ff78ebd8bE67314935',
+            polygon: '0x0A28C2F5E0E8463E047C203F00F649812AE67E4F',
+        },
+        entryPoint: {
+            amoy: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+            polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+        },
+
+        uniswapV3NonfungiblePositionManager: {
+            amoy: '',
+        },
+        uniswapV3Factory: {
+            amoy: '',
         },
     };
 
@@ -323,6 +422,7 @@ function getRpcUrl(network: NetworkName): string {
     if (network === 'bsctest')
         return 'https://data-seed-prebsc-1-s1.binance.org:8545';
     if (network === 'polygon') return 'https://polygon-rpc.com/';
+    if (network === 'amoy') return 'https://rpc-amoy.polygon.technology/';
     return 'undefined RPC provider URL';
 }
 

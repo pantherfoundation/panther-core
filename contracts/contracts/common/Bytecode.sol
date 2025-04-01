@@ -12,7 +12,7 @@ library Bytecode {
         uint256 offset
     ) internal view returns (bytes memory data) {
         uint256 size = pointer.code.length;
-        require(size >= offset, "OUT_OF_BOUNDS");
+        require(size > offset, "OUT_OF_BOUNDS");
 
         unchecked {
             size -= offset;

@@ -3,39 +3,28 @@
 // solhint-disable one-contract-per-file
 pragma solidity ^0.8.19;
 
-import "../interfaces/IVaultV1.sol";
-import "../../../common/ImmutableOwnable.sol";
-import { LockData } from "../../../common/Types.sol";
+contract MockPantherPoolV1 {
+    event LogGenerateRewards(
+        bytes32 _secretHash,
+        uint64 _amount,
+        bytes4 _voucherType
+    );
 
-interface IMockPantherPoolV1 {
-    function unlockAssetFromVault(LockData calldata data) external;
-}
+    constructor() {}
 
-// slither-disable shadowing-state
-// slither-disable unused-state
-contract MockPantherPoolV1 is IMockPantherPoolV1, ImmutableOwnable {
-    // slither-disable-next-line shadowing-state unused-state
-    uint256[500] private __gap;
+    function increaseZkpReserve() external {}
 
-    address public immutable VAULT;
-
-    mapping(address => bool) public vaultAssetUnlockers;
-
-    constructor(address vault, address _owner) ImmutableOwnable(_owner) {
-        require(vault != address(0), "init: zero address");
-        VAULT = vault;
+    function generateRewards(
+        bytes32 _secretHash,
+        uint64 _amount,
+        bytes4 _voucherType
+    ) external {
+        emit LogGenerateRewards(_secretHash, _amount, _voucherType);
     }
 
-    function updateVaultAssetUnlocker(
-        address _unlocker,
-        bool _status
-    ) external onlyOwner {
-        vaultAssetUnlockers[_unlocker] = _status;
-    }
-
-    function unlockAssetFromVault(LockData calldata data) external {
-        require(vaultAssetUnlockers[msg.sender], "mockPoolV1: unauthorized");
-
-        IVaultV1(VAULT).unlockAsset(data);
-    }
+    function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        address token,
+        int256 netAmount,
+        address extAccount
+    ) external payable {}
 }

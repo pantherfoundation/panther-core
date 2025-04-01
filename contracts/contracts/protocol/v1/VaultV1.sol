@@ -2,17 +2,18 @@
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma solidity ^0.8.19;
 
-import { ERC20_TOKEN_TYPE, ERC721_TOKEN_TYPE, ERC1155_TOKEN_TYPE, NATIVE_TOKEN_TYPE } from "../../common/Constants.sol";
+import "./interfaces/IVaultV1.sol";
+
 import { LockData, SaltedLockData } from "../../common/Types.sol";
 import "../../common/ImmutableOwnable.sol";
-import "../../common/TransferHelper.sol";
 import "../../common/PullWithSaltHelper.sol";
 import "../../common/UtilsLib.sol";
 import "../../common/OnERC1155Received.sol";
 import "../../common/OnERC721Received.sol";
+import "../../common/NonReentrant.sol";
 import "./errMsgs/VaultErrMsgs.sol";
-import "./interfaces/IVaultV1.sol";
 import "./vault/EthEscrow.sol";
+import "./vault/BalanceViewer.sol";
 
 /**
  * @title Vault
@@ -27,6 +28,8 @@ contract VaultV1 is
     OnERC721Received,
     OnERC1155Received,
     EthEscrow,
+    BalanceViewer,
+    NonReentrant,
     IVaultV1
 {
     using TransferHelper for address;
@@ -87,7 +90,9 @@ contract VaultV1 is
     }
 
     /// @inheritdoc IVaultV1
-    function lockAsset(LockData calldata lData) external override onlyOwner {
+    function lockAsset(
+        LockData calldata lData
+    ) external payable override onlyOwner {
         _checkLockData(lData);
 
         if (lData.tokenType == ERC20_TOKEN_TYPE) {
@@ -116,13 +121,18 @@ contract VaultV1 is
                 new bytes(0)
             );
         } else {
-            revert(ERR_INVALID_TOKEN_TYPE);
+            require(
+                lData.tokenType == NATIVE_TOKEN_TYPE,
+                ERR_INVALID_TOKEN_TYPE
+            );
         }
         emit Locked(lData);
     }
 
     /// @inheritdoc IVaultV1
-    function unlockAsset(LockData calldata lData) external override onlyOwner {
+    function unlockAsset(
+        LockData calldata lData
+    ) external override nonReentrant onlyOwner {
         _checkLockData(lData);
 
         if (lData.tokenType == NATIVE_TOKEN_TYPE) {
@@ -194,5 +204,15 @@ contract VaultV1 is
             saltedData.extAccount,
             UtilsLib.safe96(saltedData.extAmount)
         );
+    }
+
+    /**
+     * @dev Reverts any direct ETH transfers to the vault implementation contract.
+     * Since this contract is meant to be used behind a proxy, direct ETH transfers
+     * to the implementation contract should be prevented to avoid locking funds.
+     * ETH transfers should go through the proxy contract instead.
+     */
+    receive() external payable {
+        revert("Direct ETH transfers to implementation not allowed");
     }
 }

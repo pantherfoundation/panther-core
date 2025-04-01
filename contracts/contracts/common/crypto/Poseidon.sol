@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// solhint-disable one-contract-per-file
 pragma solidity ^0.8.16;
 
 // This is a stub to keep solc happy; the actual code is generated

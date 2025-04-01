@@ -4,10 +4,12 @@
 import {utils} from 'ethers';
 
 export enum TransactionTypes {
-    zAccountActivation = '1',
-    prpClaim = '2',
-    prpConversion = '3',
-    main = '4',
+    zAccountActivation = 0x100,
+    zAccountRenewal = 0x102,
+    prpClaim = 0x103,
+    prpConversion = 0x104,
+    main = 0x105,
+    swapZAsset = 0x106,
 }
 
 enum UtxoMessageTypes {
@@ -39,7 +41,8 @@ const zAssetPrivateMessage =
 const zAssetMessage =
     UtxoMessageTypes.zAsset + randomEphemeralKey + randomCypherText;
 
-const spend2UtxoMessage = UtxoMessageTypes.spent2Utxos + randomCypherText;
+const spend2UtxoMessage =
+    UtxoMessageTypes.spent2Utxos + randomEphemeralKey + randomCypherText;
 
 const invalidMessage = UtxoMessageTypes.invalid + '00';
 
@@ -47,6 +50,9 @@ export function generatePrivateMessage(txType: TransactionTypes): string {
     let privateMessage = '0x';
 
     if (txType === TransactionTypes.zAccountActivation)
+        privateMessage += zAccountMessage;
+
+    if (txType === TransactionTypes.zAccountRenewal)
         privateMessage += zAccountMessage;
 
     if (txType === TransactionTypes.prpClaim) privateMessage += zAccountMessage;
@@ -57,6 +63,13 @@ export function generatePrivateMessage(txType: TransactionTypes): string {
     if (txType === TransactionTypes.main)
         privateMessage +=
             zAccountMessage + zAssetMessage + zAssetMessage + spend2UtxoMessage;
+
+    if (txType === TransactionTypes.swapZAsset)
+        privateMessage +=
+            zAccountMessage +
+            zAssetMessage +
+            zAssetPrivateMessage +
+            spend2UtxoMessage;
 
     return privateMessage;
 }
@@ -134,6 +147,41 @@ export function generateInvalidPrivateMessagesAndGetRevertMessages(
             zAccountMessage +
             zAssetMessage +
             zAssetMessage +
+            zAssetMessage; // should be spend2Utxo type
+        revertMessages[3] = RevertMessages.invalidMtSpend2Utxo;
+    }
+
+    if (txType === TransactionTypes.swapZAsset) {
+        //  zAccountMessage + zAssetMessage + zAssetPrivateMessage + spend2UtxoMessage;
+        privateMessages[0] =
+            '0x' +
+            spend2UtxoMessage + // should be zAccount type
+            zAssetMessage +
+            zAssetPrivateMessage +
+            zAccountMessage;
+        revertMessages[0] = RevertMessages.invalidMtZAccount;
+
+        privateMessages[1] =
+            '0x' +
+            zAccountMessage +
+            zAccountMessage + // should be zAsset type
+            zAssetPrivateMessage +
+            spend2UtxoMessage;
+        revertMessages[1] = RevertMessages.invalidMtZAsset;
+
+        privateMessages[2] =
+            '0x' +
+            zAccountMessage +
+            zAssetMessage +
+            zAccountMessage + // should be zAssetPrivateMessage type
+            spend2UtxoMessage;
+        revertMessages[2] = RevertMessages.invalidMtZAssetPriv;
+
+        privateMessages[3] =
+            '0x' +
+            zAccountMessage +
+            zAssetMessage +
+            zAssetPrivateMessage +
             zAssetMessage; // should be spend2Utxo type
         revertMessages[3] = RevertMessages.invalidMtSpend2Utxo;
     }

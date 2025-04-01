@@ -208,4 +208,50 @@ describe('TransactionNoteEmitter', () => {
                 .withArgs(privateMessage);
         });
     });
+
+    describe('zSwap', () => {
+        it('should revert if private message has low length', async () => {
+            const privateMessage = generateLowLengthPrivateMessage(
+                TransactionTypes.swapZAsset,
+            );
+
+            await expect(
+                transactionNoteEmitter.internalSanitizePrivateMessage(
+                    privateMessage,
+                    TransactionTypes.swapZAsset,
+                ),
+            ).to.be.revertedWith('TN:E5');
+        });
+
+        it('should revert if private message is invalid', async () => {
+            const {privateMessages, revertMessages} =
+                generateInvalidPrivateMessagesAndGetRevertMessages(
+                    TransactionTypes.swapZAsset,
+                );
+
+            for (let i = 0; i < privateMessages.length; i++) {
+                await expect(
+                    transactionNoteEmitter.internalSanitizePrivateMessage(
+                        privateMessages[i],
+                        TransactionTypes.swapZAsset,
+                    ),
+                ).to.be.revertedWith(revertMessages[i]);
+            }
+        });
+
+        it('should not revert', async () => {
+            const privateMessage = generatePrivateMessage(
+                TransactionTypes.swapZAsset,
+            );
+
+            expect(
+                await transactionNoteEmitter.internalSanitizePrivateMessage(
+                    privateMessage,
+                    TransactionTypes.swapZAsset,
+                ),
+            )
+                .to.emit(transactionNoteEmitter, 'LogPrivateMessage')
+                .withArgs(privateMessage);
+        });
+    });
 });
