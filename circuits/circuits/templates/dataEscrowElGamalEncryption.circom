@@ -1,4 +1,5 @@
-//SPDX-License-Identifier: ISC
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 pragma circom 2.1.9;
 
 include "./utils.circom";
@@ -420,7 +421,7 @@ template DataEscrowElGamalEncryptionPoint(PointsSize) {
         helperHash[i].inputs[0] <== kSeed.out;
         helperHash[i].inputs[1] <== i;
 
-        // Only the X-coordinate of pointMessage (utxoOutRootSpendPubKey) is used during encryption. 
+        // Only the X-coordinate of pointMessage (utxoOutRootSpendPubKey) is used during encryption.
         // This is intentional by design, as the Y-coordinate can be derived from the elliptic curve equation and is therefore omitted.
         encryptedMessage[i] <== pointMessage[i][0] + helperHash[i].out;
     }
