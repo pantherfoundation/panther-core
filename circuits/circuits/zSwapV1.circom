@@ -419,7 +419,6 @@ template ZSwapV1( nUtxoIn,
     component utxoInZNetworkOriginNetworkIdInclusionProver[nUtxoIn];
     component utxoInZNetworkTargetNetworkIdInclusionProver[nUtxoIn];
     component utxoInIsEnabled[nUtxoIn];
-    component isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[nUtxoIn];
 
     for (var i = 0 ; i < nUtxoIn; i++){
 
@@ -514,13 +513,7 @@ template ZSwapV1( nUtxoIn,
         // switch-on membership if amount != 0, otherwise switch-off
         utxoInInclusionProver[i].enabled <== utxoInIsEnabled[i].out;
 
-        // verify zone max internal limits, no need to RC amount since its checked via utxo-out
-        assert(0 <= utxoInAmount[i] < 2**64);
-        // utxoInAmount[i] * zAssetWeight[transactedToken] - no need to RC since `zAssetWeight` anchored via MT & `amount`
-        assert(zZoneInternalMaxAmount >= (utxoInAmount[i] * zAssetWeight[transactedToken]));
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(96);
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[0] <== utxoInAmount[i] * zAssetWeight[transactedToken];
-        isLessThanEq_weightedUtxoInAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
+        // no need to RC utxoInAmount[i] since its checked via utxo-out
     }
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
@@ -535,6 +528,12 @@ template ZSwapV1( nUtxoIn,
     component utxoOutZoneIdInclusionProver[nUtxoOut];
     component utxoOutIsEnabled[nUtxoOut];
     component isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[nUtxoOut];
+	component isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[nUtxoOut];
+	component isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[nUtxoOut];
+
+    // Internal signals for zone max internal limits enforcement
+    signal isNotOwner[nUtxoOut];
+    signal utxoOutWeightedAmount[nUtxoOut];
 
     for (var i = 0; i < nUtxoOut; i++){
         // derive spending pub key from root-spend-pub key (anchor to zAccount)
@@ -603,15 +602,30 @@ template ZSwapV1( nUtxoIn,
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].enabled <== utxoOutCommitment[i];
 
-        // verify zone max internal limits
+        // verify zone max internal limits:
+        // the output UTXO weighted amount should not exceed zZoneInternalMaxAmount
+        // unless the user themselves owns the UTXO
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(96);
+
+        // compare root spending pub keys of the zAccount and the output UTXO (both coordinates must match)
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[i] = IsEqual();
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[i].in[0] <== zAccountUtxoInRootSpendPubKey[0];
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[i].in[1] <== utxoOutRootSpendPubKey[i][0];
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i] = IsEqual();
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i].in[0] <== zAccountUtxoInRootSpendPubKey[1];
+        isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i].in[1] <== utxoOutRootSpendPubKey[i][1];
+        isNotOwner[i] <== 1 - (isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[i].out * isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i].out);
+
+        // verify the limit
         if ( isSwapUtxo ) {
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[swapToken];
+            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken] * isNotOwner[i]));
+            utxoOutWeightedAmount[i] <== utxoOutAmount[i] * zAssetWeight[swapToken];
+            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutWeightedAmount[i] * isNotOwner[i];
         }
         else {
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken]));
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
+            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken] * isNotOwner[i]));
+            utxoOutWeightedAmount[i] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
+            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutWeightedAmount[i] * isNotOwner[i];
         }
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
 
