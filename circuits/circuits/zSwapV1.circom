@@ -544,6 +544,9 @@ template ZSwapV1( nUtxoIn,
         utxoOutSpendPubKeySubOrderVerifier[i] = BabyJubJubSubGroupPointTag(ACTIVE);
         utxoOutSpendPubKeySubOrderVerifier[i].in <== utxoOutSpendPubKeyDeriver[i].derivedPubKey;
 
+        // in swap tx, the last out-UTXO is a special one, the  "swap out-UTXO":
+        //   circuits don't check this UTXO's commitment; they only check a part of it, the "hidden hash";
+        //   contracts are trusted to compute the commitment given the "hidden hash" and the real amount swapped.
         var isSwapUtxo = isSwap && (i == nUtxoOut - 1);
 
         // verify commitment
@@ -552,7 +555,7 @@ template ZSwapV1( nUtxoIn,
         utxoOutNoteHasher[i].random <== utxoOutSpendPubKeyRandom[i];
         if  ( isSwapUtxo ) {
             utxoOutNoteHasher[i].zAsset <== utxoZAsset[swapToken];
-            // require zero utxo-out amounts in case of swap
+            // require zero amount for the swap out-UTXO (it's a placeholder only)
             utxoOutAmount[i] === 0;
         } else {
             utxoOutNoteHasher[i].zAsset <== utxoZAsset[transactedToken];
@@ -602,9 +605,9 @@ template ZSwapV1( nUtxoIn,
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].networkIdsBitMap <== zNetworkIDsBitMap;
         utxoOutTargetNetworkIdZNetworkInclusionProver[i].enabled <== utxoOutCommitment[i];
 
-        // verify zone max internal limits:
-        // the output UTXO weighted amount should not exceed zZoneInternalMaxAmount
-        // unless the user themselves owns the UTXO
+        // verify zone max internal limit:
+        //   the output UTXO weighted amount should not exceed zZoneInternalMaxAmount
+        //   unless the transacting zAccount (user themselves) owns the UTXO
         isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i] = ForceLessEqThan(96);
 
         // compare root spending pub keys of the zAccount and the output UTXO (both coordinates must match)
@@ -616,18 +619,23 @@ template ZSwapV1( nUtxoIn,
         isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i].in[1] <== utxoOutRootSpendPubKey[i][1];
         isNotOwner[i] <== 1 - (isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_x[i].out * isEqual_zAccountRootSpendPubKey_utxoOutRootSpendPubKey_y[i].out);
 
-        // verify the limit
+        // enforce the zone max internal limit
         if ( isSwapUtxo ) {
-            assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[swapToken] * isNotOwner[i]));
-            utxoOutWeightedAmount[i] <== utxoOutAmount[i] * zAssetWeight[swapToken];
-            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutWeightedAmount[i] * isNotOwner[i];
+            // limit is inapplicable for the swap out-UTXO since it **must** be owned by the transacting zAccount.
+
+            // enforce the ownership reusing the `isLessThanEq..` component instead of a new `IsEqual` component.
+            utxoOutWeightedAmount[i] <== 0;
+            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== isNotOwner[i];
+            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== 0;
+
+            // note: the previous code already constrains `utxoOutAmount[i]`
         }
         else {
             assert(zZoneInternalMaxAmount >= (utxoOutAmount[i] * zAssetWeight[transactedToken] * isNotOwner[i]));
             utxoOutWeightedAmount[i] <== utxoOutAmount[i] * zAssetWeight[transactedToken];
             isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[0] <== utxoOutWeightedAmount[i] * isNotOwner[i];
+            isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
         }
-        isLessThanEq_weightedUtxoOutAmount_zZoneInternalMaxAmount[i].in[1] <== zZoneInternalMaxAmount;
 
         // ensure output amounts ranges (real check took place in top module via uint64 tag)
         assert(0 <= utxoOutAmount[i] < 2**64);
