@@ -29,7 +29,7 @@ template ZSwapV1Top( nUtxoIn,
     // zSwap vs zTransaction variables
     var arraySizeInCaseOfSwap = TokenArraySize( isSwap );
     var transactedToken = TransactedTokenIndex();
-    var swapToken = SwapTokenIndex();
+    var swapOutUtxo = SwapOutUtxoIndex( nUtxoOut );
     var zkpToken = ZkpTokenIndex( isSwap );
     var zAssetArraySize = ZAssetArraySize( isSwap ); // zkp token in last position
 
