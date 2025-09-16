@@ -21,9 +21,15 @@ function TransactedTokenIndex() {
     return 0;
 }
 
+// in the zSwap, the last out-UTXO is the  "swap out-UTXO":
+function IsSwapOutUtxoIndex( isSwap, nUtxoOut, index ) {
+    return isSwap && (index == nUtxoOut - 1);
+}
+
 // this index exists only for zSwap
-function SwapTokenIndex() {
-    return 1;
+function SwapOutUtxoIndex( nUtxoOut ) {
+    // last element's index (in array with out-UTXOs)
+    return nUtxoOut - 1;
 }
 
 // this index exists for zSwap & zTransaction cases but its different for each one

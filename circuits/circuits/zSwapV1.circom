@@ -16,9 +16,7 @@ include "./templates/rewardsExtended.circom";
 include "./templates/utxoNoteHasher.circom";
 include "./templates/utxoNoteInclusionProver.circom";
 include "./templates/zAccountBlackListLeafInclusionProver.circom";
-include "./templates/zAccountNoteHasher.circom";
 include "./templates/zAccountNoteInclusionProver.circom";
-include "./templates/zAccountNullifierHasher.circom";
 include "./templates/zAssetChecker.circom";
 include "./templates/zAssetNoteInclusionProver.circom";
 include "./templates/zNetworkNoteInclusionProver.circom";
@@ -60,7 +58,7 @@ template ZSwapV1( nUtxoIn,
     // zSwap vs zTransaction variables
     var arraySizeInCaseOfSwap = TokenArraySize( isSwap );
     var transactedToken = TransactedTokenIndex();
-    var swapToken = SwapTokenIndex();
+    var swapOutUtxo = SwapOutUtxoIndex( nUtxoOut );
     var zkpToken = ZkpTokenIndex( isSwap );
     var zAssetArraySize = ZAssetArraySize( isSwap ); // zkp token in last position
 
@@ -123,7 +121,7 @@ template ZSwapV1( nUtxoIn,
     signal input {uint6}    utxoInTargetNetworkId[nUtxoIn];
     signal input {uint32}   utxoInCreateTime[nUtxoIn];
     signal input {uint24}   utxoInZAccountId[nUtxoIn];
-    signal input {binary}   utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `01` - Bus, `10` - Ferry
+    signal input {binary}   utxoInMerkleTreeSelector[nUtxoIn][2]; // 2 bits: `00` - Taxi, `10` - Bus, `01` - Ferry
     signal input {binary}   utxoInPathIndices[nUtxoIn][UtxoMerkleTreeDepth];
     signal input            utxoInPathElements[nUtxoIn][UtxoMerkleTreeDepth];
     signal input {external} utxoInNullifier[nUtxoIn]; // public
@@ -518,7 +516,7 @@ template ZSwapV1( nUtxoIn,
 
     // [6] - Verify output notes and compute total amount of output 'zAsset UTXOs'
     component utxoOutNoteHasher[nUtxoOut];
-    component utxoOutCommitmentProver[nUtxoIn];
+    component utxoOutCommitmentProver[nUtxoOut];
     component utxoOutSpendPubKeyDeriver[nUtxoOut];
     component utxoOutSpendPubKeySubOrderVerifier[nUtxoOut];
     component utxoOutOriginNetworkIdInclusionProver[nUtxoOut];
@@ -547,14 +545,14 @@ template ZSwapV1( nUtxoIn,
         // in swap tx, the last out-UTXO is a special one, the  "swap out-UTXO":
         //   circuits don't check this UTXO's commitment; they only check a part of it, the "hidden hash";
         //   contracts are trusted to compute the commitment given the "hidden hash" and the real amount swapped.
-        var isSwapUtxo = isSwap && (i == nUtxoOut - 1);
+        var isSwapUtxo = IsSwapOutUtxoIndex(isSwap, nUtxoOut, i);
 
         // verify commitment
         utxoOutNoteHasher[i] = UtxoNoteHasher(isSwapUtxo);
         utxoOutNoteHasher[i].spendPk <== utxoOutSpendPubKeySubOrderVerifier[i].out;
         utxoOutNoteHasher[i].random <== utxoOutSpendPubKeyRandom[i];
         if  ( isSwapUtxo ) {
-            utxoOutNoteHasher[i].zAsset <== utxoZAsset[swapToken];
+            utxoOutNoteHasher[i].zAsset <== utxoZAsset[swapOutUtxo];
             // require zero amount for the swap out-UTXO (it's a placeholder only)
             utxoOutAmount[i] === 0;
         } else {
