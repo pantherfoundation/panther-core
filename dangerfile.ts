@@ -1,8 +1,4 @@
-import {message, danger, warn} from 'danger';
-import commitlint, {
-    CommitlintPluginConfig,
-} from 'danger-plugin-conventional-commitlint';
-import {rules} from './commitlint.config';
+import {message, danger, warn, fail} from 'danger';
 
 const mr = danger.gitlab.mr;
 const method = mr.title.includes('Draft') ? warn : fail;
@@ -38,13 +34,7 @@ if (hasPackageChanges && !hasLockfileChanges) {
     );
 }
 
-(async function dangerReport() {
-    const commitlintConfig: CommitlintPluginConfig = {
-        severity: mr.title.includes('Draft') ? 'warn' : 'fail',
-    };
-    // @ts-ignore
-    await commitlint(rules, commitlintConfig);
-})();
+// commitlint is executed separately in CI; plugin removed
 
 const commits = danger.gitlab.commits;
 if (commits.length > 5) {
