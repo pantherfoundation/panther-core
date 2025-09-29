@@ -13,7 +13,6 @@ default:
     - circuits/node_modules/
     - contracts/node_modules/
     - crypto/node_modules/
-    - dapp/node_modules/
     - subgraph/node_modules/
   policy: pull
 
@@ -25,14 +24,10 @@ default:
   - time yarn test:ci
 
 .build_then_deploy_staging_internal: &build_then_deploy_staging_internal
-  - cp dapp/.env.staging.internal dapp/.env
-  - time yarn run build:dapp:staging:internal
-  - time yarn deploy:dapp:ci:ipfs
+  - echo "No dapp present; skipping dapp staging build and deploy"
 
 .build_then_deploy_canary_public: &build_then_deploy_canary_public
-  - cp dapp/.env.canary.public dapp/.env
-  - time yarn run build:dapp:canary:public
-  - time yarn deploy:dapp:ci:ipfs --canary
+  - echo "No dapp present; skipping canary build and deploy"
 
 .combined_job_template:
   cache:
@@ -42,7 +37,7 @@ default:
     - time yarn install --frozen-lockfile --check-files --cache-folder .yarn-cache
 
 .ipfs_deploy_script: &ipfs_deploy_script
-  - time yarn deploy:dapp:ci:ipfs
+  - echo "No dapp present; skipping IPFS deploy"
 
 job-on-MR:
   extends: .combined_job_template
@@ -54,15 +49,10 @@ job-on-MR:
     - *base_scripts
     - *build_then_deploy_staging_internal
     - *build_then_deploy_canary_public
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - dapp/junit.xml
   timeout: 30m
 
 .ipfs_unpin_script: &ipfs_unpin_script
-  - time yarn deploy:dapp:ci:ipfs --unpin
+  - echo "No dapp present; skipping IPFS unpin"
 
 job-on-merge:
   extends: .combined_job_template
@@ -72,11 +62,6 @@ job-on-merge:
   script:
     - *base_scripts
     - *ipfs_unpin_script
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - dapp/junit.xml
   timeout: 30m
 
 build-cache:
