@@ -18,7 +18,7 @@ circom_compile_v1_extended_step0 () {
 snarkjs_get_ptau_for_phase2 () {
     echo "*** snarkjs_get_ptau_for_phase2 ***";
     if [[ ! -f "powersOfTau28_hez_final_18.ptau" ]]; then
-        wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_18.ptau;
+        wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau;
     fi
 }
 
@@ -77,6 +77,22 @@ snarkjs_create_solidity_verifier_step11 () {
     ${SNARKJS} zkey export solidityverifier compiled/mainTreeBatchUpdaterAndRootChecker_final.zkey compiled/mainTreeBatchUpdaterAndRootChecker_final_verifier.sol
 }
 
+export_final_artifacts_step12 () {
+    echo "*** export_final_artifacts_step12 ***";
+    mkdir -p compiled/treeBatchUpdaterAndRootChecker &&
+    mv compiled/mainTreeBatchUpdaterAndRootChecker.r1cs compiled/treeBatchUpdaterAndRootChecker/circuits.r1cs &&
+    mv compiled/mainTreeBatchUpdaterAndRootChecker_js/mainTreeBatchUpdaterAndRootChecker.wasm compiled/treeBatchUpdaterAndRootChecker/circuits.wasm &&
+    mv compiled/mainTreeBatchUpdaterAndRootChecker_final.zkey compiled/treeBatchUpdaterAndRootChecker/provingKey.zkey &&
+    mv compiled/mainTreeBatchUpdaterAndRootChecker_verification_key.json compiled/treeBatchUpdaterAndRootChecker/verificationKey.json &&
+    mv compiled/mainTreeBatchUpdaterAndRootChecker_final_verifier.sol compiled/treeBatchUpdaterAndRootChecker/verifier.sol
+}
+
+cleanup_intermediate_artifacts_step13 () {
+    echo "*** cleanup_intermediate_artifacts_step13 ***";
+    rm -f compiled/mainTreeBatchUpdaterAndRootChecker_0000.zkey compiled/mainTreeBatchUpdaterAndRootChecker_0001.zkey compiled/mainTreeBatchUpdaterAndRootChecker_0002.zkey compiled/mainTreeBatchUpdaterAndRootChecker_0003.zkey compiled/mainTreeBatchUpdaterAndRootChecker.r1cs compiled/mainTreeBatchUpdaterAndRootChecker.sym compiled/mainTreeBatchUpdaterAndRootChecker.json compiled/mainTreeBatchUpdaterAndRootChecker_final.zkey compiled/mainTreeBatchUpdaterAndRootChecker_verification_key.json compiled/mainTreeBatchUpdaterAndRootChecker_final_verifier.sol compiled/snark_build_v1_extended.log;
+    rm -rf compiled/mainTreeBatchUpdaterAndRootChecker_js
+}
+
 snark_build_v1_extended () {
     snarkjs_get_ptau_for_phase2 &&
     circom_compile_v1_extended_step0 &&
@@ -91,7 +107,9 @@ snark_build_v1_extended () {
     snarkjs_phase2_apply_random_beacon_step8 &&
     snarkjs_final_zkey_verify_step9 &&
     snarkjs_export_verification_key_step10 &&
-    snarkjs_create_solidity_verifier_step11;
+    snarkjs_create_solidity_verifier_step11 &&
+    export_final_artifacts_step12 &&
+    cleanup_intermediate_artifacts_step13;
 }
 
 # MAIN
