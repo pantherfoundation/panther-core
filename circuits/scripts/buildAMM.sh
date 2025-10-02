@@ -18,7 +18,7 @@ circom_compile_v1_extended_step0 () {
 snarkjs_get_ptau_for_phase2 () { # main circuit is ~80k contraints, this leads to this file (from 64k upto 128k)
     echo "*** snarkjs_get_ptau_for_phase2 ***";
     if [[ ! -f "powersOfTau28_hez_final_18.ptau" ]]; then
-        wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_18.ptau;
+        wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau;
     fi
 }
 
@@ -77,6 +77,22 @@ snarkjs_create_solidity_verifier_step11 () {
     ${SNARKJS} zkey export solidityverifier compiled/amm_final.zkey compiled/amm_final_verifier.sol
 }
 
+export_final_artifacts_step12 () {
+    echo "*** export_final_artifacts_step12 ***";
+    mkdir -p compiled/prpConverter &&
+    mv compiled/mainAmmV1.r1cs compiled/prpConverter/circuits.r1cs &&
+    mv compiled/mainAmmV1_js/mainAmmV1.wasm compiled/prpConverter/circuits.wasm &&
+    mv compiled/amm_final.zkey compiled/prpConverter/provingKey.zkey &&
+    mv compiled/amm_verification_key.json compiled/prpConverter/verificationKey.json &&
+    mv compiled/amm_final_verifier.sol compiled/prpConverter/verifier.sol
+}
+
+cleanup_intermediate_artifacts_step13 () {
+    echo "*** cleanup_intermediate_artifacts_step13 ***";
+    rm -f compiled/amm_0000.zkey compiled/amm_0001.zkey compiled/amm_0002.zkey compiled/amm_0003.zkey compiled/amm.json compiled/mainAmmV1.sym compiled/mainAmmV1.r1cs compiled/amm_final.zkey compiled/amm_verification_key.json compiled/amm_final_verifier.sol compiled/snark_build_v1_extended.log;
+    rm -rf compiled/mainAmmV1_js
+}
+
 snark_build_v1_extended () {
     snarkjs_get_ptau_for_phase2 &&
     circom_compile_v1_extended_step0 &&
@@ -91,7 +107,9 @@ snark_build_v1_extended () {
     snarkjs_phase2_apply_random_beacon_step8 &&
     snarkjs_final_zkey_verify_step9 &&
     snarkjs_export_verification_key_step10 &&
-    snarkjs_create_solidity_verifier_step11;
+    snarkjs_create_solidity_verifier_step11 &&
+    export_final_artifacts_step12 &&
+    cleanup_intermediate_artifacts_step13;
 }
 
 # MAIN
