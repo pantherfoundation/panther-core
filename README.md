@@ -1,6 +1,6 @@
 # Panther Protocol: core repository
 
-This repository contains the heart of the Panther Protocol code, implementing privacy-preserving infrastructure for Web3 DeFi applications.
+This repository contains the heart of the Panther Protocol code, implementing data protection infrastructure for Web3 DeFi applications.
 
 ## Repository Structure
 
