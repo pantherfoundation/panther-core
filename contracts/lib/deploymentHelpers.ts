@@ -346,6 +346,83 @@ async function upgradeEIP1967Proxy(
     console.log('Proxy is upgraded, tx: ', tx.hash);
 }
 
+async function upgradeEIP1967ProxyAndCall(
+    hre: HardhatRuntimeEnvironment,
+    signerAddress: string,
+    proxyAddress: string,
+    implementationAddress: string,
+    data: string,
+    contractNameForConsoleLogging = 'contract',
+) {
+    const {ethers} = hre;
+    const eip1967ProxyAbi = [
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'newImplementation',
+                    type: 'address',
+                },
+            ],
+            name: 'upgradeTo',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'newImplementation',
+                    type: 'address',
+                },
+                {internalType: 'bytes', name: 'data', type: 'bytes'},
+            ],
+            name: 'upgradeToAndCall',
+            outputs: [],
+            stateMutability: 'payable',
+            type: 'function',
+        },
+    ];
+
+    const proxy = await ethers.getContractAt(eip1967ProxyAbi, proxyAddress);
+
+    const response = await ethers.provider.send('eth_getStorageAt', [
+        proxy.address,
+        // EIP-1967 implementation slot
+        '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
+    ]);
+
+    const oldImpl: string = ethers.utils.hexZeroPad(
+        ethers.utils.hexStripZeros(response),
+        20,
+    );
+
+    if (oldImpl == implementationAddress.toLowerCase()) {
+        console.log(
+            '\x1b[32m',
+            `Skip upgrading ${contractNameForConsoleLogging}. Proxy ${proxy.address} already set to Implementation: ${implementationAddress}`,
+            '\x1b[0m',
+        );
+        return;
+    }
+
+    console.log(
+        `Upgrading ${contractNameForConsoleLogging} Proxy ${proxy.address} to new Implementation: ${implementationAddress}...`,
+    );
+
+    const signer = await ethers.getSigner(signerAddress);
+    if (data && data !== '0x') {
+        const tx = await proxy
+            .connect(signer)
+            .upgradeToAndCall(implementationAddress, data);
+        console.log('Proxy is upgraded (with call), tx: ', tx.hash);
+    } else {
+        const tx = await proxy.connect(signer).upgradeTo(implementationAddress);
+        console.log('Proxy is upgraded, tx: ', tx.hash);
+    }
+}
+
 async function verifyUserConsentOnProd(
     hre: HardhatRuntimeEnvironment,
     signer: string,
@@ -663,6 +740,7 @@ export {
     fulfillExistingContractAddresses,
     verifyUserConsentOnProd,
     upgradeEIP1967Proxy,
+    upgradeEIP1967ProxyAndCall,
     setDeterministicDeploymentProxy,
     deployBytecodeDeterministically,
     deployContentDeterministically,
