@@ -52,5 +52,5 @@ func.dependencies = [
     'trees-diamond',
     'paymaster-proxy',
     'vault-v1',
-    'treasury-proxy',
+    'claim-treasury',
 ];
