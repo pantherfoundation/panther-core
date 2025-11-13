@@ -13,7 +13,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const multisig = await getNamedAccount(hre, 'multisig');
     const trustProvider = await getNamedAccount(hre, 'trustProvider');
     const weth9 = await getNamedAccount(hre, 'weth9');
-    const pantherTreasury = await getNamedAccount(hre, 'pantherTreasury');
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
     const {
@@ -24,6 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treesDiamond = (await get('PantherTrees')).address;
     const vaultV1 = (await get('VaultV1')).address;
     const paymaster = (await get('Paymaster_Proxy')).address;
+    const pantherTreasury = (await get('ClaimTreasury')).address;
 
     const providers = {
         pantherPool: coreDiamond,
@@ -52,4 +52,5 @@ func.dependencies = [
     'trees-diamond',
     'paymaster-proxy',
     'vault-v1',
+    'treasury-proxy',
 ];
