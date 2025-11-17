@@ -48,29 +48,20 @@ export default {
         );
     },
     'contracts/**/*.{js,ts}': async files => {
-        if (files.length === 0) {
-            return run(
-                'yarn workspace @panther-core/contracts lint:eslint',
-                files,
-            );
-        }
         const prefix = process.cwd() + '/contracts/';
-        const filtered = await removeIgnoredFiles(
+        const toLint = await removeIgnoredFiles(
             prefix,
             'contracts/.eslintrc.json',
             'contracts/.eslintignore',
             files,
         );
-        const toLint = filtered.map(fullPathToContractsWorkspaceRelativePath);
+        // const match = micromatch.not(files, '**/*.cli.js');
         return run(
             'yarn workspace @panther-core/contracts lint:eslint',
             toLint,
         );
     },
     'dapp/**/*.{js,jsx,ts,tsx}': async files => {
-        if (files.length === 0) {
-            return run('yarn workspace @panther-core/dapp lint:eslint', files);
-        }
         const prefix = process.cwd() + '/dapp/';
         const toLint = await removeIgnoredFiles(
             prefix,
@@ -81,9 +72,6 @@ export default {
         return run('yarn workspace @panther-core/dapp lint:eslint', toLint);
     },
     'circuits/**/*.*': async files => {
-        if (files.length === 0) {
-            return run('yarn workspace @panther-core/circuits lint', files);
-        }
         const prefix = process.cwd() + '/circuits/';
         const toLint = await removeIgnoredFiles(
             prefix,
