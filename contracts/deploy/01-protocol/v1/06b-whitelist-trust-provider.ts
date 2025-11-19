@@ -8,11 +8,13 @@ import {GAS_PRICE, COMPLIANCE_TREASURY} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
+        artifacts,
         deployments: {get},
         ethers,
     } = hre;
 
-    const {address, abi} = await get('ComplianceTreasury_Proxy');
+    const {abi} = await artifacts.readArtifact('ComplianceTreasury');
+    const {address} = await get('ComplianceTreasury_Proxy');
     const complianceTreasury = await ethers.getContractAt(abi, address);
 
     const desiredTrustProvider = COMPLIANCE_TREASURY.trustProvider;
