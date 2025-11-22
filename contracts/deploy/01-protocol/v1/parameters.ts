@@ -49,6 +49,10 @@ export const FEE_MASTER = {
     ],
 };
 
+export const COMPLIANCE_TREASURY = {
+    trustProvider: '0x4b869a95472e3b90ff081F8bb645d4Da87be8432',
+};
+
 export const ACCOUNT = {
     ADDRESS_ONE: '0x0000000000000000000000000000000000000001',
     BYTES_ONE: '0x00000001',
