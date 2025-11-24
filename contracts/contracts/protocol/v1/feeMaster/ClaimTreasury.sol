@@ -21,7 +21,7 @@ contract ClaimTreasury is NonReentrant, Claimable {
     }
 
     /// @notice Admin address allowed to manage rescue operations.
-    address public owner;
+    address public treasuryOwner;
 
     /// @notice ZKP token managed by this treasury.
     address public zkpToken;
@@ -64,7 +64,10 @@ contract ClaimTreasury is NonReentrant, Claimable {
     );
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "ClaimTreasury: unauthorized owner");
+        require(
+            msg.sender == treasuryOwner,
+            "ClaimTreasury: unauthorized owner"
+        );
         _;
     }
 
@@ -95,7 +98,7 @@ contract ClaimTreasury is NonReentrant, Claimable {
         );
 
         initialized = true;
-        owner = owner_;
+        treasuryOwner = owner_;
         zkpToken = zkpToken_;
         threshold = threshold_;
 
@@ -113,12 +116,13 @@ contract ClaimTreasury is NonReentrant, Claimable {
     }
 
     /// @notice Transfers ownership to `newOwner`.
-    function transferOwnership(
+    function transferTreasuryOwnership(
         address newOwner
     ) external whenInitialized onlyOwner {
         require(newOwner != address(0), "ClaimTreasury: zero owner");
-        owner = newOwner;
-        emit OwnershipTransferred(owner, newOwner);
+        address oldOwner = treasuryOwner;
+        treasuryOwner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
     }
 
     /// @notice Opens a claim request and counts the proposer's approval.

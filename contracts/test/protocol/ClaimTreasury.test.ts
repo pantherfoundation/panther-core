@@ -83,7 +83,9 @@ describe('ClaimTreasury', () => {
 
     describe('initialization', () => {
         it('stores configuration and prevents re-initialization', async () => {
-            expect(await treasury.owner()).to.equal(treasuryOwner.address);
+            expect(await treasury.treasuryOwner()).to.equal(
+                treasuryOwner.address,
+            );
             expect(await treasury.zkpToken()).to.equal(zkp.address);
             expect(await treasury.threshold()).to.equal(threshold);
             expect(await treasury.signerCount()).to.equal(3);

@@ -5,7 +5,6 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
-
 import {GAS_PRICE} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -13,33 +12,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const multisig = await getNamedAccount(hre, 'multisig');
 
     const {
-        deployments: {deploy, save},
+        deployments: {deploy},
     } = hre;
 
-    const implementation = await deploy('ClaimTreasury_Implementation', {
-        contract: 'ClaimTreasury',
+    await deploy('ClaimTreasury', {
         from: deployer,
+        proxy: {
+            proxyContract: 'EIP173ProxyWithReceive',
+            owner: multisig,
+        },
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
-    });
-
-    const proxy = await deploy('ClaimTreasury_Proxy', {
-        contract: 'EIP173ProxyWithReceive',
-        from: deployer,
-        args: [implementation.address, multisig, '0x'],
-        log: true,
-        autoMine: true,
-        gasPrice: GAS_PRICE,
-    });
-
-    const treasuryArtifact = await hre.artifacts.readArtifact('ClaimTreasury');
-    await save('ClaimTreasury', {
-        address: proxy.address,
-        abi: treasuryArtifact.abi,
     });
 };
-
 export default func;
 
 func.tags = ['treasury-proxy', 'core', 'protocol-v1'];

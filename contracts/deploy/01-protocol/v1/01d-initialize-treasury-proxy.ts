@@ -30,18 +30,28 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         claimTreasury.address,
     );
 
-    const tx = await claimTreasuryContract.initialize(
-        treasuryOwner,
-        zkpToken,
-        initialSigners,
-        threshold,
-        {
-            from: deployer,
-            gasPrice: GAS_PRICE,
-        },
-    );
-    await tx.wait();
-    console.log('ClaimTreasury initialized');
+    // Check if already initialized
+    const isInitialized = await claimTreasuryContract
+        .treasuryOwner()
+        .then(() => true)
+        .catch(() => false);
+
+    if (!isInitialized) {
+        const tx = await claimTreasuryContract.initialize(
+            treasuryOwner,
+            zkpToken,
+            initialSigners,
+            threshold,
+            {
+                from: deployer,
+                gasPrice: GAS_PRICE,
+            },
+        );
+        await tx.wait();
+        console.log('ClaimTreasury initialized');
+    } else {
+        console.log('ClaimTreasury already initialized, skipping');
+    }
 };
 export default func;
 
