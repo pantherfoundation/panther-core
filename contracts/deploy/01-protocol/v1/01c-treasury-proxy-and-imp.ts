@@ -5,6 +5,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
+
 import {GAS_PRICE} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
