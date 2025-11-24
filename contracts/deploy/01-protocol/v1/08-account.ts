@@ -63,5 +63,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['account'];
+func.tags = ['account', 'protocol-v1-deploy'];
 func.dependencies = ['core-diamond'];

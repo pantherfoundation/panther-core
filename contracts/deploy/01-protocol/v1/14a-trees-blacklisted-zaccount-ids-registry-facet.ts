@@ -36,5 +36,6 @@ func.tags = [
     'trees',
     'trees-facet',
     'protocol-v1',
+    'protocol-v1-deploy',
 ];
 func.dependencies = ['poseidon-libs-v1', 'trees-diamond', 'core-diamond'];

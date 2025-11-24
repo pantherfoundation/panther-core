@@ -28,4 +28,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['treasury-proxy', 'core', 'protocol-v1'];
+func.tags = ['treasury-proxy', 'core', 'protocol-v1', 'protocol-v1-deploy'];

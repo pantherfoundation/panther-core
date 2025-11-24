@@ -30,5 +30,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['zaccount-renewal', 'core', 'core-facet', 'protocol-v1'];
+func.tags = [
+    'zaccount-renewal',
+    'core',
+    'core-facet',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
 func.dependencies = ['core-diamond', 'trees-diamond', 'fee-master'];

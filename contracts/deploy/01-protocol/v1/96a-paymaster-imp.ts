@@ -31,5 +31,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['paymaster-imp', 'protocol-v1'];
+func.tags = ['paymaster-imp', 'protocol-v1', 'protocol-v1-deploy'];
 func.dependencies = ['account', 'fee-master', 'core-diamond'];
