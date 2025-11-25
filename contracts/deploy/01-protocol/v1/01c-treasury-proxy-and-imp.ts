@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         },
         log: true,
         autoMine: true,
-        // gasPrice: GAS_PRICE,
+        gasPrice: GAS_PRICE,
     });
 };
 export default func;
