@@ -136,6 +136,7 @@
     "prebuild-install": "7.1.1",
     "npmlog": "7.0.1",
     "gauge": "5.0.0",
-    "are-we-there-yet": "3.0.1"
+    "are-we-there-yet": "3.0.1",
+    "@ensdomains/buffer": "0.1.3"
   }
 }
