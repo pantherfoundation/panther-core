@@ -12,7 +12,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
     const treasuryOwner = await getNamedAccount(hre, 'pantherTreasury');
-    const zkpToken = await getNamedAccount(hre, 'pzkp');
 
     const {
         deployments: {get},
