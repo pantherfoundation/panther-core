@@ -19,38 +19,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ethers,
     } = hre;
 
-    const claimTreasury = await get('ClaimTreasury');
+    const treasury = await get('Treasury');
 
-    // Default signers: use treasury owner or fallback to multisig
-    const initialSigners = [treasuryOwner ?? multisig];
-    const threshold = 1;
+    // Default claimer: use treasury owner or fallback to multisig
+    const claimer = treasuryOwner ?? multisig;
 
-    const claimTreasuryContract = await ethers.getContractAt(
-        'ClaimTreasury',
-        claimTreasury.address,
+    const treasuryContract = await ethers.getContractAt(
+        'Treasury',
+        treasury.address,
     );
 
     // Check if already initialized
-    const isInitialized = await claimTreasuryContract
-        .treasuryOwner()
+    const isInitialized = await treasuryContract
+        .claimer()
         .then(() => true)
         .catch(() => false);
 
     if (!isInitialized) {
-        const tx = await claimTreasuryContract.initialize(
-            treasuryOwner,
-            zkpToken,
-            initialSigners,
-            threshold,
-            {
-                from: deployer,
-                gasPrice: GAS_PRICE,
-            },
-        );
+        const tx = await treasuryContract.initialize(claimer, {
+            from: deployer,
+            gasPrice: GAS_PRICE,
+        });
         await tx.wait();
-        console.log('ClaimTreasury initialized');
+        console.log('Treasury initialized');
     } else {
-        console.log('ClaimTreasury already initialized, skipping');
+        console.log('Treasury already initialized, skipping');
     }
 };
 export default func;

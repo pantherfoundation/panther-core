@@ -23,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treesDiamond = (await get('PantherTrees')).address;
     const vaultV1 = (await get('VaultV1')).address;
     const paymaster = (await get('Paymaster_Proxy')).address;
-    const pantherTreasury = (await get('ClaimTreasury')).address;
+    const pantherTreasury = (await get('Treasury')).address;
 
     const providers = {
         pantherPool: coreDiamond,
@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         },
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        // gasPrice: GAS_PRICE,
     });
 };
 export default func;

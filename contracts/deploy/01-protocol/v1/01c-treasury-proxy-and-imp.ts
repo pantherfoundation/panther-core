@@ -16,15 +16,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployments: {deploy},
     } = hre;
 
-    await deploy('ClaimTreasury', {
+    const zkpToken = await getNamedAccount(hre, 'pzkp');
+
+    await deploy('Treasury', {
         from: deployer,
+        args: [multisig, zkpToken],
         proxy: {
             proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
         },
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        // gasPrice: GAS_PRICE,
     });
 };
 export default func;
