@@ -32,7 +32,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['prp-conversion', 'core', 'core-facet', 'protocol-v1'];
+func.tags = [
+    'prp-conversion',
+    'core',
+    'core-facet',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
 func.dependencies = [
     'poseidon-libs-v1',
     'vault-v1',

@@ -24,4 +24,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['diamond-cut-facet', 'core', 'trees', 'protocol-v1'];
+func.tags = [
+    'diamond-cut-facet',
+    'core',
+    'trees',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];

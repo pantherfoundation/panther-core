@@ -30,5 +30,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['quickswap-router-plugin', 'core', 'protocol-v1'];
+func.tags = [
+    'quickswap-router-plugin',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
 func.dependencies = ['vault-v1'];

@@ -79,4 +79,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['poseidon-libs-v1'];
+func.tags = ['poseidon-libs-v1', 'protocol-v1-deploy'];

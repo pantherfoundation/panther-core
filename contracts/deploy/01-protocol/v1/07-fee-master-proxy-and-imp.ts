@@ -12,7 +12,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
     const weth9 = await getNamedAccount(hre, 'weth9');
-    const pantherTreasury = await getNamedAccount(hre, 'pantherTreasury');
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
     const {
@@ -46,7 +45,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['fee-master', 'core', 'protocol-v1'];
+func.tags = ['fee-master', 'core', 'protocol-v1', 'protocol-v1-deploy'];
 func.dependencies = [
     'core-diamond',
     'trees-diamond',

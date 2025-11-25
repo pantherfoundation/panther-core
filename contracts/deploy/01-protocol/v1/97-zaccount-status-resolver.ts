@@ -27,5 +27,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['zaccount-status-resolver', 'core', 'protocol-v1'];
+func.tags = [
+    'zaccount-status-resolver',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
 func.dependencies = ['core-diamond'];
