@@ -11,7 +11,6 @@ import {GAS_PRICE} from './parameters';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
-    const trustProvider = await getNamedAccount(hre, 'trustProvider');
     const weth9 = await getNamedAccount(hre, 'weth9');
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
@@ -24,6 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const vaultV1 = (await get('VaultV1')).address;
     const paymaster = (await get('Paymaster_Proxy')).address;
     const pantherTreasury = (await get('Treasury')).address;
+    const trustProvider = (await get('ComplianceTreasury')).address;
 
     const providers = {
         pantherPool: coreDiamond,
@@ -53,4 +53,5 @@ func.dependencies = [
     'paymaster-proxy',
     'vault-v1',
     'treasury-proxy',
+    'compliance-treasury',
 ];
