@@ -32,11 +32,7 @@ describe('Treasury', () => {
         const factory = await ethers.getContractFactory('Treasury');
         treasury = (await factory
             .connect(deployer)
-            .deploy(owner.address, zkp.address)) as Treasury;
-    }
-
-    async function initializeTreasury() {
-        await treasury.connect(owner).initialize(claimer.address);
+            .deploy(owner.address, zkp.address, claimer.address)) as Treasury;
     }
 
     async function fundTreasury(amount: string) {
@@ -59,58 +55,50 @@ describe('Treasury', () => {
         ]);
     });
 
-    describe('initialize', () => {
-        it('stores configuration and prevents re-initialization', async () => {
-            await initializeTreasury();
-
-            expect(await treasury.claimer()).to.equal(claimer.address);
-
-            await expect(
-                treasury.connect(owner).initialize(claimer.address),
-            ).to.be.revertedWith('Treasury: already initialized');
+    describe('constructor', () => {
+        it('stores configuration correctly', async () => {
+            expect(await treasury.CLAIMER()).to.equal(claimer.address);
+            expect(await treasury.OWNER()).to.equal(owner.address);
+            expect(await treasury.ZKP_TOKEN()).to.equal(zkp.address);
         });
 
-        it('validates initialization parameters', async () => {
+        it('validates constructor parameters', async () => {
+            const factory = await ethers.getContractFactory('Treasury');
+
             await expect(
-                treasury
-                    .connect(owner)
-                    .initialize(ethers.constants.AddressZero),
+                factory
+                    .connect(deployer)
+                    .deploy(
+                        ethers.constants.AddressZero,
+                        zkp.address,
+                        claimer.address,
+                    ),
+            ).to.be.revertedWith('Treasury: owner zero');
+
+            await expect(
+                factory
+                    .connect(deployer)
+                    .deploy(
+                        owner.address,
+                        ethers.constants.AddressZero,
+                        claimer.address,
+                    ),
+            ).to.be.revertedWith('Treasury: token zero');
+
+            await expect(
+                factory
+                    .connect(deployer)
+                    .deploy(
+                        owner.address,
+                        zkp.address,
+                        ethers.constants.AddressZero,
+                    ),
             ).to.be.revertedWith('Treasury: claimer zero');
-        });
-
-        it('restricts initialization to owner', async () => {
-            await expect(
-                treasury.connect(outsider).initialize(claimer.address),
-            ).to.be.revertedWith('Treasury: unauthorized owner');
-        });
-    });
-
-    describe('updateClaimer', () => {
-        beforeEach(async () => {
-            await initializeTreasury();
-        });
-
-        it('allows the owner to update claimer', async () => {
-            await treasury.connect(owner).updateClaimer(receiver.address);
-            expect(await treasury.claimer()).to.equal(receiver.address);
-        });
-
-        it('rejects zero claimer or unauthorized caller', async () => {
-            await expect(
-                treasury
-                    .connect(owner)
-                    .updateClaimer(ethers.constants.AddressZero),
-            ).to.be.revertedWith('Treasury: claimer zero');
-
-            await expect(
-                treasury.connect(outsider).updateClaimer(receiver.address),
-            ).to.be.revertedWith('Treasury: unauthorized owner');
         });
     });
 
     describe('claim', () => {
         beforeEach(async () => {
-            await initializeTreasury();
             await fundTreasury('100');
         });
 
@@ -141,25 +129,10 @@ describe('Treasury', () => {
                     .claim(ethers.constants.AddressZero, amount),
             ).to.be.revertedWith('Treasury: receiver zero');
         });
-
-        it('requires initialization before claiming', async () => {
-            const freshTreasury = (await (
-                await ethers.getContractFactory('Treasury')
-            )
-                .connect(deployer)
-                .deploy(owner.address, zkp.address)) as Treasury;
-
-            await expect(
-                freshTreasury
-                    .connect(claimer)
-                    .claim(receiver.address, parseZkp('1')),
-            ).to.be.revertedWith('Treasury: not initialized');
-        });
     });
 
     describe('claimOtherErc20', () => {
         beforeEach(async () => {
-            await initializeTreasury();
             await otherToken
                 .connect(deployer)
                 .transfer(treasury.address, parseZkp('20'));
