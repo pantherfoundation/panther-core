@@ -14,12 +14,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getNamedAccount(hre, 'pzkp');
 
     const {
-        deployments: {deploy},
+        deployments: {deploy, get},
     } = hre;
+
+    const feeMasterProxy = (await get('FeeMaster')).address;
 
     await deploy('ComplianceTreasury', {
         from: deployer,
-        args: [multisig, pzkp],
+        args: [multisig, pzkp, feeMasterProxy],
         proxy: {
             proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
@@ -32,3 +34,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['compliance-treasury', 'core', 'protocol-v1'];
+func.dependencies = ['fee-master-proxy'];
