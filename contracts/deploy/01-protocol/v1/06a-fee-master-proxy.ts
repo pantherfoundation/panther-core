@@ -22,10 +22,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
-        skipIfAlreadyDeployed: true,
     });
 };
 export default func;
 
-func.tags = ['fee-master-proxy', 'core', 'protocol-v1', 'protocol-v1-deploy'];
-func.dependencies = ['treasury-proxy'];
+func.tags = [
+    'fee-master-proxy-only',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
+func.dependencies = [];

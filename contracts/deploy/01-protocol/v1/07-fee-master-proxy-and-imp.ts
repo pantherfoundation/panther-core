@@ -48,13 +48,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         feeMasterProxy.address,
     );
 
-    const currentImpl = await proxy.implementation();
-    if (currentImpl !== feeMasterImpl.address) {
-        const tx = await proxy.upgradeTo(feeMasterImpl.address, {
-            gasPrice: GAS_PRICE,
-        });
-        await tx.wait();
-    }
+    const tx = await proxy.upgradeTo(feeMasterImpl.address, {
+        gasPrice: GAS_PRICE,
+    });
+    await tx.wait();
 
     const currentOwner = await proxy.owner();
     if (currentOwner !== multisig) {
@@ -67,4 +64,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['fee-master', 'core', 'protocol-v1', 'protocol-v1-deploy'];
-func.dependencies = ['treasury-proxy', 'compliance-treasury'];
+func.dependencies = [
+    'core-diamond',
+    'trees-diamond',
+    'paymaster-proxy',
+    'vault-v1',
+    'treasury-proxy',
+    'compliance-treasury',
+];

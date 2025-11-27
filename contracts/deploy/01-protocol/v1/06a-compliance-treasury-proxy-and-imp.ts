@@ -34,4 +34,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['compliance-treasury', 'core', 'protocol-v1'];
-func.dependencies = ['fee-master-proxy'];
+func.dependencies = ['fee-master-proxy-only'];
