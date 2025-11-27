@@ -8,7 +8,7 @@ import "./interfaces/IDebtSettlement.sol";
  * @title ComplianceTreasury
  * @notice Lightweight upgradeable contract that holds the trust provider role for FeeMaster.
  * @dev Deploy behind a proxy and configure the trust provider EOA through `updateTrustProvider`.
- * The owner address and ZKP token are immutable.
+ * The owner address, ZKP token, and FeeMaster are immutable.
  */
 contract ComplianceTreasury {
     /// @notice Address that is allowed to pull rewards from the FeeMaster. Stored in slot 0.
@@ -19,6 +19,9 @@ contract ComplianceTreasury {
 
     /// @notice ZKP token used when collecting rewards from FeeMaster.
     address public immutable ZKP_TOKEN;
+
+    /// @notice FeeMaster contract address.
+    address public immutable FEE_MASTER;
 
     event TrustProviderUpdated(address indexed trustProvider);
     event FeesClaimed(
@@ -40,12 +43,14 @@ contract ComplianceTreasury {
         _;
     }
 
-    constructor(address owner_, address zkpToken_) {
+    constructor(address owner_, address zkpToken_, address feeMaster_) {
         require(owner_ != address(0), "ComplianceTreasury: owner zero");
         require(zkpToken_ != address(0), "ComplianceTreasury: token zero");
+        require(feeMaster_ != address(0), "ComplianceTreasury: feeMaster zero");
 
         OWNER = owner_;
         ZKP_TOKEN = zkpToken_;
+        FEE_MASTER = feeMaster_;
     }
 
     /**
@@ -64,24 +69,21 @@ contract ComplianceTreasury {
 
     /**
      * @notice Claims accrued rewards from FeeMaster in ZKP token to the receiver.
-     * @param feeMaster Address of the FeeMaster contract.
      * @param receiver Address receiving the withdrawn rewards.
      * @param amount Amount of ZKP rewards to withdraw.
      */
     function claim(
-        address feeMaster,
         address receiver,
         uint256 amount
     ) external onlyTrustProvider returns (uint256 debtPaid) {
-        require(feeMaster != address(0), "ComplianceTreasury: feeMaster zero");
         require(receiver != address(0), "ComplianceTreasury: receiver zero");
 
-        debtPaid = IDebtSettlement(feeMaster).payOff(
+        debtPaid = IDebtSettlement(FEE_MASTER).payOff(
             ZKP_TOKEN,
             receiver,
             amount
         );
 
-        emit FeesClaimed(feeMaster, receiver, amount);
+        emit FeesClaimed(FEE_MASTER, receiver, amount);
     }
 }
