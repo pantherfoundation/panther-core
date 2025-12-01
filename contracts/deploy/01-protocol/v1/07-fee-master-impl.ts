@@ -16,7 +16,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const {
         deployments: {deploy, get},
-        ethers,
     } = hre;
 
     const coreDiamond = (await get('PantherPoolV1')).address;
@@ -33,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         trustProvider,
     };
 
-    const feeMasterImpl = await deploy('FeeMaster_Implementation', {
+    await deploy('FeeMaster_Implementation', {
         contract: 'FeeMaster',
         from: deployer,
         args: [multisig, providers, pzkp, weth9, vaultV1, pantherTreasury],
@@ -41,29 +40,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         autoMine: true,
         gasPrice: GAS_PRICE,
     });
-
-    const feeMasterProxy = await get('FeeMaster');
-    const proxy = await ethers.getContractAt(
-        'EIP173ProxyWithReceive',
-        feeMasterProxy.address,
-    );
-
-    const tx = await proxy.upgradeTo(feeMasterImpl.address, {
-        gasPrice: GAS_PRICE,
-    });
-    await tx.wait();
-
-    const currentOwner = await proxy.owner();
-    if (currentOwner !== multisig) {
-        const tx = await proxy.transferOwnership(multisig, {
-            gasPrice: GAS_PRICE,
-        });
-        await tx.wait();
-    }
 };
 export default func;
 
-func.tags = ['fee-master', 'core', 'protocol-v1', 'protocol-v1-deploy'];
+func.tags = ['fee-master-impl', 'core', 'protocol-v1', 'protocol-v1-deploy'];
 func.dependencies = [
     'core-diamond',
     'trees-diamond',

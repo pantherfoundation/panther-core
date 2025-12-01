@@ -86,7 +86,7 @@ export default func;
 func.tags = ['update-voucher-terms', 'core', 'protocol-v1'];
 func.dependencies = [
     'add-prp-voucher-controller',
-    'fee-master',
+    'upgrade-fee-master',
     'paymaster-proxy',
     'zkp-reserve-controller',
 ];

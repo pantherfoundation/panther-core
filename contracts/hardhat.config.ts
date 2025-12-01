@@ -273,7 +273,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
             sepolia: 0,
 
-            polygon: '0x512af2A515f6670bfE08F305Dd18E58b47bE64F2', // TODO: replace
+            polygon: '0xE454ba38c6d358c8018dFA2cBA9a6096B2420ECD', // TODO: replace
             amoy: 0,
         },
 
