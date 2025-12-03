@@ -4,6 +4,7 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IFeeMaster.sol";
+import "./core/interfaces/IVoucherTerms.sol";
 
 import "./feeMaster/PoolKey.sol";
 import "./feeMaster/FeeAccountant.sol";
@@ -115,6 +116,72 @@ contract FeeMaster is
     ) public view returns (uint256) {
         Pool memory pool = getEnabledPoolOrRevert(WETH, ZKP_TOKEN);
         return getTrustedPoolQuoteAmount(pool, ZKP_TOKEN, WETH, zkpAmount);
+    }
+
+    function estimateRebalancingPrpRewardsAndZkpBalance(
+        address[] calldata zAssets
+    )
+        external
+        view
+        returns (uint256 estimatedPrpRewards, uint256 estimatedZkpBalance)
+    {
+        // Start with existing ZKP debt as base
+        estimatedZkpBalance = getDebtForProtocol(ZKP_TOKEN);
+
+        // Calculate how much native token needs to be reserved
+        uint256 nativeTokenDeficit;
+        uint256 totalNativeTokenYield;
+        uint256 excessNativeTokens;
+
+        // Check if we need to replenish the native token reserve
+        if (nativeTokenReserveTarget > nativeTokenReserve) {
+            nativeTokenDeficit = nativeTokenReserveTarget - nativeTokenReserve;
+        }
+
+        // Get PRP reward amount for each qualifying transaction
+        VoucherTerms memory voucherTerm = IVoucherTerms(PRP_VOUCHER_GRANTOR)
+            .getVoucherTerms(address(this), GT_FEE_EXCHANGE);
+        uint256 prpRewardPerAsset = voucherTerm.amount;
+
+        // Process each asset to calculate total rewards
+        for (uint256 i = 0; i < zAssets.length; i++) {
+            address assetAddress = zAssets[i];
+            uint256 assetAmount = getDebtForProtocol(assetAddress);
+
+            if (assetAddress == NATIVE_TOKEN) continue;
+
+            // Get the Uniswap pool for this asset and WETH
+            Pool memory pool = getEnabledPoolOrRevert(assetAddress, WETH);
+
+            // Calculate how much native token we'd get for this asset
+            uint256 expectedNativeTokens = getTrustedPoolQuoteAmount(
+                pool,
+                assetAddress,
+                WETH,
+                assetAmount
+            );
+
+            // Add to total native tokens we expect to receive
+            totalNativeTokenYield += expectedNativeTokens;
+
+            // If this transaction would yield enough native tokens for a PRP reward
+            if (_isEligibleForFeeExchangePrpReward(expectedNativeTokens))
+                estimatedPrpRewards += prpRewardPerAsset;
+        }
+
+        // Calculate excess native tokens after reserving required amount
+        if (totalNativeTokenYield > nativeTokenDeficit) {
+            excessNativeTokens = totalNativeTokenYield - nativeTokenDeficit;
+        }
+
+        // Convert excess native tokens to ZKP based on current exchange rate
+        if (excessNativeTokens > 0) {
+            // Add ZKP equivalent of excess native tokens to total ZKP rewards
+            // Uses cached ratio between native token and ZKP
+            estimatedZkpBalance +=
+                (excessNativeTokens * cachedNativeRateInZkp) /
+                1 ether;
+        }
     }
 
     /* ========== ONLY FOR OWNER AND CONFIGURATION FUNCTIONS ========== */
@@ -539,6 +606,17 @@ contract FeeMaster is
 
         } catch Error(string memory reason) {
             revert(reason);
+        }
+    }
+
+    function _isEligibleForFeeExchangePrpReward(
+        uint256 nativeAmount
+    ) private view returns (bool isEligible) {
+        uint256 minRewardableNativeAmount = minRewardableZkpAmount /
+            cachedNativeRateInZkp;
+
+        if (nativeAmount >= minRewardableNativeAmount) {
+            isEligible = true;
         }
     }
 
