@@ -12,10 +12,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
 
     const {
-        deployments: {deploy},
+        deployments: {deploy, save},
     } = hre;
 
-    await deploy('FeeMaster', {
+    const deployment = await deploy('FeeMaster_Proxy', {
         contract: 'EIP173ProxyWithReceive',
         from: deployer,
         args: ['0x0000000000000000000000000000000000000000', deployer, '0x'],
@@ -23,6 +23,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         autoMine: true,
         gasPrice: GAS_PRICE,
     });
+
+    await save('FeeMaster', deployment);
 };
 export default func;
 
