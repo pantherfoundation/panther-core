@@ -81,6 +81,11 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
     event PoolUpdated(address pool, bytes32 key, bool enabled);
 
     /**
+     * @dev getting the min zkp amount needed to generated prp rewards
+     */
+    function minRewardableZkpAmount() external view returns (uint96);
+
+    /**
      * @dev Updates the target amount of native token reserve.
      * @param _nativeTokenReserveTarget The new target amount of native token reserve.
      */
@@ -136,6 +141,20 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
         address _tokenB,
         bool _enabled
     ) external;
+
+    /**
+     * @notice Calculates potential rewards from rebalancing protocol assets
+     * @dev Estimates ZKP tokens and PRP rewards obtainable from converting zAssets to native tokens
+     * @param zAssets Array of asset addresses to be converted
+     * @return estimatedPrpRewards Estimated PRP voucher rewards from eligible conversions
+     * @return estimatedZkpBalance Total ZKP tokens to be received after rebalancing
+     */
+    function estimateRebalancingPrpRewardsAndZkpBalance(
+        address[] calldata zAssets
+    )
+        external
+        view
+        returns (uint256 estimatedPrpRewards, uint256 estimatedZkpBalance);
 
     /**
      * @notice Rebalances the protocol debts by converting sell tokens to native tokens and ZKP.
