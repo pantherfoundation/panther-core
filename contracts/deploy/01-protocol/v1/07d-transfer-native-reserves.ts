@@ -29,4 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['transfer-fee-master-native-reserves', 'core', 'protocol-v1'];
-func.dependencies = ['fee-master', 'add-fee-master-total-debt-controller'];
+func.dependencies = [
+    'upgrade-fee-master',
+    'add-fee-master-total-debt-controller',
+];

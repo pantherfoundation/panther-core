@@ -33,14 +33,18 @@ describe('ComplianceTreasury contract', function () {
         ).deploy()) as TokenMock;
         await zkpToken.deployed();
 
+        feeMaster = await smock.fake<IDebtSettlement>('IDebtSettlement');
+
         const ComplianceTreasuryFactory =
             await ethers.getContractFactory('ComplianceTreasury');
         complianceTreasury = (await ComplianceTreasuryFactory.connect(
             owner,
-        ).deploy(owner.address, zkpToken.address)) as ComplianceTreasury;
+        ).deploy(
+            owner.address,
+            zkpToken.address,
+            feeMaster.address,
+        )) as ComplianceTreasury;
         await complianceTreasury.deployed();
-
-        feeMaster = await smock.fake<IDebtSettlement>('IDebtSettlement');
 
         await network.provider.send('hardhat_setNextBlockBaseFeePerGas', [
             STABLE_BASE_FEE,
@@ -56,6 +60,47 @@ describe('ComplianceTreasury contract', function () {
         await network.provider.send('hardhat_setNextBlockBaseFeePerGas', [
             STABLE_BASE_FEE,
         ]);
+    });
+
+    describe('constructor', () => {
+        it('validates constructor parameters', async () => {
+            const ComplianceTreasuryFactory =
+                await ethers.getContractFactory('ComplianceTreasury');
+
+            await expect(
+                ComplianceTreasuryFactory.connect(owner).deploy(
+                    ethers.constants.AddressZero,
+                    zkpToken.address,
+                    feeMaster.address,
+                ),
+            ).to.be.revertedWith('ComplianceTreasury: owner zero');
+
+            await expect(
+                ComplianceTreasuryFactory.connect(owner).deploy(
+                    owner.address,
+                    ethers.constants.AddressZero,
+                    feeMaster.address,
+                ),
+            ).to.be.revertedWith('ComplianceTreasury: token zero');
+
+            await expect(
+                ComplianceTreasuryFactory.connect(owner).deploy(
+                    owner.address,
+                    zkpToken.address,
+                    ethers.constants.AddressZero,
+                ),
+            ).to.be.revertedWith('ComplianceTreasury: feeMaster zero');
+        });
+
+        it('stores immutable values correctly', async () => {
+            expect(await complianceTreasury.OWNER()).to.equal(owner.address);
+            expect(await complianceTreasury.ZKP_TOKEN()).to.equal(
+                zkpToken.address,
+            );
+            expect(await complianceTreasury.FEE_MASTER()).to.equal(
+                feeMaster.address,
+            );
+        });
     });
 
     describe('#updateTrustProvider', () => {
@@ -103,31 +148,15 @@ describe('ComplianceTreasury contract', function () {
             await expect(
                 complianceTreasury
                     .connect(outsider)
-                    .claim(feeMaster.address, receiver.address, claimAmount),
+                    .claim(receiver.address, claimAmount),
             ).to.be.revertedWith('ComplianceTreasury: not provider');
-        });
-
-        it('reverts when feeMaster address is zero', async () => {
-            await expect(
-                complianceTreasury
-                    .connect(trustProvider)
-                    .claim(
-                        ethers.constants.AddressZero,
-                        receiver.address,
-                        claimAmount,
-                    ),
-            ).to.be.revertedWith('ComplianceTreasury: feeMaster zero');
         });
 
         it('reverts when receiver address is zero', async () => {
             await expect(
                 complianceTreasury
                     .connect(trustProvider)
-                    .claim(
-                        feeMaster.address,
-                        ethers.constants.AddressZero,
-                        claimAmount,
-                    ),
+                    .claim(ethers.constants.AddressZero, claimAmount),
             ).to.be.revertedWith('ComplianceTreasury: receiver zero');
         });
 
@@ -139,7 +168,7 @@ describe('ComplianceTreasury contract', function () {
             await expect(
                 complianceTreasury
                     .connect(trustProvider)
-                    .claim(feeMaster.address, receiver.address, claimAmount),
+                    .claim(receiver.address, claimAmount),
             )
                 .to.emit(complianceTreasury, 'FeesClaimed')
                 .withArgs(feeMaster.address, receiver.address, claimAmount);

@@ -32,13 +32,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         trustProvider,
     };
 
-    await deploy('FeeMaster', {
+    await deploy('FeeMaster_Implementation', {
+        contract: 'FeeMaster',
         from: deployer,
         args: [multisig, providers, pzkp, weth9, vaultV1, pantherTreasury],
-        proxy: {
-            proxyContract: 'EIP173ProxyWithReceive',
-            owner: multisig,
-        },
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
@@ -46,7 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['fee-master', 'core', 'protocol-v1', 'protocol-v1-deploy'];
+func.tags = ['fee-master-impl', 'core', 'protocol-v1', 'protocol-v1-deploy'];
 func.dependencies = [
     'core-diamond',
     'trees-diamond',

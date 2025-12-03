@@ -41,4 +41,4 @@ func.tags = [
     'protocol-v1',
     'protocol-v1-deploy',
 ];
-func.dependencies = ['poseidon-libs-v1', 'core-diamond', 'fee-master'];
+func.dependencies = ['poseidon-libs-v1', 'core-diamond', 'upgrade-fee-master'];
