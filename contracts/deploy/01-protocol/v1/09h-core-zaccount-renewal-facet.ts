@@ -37,4 +37,4 @@ func.tags = [
     'protocol-v1',
     'protocol-v1-deploy',
 ];
-func.dependencies = ['core-diamond', 'trees-diamond', 'upgrade-fee-master'];
+func.dependencies = ['core-diamond', 'trees-diamond', 'fee-master-proxy'];

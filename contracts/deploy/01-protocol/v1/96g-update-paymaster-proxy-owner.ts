@@ -35,3 +35,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 };
 export default func;
+
+func.tags = [
+    'update-fee-paymaster-owner',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];

@@ -43,5 +43,5 @@ func.dependencies = [
     'poseidon-libs-v1',
     'vault-v1',
     'trees-diamond',
-    'upgrade-fee-master',
+    'fee-master-proxy',
 ];

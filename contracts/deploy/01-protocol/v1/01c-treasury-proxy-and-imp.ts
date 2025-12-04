@@ -11,7 +11,7 @@ import {GAS_PRICE} from './parameters';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
-    const treasuryOwner = await getNamedAccount(hre, 'pantherTreasury');
+    const pantherTreasury = await getNamedAccount(hre, 'pantherTreasury');
 
     const {
         deployments: {deploy},
@@ -19,12 +19,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const zkpToken = await getNamedAccount(hre, 'pzkp');
 
-    // Default claimer: use treasury owner or fallback to multisig
-    const claimer = treasuryOwner ?? multisig;
-
     await deploy('Treasury', {
         from: deployer,
-        args: [multisig, zkpToken, claimer],
+        args: [multisig, zkpToken, pantherTreasury],
         proxy: {
             proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
