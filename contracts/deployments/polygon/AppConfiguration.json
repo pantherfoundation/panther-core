@@ -1,0 +1,345 @@
+{
+  "address": "0xD77e02d54FC3d26B0f3d614EA245EBF3d97aE70f",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "txType",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint160",
+          "name": "newId",
+          "type": "uint160"
+        }
+      ],
+      "name": "CircuitIdUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "maxBlockTimeOffset",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxBlockTimeOffsetUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "txType",
+          "type": "uint16"
+        }
+      ],
+      "name": "getCircuitIds",
+      "outputs": [
+        {
+          "internalType": "uint160",
+          "name": "",
+          "type": "uint160"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "nullifier",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getIsSpent",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMaxBlockTimeOffset",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "txType",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint160",
+          "name": "circuitId",
+          "type": "uint160"
+        }
+      ],
+      "name": "updateCircuitId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_maxBlockTimeOffset",
+          "type": "uint32"
+        }
+      ],
+      "name": "updateMaxBlockTimeOffset",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xc96bfcfbdc6f6e421eb562753a2832a8b8ba85e78b0823ce67c1ab24a6d310d1",
+  "receipt": {
+    "to": null,
+    "from": "0xFee6D2Cb5816282D853fba79cB9C8b5EDB7908Cd",
+    "contractAddress": "0xD77e02d54FC3d26B0f3d614EA245EBF3d97aE70f",
+    "transactionIndex": 7,
+    "gasUsed": "277427",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000008000000000000000000000000000000200000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000400000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100001",
+    "blockHash": "0x30641b7a0a94c637c2a74c3a6d933336d90e53d66a43799e558169441e3f10cc",
+    "transactionHash": "0xc96bfcfbdc6f6e421eb562753a2832a8b8ba85e78b0823ce67c1ab24a6d310d1",
+    "logs": [
+      {
+        "transactionIndex": 7,
+        "blockNumber": 79882285,
+        "transactionHash": "0xc96bfcfbdc6f6e421eb562753a2832a8b8ba85e78b0823ce67c1ab24a6d310d1",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000fee6d2cb5816282d853fba79cb9c8b5edb7908cd",
+          "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000004b648d1305a89000000000000000000000000000000000000000000000000180fdd1bce022a798000000000000000000000000000000000000000000020ff506247bcdbcf0aed500000000000000000000000000000000000000000000000180b26d2fcd1cff08000000000000000000000000000000000000000000020ff5066fe05acff65765",
+        "logIndex": 23,
+        "blockHash": "0x30641b7a0a94c637c2a74c3a6d933336d90e53d66a43799e558169441e3f10cc"
+      }
+    ],
+    "blockNumber": 79882285,
+    "cumulativeGasUsed": "813342",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "9f3f51490bd9b2b218725207bb375da9",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"txType\",\"type\":\"uint16\"},{\"indexed\":false,\"internalType\":\"uint160\",\"name\":\"newId\",\"type\":\"uint160\"}],\"name\":\"CircuitIdUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"maxBlockTimeOffset\",\"type\":\"uint256\"}],\"name\":\"MaxBlockTimeOffsetUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"txType\",\"type\":\"uint16\"}],\"name\":\"getCircuitIds\",\"outputs\":[{\"internalType\":\"uint160\",\"name\":\"\",\"type\":\"uint160\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier\",\"type\":\"bytes32\"}],\"name\":\"getIsSpent\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMaxBlockTimeOffset\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"txType\",\"type\":\"uint16\"},{\"internalType\":\"uint160\",\"name\":\"circuitId\",\"type\":\"uint160\"}],\"name\":\"updateCircuitId\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_maxBlockTimeOffset\",\"type\":\"uint32\"}],\"name\":\"updateMaxBlockTimeOffset\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"All of the Diamond's facets share access to the App storage. The getter methods for reading the App storage are defined only in this facet, as each function can be added to the Diamond only once.\",\"events\":{\"CircuitIdUpdated(uint16,uint160)\":{\"params\":{\"newId\":\"The new circuit ID associated with the transaction type\",\"txType\":\"The type of transaction being updated.\"}},\"MaxBlockTimeOffsetUpdated(uint256)\":{\"params\":{\"maxBlockTimeOffset\":\"The new maximum block time offset.\"}}},\"kind\":\"dev\",\"methods\":{\"getCircuitIds(uint16)\":{\"params\":{\"txType\":\"The transaction type for which to fetch the circuit ID.\"},\"returns\":{\"_0\":\"The circuit ID associated with the given pointer.\"}},\"getIsSpent(bytes32)\":{\"params\":{\"nullifier\":\"The nullifier to check.\"},\"returns\":{\"_0\":\"The block number at which the nullifier was spent, or 0 if it has not been spent.\"}},\"getMaxBlockTimeOffset()\":{\"returns\":{\"_0\":\"The maximum block time offset.\"}},\"updateCircuitId(uint16,uint160)\":{\"details\":\"This function can only be called by the contract owner. Transaction types can include 0x100 for zAccount activation or 0x106 for zSwap.\",\"params\":{\"circuitId\":\"The new circuit ID to be set for the given transaction type.\",\"txType\":\"The type of transaction for which the circuit ID is being updated.\"}},\"updateMaxBlockTimeOffset(uint32)\":{\"details\":\"This function can only be called by the contract owner. The difference between the createTime or spendTime provided by the user as a public signal and the current block time must not exceed the maxBlockTimeOffset. This check can be disabled by setting _maxBlockTimeOffset to 0.\",\"params\":{\"_maxBlockTimeOffset\":\"The new maximum block time offset value to be set.\"}}},\"title\":\"AppConfiguration\",\"version\":1},\"userdoc\":{\"events\":{\"CircuitIdUpdated(uint16,uint160)\":{\"notice\":\"Emitted when the circuit ID is updated for a specific transaction type.\"},\"MaxBlockTimeOffsetUpdated(uint256)\":{\"notice\":\"Emitted when the maximum block time offset is updated.\"}},\"kind\":\"user\",\"methods\":{\"getCircuitIds(uint16)\":{\"notice\":\"Retrieves the circuit ID for a given transaction type.\"},\"getIsSpent(bytes32)\":{\"notice\":\"Checks if a given nullifier has already been spent.\"},\"getMaxBlockTimeOffset()\":{\"notice\":\"Retrieves the current maximum block time offset.\"},\"updateCircuitId(uint16,uint160)\":{\"notice\":\"Updates the circuit ID for a given transaction type.\"},\"updateMaxBlockTimeOffset(uint32)\":{\"notice\":\"Updates the maximum block time offset.\"}},\"notice\":\"Manages configuration stored in the Diamond's App storage, including circuit IDs and block time offset.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v1/core/facets/AppConfiguration.sol\":\"AppConfiguration\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/v1/core/facets/AppConfiguration.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport \\\"../storage/AppStorage.sol\\\";\\n\\nimport \\\"../../diamond/utils/Ownable.sol\\\";\\n\\n/**\\n * @title AppConfiguration\\n * @notice Manages configuration stored in the Diamond's App storage, including\\n * circuit IDs and block time offset.\\n * @dev All of the Diamond's facets share access to the App storage. The getter methods\\n * for reading the App storage are defined only in this facet, as each function can be\\n * added to the Diamond only once.\\n */\\ncontract AppConfiguration is AppStorage, Ownable {\\n    /// @notice Emitted when the circuit ID is updated for a specific transaction type.\\n    /// @param txType The type of transaction being updated.\\n    /// @param newId The new circuit ID associated with the transaction type\\n    event CircuitIdUpdated(uint16 txType, uint160 newId);\\n\\n    /// @notice Emitted when the maximum block time offset is updated.\\n    /// @param maxBlockTimeOffset The new maximum block time offset.\\n    event MaxBlockTimeOffsetUpdated(uint256 maxBlockTimeOffset);\\n\\n    /**\\n     * @notice Updates the circuit ID for a given transaction type.\\n     * @param txType The type of transaction for which the circuit ID is being updated.\\n     * @param circuitId The new circuit ID to be set for the given transaction type.\\n     * @dev This function can only be called by the contract owner.\\n     * Transaction types can include 0x100 for zAccount activation or 0x106 for zSwap.\\n     */\\n    function updateCircuitId(\\n        uint16 txType,\\n        uint160 circuitId\\n    ) external onlyOwner {\\n        require(circuitId != 0, \\\"Zero circuit id\\\");\\n\\n        circuitIds[txType] = circuitId;\\n        emit CircuitIdUpdated(txType, circuitId);\\n    }\\n\\n    /**\\n     * @notice Updates the maximum block time offset.\\n     * @param _maxBlockTimeOffset The new maximum block time offset value to be set.\\n     * @dev  This function can only be called by the contract owner.\\n     * The difference between the createTime or spendTime provided by the user as a\\n     * public signal and the current block time must not exceed the maxBlockTimeOffset.\\n     * This check can be disabled by setting _maxBlockTimeOffset to 0.\\n     */\\n    function updateMaxBlockTimeOffset(\\n        uint32 _maxBlockTimeOffset\\n    ) external onlyOwner {\\n        require(\\n            _maxBlockTimeOffset <= 60 minutes,\\n            \\\"Too high block time offset\\\"\\n        );\\n        maxBlockTimeOffset = _maxBlockTimeOffset;\\n\\n        emit MaxBlockTimeOffsetUpdated(_maxBlockTimeOffset);\\n    }\\n\\n    /**\\n     * @notice Retrieves the circuit ID for a given transaction type.\\n     * @param txType The transaction type for which to fetch the circuit ID.\\n     * @return The circuit ID associated with the given pointer.\\n     */\\n    function getCircuitIds(uint16 txType) external view returns (uint160) {\\n        return circuitIds[txType];\\n    }\\n\\n    /**\\n     * @notice Retrieves the current maximum block time offset.\\n     * @return The maximum block time offset.\\n     */\\n    function getMaxBlockTimeOffset() external view returns (uint32) {\\n        return maxBlockTimeOffset;\\n    }\\n\\n    /**\\n     * @notice Checks if a given nullifier has already been spent.\\n     * @param nullifier The nullifier to check.\\n     * @return The block number at which the nullifier was spent, or 0 if\\n     * it has not been spent.\\n     */\\n    function getIsSpent(bytes32 nullifier) external view returns (uint256) {\\n        return isSpent[nullifier];\\n    }\\n}\\n\",\"keccak256\":\"0x5d2492f144bd8839d2d3e8d201597a49239ebf389b53f28f33bab2588c6e0360\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/storage/AppStorage.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport { APP_STORAGE_END_GAP } from \\\"./Constants.sol\\\";\\n\\nabstract contract AppStorage {\\n    mapping(uint16 => uint160) internal circuitIds;\\n\\n    mapping(address => uint256) internal feeMasterDebt;\\n\\n    mapping(bytes32 => uint256) internal isSpent;\\n\\n    uint32 internal maxBlockTimeOffset;\\n\\n    bytes32[APP_STORAGE_END_GAP] private _endGap;\\n}\\n\",\"keccak256\":\"0xbd384ab1bdd2dc4497dd21a03aeeed968f0adeac0b37258804cd62a48cdd4eab\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/storage/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nuint256 constant APP_STORAGE_END_GAP = 1e2;\\n\\nuint256 constant ZACCOUNT_REGISTRATION_START_GAP = 1e3;\\nuint256 constant PRP_VOUCHER_CONTROLLER_START_GAP = 3e3;\\nuint256 constant PRP_CONVERSION_START_GAP = 5e3;\\nuint256 constant Z_TRANSACTION_START_GAP = 7e3;\\nuint256 constant Z_SWAP_START_GAP = 9e3;\\nuint256 constant FEE_MASTER_TOTAL_DEBT_CONTROLLER_GAP = 11e3;\\nuint256 constant ZACCOUNT_RENEWAL_START_GAP = 13e3;\\n\",\"keccak256\":\"0x4d3c6085c5bf8bcd00094be898f274f756ec9ce940008216f616a92bbec1da58\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/diamond/interfaces/IDiamondCut.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// solhint-disable compiler-version\\npragma solidity ^0.8.0;\\n\\n/******************************************************************************\\\\\\n* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)\\n* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535\\n/******************************************************************************/\\n\\ninterface IDiamondCut {\\n    enum FacetCutAction {\\n        Add,\\n        Replace,\\n        Remove\\n    }\\n    // Add=0, Replace=1, Remove=2\\n\\n    struct FacetCut {\\n        address facetAddress;\\n        FacetCutAction action;\\n        bytes4[] functionSelectors;\\n    }\\n\\n    /// @notice Add/replace/remove any number of functions and optionally execute\\n    ///         a function with delegatecall\\n    /// @param _diamondCut Contains the facet addresses and function selectors\\n    /// @param _init The address of the contract or facet to execute _calldata\\n    /// @param _calldata A function call, including function selector and arguments\\n    ///                  _calldata is executed with delegatecall on _init\\n    function diamondCut(\\n        FacetCut[] calldata _diamondCut,\\n        address _init,\\n        bytes calldata _calldata\\n    ) external;\\n\\n    event DiamondCut(FacetCut[] _diamondCut, address _init, bytes _calldata);\\n}\\n\",\"keccak256\":\"0x99a090e6aef752b19f1dd2165fab90a3d9a34d2e0c18ac5d15168d96622e37d4\",\"license\":\"MIT\"},\"contracts/protocol/v1/diamond/libraries/LibDiamond.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// solhint-disable code-complexity\\n// solhint-disable compiler-version\\n// solhint-disable state-visibility\\n// solhint-disable no-inline-assembly\\n// solhint-disable avoid-low-level-calls\\npragma solidity ^0.8.0;\\n\\n/******************************************************************************\\\\\\n* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)\\n* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535\\n/******************************************************************************/\\nimport { IDiamondCut } from \\\"../interfaces/IDiamondCut.sol\\\";\\n\\n// Remember to add the loupe functions from DiamondLoupeFacet to the diamond.\\n// The loupe functions are required by the EIP2535 Diamonds standard\\n\\nerror InitializationFunctionReverted(\\n    address _initializationContractAddress,\\n    bytes _calldata\\n);\\n\\nlibrary LibDiamond {\\n    bytes32 constant DIAMOND_STORAGE_POSITION =\\n        keccak256(\\\"diamond.standard.diamond.storage\\\");\\n\\n    // keccak256(\\\"owner.position\\\");\\n    bytes32 constant OWNER_POSITION =\\n        0x727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44;\\n\\n    // keccak256(\\\"reentrancy.status.position\\\");\\n    bytes32 constant REENTRANCY_STATUS_POSITION =\\n        0xa2d689582372faaaa3b92103e3057ffde86663fa2f4d2f6c8f9da8a22702278d;\\n\\n    struct DiamondStorage {\\n        // maps function selectors to the facets that execute the functions.\\n        // and maps the selectors to their position in the selectorSlots array.\\n        // func selector => address facet, selector position\\n        mapping(bytes4 => bytes32) facets;\\n        // array of slots of function selectors.\\n        // each slot holds 8 function selectors.\\n        mapping(uint256 => bytes32) selectorSlots;\\n        // The number of function selectors in selectorSlots\\n        uint16 selectorCount;\\n        // Used to query if a contract implements an interface.\\n        // Used to implement ERC-165.\\n        mapping(bytes4 => bool) supportedInterfaces;\\n    }\\n\\n    function diamondStorage()\\n        internal\\n        pure\\n        returns (DiamondStorage storage ds)\\n    {\\n        bytes32 position = DIAMOND_STORAGE_POSITION;\\n        assembly {\\n            ds.slot := position\\n        }\\n    }\\n\\n    function reentrancyStatus()\\n        internal\\n        view\\n        returns (uint256 _reentrancyStatus)\\n    {\\n        bytes32 position = REENTRANCY_STATUS_POSITION;\\n        assembly {\\n            _reentrancyStatus := sload(position)\\n        }\\n    }\\n\\n    function setReentrancyStatus(uint256 status) internal {\\n        assembly {\\n            sstore(REENTRANCY_STATUS_POSITION, status)\\n        }\\n    }\\n\\n    function owner() internal view returns (address _owner) {\\n        bytes32 position = OWNER_POSITION;\\n        assembly {\\n            _owner := sload(position)\\n        }\\n    }\\n\\n    event OwnershipUpdated(address owner);\\n\\n    function setContractOwner(address _owner) internal {\\n        assembly {\\n            sstore(OWNER_POSITION, _owner)\\n        }\\n        emit OwnershipUpdated(_owner);\\n    }\\n\\n    function enforceOwner() internal view {\\n        require(msg.sender == owner(), \\\"LibDiamond: Must be contract owner\\\");\\n    }\\n\\n    event DiamondCut(\\n        IDiamondCut.FacetCut[] _diamondCut,\\n        address _init,\\n        bytes _calldata\\n    );\\n\\n    bytes32 constant CLEAR_ADDRESS_MASK =\\n        bytes32(uint256(0xffffffffffffffffffffffff));\\n    bytes32 constant CLEAR_SELECTOR_MASK = bytes32(uint256(0xffffffff << 224));\\n\\n    // Internal function version of diamondCut\\n    // This code is almost the same as the external diamondCut,\\n    // except it is using 'Facet[] memory _diamondCut' instead of\\n    // 'Facet[] calldata _diamondCut'.\\n    // The code is duplicated to prevent copying calldata to memory which\\n    // causes an error for a two dimensional array.\\n    function diamondCut(\\n        IDiamondCut.FacetCut[] memory _diamondCut,\\n        address _init,\\n        bytes memory _calldata\\n    ) internal {\\n        DiamondStorage storage ds = diamondStorage();\\n        uint256 originalSelectorCount = ds.selectorCount;\\n        uint256 selectorCount = originalSelectorCount;\\n        bytes32 selectorSlot;\\n        // Check if last selector slot is not full\\n        // \\\"selectorCount & 7\\\" is a gas efficient modulo by eight \\\"selectorCount % 8\\\"\\n        if (selectorCount & 7 > 0) {\\n            // get last selectorSlot\\n            // \\\"selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"selectorSlot / 8\\\"\\n            selectorSlot = ds.selectorSlots[selectorCount >> 3];\\n        }\\n        // loop through diamond cut\\n        for (uint256 facetIndex; facetIndex < _diamondCut.length; ) {\\n            (selectorCount, selectorSlot) = addReplaceRemoveFacetSelectors(\\n                selectorCount,\\n                selectorSlot,\\n                _diamondCut[facetIndex].facetAddress,\\n                _diamondCut[facetIndex].action,\\n                _diamondCut[facetIndex].functionSelectors\\n            );\\n\\n            unchecked {\\n                facetIndex++;\\n            }\\n        }\\n        if (selectorCount != originalSelectorCount) {\\n            ds.selectorCount = uint16(selectorCount);\\n        }\\n        // If last selector slot is not full\\n        // \\\"selectorCount & 7\\\" is a gas efficient modulo by eight \\\"selectorCount % 8\\\"\\n        if (selectorCount & 7 > 0) {\\n            // \\\"selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"selectorSlot / 8\\\"\\n            ds.selectorSlots[selectorCount >> 3] = selectorSlot;\\n        }\\n        emit DiamondCut(_diamondCut, _init, _calldata);\\n        initializeDiamondCut(_init, _calldata);\\n    }\\n\\n    function addReplaceRemoveFacetSelectors(\\n        uint256 _selectorCount,\\n        bytes32 _selectorSlot,\\n        address _newFacetAddress,\\n        IDiamondCut.FacetCutAction _action,\\n        bytes4[] memory _selectors\\n    ) internal returns (uint256, bytes32) {\\n        DiamondStorage storage ds = diamondStorage();\\n        require(\\n            _selectors.length > 0,\\n            \\\"LibDiamondCut: No selectors in facet to cut\\\"\\n        );\\n        if (_action == IDiamondCut.FacetCutAction.Add) {\\n            enforceHasContractCode(\\n                _newFacetAddress,\\n                \\\"LibDiamondCut: Add facet has no code\\\"\\n            );\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                bytes4 selector = _selectors[selectorIndex];\\n                bytes32 oldFacet = ds.facets[selector];\\n                require(\\n                    address(bytes20(oldFacet)) == address(0),\\n                    \\\"LibDiamondCut: Can't add function that already exists\\\"\\n                );\\n                // add facet for selector\\n                ds.facets[selector] =\\n                    bytes20(_newFacetAddress) |\\n                    bytes32(_selectorCount);\\n                // \\\"_selectorCount & 7\\\" is a gas efficient modulo by eight \\\"_selectorCount % 8\\\"\\n                // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                uint256 selectorInSlotPosition = (_selectorCount & 7) << 5;\\n                // clear selector position in slot and add selector\\n                _selectorSlot =\\n                    (_selectorSlot &\\n                        ~(CLEAR_SELECTOR_MASK >> selectorInSlotPosition)) |\\n                    (bytes32(selector) >> selectorInSlotPosition);\\n                // if slot is full then write it to storage\\n                if (selectorInSlotPosition == 224) {\\n                    // \\\"_selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"_selectorSlot / 8\\\"\\n                    ds.selectorSlots[_selectorCount >> 3] = _selectorSlot;\\n                    _selectorSlot = 0;\\n                }\\n                _selectorCount++;\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n        } else if (_action == IDiamondCut.FacetCutAction.Replace) {\\n            enforceHasContractCode(\\n                _newFacetAddress,\\n                \\\"LibDiamondCut: Replace facet has no code\\\"\\n            );\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                bytes4 selector = _selectors[selectorIndex];\\n                bytes32 oldFacet = ds.facets[selector];\\n                address oldFacetAddress = address(bytes20(oldFacet));\\n                // only useful if immutable functions exist\\n                require(\\n                    oldFacetAddress != address(this),\\n                    \\\"LibDiamondCut: Can't replace immutable function\\\"\\n                );\\n                require(\\n                    oldFacetAddress != _newFacetAddress,\\n                    \\\"LibDiamondCut: Can't replace function with same function\\\"\\n                );\\n                require(\\n                    oldFacetAddress != address(0),\\n                    \\\"LibDiamondCut: Can't replace function that doesn't exist\\\"\\n                );\\n                // replace old facet address\\n                ds.facets[selector] =\\n                    (oldFacet & CLEAR_ADDRESS_MASK) |\\n                    bytes20(_newFacetAddress);\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n        } else if (_action == IDiamondCut.FacetCutAction.Remove) {\\n            require(\\n                _newFacetAddress == address(0),\\n                \\\"LibDiamondCut: Remove facet address must be address(0)\\\"\\n            );\\n            // \\\"_selectorCount >> 3\\\" is a gas efficient division by 8 \\\"_selectorCount / 8\\\"\\n            uint256 selectorSlotCount = _selectorCount >> 3;\\n            // \\\"_selectorCount & 7\\\" is a gas efficient modulo by eight \\\"_selectorCount % 8\\\"\\n            uint256 selectorInSlotIndex = _selectorCount & 7;\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                if (selectorInSlotIndex == 0) {\\n                    // get last selectorSlot\\n                    selectorSlotCount--;\\n                    _selectorSlot = ds.selectorSlots[selectorSlotCount];\\n                    selectorInSlotIndex = 7;\\n                } else {\\n                    selectorInSlotIndex--;\\n                }\\n                bytes4 lastSelector;\\n                uint256 oldSelectorsSlotCount;\\n                uint256 oldSelectorInSlotPosition;\\n                // adding a block here prevents stack too deep error\\n                {\\n                    bytes4 selector = _selectors[selectorIndex];\\n                    bytes32 oldFacet = ds.facets[selector];\\n                    require(\\n                        address(bytes20(oldFacet)) != address(0),\\n                        \\\"LibDiamondCut: Can't remove function that doesn't exist\\\"\\n                    );\\n                    // only useful if immutable functions exist\\n                    require(\\n                        address(bytes20(oldFacet)) != address(this),\\n                        \\\"LibDiamondCut: Can't remove immutable function\\\"\\n                    );\\n                    // replace selector with last selector in ds.facets\\n                    // gets the last selector\\n                    // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                    lastSelector = bytes4(\\n                        _selectorSlot << (selectorInSlotIndex << 5)\\n                    );\\n                    if (lastSelector != selector) {\\n                        // update last selector slot position info\\n                        ds.facets[lastSelector] =\\n                            (oldFacet & CLEAR_ADDRESS_MASK) |\\n                            bytes20(ds.facets[lastSelector]);\\n                    }\\n                    delete ds.facets[selector];\\n                    uint256 oldSelectorCount = uint16(uint256(oldFacet));\\n                    // \\\"oldSelectorCount >> 3\\\" is a gas efficient division by 8 \\\"oldSelectorCount / 8\\\"\\n                    oldSelectorsSlotCount = oldSelectorCount >> 3;\\n                    // \\\"oldSelectorCount & 7\\\" is a gas efficient modulo by eight \\\"oldSelectorCount % 8\\\"\\n                    // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                    oldSelectorInSlotPosition = (oldSelectorCount & 7) << 5;\\n                }\\n                if (oldSelectorsSlotCount != selectorSlotCount) {\\n                    bytes32 oldSelectorSlot = ds.selectorSlots[\\n                        oldSelectorsSlotCount\\n                    ];\\n                    // clears the selector we are deleting and puts the last selector in its place.\\n                    oldSelectorSlot =\\n                        (oldSelectorSlot &\\n                            ~(CLEAR_SELECTOR_MASK >>\\n                                oldSelectorInSlotPosition)) |\\n                        (bytes32(lastSelector) >> oldSelectorInSlotPosition);\\n                    // update storage with the modified slot\\n                    ds.selectorSlots[oldSelectorsSlotCount] = oldSelectorSlot;\\n                } else {\\n                    // clears the selector we are deleting and puts the last selector in its place.\\n                    _selectorSlot =\\n                        (_selectorSlot &\\n                            ~(CLEAR_SELECTOR_MASK >>\\n                                oldSelectorInSlotPosition)) |\\n                        (bytes32(lastSelector) >> oldSelectorInSlotPosition);\\n                }\\n                if (selectorInSlotIndex == 0) {\\n                    delete ds.selectorSlots[selectorSlotCount];\\n                    _selectorSlot = 0;\\n                }\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n            _selectorCount = selectorSlotCount * 8 + selectorInSlotIndex;\\n        } else {\\n            revert(\\\"LibDiamondCut: Incorrect FacetCutAction\\\");\\n        }\\n        return (_selectorCount, _selectorSlot);\\n    }\\n\\n    function initializeDiamondCut(\\n        address _init,\\n        bytes memory _calldata\\n    ) internal {\\n        if (_init == address(0)) {\\n            return;\\n        }\\n        enforceHasContractCode(\\n            _init,\\n            \\\"LibDiamondCut: _init address has no code\\\"\\n        );\\n        (bool success, bytes memory error) = _init.delegatecall(_calldata);\\n        if (!success) {\\n            if (error.length > 0) {\\n                // bubble up error\\n                /// @solidity memory-safe-assembly\\n                assembly {\\n                    let returndata_size := mload(error)\\n                    revert(add(32, error), returndata_size)\\n                }\\n            } else {\\n                revert InitializationFunctionReverted(_init, _calldata);\\n            }\\n        }\\n    }\\n\\n    function enforceHasContractCode(\\n        address _contract,\\n        string memory _errorMessage\\n    ) internal view {\\n        uint256 contractSize;\\n        assembly {\\n            contractSize := extcodesize(_contract)\\n        }\\n        require(contractSize > 0, _errorMessage);\\n    }\\n}\\n\",\"keccak256\":\"0x8dfe204f060f2218bdec2e143d27fae7fe74abf7014e7efc517f522c936343b4\",\"license\":\"MIT\"},\"contracts/protocol/v1/diamond/utils/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport { LibDiamond } from \\\"../libraries/LibDiamond.sol\\\";\\n\\nabstract contract Ownable {\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() virtual {\\n        LibDiamond.enforceOwner();\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0x0e879cfa2366461f0de8f50c5949e19e38e935149a1839b137c2b80ebe80be4d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610410806100206000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80639fb71184116100505780639fb71184146100b4578063bee86ab6146100cc578063cb8536fb1461011157600080fd5b80632d15ecc81461006c57806355294dd61461009f575b600080fd5b61008c61007a366004610348565b60009081526002602052604090205490565b6040519081526020015b60405180910390f35b6100b26100ad366004610361565b610124565b005b60035460405163ffffffff9091168152602001610096565b6100f96100da3660046103a5565b61ffff166000908152602081905260409020546001600160a01b031690565b6040516001600160a01b039091168152602001610096565b6100b261011f3660046103c0565b6101d7565b61012c6102b9565b610e108163ffffffff1611156101895760405162461bcd60e51b815260206004820152601a60248201527f546f6f206869676820626c6f636b2074696d65206f666673657400000000000060448201526064015b60405180910390fd5b6003805463ffffffff191663ffffffff83169081179091556040519081527f54252f4a2a0ef794f058965cb22574b9f814522640a2690c3d6e81293442c2a39060200160405180910390a150565b6101df6102b9565b806001600160a01b03166000036102385760405162461bcd60e51b815260206004820152600f60248201527f5a65726f206369726375697420696400000000000000000000000000000000006044820152606401610180565b61ffff82166000818152602081815260409182902080547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0386169081179091558251938452908301527f326bff2015d366a9e5c2903cf61ee16f401a240424db4acd4379f3e5cc5b9757910160405180910390a15050565b7f727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44546001600160a01b0316336001600160a01b0316146103465760405162461bcd60e51b815260206004820152602260248201527f4c69624469616d6f6e643a204d75737420626520636f6e7472616374206f776e60448201526132b960f11b6064820152608401610180565b565b60006020828403121561035a57600080fd5b5035919050565b60006020828403121561037357600080fd5b813563ffffffff8116811461038757600080fd5b9392505050565b803561ffff811681146103a057600080fd5b919050565b6000602082840312156103b757600080fd5b6103878261038e565b600080604083850312156103d357600080fd5b6103dc8361038e565b915060208301356001600160a01b03811681146103f857600080fd5b80915050925092905056fea164736f6c6343000813000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100675760003560e01c80639fb71184116100505780639fb71184146100b4578063bee86ab6146100cc578063cb8536fb1461011157600080fd5b80632d15ecc81461006c57806355294dd61461009f575b600080fd5b61008c61007a366004610348565b60009081526002602052604090205490565b6040519081526020015b60405180910390f35b6100b26100ad366004610361565b610124565b005b60035460405163ffffffff9091168152602001610096565b6100f96100da3660046103a5565b61ffff166000908152602081905260409020546001600160a01b031690565b6040516001600160a01b039091168152602001610096565b6100b261011f3660046103c0565b6101d7565b61012c6102b9565b610e108163ffffffff1611156101895760405162461bcd60e51b815260206004820152601a60248201527f546f6f206869676820626c6f636b2074696d65206f666673657400000000000060448201526064015b60405180910390fd5b6003805463ffffffff191663ffffffff83169081179091556040519081527f54252f4a2a0ef794f058965cb22574b9f814522640a2690c3d6e81293442c2a39060200160405180910390a150565b6101df6102b9565b806001600160a01b03166000036102385760405162461bcd60e51b815260206004820152600f60248201527f5a65726f206369726375697420696400000000000000000000000000000000006044820152606401610180565b61ffff82166000818152602081815260409182902080547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0386169081179091558251938452908301527f326bff2015d366a9e5c2903cf61ee16f401a240424db4acd4379f3e5cc5b9757910160405180910390a15050565b7f727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44546001600160a01b0316336001600160a01b0316146103465760405162461bcd60e51b815260206004820152602260248201527f4c69624469616d6f6e643a204d75737420626520636f6e7472616374206f776e60448201526132b960f11b6064820152608401610180565b565b60006020828403121561035a57600080fd5b5035919050565b60006020828403121561037357600080fd5b813563ffffffff8116811461038757600080fd5b9392505050565b803561ffff811681146103a057600080fd5b919050565b6000602082840312156103b757600080fd5b6103878261038e565b600080604083850312156103d357600080fd5b6103dc8361038e565b915060208301356001600160a01b03811681146103f857600080fd5b80915050925092905056fea164736f6c6343000813000a",
+  "devdoc": {
+    "details": "All of the Diamond's facets share access to the App storage. The getter methods for reading the App storage are defined only in this facet, as each function can be added to the Diamond only once.",
+    "events": {
+      "CircuitIdUpdated(uint16,uint160)": {
+        "params": {
+          "newId": "The new circuit ID associated with the transaction type",
+          "txType": "The type of transaction being updated."
+        }
+      },
+      "MaxBlockTimeOffsetUpdated(uint256)": {
+        "params": {
+          "maxBlockTimeOffset": "The new maximum block time offset."
+        }
+      }
+    },
+    "kind": "dev",
+    "methods": {
+      "getCircuitIds(uint16)": {
+        "params": {
+          "txType": "The transaction type for which to fetch the circuit ID."
+        },
+        "returns": {
+          "_0": "The circuit ID associated with the given pointer."
+        }
+      },
+      "getIsSpent(bytes32)": {
+        "params": {
+          "nullifier": "The nullifier to check."
+        },
+        "returns": {
+          "_0": "The block number at which the nullifier was spent, or 0 if it has not been spent."
+        }
+      },
+      "getMaxBlockTimeOffset()": {
+        "returns": {
+          "_0": "The maximum block time offset."
+        }
+      },
+      "updateCircuitId(uint16,uint160)": {
+        "details": "This function can only be called by the contract owner. Transaction types can include 0x100 for zAccount activation or 0x106 for zSwap.",
+        "params": {
+          "circuitId": "The new circuit ID to be set for the given transaction type.",
+          "txType": "The type of transaction for which the circuit ID is being updated."
+        }
+      },
+      "updateMaxBlockTimeOffset(uint32)": {
+        "details": "This function can only be called by the contract owner. The difference between the createTime or spendTime provided by the user as a public signal and the current block time must not exceed the maxBlockTimeOffset. This check can be disabled by setting _maxBlockTimeOffset to 0.",
+        "params": {
+          "_maxBlockTimeOffset": "The new maximum block time offset value to be set."
+        }
+      }
+    },
+    "title": "AppConfiguration",
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "CircuitIdUpdated(uint16,uint160)": {
+        "notice": "Emitted when the circuit ID is updated for a specific transaction type."
+      },
+      "MaxBlockTimeOffsetUpdated(uint256)": {
+        "notice": "Emitted when the maximum block time offset is updated."
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "getCircuitIds(uint16)": {
+        "notice": "Retrieves the circuit ID for a given transaction type."
+      },
+      "getIsSpent(bytes32)": {
+        "notice": "Checks if a given nullifier has already been spent."
+      },
+      "getMaxBlockTimeOffset()": {
+        "notice": "Retrieves the current maximum block time offset."
+      },
+      "updateCircuitId(uint16,uint160)": {
+        "notice": "Updates the circuit ID for a given transaction type."
+      },
+      "updateMaxBlockTimeOffset(uint32)": {
+        "notice": "Updates the maximum block time offset."
+      }
+    },
+    "notice": "Manages configuration stored in the Diamond's App storage, including circuit IDs and block time offset.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 27652,
+        "contract": "contracts/protocol/v1/core/facets/AppConfiguration.sol:AppConfiguration",
+        "label": "circuitIds",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_uint16,t_uint160)"
+      },
+      {
+        "astId": 27656,
+        "contract": "contracts/protocol/v1/core/facets/AppConfiguration.sol:AppConfiguration",
+        "label": "feeMasterDebt",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 27660,
+        "contract": "contracts/protocol/v1/core/facets/AppConfiguration.sol:AppConfiguration",
+        "label": "isSpent",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_bytes32,t_uint256)"
+      },
+      {
+        "astId": 27662,
+        "contract": "contracts/protocol/v1/core/facets/AppConfiguration.sol:AppConfiguration",
+        "label": "maxBlockTimeOffset",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint32"
+      },
+      {
+        "astId": 27666,
+        "contract": "contracts/protocol/v1/core/facets/AppConfiguration.sol:AppConfiguration",
+        "label": "_endGap",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_array(t_bytes32)100_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_bytes32)100_storage": {
+        "base": "t_bytes32",
+        "encoding": "inplace",
+        "label": "bytes32[100]",
+        "numberOfBytes": "3200"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint16,t_uint160)": {
+        "encoding": "mapping",
+        "key": "t_uint16",
+        "label": "mapping(uint16 => uint160)",
+        "numberOfBytes": "32",
+        "value": "t_uint160"
+      },
+      "t_uint16": {
+        "encoding": "inplace",
+        "label": "uint16",
+        "numberOfBytes": "2"
+      },
+      "t_uint160": {
+        "encoding": "inplace",
+        "label": "uint160",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint32": {
+        "encoding": "inplace",
+        "label": "uint32",
+        "numberOfBytes": "4"
+      }
+    }
+  }
+}
