@@ -32,4 +32,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['paymaster-imp', 'protocol-v1', 'protocol-v1-deploy'];
-func.dependencies = ['account', 'upgrade-fee-master', 'core-diamond'];
+func.dependencies = ['account', 'fee-master-proxy', 'core-diamond'];

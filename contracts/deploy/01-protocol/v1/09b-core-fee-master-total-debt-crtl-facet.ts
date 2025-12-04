@@ -35,4 +35,4 @@ func.tags = [
     'protocol-v1',
     'protocol-v1-deploy',
 ];
-func.dependencies = ['vault-v1', 'upgrade-fee-master'];
+func.dependencies = ['vault-v1', 'fee-master-proxy'];

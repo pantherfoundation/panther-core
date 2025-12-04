@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const feeMaster = (await get('FeeMaster_Proxy')).address;
     const payMaster = (await get('Paymaster_Proxy')).address;
-    const zkpReserveController = (await get('zkp-reserve-controller')).address;
+    const zkpReserveController = (await get('ZkpReserveController')).address;
     const coreDiamond = (await get('PantherPoolV1')).address;
 
     await deploy('PrpRewardEstimator', {
@@ -38,7 +38,7 @@ func.tags = [
 ];
 func.dependencies = [
     'core-diamond',
-    'fee-master-proxy-only',
+    'fee-master-proxy',
     'paymaster-proxy',
     'zkp-reserve-controller',
 ];
