@@ -14,7 +14,11 @@
             "name": "pantherTrees",
             "type": "address"
           },
-          {"internalType": "address", "name": "paymaster", "type": "address"},
+          {
+            "internalType": "address",
+            "name": "paymaster",
+            "type": "address"
+          },
           {
             "internalType": "address",
             "name": "trustProvider",
@@ -88,8 +92,16 @@
             "name": "scPerUtxoReward",
             "type": "uint32"
           },
-          {"internalType": "uint32", "name": "scPerKytFee", "type": "uint32"},
-          {"internalType": "uint32", "name": "scKycFee", "type": "uint32"},
+          {
+            "internalType": "uint32",
+            "name": "scPerKytFee",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "scKycFee",
+            "type": "uint32"
+          },
           {
             "internalType": "uint16",
             "name": "protocolFeePercentage",
@@ -327,7 +339,11 @@
     "inputs": [
       {
         "components": [
-          {"internalType": "uint16", "name": "txType", "type": "uint16"},
+          {
+            "internalType": "uint16",
+            "name": "txType",
+            "type": "uint16"
+          },
           {
             "internalType": "uint8",
             "name": "numOutputUtxos",
@@ -385,14 +401,26 @@
             "name": "scMiningReward",
             "type": "uint40"
           },
-          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
-          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scKytFees",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scKycFee",
+            "type": "uint40"
+          },
           {
             "internalType": "uint40",
             "name": "scPaymasterCompensationInNative",
             "type": "uint40"
           },
-          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+          {
+            "internalType": "uint96",
+            "name": "protocolFee",
+            "type": "uint96"
+          }
         ],
         "internalType": "struct ChargedFeesPerTx",
         "name": "chargedFeesPerTx",
@@ -406,7 +434,11 @@
     "inputs": [
       {
         "components": [
-          {"internalType": "uint16", "name": "txType", "type": "uint16"},
+          {
+            "internalType": "uint16",
+            "name": "txType",
+            "type": "uint16"
+          },
           {
             "internalType": "uint8",
             "name": "numOutputUtxos",
@@ -442,14 +474,26 @@
             "name": "scMiningReward",
             "type": "uint40"
           },
-          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
-          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scKytFees",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scKycFee",
+            "type": "uint40"
+          },
           {
             "internalType": "uint40",
             "name": "scPaymasterCompensationInNative",
             "type": "uint40"
           },
-          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+          {
+            "internalType": "uint96",
+            "name": "protocolFee",
+            "type": "uint96"
+          }
         ],
         "internalType": "struct ChargedFeesPerTx",
         "name": "chargedFeesPerTx",
@@ -521,7 +565,11 @@
     "inputs": [],
     "name": "feeParams",
     "outputs": [
-      {"internalType": "uint32", "name": "scPerUtxoReward", "type": "uint32"},
+      {
+        "internalType": "uint32",
+        "name": "scPerUtxoReward",
+        "type": "uint32"
+      },
       {"internalType": "uint32", "name": "scPerKytFee", "type": "uint32"},
       {"internalType": "uint32", "name": "scKycFee", "type": "uint32"},
       {
@@ -552,7 +600,11 @@
   },
   {
     "inputs": [
-      {"internalType": "uint256", "name": "nativeAmount", "type": "uint256"}
+      {
+        "internalType": "uint256",
+        "name": "nativeAmount",
+        "type": "uint256"
+      }
     ],
     "name": "getNativeRateInZkp",
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
@@ -563,7 +615,11 @@
     "inputs": [
       {"internalType": "address", "name": "pool", "type": "address"},
       {"internalType": "address", "name": "baseToken", "type": "address"},
-      {"internalType": "address", "name": "quoteToken", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "quoteToken",
+        "type": "address"
+      },
       {"internalType": "uint256", "name": "baseAmount", "type": "uint256"}
     ],
     "name": "getQuoteAmount",
@@ -625,7 +681,11 @@
   },
   {
     "inputs": [
-      {"internalType": "address", "name": "tokenAddress", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      },
       {"internalType": "address", "name": "receiver", "type": "address"},
       {"internalType": "uint256", "name": "amount", "type": "uint256"}
     ],
@@ -646,7 +706,11 @@
   },
   {
     "inputs": [
-      {"internalType": "bytes32", "name": "secretHash", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "secretHash",
+        "type": "bytes32"
+      },
       {"internalType": "address", "name": "sellToken", "type": "address"}
     ],
     "name": "rebalanceDebt",
@@ -663,8 +727,16 @@
   },
   {
     "inputs": [
-      {"internalType": "int256", "name": "amount0Delta", "type": "int256"},
-      {"internalType": "int256", "name": "amount1Delta", "type": "int256"},
+      {
+        "internalType": "int256",
+        "name": "amount0Delta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "amount1Delta",
+        "type": "int256"
+      },
       {"internalType": "bytes", "name": "data", "type": "bytes"}
     ],
     "name": "uniswapV3SwapCallback",
@@ -688,7 +760,11 @@
   },
   {
     "inputs": [
-      {"internalType": "uint96", "name": "perUtxoReward", "type": "uint96"},
+      {
+        "internalType": "uint96",
+        "name": "perUtxoReward",
+        "type": "uint96"
+      },
       {"internalType": "uint96", "name": "perKytFee", "type": "uint96"},
       {"internalType": "uint96", "name": "kycFee", "type": "uint96"},
       {

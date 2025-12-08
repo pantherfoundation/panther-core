@@ -6,7 +6,6 @@ const removeIgnoredFiles = async (prefix, cfgFile, ignorePath, files) => {
         overrideConfigFile: cfgFile,
         ignorePath,
     });
-    // console.log(eslint.calculateConfigForFile(files[0]));
     const isIgnored = await Promise.all(
         files.map(file => {
             if (!file.startsWith(prefix)) {
@@ -60,16 +59,6 @@ export default {
             'yarn workspace @panther-core/contracts lint:eslint',
             toLint,
         );
-    },
-    'dapp/**/*.{js,jsx,ts,tsx}': async files => {
-        const prefix = process.cwd() + '/dapp/';
-        const toLint = await removeIgnoredFiles(
-            prefix,
-            'dapp/.eslintrc.json',
-            'dapp/.eslintignore',
-            files,
-        );
-        return run('yarn workspace @panther-core/dapp lint:eslint', toLint);
     },
     'circuits/**/*.*': async files => {
         const prefix = process.cwd() + '/circuits/';

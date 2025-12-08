@@ -1,7 +1,11 @@
 [
   {
     "inputs": [
-      {"internalType": "address", "name": "pantherTrees", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "pantherTrees",
+        "type": "address"
+      },
       {"internalType": "address", "name": "feeMaster", "type": "address"},
       {"internalType": "address", "name": "zkpToken", "type": "address"}
     ],
@@ -18,14 +22,26 @@
             "name": "scMiningReward",
             "type": "uint40"
           },
-          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
-          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scKytFees",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scKycFee",
+            "type": "uint40"
+          },
           {
             "internalType": "uint40",
             "name": "scPaymasterCompensationInNative",
             "type": "uint40"
           },
-          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+          {
+            "internalType": "uint96",
+            "name": "protocolFee",
+            "type": "uint96"
+          }
         ],
         "indexed": false,
         "internalType": "struct ChargedFeesPerTx",
@@ -133,13 +149,25 @@
   },
   {
     "inputs": [
-      {"internalType": "uint256[]", "name": "inputs", "type": "uint256[]"},
+      {
+        "internalType": "uint256[]",
+        "name": "inputs",
+        "type": "uint256[]"
+      },
       {
         "components": [
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "a",
@@ -164,8 +192,16 @@
           },
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "c",
@@ -186,7 +222,11 @@
         "name": "paymasterCompensation",
         "type": "uint96"
       },
-      {"internalType": "bytes", "name": "privateMessages", "type": "bytes"}
+      {
+        "internalType": "bytes",
+        "name": "privateMessages",
+        "type": "bytes"
+      }
     ],
     "name": "accountRewards",
     "outputs": [
@@ -208,13 +248,21 @@
   },
   {
     "inputs": [
-      {"internalType": "bytes32", "name": "_secretHash", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "_secretHash",
+        "type": "bytes32"
+      },
       {"internalType": "uint64", "name": "_amount", "type": "uint64"},
       {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"}
     ],
     "name": "generateRewards",
     "outputs": [
-      {"internalType": "uint256", "name": "_prpToGrant", "type": "uint256"}
+      {
+        "internalType": "uint256",
+        "name": "_prpToGrant",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -226,7 +274,11 @@
         "name": "_allowedContract",
         "type": "address"
       },
-      {"internalType": "bytes4", "name": "_voucherType", "type": "bytes4"},
+      {
+        "internalType": "bytes4",
+        "name": "_voucherType",
+        "type": "bytes4"
+      },
       {"internalType": "uint64", "name": "_limit", "type": "uint64"},
       {"internalType": "uint64", "name": "_amount", "type": "uint64"},
       {"internalType": "bool", "name": "_enabled", "type": "bool"}
@@ -243,7 +295,11 @@
     ],
     "name": "voucherTerms",
     "outputs": [
-      {"internalType": "uint64", "name": "rewardsGranted", "type": "uint64"},
+      {
+        "internalType": "uint64",
+        "name": "rewardsGranted",
+        "type": "uint64"
+      },
       {"internalType": "uint64", "name": "limit", "type": "uint64"},
       {"internalType": "uint64", "name": "amount", "type": "uint64"},
       {"internalType": "bool", "name": "enabled", "type": "bool"},

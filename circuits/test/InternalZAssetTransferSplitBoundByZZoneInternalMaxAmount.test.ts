@@ -3,15 +3,15 @@ import * as path from 'path';
 import circom_wasm_tester from 'circom_tester';
 const wasm_tester = circom_wasm_tester.wasm;
 
-import { getOptions } from './helpers/circomTester';
-import { wtns } from 'snarkjs';
+import {getOptions} from './helpers/circomTester';
+import {wtns} from 'snarkjs';
 import {
     deriveChildPubKeyFromRootPubKey,
     deriveChildPrivKeyFromRootPrivKey,
     deriveKeypairFromSeed,
 } from '@panther-core/crypto/lib/base/keypairs';
-import { babyjub, poseidon, eddsa } from 'circomlibjs';
-import { MerkleTree } from '@zk-kit/merkle-tree';
+import {babyjub, poseidon, eddsa} from 'circomlibjs';
+import {MerkleTree} from '@zk-kit/merkle-tree';
 
 /* 1. START ===== ZAssetUTXO Computation ===== */
 const utxoOutSpendPubKeyRandom =
@@ -804,9 +804,11 @@ describe('Internal ZAsset transfer - Non ZeroInput - Without ZZoneSealing - Spli
                 mainTxWitness,
                 null,
             );
-            throw new Error("Expected witness calculation to fail, but it succeeded");
+            throw new Error(
+                'Expected witness calculation to fail, but it succeeded',
+            );
         } catch (err: any) {
-            console.log("Caught expected error:", err.message);
+            console.log('Caught expected error:', err.message);
         }
     });
 });

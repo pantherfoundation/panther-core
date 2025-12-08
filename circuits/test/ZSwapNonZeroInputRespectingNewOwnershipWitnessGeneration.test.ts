@@ -3,10 +3,10 @@ import * as path from 'path';
 import circom_wasm_tester from 'circom_tester';
 const wasm_tester = circom_wasm_tester.wasm;
 
-import { getOptions } from './helpers/circomTester';
-import { wtns } from 'snarkjs';
-import { MerkleTree } from '@zk-kit/merkle-tree';
-import { poseidon, eddsa, babyjub } from 'circomlibjs';
+import {getOptions} from './helpers/circomTester';
+import {wtns} from 'snarkjs';
+import {MerkleTree} from '@zk-kit/merkle-tree';
+import {poseidon, eddsa, babyjub} from 'circomlibjs';
 
 describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async function (this: any) {
     let circuit: any;
@@ -45,119 +45,35 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
         5965418786706240297169103721563608236247012439438458290422490499440593084037n;
     busMerkleTree.insert(utxo2);
 
-
     const zSwapNonZeroInput = {
-        extraInputsHash: 9657970407377870387882083465026071923607957204540747778331438760307579156530n,
+        extraInputsHash:
+            9657970407377870387882083465026071923607957204540747778331438760307579156530n,
 
         depositAmount: 0,
         withdrawAmount: 10000000000000000000n,
         addedAmountZkp: 0,
 
-        token: [
-            423008832032380627721391562910712401300186637083n,
-            1
-        ],
-        tokenId: [
-            0,
-            0
-        ],
-        utxoZAsset: [
-            0,
-            4294967296
-        ],
+        token: [423008832032380627721391562910712401300186637083n, 1],
+        tokenId: [0, 0],
+        utxoZAsset: [0, 4294967296],
 
-        zAssetId: [
-            0,
-            4294967296,
-            0
-        ],
+        zAssetId: [0, 4294967296, 0],
         zAssetToken: [
             423008832032380627721391562910712401300186637083n,
             1,
-            423008832032380627721391562910712401300186637083n
+            423008832032380627721391562910712401300186637083n,
         ],
-        zAssetTokenId: [
-            0,
-            0,
-            0
-        ],
-        zAssetNetwork: [
-            2,
-            2,
-            2
-        ],
-        zAssetOffset: [
-            0,
-            0,
-            0
-        ],
-        zAssetWeight: [
-            20,
-            700,
-            20
-        ],
-        zAssetScale: [
-            1000000000000,
-            1000000000000,
-            1000000000000
-        ],
+        zAssetTokenId: [0, 0, 0],
+        zAssetNetwork: [2, 2, 2],
+        zAssetOffset: [0, 0, 0],
+        zAssetWeight: [20, 700, 20],
+        zAssetScale: [1000000000000, 1000000000000, 1000000000000],
         zAssetMerkleRoot:
             668279113685838313769939342338240356910854981031448765023543792475150036263n,
         zAssetPathIndices: [
-            [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            [
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ],
         zAssetPathElements: [
             [
@@ -176,7 +92,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
                 18399220794236723308907532455368503933105202479015828179801520916772962880998n,
                 17997772780903759195601581429183819619412163062353143936165307874482723961709n,
                 18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n
+                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
             ],
             [
                 17096879445008678434099077075082229859433404779935546266260364542751674482831n,
@@ -194,7 +110,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
                 18399220794236723308907532455368503933105202479015828179801520916772962880998n,
                 17997772780903759195601581429183819619412163062353143936165307874482723961709n,
                 18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n
+                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
             ],
             [
                 12250459917399649301227969545675942953383048354021600775913101682520086269876n,
@@ -212,8 +128,8 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
                 18399220794236723308907532455368503933105202479015828179801520916772962880998n,
                 17997772780903759195601581429183819619412163062353143936165307874482723961709n,
                 18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-                12455859713696229724526221339047857485467607588813434501517928769317308134556n
-            ]
+                12455859713696229724526221339047857485467607588813434501517928769317308134556n,
+            ],
         ],
 
         forTxReward: 10,
@@ -284,7 +200,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
                 0,
                 0,
                 0,
-                0
+                0,
             ],
             [
                 15875529768478602823278199326070739858596313834177130441574640119790659924022n,
@@ -318,8 +234,8 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
                 0,
                 0,
                 0,
-                0
-            ]
+                0,
+            ],
         ],
         utxoInNullifier: [
             7060996127061616656010908648406092575393164866084021867414174376444626119757n,
@@ -332,7 +248,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             ],
             [
                 6461944716578528228684977568060282675957977975225218900939908264185798821478n,
-                6315516704806822012759516718356378665240592543978605015143731597167737293922n
+                6315516704806822012759516718356378665240592543978605015143731597167737293922n,
             ],
         ],
 
@@ -405,7 +321,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             0,
             0,
             0,
-            0
+            0,
         ],
         zAccountUtxoInNullifier:
             2683608600858551272625072596771890860076246154744099747202630027091646993467n,
@@ -461,7 +377,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             18399220794236723308907532455368503933105202479015828179801520916772962880998n,
             17997772780903759195601581429183819619412163062353143936165307874482723961709n,
             18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            12455859713696229724526221339047857485467607588813434501517928769317308134556n
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
         zZonePathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         zZoneEdDsaPubKey: [
@@ -509,7 +425,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             18399220794236723308907532455368503933105202479015828179801520916772962880998n,
             17997772780903759195601581429183819619412163062353143936165307874482723961709n,
             18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            12455859713696229724526221339047857485467607588813434501517928769317308134556n
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
         kytPathIndices: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         kytMerkleTreeLeafIDsAndRulesOffset: 1,
@@ -527,15 +443,13 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
         kytDepositSignedMessageChargedAmountZkp: 0,
         kytDepositSignedMessageSigner: 0,
         kytDepositSignedMessageHash: 0,
-        kytDepositSignature: [
-            0,
-            0,
-            0,
-        ],
+        kytDepositSignature: [0, 0, 0],
         kytWithdrawSignedMessagePackageType: 2,
         kytWithdrawSignedMessageTimestamp: 0,
-        kytWithdrawSignedMessageSender: 709496637804796192603128782448270907352643487695n,
-        kytWithdrawSignedMessageReceiver: 1083551335276088971558105298652951189468863724288n,
+        kytWithdrawSignedMessageSender:
+            709496637804796192603128782448270907352643487695n,
+        kytWithdrawSignedMessageReceiver:
+            1083551335276088971558105298652951189468863724288n,
         kytWithdrawSignedMessageToken: 0,
         kytWithdrawSignedMessageSessionId: 0,
         kytWithdrawSignedMessageRuleId: 0,
@@ -552,11 +466,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
         kytSignedMessageSigner: 0,
         kytSignedMessageDataEscrowHash: 0,
         kytSignedMessageHash: 0,
-        kytSignature: [
-            0,
-            0,
-            0,
-        ],
+        kytSignature: [0, 0, 0],
 
         dataEscrowPubKey: [
             6461944716578528228684977568060282675957977975225218900939908264185798821478n,
@@ -588,7 +498,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             18399220794236723308907532455368503933105202479015828179801520916772962880998n,
             17997772780903759195601581429183819619412163062353143936165307874482723961709n,
             18496693394049906980893311686550786982256672525298758106045562727433199943509n,
-            12455859713696229724526221339047857485467607588813434501517928769317308134556n
+            12455859713696229724526221339047857485467607588813434501517928769317308134556n,
         ],
         dataEscrowPathIndices: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
@@ -604,7 +514,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
 
         daoDataEscrowPubKey: [
             6744227429794550577826885407270460271570870592820358232166093139017217680114n,
-            12531080428555376703723008094946927789381711849570844145043392510154357220479n
+            12531080428555376703723008094946927789381711849570844145043392510154357220479n,
         ],
         daoDataEscrowEphemeralRandom:
             153863747417451337920589947250092707542801373906629621310819378064933412825n,
@@ -640,7 +550,7 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             ],
             [
                 13741044729756555227453439942506691800094040587313018913891176118633529933608n,
-                4162257119081606105287484027540138260244869330719496639161319073698839633622n
+                4162257119081606105287484027540138260244869330719496639161319073698839633622n,
             ],
         ],
         utxoOutCommitment: [
@@ -672,11 +582,11 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
             19603150025355661252212198237607440386334054455687766589389473805115541553727n,
         ],
 
-
         staticTreeMerkleRoot:
             9533890808292406368177305919582060526404510811701939117639557476231521942105n,
 
-        forestMerkleRoot: 8043767606560508574458084663269091161027724036695737403099518168770294844003n,
+        forestMerkleRoot:
+            8043767606560508574458084663269091161027724036695737403099518168770294844003n,
         taxiMerkleRoot: 0,
 
         busMerkleRoot:
@@ -685,8 +595,10 @@ describe('ZSwap - NonZeroInput - Ownership logic - Witness computation', async f
         ferryMerkleRoot: 0,
 
         salt: 17190388637180073840719002876417025003408651756995256826994226713359277970427n,
-        saltHash: 2521215159739581825527344005841960203379597548272236911750774134238894851622n,
-        magicalConstraint: 2403183239416133976952540526810943824409886857057968395813581075679652070730n,
+        saltHash:
+            2521215159739581825527344005841960203379597548272236911750774134238894851622n,
+        magicalConstraint:
+            2403183239416133976952540526810943824409886857057968395813581075679652070730n,
     };
 
     it('should compute valid witness for non zero input with new ownership logic tx', async () => {
