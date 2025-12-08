@@ -46,8 +46,16 @@
     "inputs": [
       {
         "components": [
-          {"internalType": "address", "name": "token", "type": "address"},
-          {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "batchId",
+            "type": "uint64"
+          },
           {
             "internalType": "uint32",
             "name": "startTokenId",
@@ -58,9 +66,21 @@
             "name": "tokenIdsRangeSize",
             "type": "uint32"
           },
-          {"internalType": "uint8", "name": "scaleFactor", "type": "uint8"},
-          {"internalType": "uint8", "name": "networkId", "type": "uint8"},
-          {"internalType": "uint8", "name": "tokenType", "type": "uint8"}
+          {
+            "internalType": "uint8",
+            "name": "scaleFactor",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "networkId",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "tokenType",
+            "type": "uint8"
+          }
         ],
         "internalType": "struct ZAssetsRegistryV1.ZAssetInnerParams",
         "name": "zAssetInnerParams",
@@ -108,8 +128,16 @@
     "inputs": [
       {
         "components": [
-          {"internalType": "address", "name": "token", "type": "address"},
-          {"internalType": "uint64", "name": "batchId", "type": "uint64"},
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "batchId",
+            "type": "uint64"
+          },
           {
             "internalType": "uint32",
             "name": "startTokenId",
@@ -120,9 +148,21 @@
             "name": "tokenIdsRangeSize",
             "type": "uint32"
           },
-          {"internalType": "uint8", "name": "scaleFactor", "type": "uint8"},
-          {"internalType": "uint8", "name": "networkId", "type": "uint8"},
-          {"internalType": "uint8", "name": "tokenType", "type": "uint8"}
+          {
+            "internalType": "uint8",
+            "name": "scaleFactor",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "networkId",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "tokenType",
+            "type": "uint8"
+          }
         ],
         "internalType": "struct ZAssetsRegistryV1.ZAssetInnerParams",
         "name": "currentZAssetInnerParams",
@@ -171,9 +211,21 @@
             "name": "updatedWeight",
             "type": "uint48"
           },
-          {"internalType": "uint16", "name": "scUsdPrice", "type": "uint16"},
-          {"internalType": "uint8", "name": "zAssetDecimal", "type": "uint8"},
-          {"internalType": "uint64", "name": "zAssetScale", "type": "uint64"}
+          {
+            "internalType": "uint16",
+            "name": "scUsdPrice",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint8",
+            "name": "zAssetDecimal",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "zAssetScale",
+            "type": "uint64"
+          }
         ],
         "internalType": "struct ZAssetsRegistryV1.WeightMetrics",
         "name": "weightMetrics",
@@ -181,7 +233,11 @@
       },
       {"internalType": "uint64", "name": "batchId", "type": "uint64"},
       {"internalType": "uint32", "name": "leafIndex", "type": "uint32"},
-      {"internalType": "bytes32", "name": "currentLeaf", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "currentLeaf",
+        "type": "bytes32"
+      },
       {
         "internalType": "bytes32[]",
         "name": "proofSiblings",

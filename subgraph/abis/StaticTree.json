@@ -59,7 +59,11 @@
   },
   {
     "inputs": [
-      {"internalType": "bytes32", "name": "updatedLeaf", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "updatedLeaf",
+        "type": "bytes32"
+      },
       {"internalType": "uint256", "name": "leafIndex", "type": "uint256"}
     ],
     "name": "updateStaticRoot",

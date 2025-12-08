@@ -1,9 +1,17 @@
 [
   {
     "inputs": [
-      {"internalType": "address", "name": "utxoInserter", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "utxoInserter",
+        "type": "address"
+      },
       {"internalType": "address", "name": "feeMaster", "type": "address"},
-      {"internalType": "address", "name": "rewardToken", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
+      },
       {
         "internalType": "uint8",
         "name": "miningRewardVersion",
@@ -377,8 +385,16 @@
         "name": "cachedForestRootIndex",
         "type": "uint256"
       },
-      {"internalType": "bytes32", "name": "forestRoot", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "staticRoot", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "forestRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "staticRoot",
+        "type": "bytes32"
+      },
       {"internalType": "uint96", "name": "reward", "type": "uint96"}
     ],
     "name": "addUtxosToBusQueue",
@@ -406,8 +422,16 @@
         "name": "cachedForestRootIndex",
         "type": "uint256"
       },
-      {"internalType": "bytes32", "name": "forestRoot", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "staticRoot", "type": "bytes32"},
+      {
+        "internalType": "bytes32",
+        "name": "forestRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "staticRoot",
+        "type": "bytes32"
+      },
       {"internalType": "uint96", "name": "reward", "type": "uint96"}
     ],
     "name": "addUtxosToBusQueueAndTaxiTree",
@@ -476,9 +500,21 @@
     "outputs": [
       {
         "components": [
-          {"internalType": "uint32", "name": "queueId", "type": "uint32"},
-          {"internalType": "uint8", "name": "nUtxos", "type": "uint8"},
-          {"internalType": "uint96", "name": "reward", "type": "uint96"},
+          {
+            "internalType": "uint32",
+            "name": "queueId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "nUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint96",
+            "name": "reward",
+            "type": "uint96"
+          },
           {
             "internalType": "uint96",
             "name": "potentialExtraReward",
@@ -499,7 +535,11 @@
             "name": "remainingBlocks",
             "type": "uint40"
           },
-          {"internalType": "bytes32", "name": "commitment", "type": "bytes32"}
+          {
+            "internalType": "bytes32",
+            "name": "commitment",
+            "type": "bytes32"
+          }
         ],
         "internalType": "struct BusQueues.BusQueueRec",
         "name": "queue",
@@ -554,7 +594,11 @@
         "name": "latestBranchFirstBatchBlock",
         "type": "uint40"
       },
-      {"internalType": "uint40", "name": "latestBatchBlock", "type": "uint40"}
+      {
+        "internalType": "uint40",
+        "name": "latestBatchBlock",
+        "type": "uint40"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -599,9 +643,21 @@
     "outputs": [
       {
         "components": [
-          {"internalType": "uint32", "name": "queueId", "type": "uint32"},
-          {"internalType": "uint8", "name": "nUtxos", "type": "uint8"},
-          {"internalType": "uint96", "name": "reward", "type": "uint96"},
+          {
+            "internalType": "uint32",
+            "name": "queueId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "nUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint96",
+            "name": "reward",
+            "type": "uint96"
+          },
           {
             "internalType": "uint96",
             "name": "potentialExtraReward",
@@ -622,7 +678,11 @@
             "name": "remainingBlocks",
             "type": "uint40"
           },
-          {"internalType": "bytes32", "name": "commitment", "type": "bytes32"}
+          {
+            "internalType": "bytes32",
+            "name": "commitment",
+            "type": "bytes32"
+          }
         ],
         "internalType": "struct BusQueues.BusQueueRec[]",
         "name": "queues",
@@ -636,9 +696,17 @@
     "inputs": [],
     "name": "getParams",
     "outputs": [
-      {"internalType": "uint16", "name": "reservationRate", "type": "uint16"},
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
       {"internalType": "uint16", "name": "premiumRate", "type": "uint16"},
-      {"internalType": "uint16", "name": "minEmptyQueueAge", "type": "uint16"}
+      {
+        "internalType": "uint16",
+        "name": "minEmptyQueueAge",
+        "type": "uint16"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -647,8 +715,16 @@
     "inputs": [],
     "name": "getRoots",
     "outputs": [
-      {"internalType": "bytes32", "name": "_staticRoot", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "_forestRoot", "type": "bytes32"}
+      {
+        "internalType": "bytes32",
+        "name": "_staticRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_forestRoot",
+        "type": "bytes32"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -667,9 +743,17 @@
         "name": "onboardingQueueCircuitId",
         "type": "uint160"
       },
-      {"internalType": "uint16", "name": "reservationRate", "type": "uint16"},
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
       {"internalType": "uint16", "name": "premiumRate", "type": "uint16"},
-      {"internalType": "uint16", "name": "minEmptyQueueAge", "type": "uint16"}
+      {
+        "internalType": "uint16",
+        "name": "minEmptyQueueAge",
+        "type": "uint16"
+      }
     ],
     "name": "initializeForestTrees",
     "outputs": [],
@@ -697,13 +781,25 @@
     "inputs": [
       {"internalType": "address", "name": "miner", "type": "address"},
       {"internalType": "uint32", "name": "queueId", "type": "uint32"},
-      {"internalType": "uint256[]", "name": "inputs", "type": "uint256[]"},
+      {
+        "internalType": "uint256[]",
+        "name": "inputs",
+        "type": "uint256[]"
+      },
       {
         "components": [
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "a",
@@ -728,8 +824,16 @@
           },
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "c",
@@ -776,9 +880,17 @@
   },
   {
     "inputs": [
-      {"internalType": "uint16", "name": "reservationRate", "type": "uint16"},
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
       {"internalType": "uint16", "name": "premiumRate", "type": "uint16"},
-      {"internalType": "uint16", "name": "minEmptyQueueAge", "type": "uint16"}
+      {
+        "internalType": "uint16",
+        "name": "minEmptyQueueAge",
+        "type": "uint16"
+      }
     ],
     "name": "updateBusQueueRewardParams",
     "outputs": [],

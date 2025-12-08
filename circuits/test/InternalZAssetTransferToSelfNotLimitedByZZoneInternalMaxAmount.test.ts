@@ -3,8 +3,8 @@ import * as path from 'path';
 import circom_wasm_tester from 'circom_tester';
 const wasm_tester = circom_wasm_tester.wasm;
 
-import { getOptions } from './helpers/circomTester';
-import { wtns } from 'snarkjs';
+import {getOptions} from './helpers/circomTester';
+import {wtns} from 'snarkjs';
 import {
     deriveChildPubKeyFromRootPubKey,
     deriveChildPrivKeyFromRootPrivKey,
@@ -13,7 +13,7 @@ import {
     generateRandom256Bits,
     moduloBabyJubSubFieldPrime,
 } from '@panther-core/crypto/lib/base/field-operations';
-import { poseidon } from 'circomlibjs';
+import {poseidon} from 'circomlibjs';
 import assert from 'assert';
 
 describe('Internal ZAsset transfer - Non ZeroInput - Self Transfer - WithOut ZZoneSealing - Witness computation', async function (this: any) {
@@ -51,7 +51,7 @@ describe('Internal ZAsset transfer - Non ZeroInput - Self Transfer - WithOut ZZo
     and other dependent components of the circuit, a direct approach to verify
     that self-transfers are not constrained by `zZoneInternalMaxAmount` is to
     configure the `zZoneInternalMaxAmount` field to a value lower than `utxoOutAmount`.
-    
+
     Any adjustment to `zZoneInternalMaxAmount` will consequently alter the Merkle root of the `zZone` tree.
     */
     const singleValidUTXOInternalTxNonZeroInput = {
