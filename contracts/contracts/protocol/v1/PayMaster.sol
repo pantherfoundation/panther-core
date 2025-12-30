@@ -65,11 +65,12 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     mapping(address => bool) public authorizedBundlres;
 
     constructor(
+        address _owner,
         address _entryPoint,
         address _account,
         address _feeMaster,
         address _prpVoucherGrantor
-    ) ImmutableOwnable(msg.sender) {
+    ) ImmutableOwnable(_owner) {
         _ensureNonZeroAddress(_entryPoint);
         _ensureNonZeroAddress(_account);
         _ensureNonZeroAddress(_feeMaster);

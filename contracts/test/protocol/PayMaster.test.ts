@@ -44,6 +44,7 @@ describe('Paymaster contract', function () {
         const PayMasterFactory = await ethers.getContractFactory('PayMaster');
 
         paymaster = await PayMasterFactory.deploy(
+            ethersSigner.address,
             entryPointAddr,
             smartAccount.address,
             feeMaster.address,
@@ -369,6 +370,7 @@ describe('Paymaster contract', function () {
                 await ethers.getContractFactory('PayMaster');
 
             const paymasterImpl = await PayMasterFactory.deploy(
+                ethersSigner.address,
                 entryPoint.address,
                 smartAccount.address,
                 feeMaster.address,
@@ -413,6 +415,7 @@ describe('Paymaster contract', function () {
             paymaster = await (
                 await ethers.getContractFactory('PayMaster')
             ).deploy(
+                ethersSigner.address,
                 entryPoint.address,
                 entryPoint.address,
                 entryPoint.address,

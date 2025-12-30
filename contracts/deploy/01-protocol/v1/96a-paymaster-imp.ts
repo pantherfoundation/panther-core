@@ -10,6 +10,7 @@ import {GAS_PRICE} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
     const entryPoint = await getNamedAccount(hre, 'entryPoint');
 
     const {
@@ -23,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await deploy('PayMaster_Implementation', {
         contract: 'PayMaster',
         from: deployer,
-        args: [entryPoint, account, feeMaster, coreDiamond],
+        args: [multisig, entryPoint, account, feeMaster, coreDiamond],
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
