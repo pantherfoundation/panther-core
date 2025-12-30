@@ -3,7 +3,7 @@
 
 import {ethers} from 'ethers';
 
-export const GAS_PRICE = 450e9; // Gas price in gwei
+export const GAS_PRICE = 300e9; // Gas price in gwei
 export const NATIVE_ADDRESS = ethers.constants.AddressZero; // zero address for native token
 
 export const maxBlocktimeOffset = '600'; // 10 mins
