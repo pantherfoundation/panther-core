@@ -68,9 +68,9 @@ export const leafs: ZZone[] = [
     {
         zoneId: 1n,
         edDsaPubKeyX:
-            13969057660566717294144404716327056489877917779406382026042873403164748884885n,
+            18394990397928399759000596489413950736158021592026618879715394289797440416433n,
         edDsaPubKeyY:
-            11069452135192839850369824221357904553346382352990372044246668947825855305207n,
+            6294822455462870067626881685834739363133518941353293906633201107675356395968n,
         originZoneIDs: 1n, //(the only zone, with zoneId "1", is allowed yet)
         targetZoneIDs: 1n, // (only this zone, with zoneId "1", is allowed yet)
         // Two one-bit flags are set (to "1"):
@@ -87,22 +87,22 @@ export const leafs: ZZone[] = [
         //   - followed by the provider pubkey leaf index, 0, in next 16 bits
         // This two groups combine in 0b 000000000000000001011110 000000000000000001011011,
         zZoneKycKytMerkleTreeLeafIDsAndRulesList: 1577058395n,
-        // 120 days
-        zZoneKycExpiryTime: 10368000n,
+        // 365 days
+        zZoneKycExpiryTime: 31536000n,
         // 24 hours
         zZoneKytExpiryTime: 86400n,
         // expressed in the "weighted units"
-        zZoneDepositMaxAmount: BigInt(3e10),
+        zZoneDepositMaxAmount: BigInt(25e11),
         // expressed in the "weighted units"
-        zZoneWithrawMaxAmount: BigInt(3e10),
+        zZoneWithrawMaxAmount: BigInt(1e13),
         // expressed in the "weighted units"
-        zZoneInternalMaxAmount: BigInt(3e10),
+        zZoneInternalMaxAmount: BigInt(0),
         // "no zAccounts are blacklisted")
         // The value is  240 bits set to 1:
         zZoneZAccountIDsBlackList:
             1766847064778384329583297500742918515827483896875618958121606201292619775n,
         // expressed in the "weighted units"
-        zZoneMaximumAmountPerTimePeriod: BigInt(1e13),
+        zZoneMaximumAmountPerTimePeriod: BigInt(125e11),
         // 24 hours
         zZoneTimePeriodPerMaximumAmount: 86400n,
     },

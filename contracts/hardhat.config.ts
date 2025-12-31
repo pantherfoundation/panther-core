@@ -344,6 +344,7 @@ function getNamedAccounts() {
             localhost: 0,
             hardhat: 0,
             amoy: '0xdD556a7f6a88d2dA7d5C7d4c16337C62B34B2dCb',
+            polygon: 0,
         },
 
         link_native_uniswapV3Pool: {
