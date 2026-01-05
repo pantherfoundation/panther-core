@@ -9,7 +9,7 @@ import {PROVIDERS_KEY} from '../mainnet-parameters';
 import {createSafeTransaction, saveSafeTransaction} from '../utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const deployer = await getNamedAccount(hre, 'deployer');
+    const multisig = await getNamedAccount(hre, 'multisig');
 
     const {
         deployments: {get},
@@ -24,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     for (const numAllocKey of PROVIDERS_KEY.numAllocKeys) {
         const tx = await diamond.populateTransaction.addKeyring(
-            deployer,
+            multisig,
             numAllocKey,
         );
 

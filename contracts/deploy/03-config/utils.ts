@@ -38,7 +38,7 @@ export async function saveSafeTransaction(
 export function createSafeTransaction(
     to: string,
     data: string,
-    value: string = '0.0',
+    value: string = '0',
 ): SafeTransaction {
     return {
         to,

@@ -30,7 +30,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         zkpAmount.toString(),
     );
     const transferTransaction = createSafeTransaction(pzkp, transferTx.data!);
-    await saveSafeTransaction(hre, transferTransaction, __filename, 'transfer');
+    await saveSafeTransaction(
+        hre,
+        transferTransaction,
+        __filename,
+        'a-transfer',
+    );
 
     // Generate transaction for initializing prpConversion
     const initTx = await prpConversion.populateTransaction.initPool(
@@ -41,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         pantherPoolV1.address,
         initTx.data!,
     );
-    await saveSafeTransaction(hre, initTransaction, __filename, 'init');
+    await saveSafeTransaction(hre, initTransaction, __filename, 'b-init');
 };
 export default func;
 

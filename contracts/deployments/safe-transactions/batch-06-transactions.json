@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "chainId": "137",
+  "createdAt": "2026-01-02T10:18:57.117Z",
+  "meta": {
+    "name": "Batch transactions for prefix 06",
+    "description": "Grouped transactions starting with 06",
+    "txBuilderVersion": "1.16.5"
+  },
+  "transactions": [
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xc8ad855b000000000000000000000000d56a3b1073eaceb7947a5061d9e03554bd5e9b750000000000000000000000000000000000000000000000000000000000000001",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "06a-core-add-zswap-plugins-quickswap-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xc8ad855b000000000000000000000000a007e723e464967702dea0d8d1c994d55e24e3710000000000000000000000000000000000000000000000000000000000000001",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "06a-core-add-zswap-plugins-uniswap-polygon.json"
+    }
+  ]
+}
