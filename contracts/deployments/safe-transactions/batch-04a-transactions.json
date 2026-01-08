@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "chainId": "137",
+  "createdAt": "2026-01-07T12:24:18.933Z",
+  "meta": {
+    "name": "Batch transactions for prefix 04a",
+    "description": "Grouped transactions starting with 04a",
+    "txBuilderVersion": "1.16.5"
+  },
+  "transactions": [
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb0000000000000000000000000000000000000000000000000000000000000103000000000000000000000000c887daa44568e4dbe8024b55e9f5c553f54c5298",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-prpAccounting-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb0000000000000000000000000000000000000000000000000000000000000104000000000000000000000000c887daa44568e4dbe8024b55e9f5c553f54c5298",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-prpConversion-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb00000000000000000000000000000000000000000000000000000000000001010000000000000000000000006e3019f84f95ce91f5c082d0a24de7452bca69ed",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-zAccountReactivation-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb00000000000000000000000000000000000000000000000000000000000001000000000000000000000000006e3019f84f95ce91f5c082d0a24de7452bca69ed",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-zAccountRegistration-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb00000000000000000000000000000000000000000000000000000000000001020000000000000000000000000ef73da7ac2ab5f9ebcfff81c57c5cdc063183c6",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-zAccountRenewal-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb0000000000000000000000000000000000000000000000000000000000000106000000000000000000000000cd5b2bd87af88d4c4bb9d81d9b70e5c478c8ce9c",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-zSwap-polygon.json"
+    },
+    {
+      "to": "0x008DeCe35c2920F08961f493ad7F543Fb796F4de",
+      "data": "0xcb8536fb00000000000000000000000000000000000000000000000000000000000001050000000000000000000000006648830b94434878adc2e9839d078109a10b5b61",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-core-circuit-ids-zTransaction-polygon.json"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "chainId": "137",
+  "createdAt": "2026-01-07T12:36:13.289Z",
+  "meta": {
+    "name": "Batch transactions for prefix 04a-1",
+    "description": "Grouped transactions starting with 04a-1",
+    "txBuilderVersion": "1.16.5"
+  },
+  "transactions": [
+    {
+      "to": "0x372803EFb7F9738CA837E8Ec431C7F0679572aFE",
+      "data": "0x6c47e7ba000000000000000000000000ec197b4428b6bc5a9a5eec063bad2ac5a7cfe6a2",
+      "operation": "0",
+      "value": "0",
+      "_originalFile": "04a-1-trees-update-panther-tree-circuit-id-polygon.json"
+    }
+  ]
+}
