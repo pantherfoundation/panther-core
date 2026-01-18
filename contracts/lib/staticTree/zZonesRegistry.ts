@@ -86,7 +86,7 @@ export const leafs: ZZone[] = [
         //   - KYT rule ID, 94 ('0b01011110'), in 8 LS bits,
         //   - followed by the provider pubkey leaf index, 0, in next 16 bits
         // This two groups combine in 0b 000000000000000001011110 000000000000000001011011,
-        zZoneKycKytMerkleTreeLeafIDsAndRulesList: 1577058395n,
+        zZoneKycKytMerkleTreeLeafIDsAndRulesList: 1677721691n,
         // 365 days
         zZoneKycExpiryTime: 31536000n,
         // 24 hours
