@@ -10,7 +10,7 @@ import {encodeTokenTypeAndAddress, decodeTokenTypeAndAddress} from '../token';
 import {pantherCoreZeroLeaf} from '../utilities';
 
 const amoyNetworkId = 1n;
-const polygonNetworkId = 2n;
+const polygonNetworkId = 1n;
 
 interface TokenDetails {
     [key: string]: {[key: string]: Token}; // Adjust value type as necessary
@@ -94,7 +94,7 @@ export const tokenDetails: TokenDetails = {
             networkId: polygonNetworkId,
         },
         LINK_TOKEN: {
-            address: '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39',
+            address: '0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39',
             weight: 2500n,
             scale: BigInt(1e12),
             decimals: 18n,
