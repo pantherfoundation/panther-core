@@ -39,22 +39,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             tokenType: tokenType,
         };
 
-        const jsonReplacer = (_key: string, value: unknown) =>
-            typeof value === 'bigint' ? value.toString() : value;
-
-        console.log(
-            JSON.stringify(
-                {
-                    index,
-                    params: correctedParams,
-                    weight: weight.toString(),
-                    proof: proofSiblings,
-                },
-                jsonReplacer,
-                2,
-            ),
-        );
-
         const tx = await diamond.populateTransaction.addZAsset(
             correctedParams,
             weight,
