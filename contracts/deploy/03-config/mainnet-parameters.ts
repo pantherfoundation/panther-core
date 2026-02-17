@@ -176,7 +176,7 @@ export const ZKP_RESERVE_CONTROLLER = {
     // ZkpReserveController::updateParams(), check
     // 94a-update-zkp-reserve-controller-params.ts
     releasablePerBlock: ethers.utils.parseEther('0.7715972222'),
-    minRewardedAmount: ethers.utils.parseEther('100'),
+    minRewardedAmount: ethers.utils.parseEther('20000'),
     // this is the amount of tokens that must be transfered
     // to the contract. no function call is needed in the
     // ZKPReserveController. check 94b-transfer-zkp-reserve.ts
