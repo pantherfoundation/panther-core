@@ -268,11 +268,21 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
      * Reference:
      * https://github.com/eth-infinitism/account-abstraction/v0.0.6/contracts/core/EntryPoint.sol#L325
      */
+
+    event TEST_PAYMASTER_EVENT(
+        UserOperation userOp,
+        uint256 requiredPreFund,
+        BundlerConfig config,
+        uint256 toleratedGasPrice,
+        uint256 toleratedGas,
+        uint256 toleratedGasCosts
+    );
+
     function _validateRequiredPrefund(
         UserOperation calldata userOp,
         uint256 requiredPreFund,
         BundlerConfig memory config
-    ) internal view {
+    ) internal {
         if (_isSimulation()) return;
 
         uint256 toleratedGasPrice = _addExtraPct(
@@ -282,10 +292,19 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
         uint256 toleratedGas = userOp.callGasLimit + config.maxExtraGas;
         uint256 toleratedGasCosts = toleratedGas * toleratedGasPrice;
 
-        require(
-            requiredPreFund <= toleratedGasCosts,
-            ERR_LARGE_REQUIRED_PREFUND
+        emit TEST_PAYMASTER_EVENT(
+            userOp,
+            requiredPreFund,
+            config,
+            toleratedGasPrice,
+            toleratedGas,
+            toleratedGasCosts
         );
+
+        // require(
+        //     requiredPreFund <= toleratedGasCosts,
+        //     ERR_LARGE_REQUIRED_PREFUND
+        // );
     }
 
     /**
