@@ -94,12 +94,9 @@ const config: HardhatUserConfig = {
         amoy: createNetworkConfig('amoy'),
     },
     etherscan: {
-        apiKey: {
-            mainnet: process.env.ETHERSCAN_API_KEY as string,
-            sepolia: process.env.ETHERSCAN_API_KEY as string,
-            polygon: process.env.POLYGONSCAN_API_KEY as string,
-            amoy: process.env.POLYGONSCAN_API_KEY as string,
-        },
+        apiKey:
+            process.env.POLYGONSCAN_API_KEY ||
+            (process.env.ETHERSCAN_API_KEY as string),
         customChains: [
             createEtherscanConfig('amoy', {
                 apiURL: 'https://api-amoy.polygonscan.com/api',
