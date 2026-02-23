@@ -209,15 +209,11 @@ export const PAYMASTER = {
     depositValue: ethers.utils.parseEther('10'),
     unstakeDelaySec: 87400,
     addStakeValue: ethers.utils.parseEther('5'),
-    maxExtraGas: 500000,
-    // gasPriceMarkupPct: 333333333333400,
-    gasPriceMarkupPct: 452079556100,
+    maxExtraGas: 9000000,
+    gasPriceMarkupPct: 0,
+    gasPriceMarkupFixed: 900000000000,
     exchangeRiskPct: 1000,
     depositThreshold: 10,
-    // bundlerAddresses: [
-    //     '0x319fe457676941EA433770802c3e5Ac6FFAA401A',
-    //     '0x7d53502B713058F7C22EAd5Ff97A88b7c9dec542',
-    // ],
     bundlerAddresses: [
         '0xfb925186f787694009ab6404b9caab95bc7ae377',
         '0x175a9777c6cf26e26947210bd8bab324d60dcf3c',

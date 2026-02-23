@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0-only
-// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
+// SPDX-License-Identifier: BUSL-1.1
+// SPDX-FileCopyrightText: Copyright 2024 Panther Ventures Limited Gibraltar
 // solhint-disable avoid-tx-origin
 pragma solidity ^0.8.19;
 
@@ -47,13 +47,15 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
     /// @dev Struct for storing configuration for a bundler.
     /// @param maxExtraGas Maximum allowed gas for verification and post-operation;
     /// the bundler may be compensated for at most `userOp.callGasLimit + maxExtraGas`.
-    /// @param gasPriceMarkupPct add some gap to current gas price
+    /// @param gasPriceMarkupPct add some percentage as gap to current gas price
     /// @param exchangeRiskPct An additional percentage added to the required prefund
     /// to mitigate exchange rate risk.Expressed in units of 0.01% (e.g., 500 means 5%).
+    /// @param gasPriceMarkupFixed add some fixed gas as gap to current gas price
     struct BundlerConfig {
         uint24 maxExtraGas;
         uint64 gasPriceMarkupPct;
         uint32 exchangeRiskPct;
+        uint64 gasPriceMarkupFixed;
     }
 
     /// @dev Minimum amount of the EntryPoint deposit to get the reward
@@ -268,43 +270,31 @@ contract PayMaster is ImmutableOwnable, IPaymaster {
      * Reference:
      * https://github.com/eth-infinitism/account-abstraction/v0.0.6/contracts/core/EntryPoint.sol#L325
      */
-
-    event TEST_PAYMASTER_EVENT(
-        UserOperation userOp,
-        uint256 requiredPreFund,
-        BundlerConfig config,
-        uint256 toleratedGasPrice,
-        uint256 toleratedGas,
-        uint256 toleratedGasCosts
-    );
-
     function _validateRequiredPrefund(
         UserOperation calldata userOp,
         uint256 requiredPreFund,
         BundlerConfig memory config
-    ) internal {
+    ) internal view {
         if (_isSimulation()) return;
 
-        uint256 toleratedGasPrice = _addExtraPct(
-            block.basefee,
-            config.gasPriceMarkupPct
-        );
+        uint256 toleratedGasPrice;
+
+        if (config.gasPriceMarkupFixed > 0) {
+            toleratedGasPrice = block.basefee + config.gasPriceMarkupFixed;
+        } else {
+            toleratedGasPrice = _addExtraPct(
+                block.basefee,
+                config.gasPriceMarkupPct
+            );
+        }
+
         uint256 toleratedGas = userOp.callGasLimit + config.maxExtraGas;
         uint256 toleratedGasCosts = toleratedGas * toleratedGasPrice;
 
-        emit TEST_PAYMASTER_EVENT(
-            userOp,
-            requiredPreFund,
-            config,
-            toleratedGasPrice,
-            toleratedGas,
-            toleratedGasCosts
+        require(
+            requiredPreFund <= toleratedGasCosts,
+            ERR_LARGE_REQUIRED_PREFUND
         );
-
-        // require(
-        //     requiredPreFund <= toleratedGasCosts,
-        //     ERR_LARGE_REQUIRED_PREFUND
-        // );
     }
 
     /**

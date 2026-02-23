@@ -23,6 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         maxExtraGas: PAYMASTER.maxExtraGas,
         gasPriceMarkupPct: PAYMASTER.gasPriceMarkupPct,
         exchangeRiskPct: PAYMASTER.exchangeRiskPct,
+        gasPriceMarkupFixed: PAYMASTER.gasPriceMarkupFixed,
     };
 
     const tx = await paymaster.populateTransaction.updateBundlerConfig(config);
