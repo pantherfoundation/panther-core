@@ -13,7 +13,7 @@ export const NATIVE_ADDRESS = ethers.constants.AddressZero; // zero address for 
 // compared with UTXO create/spend time.
 export const maxBlocktimeOffset = '1800'; // 30 mins
 // ZKP amount (initially) added to the PRP AMM liquidity
-export const zkpAmount = ethers.utils.parseEther('100');
+export const zkpAmount = ethers.utils.parseEther('100000');
 export const prpVirtualAmount = zkpAmount.div(ethers.utils.parseUnits('1', 17));
 
 export const FEE_MASTER = {
@@ -38,7 +38,7 @@ export const FEE_MASTER = {
     // nativeTokenReserves: the current amount of native token (POL) feeMaster
     nativeTokenReserves: ethers.utils.parseEther('10'),
     // ZKP amount (initially) reserved for donations ( Subsidy Pool)
-    zkpTokenReserves: ethers.utils.parseEther('1000'),
+    zkpTokenReserves: ethers.utils.parseEther('1000000'),
     // twap value: to get the native/zkp rate.
     twap: '30',
     // feeMaster::updateDonations, check 07g-update-zkp-donatin.ts
@@ -181,7 +181,7 @@ export const ZKP_RESERVE_CONTROLLER = {
     // this is the amount of tokens that must be transfered
     // to the contract. no function call is needed in the
     // ZKPReserveController. check 94b-transfer-zkp-reserve.ts
-    zkpTokenReserves: ethers.utils.parseEther('4000'),
+    zkpTokenReserves: ethers.utils.parseEther('4000000'),
 };
 
 export const VOUCHER_TERMS = {
@@ -206,7 +206,7 @@ export const VOUCHER_TERMS = {
 export const PAYMASTER = {
     // POL amount (initially) deposited for the
     // Paymaster with the EntryPoint
-    depositValue: ethers.utils.parseEther('10'),
+    depositValue: ethers.utils.parseEther('1000'),
     unstakeDelaySec: 87400,
     addStakeValue: ethers.utils.parseEther('5'),
     maxExtraGas: 9000000,
