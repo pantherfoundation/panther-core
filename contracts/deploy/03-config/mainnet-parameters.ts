@@ -34,9 +34,9 @@ export const FEE_MASTER = {
     minRewardableZkpAmount: ethers.utils.parseEther('1000'),
     // nativeTokenReserveTarget: a desired native token that feeMaster
     // aims to always have.
-    nativeTokenReserveTarget: ethers.utils.parseEther('10'),
+    nativeTokenReserveTarget: ethers.utils.parseEther('100'),
     // nativeTokenReserves: the current amount of native token (POL) feeMaster
-    nativeTokenReserves: ethers.utils.parseEther('10'),
+    nativeTokenReserves: ethers.utils.parseEther('100'),
     // ZKP amount (initially) reserved for donations ( Subsidy Pool)
     zkpTokenReserves: ethers.utils.parseEther('1000000'),
     // twap value: to get the native/zkp rate.
