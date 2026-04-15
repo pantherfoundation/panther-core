@@ -484,6 +484,22 @@ contract FeeMaster is
         emit PayOff(receiver, tokenAddress, debt);
     }
 
+    function adminClearPaymasterZkpDebt(address receiver) external onlyOwner {
+        require(receiver != address(0), "zero receiver");
+        uint256 zkpDebt = debts[PAYMASTER][ZKP_TOKEN];
+        require(zkpDebt > 0, "no paymaster zkp debt");
+
+        _updateDebts(PAYMASTER, ZKP_TOKEN, -int256(zkpDebt));
+
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+            ZKP_TOKEN,
+            -int256(zkpDebt),
+            receiver
+        );
+
+        emit PaymasterZkpDebtCleared(zkpDebt, receiver);
+    }
+
     /* ========== PRIVATE FUNCTIONS ========== */
 
     function _retryPaymasterZkpConversion() private {
