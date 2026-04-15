@@ -250,15 +250,17 @@ contract FeeMaster is
     }
 
     function increaseNativeTokenReserves() external payable onlyOwner {
-        require(msg.value > 0, "invalid amount");
+        uint256 amount = address(this).balance;
+        require(amount > 0, "invalid amount");
 
-        nativeTokenReserve += msg.value.safe128();
-        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebt(
+        nativeTokenReserve += amount.safe128();
+        PANTHER_POOL.adjustVaultAssetsAndUpdateTotalFeeMasterDebtWithValue(
             NATIVE_TOKEN,
-            int256(msg.value),
-            address(this)
+            int256(amount),
+            address(this),
+            amount
         );
-        emit NativeTokenReserveUpdated(msg.value);
+        emit NativeTokenReserveUpdated(amount);
     }
 
     function increaseZkpTokenDonations(
