@@ -16,12 +16,43 @@ library TotalDebtHandler {
         // locked or unlocked to the Vault, we don't provide the tokenType.
         // PantherPoolV1 (aka FeeMasterTotalDebtController) determines whether the token is
         // native or ERC20 based on its address.
-        uint256 msgValue = token == NATIVE_TOKEN ? msg.value : 0;
+        uint256 nativeValue = token == NATIVE_TOKEN ? msg.value : 0;
+        _adjustVaultAssets(
+            pantherPool,
+            token,
+            netAmount,
+            extAccount,
+            nativeValue
+        );
+    }
 
+    function adjustVaultAssetsAndUpdateTotalFeeMasterDebtWithValue(
+        address pantherPool,
+        address token,
+        int256 netAmount,
+        address extAccount,
+        uint256 nativeValue
+    ) internal {
+        _adjustVaultAssets(
+            pantherPool,
+            token,
+            netAmount,
+            extAccount,
+            nativeValue
+        );
+    }
+
+    function _adjustVaultAssets(
+        address pantherPool,
+        address token,
+        int256 netAmount,
+        address extAccount,
+        uint256 nativeValue
+    ) private {
         try
             IFeeMasterTotalDebtController(pantherPool)
                 .adjustVaultAssetsAndUpdateTotalFeeMasterDebt{
-                value: msgValue
+                value: nativeValue
             }(token, netAmount, extAccount)
         // solhint-disable-next-line no-empty-blocks
         {

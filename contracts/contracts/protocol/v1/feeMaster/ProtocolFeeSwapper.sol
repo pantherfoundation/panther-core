@@ -40,10 +40,18 @@ abstract contract ProtocolFeeSwapper is UniswapV3Handler, UniswapPoolsList {
             uint256 excessNative = newNativeTokenReserves -
                 nativeTokenReservesTarget;
 
+            // Cap at actual WETH held — nativeTokenReserves is an accounting
+            // value (POL in Vault), not liquid WETH in this contract.
+            // Without this cap, the WETH→ZKP swap callback would try to
+            // transfer more WETH than this contract holds.
+            if (excessNative > outputWNative) {
+                excessNative = outputWNative;
+            }
+
             // Converting Native to ZKP
             outputZkpToken = _convertNativeToZkp(zkpToken, excessNative);
 
-            newNativeTokenReserves = nativeTokenReservesTarget;
+            newNativeTokenReserves = newNativeTokenReserves - excessNative;
         }
 
         // converting weth to Native
