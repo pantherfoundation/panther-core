@@ -369,8 +369,8 @@ contract FeeMaster is
             );
         }
 
-        uint256 minRewardableNativeAmount = minRewardableZkpAmount /
-            cachedNativeRateInZkp;
+        uint256 minRewardableNativeAmount = (minRewardableZkpAmount /
+            cachedNativeRateInZkp) * 1 ether;
 
         if (outputWNative >= minRewardableNativeAmount)
             _grantPrpRewardsToUser(secretHash, GT_FEE_EXCHANGE);
@@ -662,8 +662,8 @@ contract FeeMaster is
     function _isEligibleForFeeExchangePrpReward(
         uint256 nativeAmount
     ) private view returns (bool isEligible) {
-        uint256 minRewardableNativeAmount = minRewardableZkpAmount /
-            cachedNativeRateInZkp;
+        uint256 minRewardableNativeAmount = (minRewardableZkpAmount /
+            cachedNativeRateInZkp) * 1 ether;
 
         if (nativeAmount >= minRewardableNativeAmount) {
             isEligible = true;
