@@ -1,0 +1,258 @@
+{
+  "address": "0x7393690b017E3c712BCE601C707a2400fC14FDCa",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "zkpToken_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "feeMaster_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "feeMaster",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeesClaimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "trustProvider",
+          "type": "address"
+        }
+      ],
+      "name": "TrustProviderUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "FEE_MASTER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "OWNER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ZKP_TOKEN",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "claim",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "debtPaid",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "trustProvider",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newTrustProvider",
+          "type": "address"
+        }
+      ],
+      "name": "updateTrustProvider",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x66d24a455493cc743402f9296c274fe76ad228afc014f34d8217667a071b14ce",
+  "receipt": {
+    "to": null,
+    "from": "0xb83A3094272B6425f89BB5590b48928e2374eE11",
+    "contractAddress": "0x7393690b017E3c712BCE601C707a2400fC14FDCa",
+    "transactionIndex": 8,
+    "gasUsed": "338120",
+    "logsBloom": "0x00000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000c00000000000000000000200000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x9a4e2d6866faad800ff1255a592091babf55d8f29f328f25e92b0ed780227aa0",
+    "transactionHash": "0x66d24a455493cc743402f9296c274fe76ad228afc014f34d8217667a071b14ce",
+    "logs": [
+      {
+        "transactionIndex": 8,
+        "blockNumber": 80998970,
+        "transactionHash": "0x66d24a455493cc743402f9296c274fe76ad228afc014f34d8217667a071b14ce",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000b83a3094272b6425f89bb5590b48928e2374ee11",
+          "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000092c2631f634ca0000000000000000000000000000000000000000000000000c326eda9c9b0900000000000000000000000000000000000000000000003bbf971311d46fdd82f37000000000000000000000000000000000000000000000000c2942b46aa4d436000000000000000000000000000000000000000000003bbf971c3dfaa1d3b7bd7",
+        "logIndex": 22,
+        "blockHash": "0x9a4e2d6866faad800ff1255a592091babf55d8f29f328f25e92b0ed780227aa0"
+      }
+    ],
+    "blockNumber": 80998970,
+    "cumulativeGasUsed": "877272",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x026a024b13B4Ca23897ad578264C0ec543f904b9",
+    "0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC",
+    "0x7aF2a1b6f0C1358624D3047264cFB883FddADF01"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "0915214f1fd1ca1f6b36e8ae6286532d",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zkpToken_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"feeMaster_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"feeMaster\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"trustProvider\",\"type\":\"address\"}],\"name\":\"TrustProviderUpdated\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"FEE_MASTER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OWNER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ZKP_TOKEN\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"claim\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"debtPaid\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"trustProvider\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newTrustProvider\",\"type\":\"address\"}],\"name\":\"updateTrustProvider\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Deploy behind a proxy and configure the trust provider EOA through `updateTrustProvider`. The owner address, ZKP token, and FeeMaster are immutable.\",\"kind\":\"dev\",\"methods\":{\"claim(address,uint256)\":{\"params\":{\"amount\":\"Amount of ZKP rewards to withdraw.\",\"receiver\":\"Address receiving the withdrawn rewards.\"}},\"updateTrustProvider(address)\":{\"params\":{\"newTrustProvider\":\"Address of the new trust provider.\"}}},\"title\":\"ComplianceTreasury\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"FEE_MASTER()\":{\"notice\":\"FeeMaster contract address.\"},\"OWNER()\":{\"notice\":\"Governance address allowed to manage the trust provider.\"},\"ZKP_TOKEN()\":{\"notice\":\"ZKP token used when collecting rewards from FeeMaster.\"},\"claim(address,uint256)\":{\"notice\":\"Claims accrued rewards from FeeMaster in ZKP token to the receiver.\"},\"trustProvider()\":{\"notice\":\"Address that is allowed to pull rewards from the FeeMaster. Stored in slot 0.\"},\"updateTrustProvider(address)\":{\"notice\":\"Updates the EOA that is allowed to claim the accumulated rewards.\"}},\"notice\":\"Lightweight upgradeable contract that holds the trust provider role for FeeMaster.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v1/ComplianceTreasury.sol\":\"ComplianceTreasury\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/v1/ComplianceTreasury.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport \\\"./interfaces/IDebtSettlement.sol\\\";\\n\\n/**\\n * @title ComplianceTreasury\\n * @notice Lightweight upgradeable contract that holds the trust provider role for FeeMaster.\\n * @dev Deploy behind a proxy and configure the trust provider EOA through `updateTrustProvider`.\\n * The owner address, ZKP token, and FeeMaster are immutable.\\n */\\ncontract ComplianceTreasury {\\n    /// @notice Address that is allowed to pull rewards from the FeeMaster. Stored in slot 0.\\n    address public trustProvider;\\n\\n    /// @notice Governance address allowed to manage the trust provider.\\n    address public immutable OWNER;\\n\\n    /// @notice ZKP token used when collecting rewards from FeeMaster.\\n    address public immutable ZKP_TOKEN;\\n\\n    /// @notice FeeMaster contract address.\\n    address public immutable FEE_MASTER;\\n\\n    event TrustProviderUpdated(address indexed trustProvider);\\n    event FeesClaimed(\\n        address indexed feeMaster,\\n        address indexed receiver,\\n        uint256 amount\\n    );\\n\\n    modifier onlyOwner() {\\n        require(msg.sender == OWNER, \\\"ComplianceTreasury: unauthorized\\\");\\n        _;\\n    }\\n\\n    modifier onlyTrustProvider() {\\n        require(\\n            msg.sender == trustProvider,\\n            \\\"ComplianceTreasury: not provider\\\"\\n        );\\n        _;\\n    }\\n\\n    constructor(address owner_, address zkpToken_, address feeMaster_) {\\n        require(owner_ != address(0), \\\"ComplianceTreasury: owner zero\\\");\\n        require(zkpToken_ != address(0), \\\"ComplianceTreasury: token zero\\\");\\n        require(feeMaster_ != address(0), \\\"ComplianceTreasury: feeMaster zero\\\");\\n\\n        OWNER = owner_;\\n        ZKP_TOKEN = zkpToken_;\\n        FEE_MASTER = feeMaster_;\\n    }\\n\\n    /**\\n     * @notice Updates the EOA that is allowed to claim the accumulated rewards.\\n     * @param newTrustProvider Address of the new trust provider.\\n     */\\n    function updateTrustProvider(address newTrustProvider) external onlyOwner {\\n        require(\\n            newTrustProvider != address(0),\\n            \\\"ComplianceTreasury: provider zero\\\"\\n        );\\n        trustProvider = newTrustProvider;\\n\\n        emit TrustProviderUpdated(newTrustProvider);\\n    }\\n\\n    /**\\n     * @notice Claims accrued rewards from FeeMaster in ZKP token to the receiver.\\n     * @param receiver Address receiving the withdrawn rewards.\\n     * @param amount Amount of ZKP rewards to withdraw.\\n     */\\n    function claim(\\n        address receiver,\\n        uint256 amount\\n    ) external onlyTrustProvider returns (uint256 debtPaid) {\\n        require(receiver != address(0), \\\"ComplianceTreasury: receiver zero\\\");\\n\\n        debtPaid = IDebtSettlement(FEE_MASTER).payOff(\\n            ZKP_TOKEN,\\n            receiver,\\n            amount\\n        );\\n\\n        emit FeesClaimed(FEE_MASTER, receiver, amount);\\n    }\\n}\\n\",\"keccak256\":\"0xa8080663fee72fe196a3169db68167d369fcd58fa7ec732387305309c0a674dd\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/interfaces/IDebtSettlement.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\ninterface IDebtSettlement {\\n    /**\\n     * @dev Pays off the debt in native token.\\n     * @return debt The amount of debt paid off.\\n     */\\n    function payOff(address receiver) external returns (uint256 debt);\\n\\n    /**\\n     * @dev Pays off the debt in a specific token.\\n     * @param tokenAddress Address of the token in which the debt is to be paid off.\\n     * @return debt The amount of debt paid off.\\n     */\\n    function payOff(\\n        address tokenAddress,\\n        address receiver,\\n        uint256 amount\\n    ) external returns (uint256 debt);\\n}\\n\",\"keccak256\":\"0xe1a1bff3c3a42b8fec6529c9b3ce7f7fdcac22fcad45b21d0dc780cf8b27a254\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e060405234801561001057600080fd5b5060405161070d38038061070d83398101604081905261002f9161017a565b6001600160a01b03831661008a5760405162461bcd60e51b815260206004820152601e60248201527f436f6d706c69616e636554726561737572793a206f776e6572207a65726f000060448201526064015b60405180910390fd5b6001600160a01b0382166100e05760405162461bcd60e51b815260206004820152601e60248201527f436f6d706c69616e636554726561737572793a20746f6b656e207a65726f00006044820152606401610081565b6001600160a01b0381166101415760405162461bcd60e51b815260206004820152602260248201527f436f6d706c69616e636554726561737572793a206665654d6173746572207a65604482015261726f60f01b6064820152608401610081565b6001600160a01b0392831660805290821660a0521660c0526101bd565b80516001600160a01b038116811461017557600080fd5b919050565b60008060006060848603121561018f57600080fd5b6101988461015e565b92506101a66020850161015e565b91506101b46040850161015e565b90509250925092565b60805160a05160c0516105086102056000396000818160d501528181610398015261041301526000818160fc01526103610152600081816091015261015d01526105086000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c8063830caefa11610050578063830caefa146100f7578063aad3ec961461011e578063fa59d0891461013f57600080fd5b80630611089314610077578063117803e31461008c578063816737cf146100d0575b600080fd5b61008a610085366004610496565b610152565b005b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b61013161012c3660046104b8565b61028f565b6040519081526020016100c7565b6000546100b3906001600160a01b031681565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101cf5760405162461bcd60e51b815260206004820181905260248201527f436f6d706c69616e636554726561737572793a20756e617574686f72697a656460448201526064015b60405180910390fd5b6001600160a01b03811661022f5760405162461bcd60e51b815260206004820152602160248201527f436f6d706c69616e636554726561737572793a2070726f7669646572207a65726044820152606f60f81b60648201526084016101c6565b600080547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b038316908117825560405190917feb578a86a2770d4685069b19d66da674a00263150e987c3f7a57192e2db40ad091a250565b600080546001600160a01b031633146102ea5760405162461bcd60e51b815260206004820181905260248201527f436f6d706c69616e636554726561737572793a206e6f742070726f766964657260448201526064016101c6565b6001600160a01b03831661034a5760405162461bcd60e51b815260206004820152602160248201527f436f6d706c69616e636554726561737572793a207265636569766572207a65726044820152606f60f81b60648201526084016101c6565b60405163c322d65560e01b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000811660048301528481166024830152604482018490527f0000000000000000000000000000000000000000000000000000000000000000169063c322d655906064016020604051808303816000875af11580156103e1573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061040591906104e2565b9050826001600160a01b03167f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03167ffe3464cd748424446c37877c28ce5b700222c5bc9f90d908afcc4e5cb22707ff8460405161046c91815260200190565b60405180910390a392915050565b80356001600160a01b038116811461049157600080fd5b919050565b6000602082840312156104a857600080fd5b6104b18261047a565b9392505050565b600080604083850312156104cb57600080fd5b6104d48361047a565b946020939093013593505050565b6000602082840312156104f457600080fd5b505191905056fea164736f6c6343000813000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100725760003560e01c8063830caefa11610050578063830caefa146100f7578063aad3ec961461011e578063fa59d0891461013f57600080fd5b80630611089314610077578063117803e31461008c578063816737cf146100d0575b600080fd5b61008a610085366004610496565b610152565b005b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b6100b37f000000000000000000000000000000000000000000000000000000000000000081565b61013161012c3660046104b8565b61028f565b6040519081526020016100c7565b6000546100b3906001600160a01b031681565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101cf5760405162461bcd60e51b815260206004820181905260248201527f436f6d706c69616e636554726561737572793a20756e617574686f72697a656460448201526064015b60405180910390fd5b6001600160a01b03811661022f5760405162461bcd60e51b815260206004820152602160248201527f436f6d706c69616e636554726561737572793a2070726f7669646572207a65726044820152606f60f81b60648201526084016101c6565b600080547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b038316908117825560405190917feb578a86a2770d4685069b19d66da674a00263150e987c3f7a57192e2db40ad091a250565b600080546001600160a01b031633146102ea5760405162461bcd60e51b815260206004820181905260248201527f436f6d706c69616e636554726561737572793a206e6f742070726f766964657260448201526064016101c6565b6001600160a01b03831661034a5760405162461bcd60e51b815260206004820152602160248201527f436f6d706c69616e636554726561737572793a207265636569766572207a65726044820152606f60f81b60648201526084016101c6565b60405163c322d65560e01b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000811660048301528481166024830152604482018490527f0000000000000000000000000000000000000000000000000000000000000000169063c322d655906064016020604051808303816000875af11580156103e1573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061040591906104e2565b9050826001600160a01b03167f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03167ffe3464cd748424446c37877c28ce5b700222c5bc9f90d908afcc4e5cb22707ff8460405161046c91815260200190565b60405180910390a392915050565b80356001600160a01b038116811461049157600080fd5b919050565b6000602082840312156104a857600080fd5b6104b18261047a565b9392505050565b600080604083850312156104cb57600080fd5b6104d48361047a565b946020939093013593505050565b6000602082840312156104f457600080fd5b505191905056fea164736f6c6343000813000a",
+  "devdoc": {
+    "details": "Deploy behind a proxy and configure the trust provider EOA through `updateTrustProvider`. The owner address, ZKP token, and FeeMaster are immutable.",
+    "kind": "dev",
+    "methods": {
+      "claim(address,uint256)": {
+        "params": {
+          "amount": "Amount of ZKP rewards to withdraw.",
+          "receiver": "Address receiving the withdrawn rewards."
+        }
+      },
+      "updateTrustProvider(address)": {
+        "params": {
+          "newTrustProvider": "Address of the new trust provider."
+        }
+      }
+    },
+    "title": "ComplianceTreasury",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "FEE_MASTER()": {
+        "notice": "FeeMaster contract address."
+      },
+      "OWNER()": {
+        "notice": "Governance address allowed to manage the trust provider."
+      },
+      "ZKP_TOKEN()": {
+        "notice": "ZKP token used when collecting rewards from FeeMaster."
+      },
+      "claim(address,uint256)": {
+        "notice": "Claims accrued rewards from FeeMaster in ZKP token to the receiver."
+      },
+      "trustProvider()": {
+        "notice": "Address that is allowed to pull rewards from the FeeMaster. Stored in slot 0."
+      },
+      "updateTrustProvider(address)": {
+        "notice": "Updates the EOA that is allowed to claim the accumulated rewards."
+      }
+    },
+    "notice": "Lightweight upgradeable contract that holds the trust provider role for FeeMaster.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 638,
+        "contract": "contracts/protocol/v1/ComplianceTreasury.sol:ComplianceTreasury",
+        "label": "trustProvider",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}

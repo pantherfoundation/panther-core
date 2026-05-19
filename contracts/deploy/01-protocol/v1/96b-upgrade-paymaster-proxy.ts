@@ -29,5 +29,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['upgrade-paymaster-proxy'];
+func.tags = ['upgrade-paymaster-proxy', 'protocol-v1-deploy'];
 func.dependencies = ['paymaster-imp', 'paymaster-proxy'];

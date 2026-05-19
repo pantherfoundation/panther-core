@@ -1,0 +1,122 @@
+{
+  "address": "0xEEA28cf0837306041FA53187F0802aC95228CD45",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_zAccountsRegistry",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ZACCOUNTS_REGISTRY",
+      "outputs": [
+        {
+          "internalType": "contract IZAccountsRegistration",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_signer",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "resolveRequest",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6a42bf9eda3344f6de6804c8d3f442c8733deaf9af577859e5ce522309303283",
+  "receipt": {
+    "to": null,
+    "from": "0xb83A3094272B6425f89BB5590b48928e2374eE11",
+    "contractAddress": "0xEEA28cf0837306041FA53187F0802aC95228CD45",
+    "transactionIndex": 0,
+    "gasUsed": "172331",
+    "logsBloom": "0x00000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000c00000000000000000000200000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0xf5bd4c489a44cabf0f9ca3afa606ce2c6f15873c770ea97c5618ff65b3352093",
+    "transactionHash": "0x6a42bf9eda3344f6de6804c8d3f442c8733deaf9af577859e5ce522309303283",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 80999313,
+        "transactionHash": "0x6a42bf9eda3344f6de6804c8d3f442c8733deaf9af577859e5ce522309303283",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000b83a3094272b6425f89bb5590b48928e2374ee11",
+          "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000682bf5a4e5fb6d000000000000000000000000000000000000000000000000055db38669ca084400000000000000000000000000000000000000000003bc131df77c7183e27efc00000000000000000000000000000000000000000000000004f58790c4e40cd700000000000000000000000000000000000000000003bc131e5fa86728c87a69",
+        "logIndex": 0,
+        "blockHash": "0xf5bd4c489a44cabf0f9ca3afa606ce2c6f15873c770ea97c5618ff65b3352093"
+      }
+    ],
+    "blockNumber": 80999313,
+    "cumulativeGasUsed": "172331",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x008DeCe35c2920F08961f493ad7F543Fb796F4de"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "74f1a231230ab7634601449b089b5b82",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_zAccountsRegistry\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ZACCOUNTS_REGISTRY\",\"outputs\":[{\"internalType\":\"contract IZAccountsRegistration\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"resolveRequest\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v1/core/facets/zAccountsRegistration/ZAccountsStatusResolver.sol\":\"ZAccountsStatusResolver\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/protocol/v1/core/facets/zAccountsRegistration/ZAccountsStatusResolver.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-2.0-or-later\\npragma solidity ^0.8.19;\\n\\nimport \\\"../../interfaces/IPureFiIssuerRequestResolver.sol\\\";\\nimport \\\"../../interfaces/IZAccountsRegistration.sol\\\";\\n\\ncontract ZAccountsStatusResolver is IPureFiIssuerRequestResolver {\\n    IZAccountsRegistration public immutable ZACCOUNTS_REGISTRY;\\n\\n    constructor(address _zAccountsRegistry) {\\n        require(_zAccountsRegistry != address(0), \\\"init:zero address\\\");\\n        ZACCOUNTS_REGISTRY = IZAccountsRegistration(_zAccountsRegistry);\\n    }\\n\\n    function resolveRequest(\\n        uint8 /*_type*/,\\n        uint256 /*_ruleID*/,\\n        address _signer,\\n        address /*_from*/,\\n        address /*_to*/\\n    ) external view override returns (bool) {\\n        return ZACCOUNTS_REGISTRY.isZAccountWhitelisted(_signer);\\n    }\\n}\\n\",\"keccak256\":\"0x675a75d0f821c70292a602b86d3ac60ecf6b6dab33fc0ca985a903a6563b4edb\",\"license\":\"GPL-2.0-or-later\"},\"contracts/protocol/v1/core/interfaces/IPureFiIssuerRequestResolver.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\ninterface IPureFiIssuerRequestResolver {\\n    function resolveRequest(\\n        uint8 _type,\\n        uint256 _ruleID,\\n        address _signer,\\n        address _from,\\n        address _to\\n    ) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x34f191d4cdcd42ef0fe82efe5ccfaa7c0c5f2e6c350e18b0bd612cad6d26ce90\",\"license\":\"MIT\"},\"contracts/protocol/v1/core/interfaces/IZAccountsRegistration.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\ninterface IZAccountsRegistration {\\n    function isZAccountWhitelisted(\\n        address _masterEOA\\n    ) external view returns (bool isWhitelisted);\\n}\\n\",\"keccak256\":\"0x82d09063f24205d2e7823e494a916006451d53a73fdcd33336028b62f696caa4\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b506040516102f83803806102f883398101604081905261002f9161008e565b6001600160a01b03811661007d5760405162461bcd60e51b8152602060048201526011602482015270696e69743a7a65726f206164647265737360781b604482015260640160405180910390fd5b6001600160a01b03166080526100be565b6000602082840312156100a057600080fd5b81516001600160a01b03811681146100b757600080fd5b9392505050565b60805161021a6100de600039600081816068015260de015261021a6000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063834033761461003b578063cb98064f14610063575b600080fd5b61004e61004936600461017e565b6100af565b60405190151581526020015b60405180910390f35b61008a7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161005a565b60405163491ea32560e11b815273ffffffffffffffffffffffffffffffffffffffff84811660048301526000917f00000000000000000000000000000000000000000000000000000000000000009091169063923d464a90602401602060405180830381865afa158015610127573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061014b91906101e4565b9695505050505050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461017957600080fd5b919050565b600080600080600060a0868803121561019657600080fd5b853560ff811681146101a757600080fd5b9450602086013593506101bc60408701610155565b92506101ca60608701610155565b91506101d860808701610155565b90509295509295909350565b6000602082840312156101f657600080fd5b8151801515811461020657600080fd5b939250505056fea164736f6c6343000813000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063834033761461003b578063cb98064f14610063575b600080fd5b61004e61004936600461017e565b6100af565b60405190151581526020015b60405180910390f35b61008a7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161005a565b60405163491ea32560e11b815273ffffffffffffffffffffffffffffffffffffffff84811660048301526000917f00000000000000000000000000000000000000000000000000000000000000009091169063923d464a90602401602060405180830381865afa158015610127573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061014b91906101e4565b9695505050505050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461017957600080fd5b919050565b600080600080600060a0868803121561019657600080fd5b853560ff811681146101a757600080fd5b9450602086013593506101bc60408701610155565b92506101ca60608701610155565b91506101d860808701610155565b90509295509295909350565b6000602082840312156101f657600080fd5b8151801515811461020657600080fd5b939250505056fea164736f6c6343000813000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

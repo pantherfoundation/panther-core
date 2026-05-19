@@ -3,7 +3,11 @@
     "inputs": [
       {"internalType": "address", "name": "_owner", "type": "address"},
       {"internalType": "address", "name": "_zkpToken", "type": "address"},
-      {"internalType": "address", "name": "_pantherPool", "type": "address"}
+      {
+        "internalType": "address",
+        "name": "_pantherPool",
+        "type": "address"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -93,7 +97,11 @@
         "name": "_totalReleased",
         "type": "uint256"
       },
-      {"internalType": "uint256", "name": "_startBlock", "type": "uint256"}
+      {
+        "internalType": "uint256",
+        "name": "_startBlock",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"

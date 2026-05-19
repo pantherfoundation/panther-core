@@ -3,7 +3,7 @@
 
 import {ethers} from 'ethers';
 
-export const GAS_PRICE = 450e9; // Gas price in gwei
+export const GAS_PRICE = 300e9; // Gas price in gwei
 export const NATIVE_ADDRESS = ethers.constants.AddressZero; // zero address for native token
 
 export const maxBlocktimeOffset = '600'; // 10 mins
@@ -47,6 +47,10 @@ export const FEE_MASTER = {
         ethers.utils.parseEther('60'),
         ethers.utils.parseEther('40'),
     ],
+};
+
+export const COMPLIANCE_TREASURY = {
+    trustProvider: '0x4b869a95472e3b90ff081F8bb645d4Da87be8432',
 };
 
 export const ACCOUNT = {

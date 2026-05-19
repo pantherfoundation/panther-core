@@ -1,9 +1,17 @@
 [
   {
     "inputs": [
-      {"internalType": "uint8", "name": "_zAccountVersion", "type": "uint8"},
+      {
+        "internalType": "uint8",
+        "name": "_zAccountVersion",
+        "type": "uint8"
+      },
       {"internalType": "address", "name": "self", "type": "address"},
-      {"internalType": "address", "name": "pantherTrees", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "pantherTrees",
+        "type": "address"
+      },
       {"internalType": "address", "name": "feeMaster", "type": "address"},
       {"internalType": "address", "name": "zkpToken", "type": "address"}
     ],
@@ -77,14 +85,26 @@
             "name": "scMiningReward",
             "type": "uint40"
           },
-          {"internalType": "uint40", "name": "scKytFees", "type": "uint40"},
-          {"internalType": "uint40", "name": "scKycFee", "type": "uint40"},
+          {
+            "internalType": "uint40",
+            "name": "scKytFees",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "scKycFee",
+            "type": "uint40"
+          },
           {
             "internalType": "uint40",
             "name": "scPaymasterCompensationInNative",
             "type": "uint40"
           },
-          {"internalType": "uint96", "name": "protocolFee", "type": "uint96"}
+          {
+            "internalType": "uint96",
+            "name": "protocolFee",
+            "type": "uint96"
+          }
         ],
         "indexed": false,
         "internalType": "struct ChargedFeesPerTx",
@@ -138,14 +158,22 @@
       },
       {
         "components": [
-          {"internalType": "uint184", "name": "_unused", "type": "uint184"},
+          {
+            "internalType": "uint184",
+            "name": "_unused",
+            "type": "uint184"
+          },
           {
             "internalType": "uint32",
             "name": "creationBlock",
             "type": "uint32"
           },
           {"internalType": "uint24", "name": "id", "type": "uint24"},
-          {"internalType": "uint8", "name": "version", "type": "uint8"},
+          {
+            "internalType": "uint8",
+            "name": "version",
+            "type": "uint8"
+          },
           {
             "internalType": "enum ZACCOUNT_STATUS",
             "name": "status",
@@ -180,13 +208,25 @@
   },
   {
     "inputs": [
-      {"internalType": "uint256[]", "name": "inputs", "type": "uint256[]"},
+      {
+        "internalType": "uint256[]",
+        "name": "inputs",
+        "type": "uint256[]"
+      },
       {
         "components": [
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "a",
@@ -211,8 +251,16 @@
           },
           {
             "components": [
-              {"internalType": "uint256", "name": "x", "type": "uint256"},
-              {"internalType": "uint256", "name": "y", "type": "uint256"}
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct G1Point",
             "name": "c",
@@ -233,7 +281,11 @@
         "name": "paymasterCompensation",
         "type": "uint96"
       },
-      {"internalType": "bytes", "name": "privateMessages", "type": "bytes"}
+      {
+        "internalType": "bytes",
+        "name": "privateMessages",
+        "type": "bytes"
+      }
     ],
     "name": "activateZAccount",
     "outputs": [
@@ -253,7 +305,11 @@
         "name": "masterEoas",
         "type": "address[]"
       },
-      {"internalType": "bool[]", "name": "isBlackListed", "type": "bool[]"}
+      {
+        "internalType": "bool[]",
+        "name": "isBlackListed",
+        "type": "bool[]"
+      }
     ],
     "name": "batchUpdateBlacklistForMasterEoa",
     "outputs": [],
@@ -267,7 +323,11 @@
         "name": "packedPubRootSpendingKeys",
         "type": "bytes32[]"
       },
-      {"internalType": "bool[]", "name": "isBlackListed", "type": "bool[]"}
+      {
+        "internalType": "bool[]",
+        "name": "isBlackListed",
+        "type": "bool[]"
+      }
     ],
     "name": "batchUpdateBlacklistForPubRootSpendingKey",
     "outputs": [],
@@ -394,7 +454,11 @@
     "name": "zAccounts",
     "outputs": [
       {"internalType": "uint184", "name": "_unused", "type": "uint184"},
-      {"internalType": "uint32", "name": "creationBlock", "type": "uint32"},
+      {
+        "internalType": "uint32",
+        "name": "creationBlock",
+        "type": "uint32"
+      },
       {"internalType": "uint24", "name": "id", "type": "uint24"},
       {"internalType": "uint8", "name": "version", "type": "uint8"},
       {
@@ -407,7 +471,11 @@
         "name": "pubRootSpendingKey",
         "type": "bytes32"
       },
-      {"internalType": "bytes32", "name": "pubReadingKey", "type": "bytes32"}
+      {
+        "internalType": "bytes32",
+        "name": "pubReadingKey",
+        "type": "bytes32"
+      }
     ],
     "stateMutability": "view",
     "type": "function"

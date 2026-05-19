@@ -292,7 +292,11 @@
         "type": "uint8"
       },
       {"internalType": "uint16", "name": "numKeys", "type": "uint16"},
-      {"internalType": "uint16", "name": "numAllocKeys", "type": "uint16"},
+      {
+        "internalType": "uint16",
+        "name": "numAllocKeys",
+        "type": "uint16"
+      },
       {
         "internalType": "uint32",
         "name": "registrationBlock",
@@ -449,7 +453,11 @@
   {
     "inputs": [
       {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
-      {"internalType": "address", "name": "newOperator", "type": "address"}
+      {
+        "internalType": "address",
+        "name": "newOperator",
+        "type": "address"
+      }
     ],
     "name": "updateKeyringOperator",
     "outputs": [],
@@ -459,7 +467,11 @@
   {
     "inputs": [
       {"internalType": "uint16", "name": "keyringId", "type": "uint16"},
-      {"internalType": "address", "name": "newOperator", "type": "address"},
+      {
+        "internalType": "address",
+        "name": "newOperator",
+        "type": "address"
+      },
       {"internalType": "uint8", "name": "v", "type": "uint8"},
       {"internalType": "bytes32", "name": "r", "type": "bytes32"},
       {"internalType": "bytes32", "name": "s", "type": "bytes32"}

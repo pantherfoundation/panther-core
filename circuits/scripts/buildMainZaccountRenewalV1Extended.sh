@@ -18,7 +18,7 @@ circom_compile_v1_extended_step0 () {
 snarkjs_get_ptau_for_phase2 () { # main circuit is ~80k contraints, this leads to this file (from 64k upto 128k)
     echo "*** snarkjs_get_ptau_for_phase2 ***";
     if [[ ! -f "powersOfTau28_hez_final_18.ptau" ]]; then
-        wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_18.ptau;
+        wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau;
     fi
 }
 
@@ -77,6 +77,22 @@ snarkjs_create_solidity_verifier_step11 () {
     ${SNARKJS} zkey export solidityverifier compiled/main_zAccount_renewal_v1_extended_final.zkey compiled/main_zAccount_renewal_v1_extended_final_verifier.sol
 }
 
+export_final_artifacts_step12 () {
+    echo "*** export_final_artifacts_step12 ***";
+    mkdir -p compiled/zAccountRenewal &&
+    mv compiled/mainZAccountRenewalV1.r1cs compiled/zAccountRenewal/circuits.r1cs &&
+    mv compiled/mainZAccountRenewalV1_js/mainZAccountRenewalV1.wasm compiled/zAccountRenewal/circuits.wasm &&
+    mv compiled/main_zAccount_renewal_v1_extended_final.zkey compiled/zAccountRenewal/provingKey.zkey &&
+    mv compiled/main_zAccount_renewal_v1_extended_verification_key.json compiled/zAccountRenewal/verificationKey.json &&
+    mv compiled/main_zAccount_renewal_v1_extended_final_verifier.sol compiled/zAccountRenewal/verifier.sol
+}
+
+cleanup_intermediate_artifacts_step13 () {
+    echo "*** cleanup_intermediate_artifacts_step13 ***";
+    rm -f compiled/main_zAccount_renewal_v1_extended_0000.zkey compiled/main_zAccount_renewal_v1_extended_0001.zkey compiled/main_zAccount_renewal_v1_extended_0002.zkey compiled/main_zAccount_renewal_v1_extended_0003.zkey compiled/mainZAccountRenewalV1.r1cs compiled/mainZAccountRenewalV1.sym compiled/mainZAccountRenewalV1Extended.json compiled/main_zAccount_renewal_v1_extended_final.zkey compiled/main_zAccount_renewal_v1_extended_verification_key.json compiled/main_zAccount_renewal_v1_extended_final_verifier.sol compiled/snark_build_v1_extended.log;
+    rm -rf compiled/mainZAccountRenewalV1_js
+}
+
 snark_build_v1_extended () {
     snarkjs_get_ptau_for_phase2 &&
     circom_compile_v1_extended_step0 &&
@@ -91,7 +107,9 @@ snark_build_v1_extended () {
     snarkjs_phase2_apply_random_beacon_step8 &&
     snarkjs_final_zkey_verify_step9 &&
     snarkjs_export_verification_key_step10 &&
-    snarkjs_create_solidity_verifier_step11;
+    snarkjs_create_solidity_verifier_step11 &&
+    export_final_artifacts_step12 &&
+    cleanup_intermediate_artifacts_step13;
 }
 
 # MAIN

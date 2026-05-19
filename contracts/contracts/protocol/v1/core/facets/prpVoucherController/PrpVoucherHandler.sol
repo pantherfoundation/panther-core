@@ -8,28 +8,13 @@ import "../../errMsgs/PrpVoucherController.sol";
 
 import "../../../../..//common/UtilsLib.sol";
 import { MAX_PRP_AMOUNT } from "../../../../../common/Constants.sol";
+import { VoucherTerms } from "./Types.sol";
 
 abstract contract PrpVoucherHandler {
     using UtilsLib for address;
 
     // solhint-disable-next-line
     uint64 private ZERO_VALUE = 1;
-
-    /// @dev Struct for storing voucher terms.
-    /// @param rewardsGranted The total amount (accumulator) of rewards granted
-    /// for this voucher
-    /// @param limit The rewards limit of the reward voucher. rewardsGranted <=
-    //limit
-    /// @param amount The amount of the reward that voucher generates.
-    /// @param enabled The status of the voucher terms.
-    struct VoucherTerms {
-        uint64 rewardsGranted;
-        uint64 limit;
-        uint64 amount;
-        bool enabled;
-        // rest of the storage slot (uint120) are available for upgrades
-        uint56 _reserved;
-    }
 
     mapping(bytes32 => uint256) public balance;
     mapping(address => mapping(bytes4 => VoucherTerms)) public voucherTerms;

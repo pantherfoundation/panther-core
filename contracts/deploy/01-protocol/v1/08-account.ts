@@ -19,11 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     await deploy('Account', {
         from: deployer,
-        // TODO: delete proxy
-        proxy: {
-            proxyContract: 'EIP173Proxy',
-            owner: deployer,
-        },
+
         args: [
             [
                 coreDiamond,
@@ -63,5 +59,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['account'];
+func.tags = ['account', 'protocol-v1-deploy'];
 func.dependencies = ['core-diamond'];

@@ -18,7 +18,7 @@ circom_compile_v1_extended_step0 () {
 snarkjs_get_ptau_for_phase2 () {
     echo "*** snarkjs_get_ptau_for_phase2 ***";
     if [[ ! -f "powersOfTau28_hez_final_18.ptau" ]]; then
-        wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_18.ptau;
+        wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau;
     fi
 }
 
@@ -77,6 +77,22 @@ snarkjs_create_solidity_verifier_step11 () {
     ${SNARKJS} zkey export solidityverifier compiled/zswap_final.zkey compiled/zswap_final_verifier.sol
 }
 
+export_final_artifacts_step12 () {
+    echo "*** export_final_artifacts_step12 ***";
+    mkdir -p compiled/zSwap &&
+    mv compiled/mainZSwapV1.r1cs compiled/zSwap/circuits.r1cs &&
+    mv compiled/mainZSwapV1_js/mainZSwapV1.wasm compiled/zSwap/circuits.wasm &&
+    mv compiled/zswap_final.zkey compiled/zSwap/provingKey.zkey &&
+    mv compiled/zswap_verification_key.json compiled/zSwap/verificationKey.json &&
+    mv compiled/zswap_final_verifier.sol compiled/zSwap/verifier.sol
+}
+
+cleanup_intermediate_artifacts_step13 () {
+    echo "*** cleanup_intermediate_artifacts_step13 ***";
+    rm -f compiled/zswap_0000.zkey compiled/zswap_0001.zkey compiled/zswap_0002.zkey compiled/zswap_0003.zkey compiled/mainZSwapV1.r1cs compiled/mainZSwapV1.sym compiled/zswap.json compiled/zswap_final.zkey compiled/zswap_verification_key.json compiled/zswap_final_verifier.sol compiled/snark_build_v1_extended.log;
+    rm -rf compiled/mainZSwapV1_js
+}
+
 snark_build_v1_extended () {
     snarkjs_get_ptau_for_phase2 &&
     circom_compile_v1_extended_step0 &&
@@ -91,7 +107,9 @@ snark_build_v1_extended () {
     snarkjs_phase2_apply_random_beacon_step8 &&
     snarkjs_final_zkey_verify_step9 &&
     snarkjs_export_verification_key_step10 &&
-    snarkjs_create_solidity_verifier_step11;
+    snarkjs_create_solidity_verifier_step11 &&
+    export_final_artifacts_step12 &&
+    cleanup_intermediate_artifacts_step13;
 }
 
 # MAIN

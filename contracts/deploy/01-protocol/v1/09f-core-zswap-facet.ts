@@ -32,10 +32,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['zswap', 'core', 'core-facet', 'protocol-v1'];
+func.tags = [
+    'zswap',
+    'core',
+    'core-facet',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
 func.dependencies = [
     'poseidon-libs-v1',
     'trees-diamond',
     'vault-v1',
-    'fee-master',
+    'fee-master-proxy',
 ];

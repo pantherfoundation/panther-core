@@ -33,4 +33,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['update-protocol-fee-distribution-params', 'core', 'protocol-v1'];
-func.dependencies = ['fee-master'];
+func.dependencies = ['upgrade-fee-master'];

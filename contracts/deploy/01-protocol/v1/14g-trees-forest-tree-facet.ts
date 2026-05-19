@@ -34,5 +34,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['forest-tree', 'trees', 'trees-facet', 'protocol-v1'];
-func.dependencies = ['poseidon-libs-v1', 'core-diamond', 'fee-master'];
+func.tags = [
+    'forest-tree',
+    'trees',
+    'trees-facet',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
+func.dependencies = ['poseidon-libs-v1', 'core-diamond', 'fee-master-proxy'];

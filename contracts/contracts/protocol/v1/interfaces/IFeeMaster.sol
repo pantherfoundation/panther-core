@@ -81,6 +81,11 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
     event PoolUpdated(address pool, bytes32 key, bool enabled);
 
     /**
+     * @dev getting the min zkp amount needed to generated prp rewards
+     */
+    function minRewardableZkpAmount() external view returns (uint96);
+
+    /**
      * @dev Updates the target amount of native token reserve.
      * @param _nativeTokenReserveTarget The new target amount of native token reserve.
      */
@@ -138,6 +143,20 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
     ) external;
 
     /**
+     * @notice Calculates potential rewards from rebalancing protocol assets
+     * @dev Estimates ZKP tokens and PRP rewards obtainable from converting zAssets to native tokens
+     * @param zAssets Array of asset addresses to be converted
+     * @return estimatedPrpRewards Estimated PRP voucher rewards from eligible conversions
+     * @return estimatedZkpBalance Total ZKP tokens to be received after rebalancing
+     */
+    function estimateRebalancingPrpRewardsAndZkpBalance(
+        address[] calldata zAssets
+    )
+        external
+        view
+        returns (uint256 estimatedPrpRewards, uint256 estimatedZkpBalance);
+
+    /**
      * @notice Rebalances the protocol debts by converting sell tokens to native tokens and ZKP.
      * @dev This function performs the following operations:
      *      1. Retrieves the total protocol debt in the specified sellToken.
@@ -163,4 +182,21 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
      *      allocation percentages.
      */
     function distributeProtocolZkpFees(bytes32 secretHash) external;
+
+    /**
+     * @dev Emitted when the PayMaster's stranded ZKP debt is cleared by admin.
+     * @param zkpAmount The amount of ZKP debt cleared.
+     * @param recipient The address that received the withdrawn ZKP tokens.
+     */
+    event PaymasterZkpDebtCleared(uint256 zkpAmount, address recipient);
+
+    /**
+     * @notice Clears the PayMaster's stranded ZKP debt and withdraws the
+     *         corresponding ZKP from the Vault to the caller (owner).
+     * @dev The PayMaster can only claim native tokens via payOff(). If ZKP→native
+     *      conversion failed during fee accounting (insufficient reserves), ZKP debt
+     *      accumulates with no settlement path. This function writes off that debt
+     *      and returns the ZKP to the owner.
+     */
+    function adminClearPaymasterZkpDebt(address receiver) external;
 }

@@ -36,5 +36,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['update-fee-master-owner', 'core', 'protocol-v1'];
-func.dependencies = ['fee-master'];
+func.tags = [
+    'update-fee-master-owner',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
+func.dependencies = ['upgrade-fee-master'];
