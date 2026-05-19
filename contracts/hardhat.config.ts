@@ -94,12 +94,9 @@ const config: HardhatUserConfig = {
         amoy: createNetworkConfig('amoy'),
     },
     etherscan: {
-        apiKey: {
-            mainnet: process.env.ETHERSCAN_API_KEY as string,
-            sepolia: process.env.ETHERSCAN_API_KEY as string,
-            polygon: process.env.POLYGONSCAN_API_KEY as string,
-            amoy: process.env.POLYGONSCAN_API_KEY as string,
-        },
+        apiKey:
+            process.env.POLYGONSCAN_API_KEY ||
+            (process.env.ETHERSCAN_API_KEY as string),
         customChains: [
             createEtherscanConfig('amoy', {
                 apiURL: 'https://api-amoy.polygonscan.com/api',
@@ -253,7 +250,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77',
             sepolia: 0,
 
-            polygon: '0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0',
+            polygon: '0x026a024b13B4Ca23897ad578264C0ec543f904b9',
             amoy: 0,
         },
 
@@ -273,7 +270,7 @@ function getNamedAccounts() {
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
             sepolia: 0,
 
-            polygon: '0xE454ba38c6d358c8018dFA2cBA9a6096B2420ECD', // TODO: replace
+            polygon: '0xE454ba38c6d358c8018dFA2cBA9a6096B2420ECD',
             amoy: 0,
         },
 
@@ -344,6 +341,7 @@ function getNamedAccounts() {
             localhost: 0,
             hardhat: 0,
             amoy: '0xdD556a7f6a88d2dA7d5C7d4c16337C62B34B2dCb',
+            polygon: 0,
         },
 
         link_native_uniswapV3Pool: {

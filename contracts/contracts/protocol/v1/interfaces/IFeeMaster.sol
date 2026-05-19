@@ -182,4 +182,21 @@ interface IFeeMaster is ICachedNativeZkpTwap, IFeeAccountant, IPayOff {
      *      allocation percentages.
      */
     function distributeProtocolZkpFees(bytes32 secretHash) external;
+
+    /**
+     * @dev Emitted when the PayMaster's stranded ZKP debt is cleared by admin.
+     * @param zkpAmount The amount of ZKP debt cleared.
+     * @param recipient The address that received the withdrawn ZKP tokens.
+     */
+    event PaymasterZkpDebtCleared(uint256 zkpAmount, address recipient);
+
+    /**
+     * @notice Clears the PayMaster's stranded ZKP debt and withdraws the
+     *         corresponding ZKP from the Vault to the caller (owner).
+     * @dev The PayMaster can only claim native tokens via payOff(). If ZKP→native
+     *      conversion failed during fee accounting (insufficient reserves), ZKP debt
+     *      accumulates with no settlement path. This function writes off that debt
+     *      and returns the ZKP to the owner.
+     */
+    function adminClearPaymasterZkpDebt(address receiver) external;
 }

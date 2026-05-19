@@ -4,6 +4,7 @@
 pragma solidity 0.8.19;
 
 import "../interfaces/IPrpVoucherController.sol";
+import "../interfaces/IVoucherTerms.sol";
 
 import "../storage/AppStorage.sol";
 import "../storage/PrpVoucherControllerStorageGap.sol";
@@ -43,6 +44,7 @@ contract PrpVoucherController is
     TransactionNoteEmitter,
     TransactionChargesHandler,
     IPrpVoucherController,
+    IVoucherTerms,
     SelfReentrant
 {
     using UtilsLib for uint256;
@@ -231,6 +233,19 @@ contract PrpVoucherController is
 
             emit RewardClaimed(secretHash);
         }
+    }
+
+    /**
+     * @notice Gets the voucher terms for a specific contract and voucher type
+     * @param contractAddress The address of the contract allowed to generate vouchers
+     * @param voucherType The type identifier for the voucher
+     * @return terms The voucher terms structure
+     */
+    function getVoucherTerms(
+        address contractAddress,
+        bytes4 voucherType
+    ) external view override returns (VoucherTerms memory terms) {
+        return voucherTerms[contractAddress][voucherType];
     }
 
     /**
