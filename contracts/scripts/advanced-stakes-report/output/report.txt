@@ -1,0 +1,25 @@
+Advanced Stakes Reconstruction Report
+Generated: 2026-05-21T14:05:00.831Z
+Mainnet advanced StakeCreated (all non-classic): 189
+Polygon  StakeCreated (all types):               7605
+Polygon  RewardGenerated events:                 4591
+Output records: 4593
+  polygon-sourced (same-tx StakeCreated): 4404
+  bridged-from-mainnet:                   187
+  unmatched mainnet (bridge failures):    2
+Bridged rewards w/o matching mainnet stake (anomaly): 0
+Duplicate leftLeafId in rewards: 0
+Polygon stake types observed (and their reward counts):
+    0x7ec13a06: 3065
+    0x4454e883: 582
+    0x8496de05: 551
+    0x466b3169: 206
+Exit events (total Nullifier emissions): 242
+Stakes with ZKP exit:                    242
+Stakes with NFT exit:                    0
+Stakes with both exited:                 0
+Stakes half-exited (zkp xor nft):        50
+Unmatched mainnet stake details (first 20):
+  0xfc95df8651f2a5dc51c886d56456772dfd50c0c0 block=15976045 tx=0x134aa769fa48e76fd9e9c32ef5b1c50da2ba692036d8cf9e3f4fa2d4b6fde2d8 stakeID=0 amount=1000000000000000000
+  0xeb5b192cdcda4ba0500d426a0f330d958a733280 block=15977338 tx=0x3b4f47b4edb492872a9b72211a579b97b029234c0158c55c2d607325c9e523b4 stakeID=0 amount=9000000000000000000000000
+Half-exited leftLeafIds (first 20): 308, 360, 436, 520, 1112, 1692, 2048, 2228, 2280, 2400, 2456, 2532, 2596, 2644, 2720, 2808, 2876, 2916, 2924, 2948
