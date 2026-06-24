@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const multisig = await getNamedAccount(hre, 'multisig');
@@ -28,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         console.log(`transferring ownership to ${multisig}...`);
 
         const tx = await payMaster.transferOwnership(multisig, {
-            gasPrice: GAS_PRICE,
+            gasPrice: await getGasPrice(hre),
         });
         const res = await tx.wait();
         console.log('owner is updated, tx: ', res.transactionHash);

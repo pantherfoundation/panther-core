@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pZkp = await getNamedAccount(hre, 'pzkp');
@@ -33,21 +33,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log('adding pzkp-native...');
     let tx = await feeMaster.updatePool(pZkpNativePool, weth9, pZkp, true, {
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
     let res = await tx.wait();
     console.log('pzkp-native is added!', res.transactionHash);
 
     console.log('adding pzkp-link...');
     tx = await feeMaster.updatePool(pZkpLinkPool, link, pZkp, {
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
     res = await tx.wait();
     console.log('pzkp-link is added!', res.transactionHash);
 
     console.log('adding link-native...');
     tx = await feeMaster.updatePool(linkNativePool, weth9, link, {
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
     res = await tx.wait();
     console.log('link-native is added!', res.transactionHash);

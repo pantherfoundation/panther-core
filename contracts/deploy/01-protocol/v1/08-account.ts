@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE, ACCOUNT} from './parameters';
+import {getGasPrice, ACCOUNT} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
@@ -54,7 +54,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ],
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 };
 export default func;

@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {ZAssetsRegistry, leafs} from '../../../lib/staticTree/zAssetsRegistry';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -36,7 +36,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             weight,
             proofSiblings,
             {
-                gasPrice: GAS_PRICE,
+                gasPrice: await getGasPrice(hre),
             },
         );
 

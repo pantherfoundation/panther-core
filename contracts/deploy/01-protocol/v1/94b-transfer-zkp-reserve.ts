@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE, ZKP_RESERVE_CONTROLLER} from './parameters';
+import {getGasPrice, ZKP_RESERVE_CONTROLLER} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getNamedAccount(hre, 'pzkp');
@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         zkpReserveController,
         ZKP_RESERVE_CONTROLLER.zkpTokenReserves,
         {
-            gasPrice: GAS_PRICE,
+            gasPrice: await getGasPrice(hre),
         },
     );
     const res = await tx.wait();

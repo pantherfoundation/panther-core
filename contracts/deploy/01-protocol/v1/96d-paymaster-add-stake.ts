@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE, PAYMASTER} from './parameters';
+import {getGasPrice, PAYMASTER} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const tx = await paymaster.addStake(PAYMASTER.unstakeDelaySec, {
         value: PAYMASTER.addStakeValue,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
     const res = await tx.wait();
 

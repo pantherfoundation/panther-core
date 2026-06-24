@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE, FEE_MASTER} from './parameters';
+import {getGasPrice, FEE_MASTER} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -23,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         FEE_MASTER.FEE_PARAMS.perKytFee,
         FEE_MASTER.FEE_PARAMS.kycFee,
         FEE_MASTER.FEE_PARAMS.protocolFeePercentage,
-        {gasPrice: GAS_PRICE},
+        {gasPrice: await getGasPrice(hre)},
     );
     const res = await tx.wait();
 

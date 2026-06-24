@@ -6,7 +6,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE, FEE_MASTER} from './parameters';
+import {getGasPrice, FEE_MASTER} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const pzkp = await getNamedAccount(hre, 'pzkp');
@@ -28,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             feeMaster.address,
             FEE_MASTER.zkpTokenReserves,
             {
-                gasPrice: GAS_PRICE,
+                gasPrice: await getGasPrice(hre),
             },
         );
         const res = await tx.wait();
@@ -40,7 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const tx = await feeMaster.increaseZkpTokenDonations(
             FEE_MASTER.zkpTokenReserves,
             {
-                gasPrice: GAS_PRICE,
+                gasPrice: await getGasPrice(hre),
             },
         );
         const res = await tx.wait();

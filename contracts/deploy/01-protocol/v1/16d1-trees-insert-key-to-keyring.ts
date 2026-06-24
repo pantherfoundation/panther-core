@@ -10,7 +10,7 @@ import {
     testnetLeafs,
 } from '../../../lib/staticTree/providersKeys';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             expiryDate,
             proofSiblings,
             {
-                gasPrice: GAS_PRICE,
+                gasPrice: await getGasPrice(hre),
             },
         );
 
