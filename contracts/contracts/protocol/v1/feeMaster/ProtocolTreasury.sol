@@ -5,10 +5,10 @@ import "../../../common/NonReentrant.sol";
 import "../../../common/Claimable.sol";
 import "../../../common/TransferHelper.sol";
 
-/// @title Treasury
+/// @title ProtocolTreasury
 /// @notice Holds ZKP protocol fees and releases them on claimer request.
 /// @dev Deploy behind a proxy with claimer set in constructor.
-contract Treasury is NonReentrant, Claimable {
+contract ProtocolTreasury is NonReentrant, Claimable {
     using TransferHelper for address;
 
     /// @notice Governance address allowed to manage the claimer.
@@ -27,19 +27,19 @@ contract Treasury is NonReentrant, Claimable {
     );
 
     modifier onlyOwner() {
-        require(msg.sender == OWNER, "Treasury: unauthorized owner");
+        require(msg.sender == OWNER, "ProtocolTreasury: unauthorized owner");
         _;
     }
 
     modifier onlyClaimer() {
-        require(msg.sender == CLAIMER, "Treasury: not claimer");
+        require(msg.sender == CLAIMER, "ProtocolTreasury: not claimer");
         _;
     }
 
     constructor(address owner_, address zkpToken_, address claimer_) {
-        require(owner_ != address(0), "Treasury: owner zero");
-        require(zkpToken_ != address(0), "Treasury: token zero");
-        require(claimer_ != address(0), "Treasury: claimer zero");
+        require(owner_ != address(0), "ProtocolTreasury: owner zero");
+        require(zkpToken_ != address(0), "ProtocolTreasury: token zero");
+        require(claimer_ != address(0), "ProtocolTreasury: claimer zero");
 
         OWNER = owner_;
         ZKP_TOKEN = zkpToken_;
@@ -52,8 +52,8 @@ contract Treasury is NonReentrant, Claimable {
         address to,
         uint256 amount
     ) external onlyOwner nonReentrant {
-        require(token != ZKP_TOKEN, "Treasury: reserved");
-        require(to != address(0), "Treasury: zero recipient");
+        require(token != ZKP_TOKEN, "ProtocolTreasury: reserved");
+        require(to != address(0), "ProtocolTreasury: zero recipient");
         _claimErc20(token, to, amount);
     }
 
@@ -61,7 +61,7 @@ contract Treasury is NonReentrant, Claimable {
         address receiver,
         uint256 amount
     ) external onlyClaimer nonReentrant {
-        require(receiver != address(0), "Treasury: receiver zero");
+        require(receiver != address(0), "ProtocolTreasury: receiver zero");
 
         ZKP_TOKEN.safeTransfer(receiver, amount);
         emit ClaimExecuted(CLAIMER, receiver, amount);

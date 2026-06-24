@@ -11,17 +11,18 @@ import {GAS_PRICE} from './parameters';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
-    const pantherTreasury = await getNamedAccount(hre, 'pantherTreasury');
+    const treasuryClaimer = await getNamedAccount(hre, 'treasuryClaimer');
+    const zkpToken = await getNamedAccount(hre, 'pzkp');
+
+    console.log({multisig, treasuryClaimer, zkpToken});
 
     const {
         deployments: {deploy},
     } = hre;
 
-    const zkpToken = await getNamedAccount(hre, 'pzkp');
-
-    await deploy('Treasury', {
+    await deploy('ProtocolTreasury', {
         from: deployer,
-        args: [multisig, zkpToken, pantherTreasury],
+        args: [multisig, zkpToken, treasuryClaimer],
         proxy: {
             proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
