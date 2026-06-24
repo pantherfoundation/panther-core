@@ -22,20 +22,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treesDiamond = (await get('PantherTrees')).address;
     const vaultV1 = (await get('VaultV1')).address;
     const paymaster = (await get('Paymaster_Proxy')).address;
-    const pantherTreasury = (await get('Treasury')).address;
-    const trustProvider = (await get('ComplianceTreasury')).address;
+    const protocolTreasury = (await get('ProtocolTreasury')).address;
+    const complianceTreasury = (await get('ComplianceTreasury')).address;
 
     const providers = {
         pantherPool: coreDiamond,
         pantherTrees: treesDiamond,
         paymaster,
-        trustProvider,
+        complianceTreasury,
     };
 
     await deploy('FeeMaster_Implementation', {
         contract: 'FeeMaster',
         from: deployer,
-        args: [multisig, providers, pzkp, weth9, vaultV1, pantherTreasury],
+        args: [multisig, providers, pzkp, weth9, vaultV1, protocolTreasury],
         log: true,
         autoMine: true,
         gasPrice: GAS_PRICE,
@@ -49,6 +49,6 @@ func.dependencies = [
     'trees-diamond',
     'paymaster-proxy',
     'vault-v1',
-    'treasury-proxy',
+    'protocol-treasury-proxy',
     'compliance-treasury',
 ];

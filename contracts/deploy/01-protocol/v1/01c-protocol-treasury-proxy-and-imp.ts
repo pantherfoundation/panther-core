@@ -14,8 +14,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treasuryClaimer = await getNamedAccount(hre, 'treasuryClaimer');
     const zkpToken = await getNamedAccount(hre, 'pzkp');
 
-    console.log({multisig, treasuryClaimer, zkpToken});
-
     const {
         deployments: {deploy},
     } = hre;
@@ -34,4 +32,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 
-func.tags = ['treasury-proxy', 'core', 'protocol-v1', 'protocol-v1-deploy'];
+func.tags = [
+    'protocol-treasury-proxy',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];
