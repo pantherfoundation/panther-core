@@ -47,6 +47,8 @@ const CHAIN_IDS: {[name: string]: number} = {
     sepolia: 11155111,
     polygon: 137,
     amoy: 80002,
+    base: 8453,
+    basesepolia: 84532,
     bsc: 56,
     bsctest: 97,
     ganache: 1337,
@@ -59,6 +61,9 @@ const ALCHEMY_ENDPOINTS: {[name: string]: string} = {
 
     polygon: 'https://polygon-mainnet.g.alchemy.com/v2/',
     amoy: 'https://polygon-amoy.g.alchemy.com/v2/',
+
+    base: 'https://base-mainnet.g.alchemy.com/v2/',
+    basesepolia: 'https://base-sepolia.g.alchemy.com/v2/',
 };
 
 const INFURA_ENDPOINTS: {[name: string]: string} = {
@@ -67,6 +72,9 @@ const INFURA_ENDPOINTS: {[name: string]: string} = {
 
     polygon: 'https://polygon-mainnet.infura.io/v3/',
     amoy: 'https://polygon-amoy.infura.io/v3/',
+
+    base: 'https://base-mainnet.infura.io/v3/',
+    basesepolia: 'https://base-sepolia.infura.io/v3/',
 };
 
 const forkingConfig = {
@@ -92,11 +100,16 @@ const config: HardhatUserConfig = {
 
         polygon: createNetworkConfig('polygon'),
         amoy: createNetworkConfig('amoy'),
+
+        base: createNetworkConfig('base'),
+        basesepolia: createNetworkConfig('basesepolia'),
     },
     etherscan: {
-        apiKey:
-            process.env.POLYGONSCAN_API_KEY ||
-            (process.env.ETHERSCAN_API_KEY as string),
+        // Etherscan V2 unified API: a single etherscan.io key verifies on
+        // every supported chain (Ethereum, Polygon, Base, ...). `base` and
+        // `baseSepolia` are built into hardhat-verify, so no customChains
+        // entry is needed for them.
+        apiKey: process.env.ETHERSCAN_API_KEY as string,
         customChains: [
             createEtherscanConfig('amoy', {
                 apiURL: 'https://api-amoy.polygonscan.com/api',
@@ -242,6 +255,9 @@ function getNamedAccounts() {
 
             polygon: 0,
             amoy: 0,
+
+            base: 0,
+            basesepolia: 0,
         },
 
         multisig: {
@@ -252,6 +268,9 @@ function getNamedAccounts() {
 
             polygon: '0x026a024b13B4Ca23897ad578264C0ec543f904b9',
             amoy: 0,
+
+            base: '0xb16283a233d5b010a7b290d593847207495f0284',
+            basesepolia: 0,
         },
 
         trustProvider: {
@@ -262,9 +281,12 @@ function getNamedAccounts() {
 
             polygon: '0x781E4F7f41779d8b8bED1bA0b32D4BBB87d8194D', //* Purify
             amoy: 0,
+
+            base: 0, // TODO: replace
+            basesepolia: 0,
         },
 
-        pantherTreasury: {
+        treasuryClaimer: {
             localhost: 0,
             hardhat: 0,
             mainnet: '0x505796f5Bc290269D2522cf19135aD7Aa60dfd77', // TODO: replace
@@ -272,6 +294,9 @@ function getNamedAccounts() {
 
             polygon: '0xE454ba38c6d358c8018dFA2cBA9a6096B2420ECD',
             amoy: 0,
+
+            base: '0xb16283a233d5b010a7b290d593847207495f0284', // TODO: replace
+            basesepolia: 0,
         },
 
         zkp: {
@@ -285,6 +310,7 @@ function getNamedAccounts() {
             hardhat: 0,
             amoy: '0xCd85e3E918F1A36F939281d3ca707EE262a364c6',
             polygon: '0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC',
+            base: '0x0a776C1c22b8b8e7EAB346744dAA33722b80FdA4',
         },
 
         weth9: {
@@ -293,6 +319,7 @@ function getNamedAccounts() {
             sepolia: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
             amoy: '0x360ad4f9a9A8EFe9A8DCB5f461c4Cc1047E1Dcf9',
             polygon: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+            base: '0x4200000000000000000000000000000000000006',
         },
 
         link: {
@@ -307,6 +334,7 @@ function getNamedAccounts() {
             hardhat: 0,
             amoy: '0x4832EEB61E08A4fdCABDBD5d7ea131A7b82714b2',
             polygon: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
+            base: '0x2626664c2603336E57B271c5C0b26F421741e481',
         },
 
         uniswapQuoterV2: {
@@ -314,6 +342,7 @@ function getNamedAccounts() {
             hardhat: 0,
             amoy: '0x45878FFf4F23118805161e931FB39BA32416A3ba',
             polygon: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e',
+            base: '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a',
         },
 
         quickswapRouter02: {
@@ -321,6 +350,7 @@ function getNamedAccounts() {
             hardhat: 0,
             amoy: '0xf253c47dcD36Ab80BAB5731f548fd818551f1c16',
             polygon: '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff',
+            base: '0x4a012af2b05616Fb390ED32452641C3F04633bb5',
         },
 
         quickswapFactory: {
@@ -328,6 +358,7 @@ function getNamedAccounts() {
             hardhat: 0,
             amoy: '0x4583899E08a5707B777a7730C7C099D355C330B3',
             polygon: '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32',
+            base: '0xEC6540261aaaE13F236A032d454dc9287E52e56A',
         },
 
         pZkp_native_uniswapV3Pool: {
@@ -353,6 +384,7 @@ function getNamedAccounts() {
         entryPoint: {
             amoy: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
             polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+            base: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
         },
 
         uniswapV3NonfungiblePositionManager: {
@@ -421,6 +453,8 @@ function getRpcUrl(network: NetworkName): string {
         return 'https://data-seed-prebsc-1-s1.binance.org:8545';
     if (network === 'polygon') return 'https://polygon-rpc.com/';
     if (network === 'amoy') return 'https://rpc-amoy.polygon.technology/';
+    if (network === 'base') return 'https://mainnet.base.org';
+    if (network === 'basesepolia') return 'https://sepolia.base.org';
     return 'undefined RPC provider URL';
 }
 

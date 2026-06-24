@@ -1,0 +1,249 @@
+{
+  "address": "0x2332F6D62Ef7b80eFbbA01B5309203D8f35653f8",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "feeMaster",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "int256",
+          "name": "netAmount",
+          "type": "int256"
+        },
+        {
+          "internalType": "address",
+          "name": "extAccount",
+          "type": "address"
+        }
+      ],
+      "name": "adjustVaultAssetsAndUpdateTotalFeeMasterDebt",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getFeeMasterDebt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x41b8cd4a4f1c5ca6d2d64f53e55f2b5b4ac758b611a93f615c51dac2cba9f30c",
+  "receipt": {
+    "to": null,
+    "from": "0xb83A3094272B6425f89BB5590b48928e2374eE11",
+    "contractAddress": "0x2332F6D62Ef7b80eFbbA01B5309203D8f35653f8",
+    "transactionIndex": 55,
+    "gasUsed": "431618",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xbd15ce51c0ef582e51989aa377ed432bcf82ccbb69c69cff0e0be6b369054314",
+    "transactionHash": "0x41b8cd4a4f1c5ca6d2d64f53e55f2b5b4ac758b611a93f615c51dac2cba9f30c",
+    "logs": [],
+    "blockNumber": 47769380,
+    "cumulativeGasUsed": "9073642",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x70c69bB8501b30cf112403139a383BF978f4A31e",
+    "0xa007e723E464967702DEA0D8D1c994d55e24e371"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "634dc66e3e153862e9280c6aee6124d4",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"feeMaster\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"int256\",\"name\":\"netAmount\",\"type\":\"int256\"},{\"internalType\":\"address\",\"name\":\"extAccount\",\"type\":\"address\"}],\"name\":\"adjustVaultAssetsAndUpdateTotalFeeMasterDebt\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getFeeMasterDebt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This contract interacts with the vault to lock or unlock assets and keeps track of the fee master's total debt.\",\"kind\":\"dev\",\"methods\":{\"adjustVaultAssetsAndUpdateTotalFeeMasterDebt(address,int256,address)\":{\"details\":\"This function can only be called by the fee master contract. The fee master can use this method to lock assets into or unlock assets from the vault.\",\"params\":{\"extAccount\":\"External account affected by the transaction.\",\"netAmount\":\"Net amount of tokens being locked/unlocked.\",\"token\":\"Address of the token being adjusted.\"}},\"constructor\":{\"details\":\"Constructor sets vault and fee master contract addresses.\",\"params\":{\"feeMaster\":\"Address of the fee master contract responsible for fee calculations.\",\"vault\":\"Address of the vault contract responsible for holding assets.\"}},\"getFeeMasterDebt(address)\":{\"params\":{\"token\":\"The address of the token.\"},\"returns\":{\"_0\":\"The total debt of the fee master for the specified token.\"}}},\"title\":\"FeeMasterTotalDebtController\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"adjustVaultAssetsAndUpdateTotalFeeMasterDebt(address,int256,address)\":{\"notice\":\"Adjusts vault assets based on net amount and updates fee master debt.\"},\"getFeeMasterDebt(address)\":{\"notice\":\"Retrieves the total debt associated with the fee master for a given token.\"}},\"notice\":\"Manages the total debt for the fee master, including adjustments to vault assets.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol\":\"FeeMasterTotalDebtController\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n// Constants\\n\\nuint256 constant IN_PRP_UTXOs = 1;\\nuint256 constant IN_UTXOs = 2 + IN_PRP_UTXOs;\\n\\nuint256 constant OUT_PRP_UTXOs = 1;\\nuint256 constant OUT_UTXOs = 2 + OUT_PRP_UTXOs;\\nuint256 constant OUT_MAX_UTXOs = OUT_UTXOs;\\n// Number of UTXOs given as a reward for an \\\"advanced\\\" stake\\nuint256 constant OUT_RWRD_UTXOs = 2;\\n\\n// For overflow protection and circuits optimization\\n// (must be less than the FIELD_SIZE)\\nuint256 constant MAX_EXT_AMOUNT = 2 ** 96;\\nuint256 constant MAX_IN_CIRCUIT_AMOUNT = 2 ** 64;\\nuint256 constant MAX_TIMESTAMP = 2 ** 32;\\nuint256 constant MAX_ZASSET_ID = 2 ** 160;\\n\\n// Maximum amount for PRP\\nuint256 constant MAX_PRP_AMOUNT = (2 ** 64) - 1;\\n\\n// Token types\\n// (not `enum` to let protocol extensions use bits, if needed)\\nuint8 constant ERC20_TOKEN_TYPE = 0x00;\\nuint8 constant ERC721_TOKEN_TYPE = 0x10;\\nuint8 constant ERC1155_TOKEN_TYPE = 0x11;\\nuint8 constant NATIVE_TOKEN_TYPE = 0xFF;\\n\\n// ZAsset statuses\\n// (not `enum` to let protocol extensions use bits, if needed)\\nuint8 constant zASSET_ENABLED = 0x01;\\nuint8 constant zASSET_DISABLED = 0x02;\\nuint8 constant zASSET_UNKNOWN = 0x00;\\n\\n// UTXO data (opening values - encrypted and public) formats\\nuint8 constant UTXO_DATA_TYPE5 = 0x00; // for zero UTXO (no data to provide)\\nuint8 constant UTXO_DATA_TYPE1 = 0x01; // for UTXO w/ zero tokenId\\nuint8 constant UTXO_DATA_TYPE3 = 0x02; // for UTXO w/ non-zero tokenId\\n\\n// Grant Types\\n// bytes4(keccak256('panther-onboarding-grantor'))\\nbytes4 constant GT_ONBOARDING = 0x93b212ae;\\n// The \\\"prp grant type\\\" for the \\\"release and bridge\\\" ZKPs\\n// bytes4(keccak256(\\\"panther-zkp-release\\\"))\\nbytes4 constant GT_ZKP_RELEASE = 0x53a1eb85;\\n// The \\\"prp grant type\\\" for the \\\"distributing\\\" ZKPs\\n// bytes4(keccak256(\\\"panther-zkp-distribute\\\"))\\nbytes4 constant GT_ZKP_DISTRIBUTE = 0xd48cb9c0;\\n// The \\\"prp grant type\\\" for the \\\"distributing\\\" ZKPs\\n// bytes4(keccak256(\\\"panther-fee-exchange\\\"))\\nbytes4 constant GT_FEE_EXCHANGE = 0x1d91a712;\\n// The \\\"prp grant type\\\" for the refilling the PayMaster's EntryPoint deposit\\n// bytes4(keccak256('panther-paymaster-refund-grantor'))\\nbytes4 constant GT_PAYMASTER_REFUND = 0x3002a002;\\n\\n// The default value that should be used\\nuint64 constant DEFAULT_GRANT_TYPE_PRP_REWARDS = 0;\\n\\n// Number of 32-bit words of the CiphertextMsg for UTXO_DATA_TYPE1\\n// (ephemeral key (packed) - 32 bytes, encrypted `random` - 32 bytes)\\nuint256 constant CIPHERTEXT1_WORDS = 2;\\n\\n// Number of 32-bit words in the (uncompressed) spending PubKey\\nuint256 constant PUBKEY_WORDS = 2;\\n// Number of elements in `pathElements`\\nuint256 constant PATH_ELEMENTS_NUM = 16;\\n\\n// @dev Unusable on public network address, which is useful for simulations\\n//  in forked test env, e.g. for bypassing SNARK proof verification like this:\\n// `require(isValidProof || tx.origin == DEAD_CODE_ADDRESS)`\\naddress constant DEAD_CODE_ADDRESS = address(uint160(0xDEADC0DE));\\n\\naddress constant NATIVE_TOKEN = address(0);\\n\\n// 100% expressed in 1/100th of 1% (\\\"pips\\\")\\nuint256 constant HUNDRED_PERCENT = 100 * 100;\\n\\n// Prtocol token decimals\\nuint256 constant PROTOCOL_TOKEN_DECIMALS = 1e18;\\n\",\"keccak256\":\"0xb08b873af08e3a4e934e89aee595fe7e5a432ef32fd7afd65ddaab9fa27ce115\",\"license\":\"GPL-3.0-only\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\\nstruct SaltedLockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The salt to use w/ CREATE2\\n    bytes32 salt;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint256 extAmount;\\n}\\n\",\"keccak256\":\"0x362bba813750a52d698bc1b97a8d588875aaefea15ac889c8dafbd07c54a3fea\",\"license\":\"MIT\"},\"contracts/common/UtilsLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.16;\\n\\nlibrary UtilsLib {\\n    function safe8(uint256 n) internal pure returns (uint8) {\\n        require(n < 2 ** 8, \\\"UNSAFE24\\\");\\n        return uint8(n);\\n    }\\n\\n    function safe24(uint256 n) internal pure returns (uint24) {\\n        require(n < 2 ** 24, \\\"UNSAFE24\\\");\\n        return uint24(n);\\n    }\\n\\n    function safe32(uint256 n) internal pure returns (uint32) {\\n        require(n < 2 ** 32, \\\"UNSAFE32\\\");\\n        return uint32(n);\\n    }\\n\\n    function safe40(uint256 n) internal pure returns (uint40) {\\n        require(n < 2 ** 40, \\\"UNSAFE40\\\");\\n        return uint40(n);\\n    }\\n\\n    function safe64(uint256 n) internal pure returns (uint64) {\\n        require(n < 2 ** 64, \\\"UNSAFE64\\\");\\n        return uint64(n);\\n    }\\n\\n    function safe96(uint256 n) internal pure returns (uint96) {\\n        require(n < 2 ** 96, \\\"UNSAFE96\\\");\\n        return uint96(n);\\n    }\\n\\n    function safe128(uint256 n) internal pure returns (uint128) {\\n        require(n < 2 ** 128, \\\"UNSAFE128\\\");\\n        return uint128(n);\\n    }\\n\\n    function safe160(uint256 n) internal pure returns (uint160) {\\n        require(n < 2 ** 160, \\\"UNSAFE160\\\");\\n        return uint160(n);\\n    }\\n\\n    function safe168(uint256 n) internal pure returns (uint168) {\\n        require(n < 2 ** 168, \\\"UNSAFE168\\\");\\n        return uint168(n);\\n    }\\n\\n    function safeScaleDownBy1e12(uint256 n) internal pure returns (uint256) {\\n        require(n >= 1e12, \\\"UNSAFE12\\\");\\n        return n / 1e12;\\n    }\\n\\n    function scaleDownBy1e12(uint256 n) internal pure returns (uint256) {\\n        return n / 1e12;\\n    }\\n\\n    function scaleUpBy1e12(uint256 n) internal pure returns (uint256) {\\n        return n * 1e12;\\n    }\\n\\n    function safe32TimeNow() internal view returns (uint32) {\\n        uint256 t = block.timestamp;\\n        require(t < 2 ** 32, \\\"UNSAFE32TIME\\\");\\n        return uint32(t);\\n    }\\n\\n    function safe32BlockNow() internal view returns (uint32) {\\n        uint256 b = block.number;\\n        require(b < 2 ** 32, \\\"UNSAFE32BLOCK\\\");\\n        return uint32(b);\\n    }\\n\\n    function revertZeroAddress(address account) internal pure {\\n        require(account != address(0), \\\"UNEXPECTED_ZERO_ADDRESS\\\");\\n    }\\n\\n    function safeAddress(uint256 n) internal pure returns (address _address) {\\n        _address = address(safe160(n));\\n    }\\n}\\n\",\"keccak256\":\"0x3012078b73b166da56ba17b3e9802df0758fce98a823248315822a60f0cbac23\",\"license\":\"MIT\"},\"contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport \\\"../storage/AppStorage.sol\\\";\\nimport \\\"../storage/FeeMasterTotalDebtControllerGap.sol\\\";\\n\\nimport \\\"../interfaces/IFeeMasterTotalDebtController.sol\\\";\\n\\nimport \\\"../../../../common/UtilsLib.sol\\\";\\nimport { NATIVE_TOKEN, NATIVE_TOKEN_TYPE, ERC20_TOKEN_TYPE } from \\\"../../../../common/Constants.sol\\\";\\n\\nimport \\\"../libraries/VaultExecutor.sol\\\";\\n\\n/**\\n * @title FeeMasterTotalDebtController\\n * @notice Manages the total debt for the fee master, including adjustments to vault assets.\\n * @dev This contract interacts with the vault to lock or unlock assets and keeps track of\\n * the fee master's total debt.\\n */\\ncontract FeeMasterTotalDebtController is\\n    AppStorage,\\n    FeeMasterTotalDebtControllerGap,\\n    IFeeMasterTotalDebtController\\n{\\n    using VaultExecutor for address;\\n    using UtilsLib for uint256;\\n\\n    address internal immutable VAULT;\\n    address internal immutable FEE_MASTER;\\n\\n    /**\\n     * @dev Constructor sets vault and fee master contract addresses.\\n     * @param feeMaster Address of the fee master contract responsible for fee calculations.\\n     * @param vault Address of the vault contract responsible for holding assets.\\n     */\\n    constructor(address vault, address feeMaster) {\\n        require(\\n            vault != address(0) && feeMaster != address(0),\\n            \\\"init:zero address\\\"\\n        );\\n\\n        VAULT = vault;\\n        FEE_MASTER = feeMaster;\\n    }\\n\\n    /**\\n     * @notice Retrieves the total debt associated with the fee master for a given token.\\n     * @param token The address of the token.\\n     * @return The total debt of the fee master for the specified token.\\n     */\\n    function getFeeMasterDebt(address token) external view returns (uint256) {\\n        return feeMasterDebt[token];\\n    }\\n\\n    /**\\n     * @notice Adjusts vault assets based on net amount and updates fee master debt.\\n     * @param token Address of the token being adjusted.\\n     * @param netAmount Net amount of tokens being locked/unlocked.\\n     * @param extAccount External account affected by the transaction.\\n     * @dev This function can only be called by the fee master contract.\\n     * The fee master can use this method to lock assets into or unlock assets from the vault.\\n     */\\n    function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(\\n        address token,\\n        int256 netAmount,\\n        address extAccount\\n    ) external payable {\\n        require(msg.sender == FEE_MASTER, \\\"unauthorized\\\");\\n\\n        uint8 tokenType = token == NATIVE_TOKEN\\n            ? NATIVE_TOKEN_TYPE\\n            : ERC20_TOKEN_TYPE;\\n\\n        LockData memory data = LockData({\\n            tokenType: tokenType,\\n            token: token,\\n            tokenId: 0,\\n            extAccount: extAccount,\\n            extAmount: netAmount > 0\\n                ? uint256(netAmount).safe96()\\n                : uint256(-netAmount).safe96()\\n        });\\n\\n        if (netAmount > 0) {\\n            _lockAssetAndIncreaseFeeMasterDebt(data);\\n        }\\n\\n        if (netAmount < 0) {\\n            _unlockAssetAndDecreaseFeeMasterDebt(data);\\n        }\\n    }\\n\\n    /**\\n     * @dev Internal function to lock asset and increase fee master debt.\\n     * @param data Lock data specifying token, amount, and external account.\\n     */\\n    function _lockAssetAndIncreaseFeeMasterDebt(LockData memory data) private {\\n        address token = data.token;\\n\\n        feeMasterDebt[token] += data.extAmount;\\n\\n        VAULT.lockAsset(data);\\n    }\\n\\n    /**\\n     * @dev Internal function to unlock asset and decrease fee master debt.\\n     * @param data Unlock data specifying token, amount, and external account.\\n     */\\n    function _unlockAssetAndDecreaseFeeMasterDebt(\\n        LockData memory data\\n    ) private {\\n        address token = data.token;\\n\\n        feeMasterDebt[token] -= data.extAmount;\\n\\n        VAULT.unlockAsset(data);\\n    }\\n}\\n\",\"keccak256\":\"0x5aa0628ee7764d4f1c01089c351e68c7a02cb84e62c00229b383b2c5b8b7b9f3\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/interfaces/IFeeMasterTotalDebtController.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\ninterface IFeeMasterTotalDebtController {\\n    function adjustVaultAssetsAndUpdateTotalFeeMasterDebt(\\n        address token,\\n        int256 netAmount,\\n        address extAccount\\n    ) external payable;\\n}\\n\",\"keccak256\":\"0xc0088d5d34708392f4f986692cf7ccf3ed7a3f108c7b4a69d398f1577477c91f\",\"license\":\"MIT\"},\"contracts/protocol/v1/core/libraries/VaultExecutor.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport \\\"../../interfaces/IVaultV1.sol\\\";\\n\\n// Vault is a Trusted contract - no reentrancy guard needed\\nlibrary VaultExecutor {\\n    function lockAsset(address vault, LockData memory lockData) internal {\\n        try\\n            IVaultV1(vault).lockAsset{ value: msg.value }(lockData)\\n        // solhint-disable-next-line no-empty-blocks\\n        {\\n\\n        } catch Error(string memory reason) {\\n            revert(reason);\\n        }\\n    }\\n\\n    function lockAssetWithSalt(\\n        address vault,\\n        SaltedLockData memory slData\\n    ) internal {\\n        try\\n            IVaultV1(vault).lockAssetWithSalt{ value: msg.value }(slData)\\n        // solhint-disable-next-line no-empty-blocks\\n        {\\n\\n        } catch Error(string memory reason) {\\n            revert(reason);\\n        }\\n    }\\n\\n    function unlockAsset(address vault, LockData memory lockData) internal {\\n        try\\n            IVaultV1(vault).unlockAsset(lockData)\\n        // solhint-disable-next-line no-empty-blocks\\n        {\\n\\n        } catch Error(string memory reason) {\\n            revert(reason);\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x8b66f26033636f6ce4d03d93a155f2a370fc991021bef7ef9b917dc23736eced\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/storage/AppStorage.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport { APP_STORAGE_END_GAP } from \\\"./Constants.sol\\\";\\n\\nabstract contract AppStorage {\\n    mapping(uint16 => uint160) internal circuitIds;\\n\\n    mapping(address => uint256) internal feeMasterDebt;\\n\\n    mapping(bytes32 => uint256) internal isSpent;\\n\\n    uint32 internal maxBlockTimeOffset;\\n\\n    bytes32[APP_STORAGE_END_GAP] private _endGap;\\n}\\n\",\"keccak256\":\"0xbd384ab1bdd2dc4497dd21a03aeeed968f0adeac0b37258804cd62a48cdd4eab\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/storage/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nuint256 constant APP_STORAGE_END_GAP = 1e2;\\n\\nuint256 constant ZACCOUNT_REGISTRATION_START_GAP = 1e3;\\nuint256 constant PRP_VOUCHER_CONTROLLER_START_GAP = 3e3;\\nuint256 constant PRP_CONVERSION_START_GAP = 5e3;\\nuint256 constant Z_TRANSACTION_START_GAP = 7e3;\\nuint256 constant Z_SWAP_START_GAP = 9e3;\\nuint256 constant FEE_MASTER_TOTAL_DEBT_CONTROLLER_GAP = 11e3;\\nuint256 constant ZACCOUNT_RENEWAL_START_GAP = 13e3;\\n\",\"keccak256\":\"0x4d3c6085c5bf8bcd00094be898f274f756ec9ce940008216f616a92bbec1da58\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/core/storage/FeeMasterTotalDebtControllerGap.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport { FEE_MASTER_TOTAL_DEBT_CONTROLLER_GAP } from \\\"./Constants.sol\\\";\\n\\nabstract contract FeeMasterTotalDebtControllerGap {\\n    bytes32[FEE_MASTER_TOTAL_DEBT_CONTROLLER_GAP] private _startGap;\\n}\\n\",\"keccak256\":\"0x2294f6181ae998a2777fbbdee382bc6964cca1a5fca9117caad170e28c36091a\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/interfaces/IVaultV1.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport { LockData, SaltedLockData } from \\\"../../../common/Types.sol\\\";\\n\\n// import { IEthEscrow } from \\\"./IEthEscrow.sol\\\";\\n\\ninterface IVaultV1 {\\n    /***\\n      @notice Transfers token from account defined by `salt` to this contract.\\n      Only the owner may call.\\n      @dev \\\"Salt\\\" protects against front-runners (if used properly). Refer to\\n      PullWithSaltHelper for details.\\n      @dev The caller (owner) MUST guard against the re-entrance attack.\\n      If an attacker (via a malicious token contract this contract calls) enters\\n      this function directly, it reverts since `msg.sender` won't be `owner`.\\n     */\\n    function lockAssetWithSalt(SaltedLockData calldata slData) external payable;\\n\\n    /***\\n      @notice Transfers token from the given account to this contract\\n      @dev It does not use \\\"salt\\\" and is prune to front-running attacks.\\n      May only be used if other means/contracts provide the adequate protection.\\n      @dev The comment above on the re-entrance is applicable for this function.\\n     */\\n    function lockAsset(LockData calldata lData) external payable;\\n\\n    /***\\n      @notice Transfers token from this contract to the given account.\\n      Only the owner may call.\\n      @dev The comment above on the re-entrance is applicable for9 this function.\\n     */\\n    function unlockAsset(LockData calldata lData) external;\\n\\n    event Locked(LockData data);\\n    event Unlocked(LockData data);\\n    event SaltUsed(bytes32 salt);\\n}\\n\",\"keccak256\":\"0xcd2e2215df8216e94939067e653181b50c157bc2a5dd2250d8efd4af3e283f44\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60c060405234801561001057600080fd5b506040516107ec3803806107ec83398101604081905261002f916100c6565b6001600160a01b0382161580159061004f57506001600160a01b03811615155b6100935760405162461bcd60e51b8152602060048201526011602482015270696e69743a7a65726f206164647265737360781b604482015260640160405180910390fd5b6001600160a01b039182166080521660a0526100f9565b80516001600160a01b03811681146100c157600080fd5b919050565b600080604083850312156100d957600080fd5b6100e2836100aa565b91506100f0602084016100aa565b90509250929050565b60805160a0516106c861012460003960006096015260008181610289015261031601526106c86000f3fe6080604052600436106100295760003560e01c806311fa08c81461002e5780631ffb2f0414610076575b600080fd5b34801561003a57600080fd5b506100646100493660046104d0565b6001600160a01b031660009081526001602052604090205490565b60405190815260200160405180910390f35b6100896100843660046104f2565b61008b565b005b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101085760405162461bcd60e51b815260206004820152600c60248201527f756e617574686f72697a6564000000000000000000000000000000000000000060448201526064015b60405180910390fd5b60006001600160a01b03841615610120576000610123565b60ff5b905060006040518060a001604052808360ff168152602001866001600160a01b0316815260200160008152602001846001600160a01b031681526020016000861361017e5761017961017487610544565b6101c4565b610187565b610187866101c4565b6bffffffffffffffffffffffff169052905060008413156101ab576101ab81610226565b60008412156101bd576101bd816102b3565b5050505050565b60006c0100000000000000000000000082106102225760405162461bcd60e51b815260206004820152600860248201527f554e53414645393600000000000000000000000000000000000000000000000060448201526064016100ff565b5090565b60008160200151905081608001516bffffffffffffffffffffffff1660016000836001600160a01b03166001600160a01b0316815260200190815260200160002060008282546102769190610560565b909155506102af90506001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000168361033c565b5050565b60008160200151905081608001516bffffffffffffffffffffffff1660016000836001600160a01b03166001600160a01b0316815260200190815260200160002060008282546103039190610579565b909155506102af90506001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001683610421565b60408051631d106e8960e21b8152825160ff16600482015260208301516001600160a01b03908116602483015291830151604482015260608301518216606482015260808301516bffffffffffffffffffffffff16608482015290831690637441ba2490349060a4016000604051808303818588803b1580156103be57600080fd5b505af1935050505080156103d0575060015b6102af576103dc61058c565b806308c379a00361041557506103f06105e3565b806103fb5750610417565b8060405162461bcd60e51b81526004016100ff919061066d565b505b3d6000803e3d6000fd5b6040805163016f4f9b60e61b8152825160ff16600482015260208301516001600160a01b03908116602483015291830151604482015260608301518216606482015260808301516bffffffffffffffffffffffff16608482015290831690635bd3e6c09060a401600060405180830381600087803b1580156104a257600080fd5b505af19250505080156103d057505050565b80356001600160a01b03811681146104cb57600080fd5b919050565b6000602082840312156104e257600080fd5b6104eb826104b4565b9392505050565b60008060006060848603121561050757600080fd5b610510846104b4565b925060208401359150610525604085016104b4565b90509250925092565b634e487b7160e01b600052601160045260246000fd5b6000600160ff1b82016105595761055961052e565b5060000390565b808201808211156105735761057361052e565b92915050565b818103818111156105735761057361052e565b600060033d11156105a55760046000803e5060005160e01c5b90565b601f8201601f1916810167ffffffffffffffff811182821017156105dc57634e487b7160e01b600052604160045260246000fd5b6040525050565b600060443d10156105f15790565b6040516003193d81016004833e81513d67ffffffffffffffff816024840111818411171561062157505050505090565b82850191508151818111156106395750505050505090565b843d87010160208285010111156106535750505050505090565b610662602082860101876105a8565b509095945050505050565b600060208083528351808285015260005b8181101561069a5785810183015185820160400152820161067e565b506000604082860101526040601f19601f830116850101925050509291505056fea164736f6c6343000813000a",
+  "deployedBytecode": "0x6080604052600436106100295760003560e01c806311fa08c81461002e5780631ffb2f0414610076575b600080fd5b34801561003a57600080fd5b506100646100493660046104d0565b6001600160a01b031660009081526001602052604090205490565b60405190815260200160405180910390f35b6100896100843660046104f2565b61008b565b005b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101085760405162461bcd60e51b815260206004820152600c60248201527f756e617574686f72697a6564000000000000000000000000000000000000000060448201526064015b60405180910390fd5b60006001600160a01b03841615610120576000610123565b60ff5b905060006040518060a001604052808360ff168152602001866001600160a01b0316815260200160008152602001846001600160a01b031681526020016000861361017e5761017961017487610544565b6101c4565b610187565b610187866101c4565b6bffffffffffffffffffffffff169052905060008413156101ab576101ab81610226565b60008412156101bd576101bd816102b3565b5050505050565b60006c0100000000000000000000000082106102225760405162461bcd60e51b815260206004820152600860248201527f554e53414645393600000000000000000000000000000000000000000000000060448201526064016100ff565b5090565b60008160200151905081608001516bffffffffffffffffffffffff1660016000836001600160a01b03166001600160a01b0316815260200190815260200160002060008282546102769190610560565b909155506102af90506001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000168361033c565b5050565b60008160200151905081608001516bffffffffffffffffffffffff1660016000836001600160a01b03166001600160a01b0316815260200190815260200160002060008282546103039190610579565b909155506102af90506001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001683610421565b60408051631d106e8960e21b8152825160ff16600482015260208301516001600160a01b03908116602483015291830151604482015260608301518216606482015260808301516bffffffffffffffffffffffff16608482015290831690637441ba2490349060a4016000604051808303818588803b1580156103be57600080fd5b505af1935050505080156103d0575060015b6102af576103dc61058c565b806308c379a00361041557506103f06105e3565b806103fb5750610417565b8060405162461bcd60e51b81526004016100ff919061066d565b505b3d6000803e3d6000fd5b6040805163016f4f9b60e61b8152825160ff16600482015260208301516001600160a01b03908116602483015291830151604482015260608301518216606482015260808301516bffffffffffffffffffffffff16608482015290831690635bd3e6c09060a401600060405180830381600087803b1580156104a257600080fd5b505af19250505080156103d057505050565b80356001600160a01b03811681146104cb57600080fd5b919050565b6000602082840312156104e257600080fd5b6104eb826104b4565b9392505050565b60008060006060848603121561050757600080fd5b610510846104b4565b925060208401359150610525604085016104b4565b90509250925092565b634e487b7160e01b600052601160045260246000fd5b6000600160ff1b82016105595761055961052e565b5060000390565b808201808211156105735761057361052e565b92915050565b818103818111156105735761057361052e565b600060033d11156105a55760046000803e5060005160e01c5b90565b601f8201601f1916810167ffffffffffffffff811182821017156105dc57634e487b7160e01b600052604160045260246000fd5b6040525050565b600060443d10156105f15790565b6040516003193d81016004833e81513d67ffffffffffffffff816024840111818411171561062157505050505090565b82850191508151818111156106395750505050505090565b843d87010160208285010111156106535750505050505090565b610662602082860101876105a8565b509095945050505050565b600060208083528351808285015260005b8181101561069a5785810183015185820160400152820161067e565b506000604082860101526040601f19601f830116850101925050509291505056fea164736f6c6343000813000a",
+  "devdoc": {
+    "details": "This contract interacts with the vault to lock or unlock assets and keeps track of the fee master's total debt.",
+    "kind": "dev",
+    "methods": {
+      "adjustVaultAssetsAndUpdateTotalFeeMasterDebt(address,int256,address)": {
+        "details": "This function can only be called by the fee master contract. The fee master can use this method to lock assets into or unlock assets from the vault.",
+        "params": {
+          "extAccount": "External account affected by the transaction.",
+          "netAmount": "Net amount of tokens being locked/unlocked.",
+          "token": "Address of the token being adjusted."
+        }
+      },
+      "constructor": {
+        "details": "Constructor sets vault and fee master contract addresses.",
+        "params": {
+          "feeMaster": "Address of the fee master contract responsible for fee calculations.",
+          "vault": "Address of the vault contract responsible for holding assets."
+        }
+      },
+      "getFeeMasterDebt(address)": {
+        "params": {
+          "token": "The address of the token."
+        },
+        "returns": {
+          "_0": "The total debt of the fee master for the specified token."
+        }
+      }
+    },
+    "title": "FeeMasterTotalDebtController",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "adjustVaultAssetsAndUpdateTotalFeeMasterDebt(address,int256,address)": {
+        "notice": "Adjusts vault assets based on net amount and updates fee master debt."
+      },
+      "getFeeMasterDebt(address)": {
+        "notice": "Retrieves the total debt associated with the fee master for a given token."
+      }
+    },
+    "notice": "Manages the total debt for the fee master, including adjustments to vault assets.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 28380,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "circuitIds",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_uint16,t_uint160)"
+      },
+      {
+        "astId": 28384,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "feeMasterDebt",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 28388,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "isSpent",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_bytes32,t_uint256)"
+      },
+      {
+        "astId": 28390,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "maxBlockTimeOffset",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint32"
+      },
+      {
+        "astId": 28394,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "_endGap",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_array(t_bytes32)100_storage"
+      },
+      {
+        "astId": 28429,
+        "contract": "contracts/protocol/v1/core/facets/FeeMasterTotalDebtController.sol:FeeMasterTotalDebtController",
+        "label": "_startGap",
+        "offset": 0,
+        "slot": "104",
+        "type": "t_array(t_bytes32)11000_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_bytes32)100_storage": {
+        "base": "t_bytes32",
+        "encoding": "inplace",
+        "label": "bytes32[100]",
+        "numberOfBytes": "3200"
+      },
+      "t_array(t_bytes32)11000_storage": {
+        "base": "t_bytes32",
+        "encoding": "inplace",
+        "label": "bytes32[11000]",
+        "numberOfBytes": "352000"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint16,t_uint160)": {
+        "encoding": "mapping",
+        "key": "t_uint16",
+        "label": "mapping(uint16 => uint160)",
+        "numberOfBytes": "32",
+        "value": "t_uint160"
+      },
+      "t_uint16": {
+        "encoding": "inplace",
+        "label": "uint16",
+        "numberOfBytes": "2"
+      },
+      "t_uint160": {
+        "encoding": "inplace",
+        "label": "uint160",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint32": {
+        "encoding": "inplace",
+        "label": "uint32",
+        "numberOfBytes": "4"
+      }
+    }
+  }
+}
