@@ -15,6 +15,10 @@ import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
+import './tasks/test-proposal.ts';
+import './tasks/test-ethereum-txs.ts';
+import './tasks/pip-38-proposal.ts';
+import './tasks/pip-38-test-ethereum.ts';
 import './tasks/get-deployment-addresses.ts';
 import './tasks/protocol/grant-issue';
 import './tasks/protocol/pool-time-update.ts';
@@ -77,11 +81,14 @@ const INFURA_ENDPOINTS: {[name: string]: string} = {
     basesepolia: 'https://base-sepolia.infura.io/v3/',
 };
 
-const forkingConfig = {
+const forkingConfig: {url: string; enabled: boolean; blockNumber?: number} = {
     url: process.env.HARDHAT_FORKING_URL || 'ts compiler hack',
-    blockNumber: Number(process.env.HARDHAT_FORKING_BLOCK),
     enabled: !!process.env.HARDHAT_FORKING_ENABLED,
 };
+
+if (process.env.HARDHAT_FORKING_BLOCK) {
+    forkingConfig.blockNumber = Number(process.env.HARDHAT_FORKING_BLOCK);
+}
 
 const config: HardhatUserConfig = {
     defaultNetwork: 'hardhat',
@@ -92,6 +99,13 @@ const config: HardhatUserConfig = {
                 : undefined,
             chainId: parseInt(process.env.HARDHAT_CHAIN_ID || '31337'),
             allowUnlimitedContractSize: true,
+            chains: {
+                137: {
+                    hardforkHistory: {
+                        london: 0,
+                    },
+                },
+            },
         },
         pchain: {url: 'http://127.0.0.1:8545'},
 

@@ -1,0 +1,51 @@
+{
+  "proposalId": "PIP-38",
+  "chain": "polygon",
+  "chainId": 137,
+  "executionMode": "bridge-mode-B",
+  "executedAs": "0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0",
+  "capturedAt": {
+    "forkBlockTimestamp": 1780329749,
+    "forkBlockTimestampIso": "2026-06-01T16:02:29.000Z"
+  },
+  "notes": [
+    "These 2 actions execute on Polygon as msg.sender = polygon multisig (0x208Fb…).",
+    "In production, MaticBridgeModule calls 0x208Fb.execTransactionFromModule(action.to, 0, action.data, 0) after a bridged message arrives from FxRoot.",
+    "The cross-chain proposal generation agent (per contracts/tasks/GOVERNANCE.md) will wrap each action as: bridgePayload = abi.encode(action.to, 0, action.data, 0, maticBridgeModule.nonce + i); then FxRoot.sendMessageToChild(maticBridgeModule, bridgePayload) as the Ethereum-side tx.",
+    "Read MaticBridgeModule.nonce() live at proposal-generation time — do not hardcode."
+  ],
+  "constants": {
+    "POLYGON_MULTISIG": "0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0",
+    "ADVANCED_STAKE_REWARD_CONTROLLER": "0x8f15a43961c27C74CB4F55234A78802401614de3",
+    "VAULT_PROXY": "0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9",
+    "ZKP_POLYGON": "0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC",
+    "MERKLE_ROOT": "0x6abb6e25bebc3edb33165f95bae9393996be5b3e83f88c1b4c626b471badaf5e",
+    "arcZkpDrained": "1748708470000000000000000"
+  },
+  "actions": [
+    {
+      "order": 1,
+      "description": "Drain the AdvancedStakeRewardController's full ZKP balance into the Vault",
+      "to": "0x8f15a43961c27C74CB4F55234A78802401614de3",
+      "value": "0",
+      "data": "0x243feb990000000000000000000000009a06db14d639796b25a6cec6a1bf614fd98815ec0000000000000000000000005e7fda6d9f5024c4ad1c780839987ab8c76486c900000000000000000000000000000000000000000001724dad159a71917f0000",
+      "method": "rescueErc20(address,address,uint256)",
+      "params": [
+        "0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC",
+        "0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9",
+        "1748708470000000000000000"
+      ]
+    },
+    {
+      "order": 2,
+      "description": "Update the on-chain root on VaultV0Frozen — opens the claim window",
+      "to": "0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9",
+      "value": "0",
+      "data": "0xdab5f3406abb6e25bebc3edb33165f95bae9393996be5b3e83f88c1b4c626b471badaf5e",
+      "method": "setRoot(bytes32)",
+      "params": [
+        "0x6abb6e25bebc3edb33165f95bae9393996be5b3e83f88c1b4c626b471badaf5e"
+      ]
+    }
+  ]
+}

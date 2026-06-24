@@ -188,7 +188,8 @@ contract VaultV0Frozen is
             );
             nftsClaimed = newCount;
             // `transferFrom` (not `safeTransferFrom`) avoids reverting for
-            // smart-contract recipients that don't implement IERC721Receiver.
+            // recipients that don't implement IERC721Receiver — notably EOAs
+            // with an EIP-7702 delegation set to a non-receiver smart wallet.
             for (uint16 i = 0; i < nftsToTransfer; ++i) {
                 IErc721Min(NFT_TOKEN).transferFrom(
                     address(this),
