@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ethers,
     } = hre;
 
-    const {abi} = await get('FeeMaster');
+    const {abi} = await get('FeeMaster_Implementation');
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 

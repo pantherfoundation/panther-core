@@ -29,7 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         pantherPool: coreDiamond,
         pantherTrees: treesDiamond,
         paymaster,
-        complianceTreasury,
+        trustProvider: complianceTreasury,
     };
 
     await deploy('FeeMaster_Implementation', {
