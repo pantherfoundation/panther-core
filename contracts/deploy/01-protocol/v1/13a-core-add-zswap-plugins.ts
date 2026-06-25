@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const tx = await diamond.updatePluginStatus(
             uniswapV3RouterPlugin,
             true,
-            {gasPrice: GAS_PRICE},
+            {gasPrice: await getGasPrice(hre)},
         );
         const res = await tx.wait();
         console.log('uniswap v3 router is updated', res.transactionHash);
@@ -37,7 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const tx = await diamond.updatePluginStatus(
             quickswapRouterPlugin,
             true,
-            {gasPrice: GAS_PRICE},
+            {gasPrice: await getGasPrice(hre)},
         );
         const res = await tx.wait();
         console.log('quickswap router is updated', res.transactionHash);

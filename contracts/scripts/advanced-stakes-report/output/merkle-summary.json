@@ -1,0 +1,24 @@
+{
+  "root": "0x6abb6e25bebc3edb33165f95bae9393996be5b3e83f88c1b4c626b471badaf5e",
+  "referenceTimeIso": "2026-05-31T00:00:00.000Z",
+  "userCount": 1235,
+  "leafCount": 4399,
+  "totals": {
+    "zkpNeededWei": "9577878270189148592083079",
+    "zkpPrincipalWei": "7436673750000000000000000",
+    "zkpGiftWei": "2141204520189148592083079",
+    "nftNeeded": 2000
+  },
+  "balances": {
+    "vaultZkpWei": "7436673750000000000000000",
+    "vaultNft": 2000,
+    "arcZkpWei": "1748708470000000000000000"
+  },
+  "gap": {
+    "zkpGapWei": "2141204520189148592083079",
+    "arcCoversGap": false,
+    "arcZkpAfterTopUp": "-392496050189148592083079",
+    "arcZkpWithdrawNeededWei": "2141204520189148592083079"
+  },
+  "doubleSpents": 0
+}

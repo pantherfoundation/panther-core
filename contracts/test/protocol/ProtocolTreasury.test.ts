@@ -5,9 +5,9 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
-import {TokenMock, Treasury} from '../../types/contracts';
+import {TokenMock, ProtocolTreasury} from '../../types/contracts';
 
-describe('Treasury', () => {
+describe('ProtocolTreasury', () => {
     let deployer: SignerWithAddress;
     let owner: SignerWithAddress;
     let claimer: SignerWithAddress;
@@ -16,7 +16,7 @@ describe('Treasury', () => {
 
     let zkp: TokenMock;
     let otherToken: TokenMock;
-    let treasury: Treasury;
+    let treasury: ProtocolTreasury;
 
     const parseZkp = (value: string) => ethers.utils.parseEther(value);
 
@@ -29,10 +29,10 @@ describe('Treasury', () => {
     }
 
     async function deployTreasury() {
-        const factory = await ethers.getContractFactory('Treasury');
+        const factory = await ethers.getContractFactory('ProtocolTreasury');
         treasury = (await factory
             .connect(deployer)
-            .deploy(owner.address, zkp.address, claimer.address)) as Treasury;
+            .deploy(owner.address, zkp.address, claimer.address)) as ProtocolTreasury;
     }
 
     async function fundTreasury(amount: string) {
@@ -63,7 +63,7 @@ describe('Treasury', () => {
         });
 
         it('validates constructor parameters', async () => {
-            const factory = await ethers.getContractFactory('Treasury');
+            const factory = await ethers.getContractFactory('ProtocolTreasury');
 
             await expect(
                 factory
@@ -73,7 +73,7 @@ describe('Treasury', () => {
                         zkp.address,
                         claimer.address,
                     ),
-            ).to.be.revertedWith('Treasury: owner zero');
+            ).to.be.revertedWith('ProtocolTreasury: owner zero');
 
             await expect(
                 factory
@@ -83,7 +83,7 @@ describe('Treasury', () => {
                         ethers.constants.AddressZero,
                         claimer.address,
                     ),
-            ).to.be.revertedWith('Treasury: token zero');
+            ).to.be.revertedWith('ProtocolTreasury: token zero');
 
             await expect(
                 factory
@@ -93,7 +93,7 @@ describe('Treasury', () => {
                         zkp.address,
                         ethers.constants.AddressZero,
                     ),
-            ).to.be.revertedWith('Treasury: claimer zero');
+            ).to.be.revertedWith('ProtocolTreasury: claimer zero');
         });
     });
 
@@ -121,13 +121,13 @@ describe('Treasury', () => {
 
             await expect(
                 treasury.connect(outsider).claim(receiver.address, amount),
-            ).to.be.revertedWith('Treasury: not claimer');
+            ).to.be.revertedWith('ProtocolTreasury: not claimer');
 
             await expect(
                 treasury
                     .connect(claimer)
                     .claim(ethers.constants.AddressZero, amount),
-            ).to.be.revertedWith('Treasury: receiver zero');
+            ).to.be.revertedWith('ProtocolTreasury: receiver zero');
         });
     });
 
@@ -160,7 +160,7 @@ describe('Treasury', () => {
                         receiver.address,
                         parseZkp('5'),
                     ),
-            ).to.be.revertedWith('Treasury: unauthorized owner');
+            ).to.be.revertedWith('ProtocolTreasury: unauthorized owner');
 
             await expect(
                 treasury
@@ -170,7 +170,7 @@ describe('Treasury', () => {
                         receiver.address,
                         parseZkp('5'),
                     ),
-            ).to.be.revertedWith('Treasury: reserved');
+            ).to.be.revertedWith('ProtocolTreasury: reserved');
         });
     });
 });

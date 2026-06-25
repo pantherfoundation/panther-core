@@ -6,31 +6,35 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 import {getNamedAccount} from '../../../lib/deploymentHelpers';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
     const multisig = await getNamedAccount(hre, 'multisig');
-    const pantherTreasury = await getNamedAccount(hre, 'pantherTreasury');
+    const treasuryClaimer = await getNamedAccount(hre, 'treasuryClaimer');
+    const zkpToken = await getNamedAccount(hre, 'pzkp');
 
     const {
         deployments: {deploy},
     } = hre;
 
-    const zkpToken = await getNamedAccount(hre, 'pzkp');
-
-    await deploy('Treasury', {
+    await deploy('ProtocolTreasury', {
         from: deployer,
-        args: [multisig, zkpToken, pantherTreasury],
+        args: [multisig, zkpToken, treasuryClaimer],
         proxy: {
             proxyContract: 'EIP173ProxyWithReceive',
             owner: multisig,
         },
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 };
 export default func;
 
-func.tags = ['treasury-proxy', 'core', 'protocol-v1', 'protocol-v1-deploy'];
+func.tags = [
+    'protocol-treasury-proxy',
+    'core',
+    'protocol-v1',
+    'protocol-v1-deploy',
+];

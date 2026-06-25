@@ -12,7 +12,7 @@ import {
     getPoseidonT6Contract,
 } from '../../../lib/poseidonBuilder';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const deployer = await getNamedAccount(hre, 'deployer');
@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 
     const PoseidonT4 = await getPoseidonT4Contract();
@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 
     const PoseidonT5 = await getPoseidonT5Contract();
@@ -60,7 +60,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 
     const PoseidonT6 = await getPoseidonT6Contract();
@@ -74,7 +74,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {},
         log: true,
         autoMine: true,
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
 };
 export default func;

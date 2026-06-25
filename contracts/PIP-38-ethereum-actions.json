@@ -1,0 +1,112 @@
+{
+  "proposalId": "PIP-38",
+  "chain": "ethereum",
+  "chainId": 1,
+  "executionMode": "direct",
+  "executedAs": "0x505796f5bc290269d2522cf19135ad7aa60dfd77",
+  "capturedAt": {
+    "forkBlockTimestamp": 1780329479,
+    "forkBlockTimestampIso": "2026-06-01T15:57:59.000Z"
+  },
+  "notes": [
+    "These 6 actions are direct Ethereum-side calls (no bridge wrapping).",
+    "The cross-chain proposal generation agent (per contracts/tasks/GOVERNANCE.md) turns each into a Safe Transaction Builder entry with `to = <action.to>`.",
+    "Pool start timestamps are derived from the forked block timestamp at simulation time. If the proposal will execute > ~30 days later, re-run this spec to refresh actions #1 and #2 (the timestamps inside their calldata).",
+    "One combined vesting pool is created with total = 5,492,496.05 ZKP. Action #3 releases 392,496.05 ZKP to the DAO multisig (bridged to the Polygon Vault for the claim-window APY shortfall). Action #4 releases the remaining 5,100,000 ZKP to the Base deployer wallet (manually bridged to Base outside this proposal)."
+  ],
+  "constants": {
+    "DAO_MULTISIG": "0x505796f5bc290269d2522cf19135ad7aa60dfd77",
+    "VESTING_POOLS": "0xb476104aa9D1f30180a01987FB09b1e96dDCF14B",
+    "ZKP": "0x909E34d3f6124C324ac83DccA84b74398a6fa173",
+    "ERC20_PREDICATE": "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf",
+    "ROOT_CHAIN_MANAGER": "0xA0c68C638235ee32657e8f720a23ceC1bFc77C77",
+    "VAULT_POLYGON": "0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9",
+    "BASE_DEPLOYER_WALLET": "0xeE3c1dDBCB795ff2fA12330149DEA0369bF03742",
+    "SHORTFALL_ZKP_WEI": "392496050190000000000000",
+    "BASE_AMOUNT_WEI": "5100000000000000000000000",
+    "POOL_S_ALLOCATION": "5492496050190",
+    "POOL_AMOUNT_WEI": "5492496050190000000000000",
+    "POOL_VESTING_DAYS": 1,
+    "newPoolId": 23,
+    "startFuture": 1783353656,
+    "startPast": 1780156856
+  },
+  "actions": [
+    {
+      "order": 1,
+      "description": "Create new vesting pool 23 (5,492,496.05 ZKP — 392,496.05 for the claim-window APY shortfall + 5,100,000 for the Base ecosystem-rewards allocation) with the DAO multisig as wallet",
+      "to": "0xb476104aa9D1f30180a01987FB09b1e96dDCF14B",
+      "value": "0",
+      "data": "0xe11d1a98000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000505796f5bc290269d2522cf19135ad7aa60dfd77000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000006a4bd1380000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000004fed246a80e000000000000000000000000000000000000000000000000000004fed246a80e0000000000000000000000000000000000000000000000000000000000000000",
+      "method": "addVestingPools(address[],(bool,bool,uint32,uint16,uint48,uint48,uint96)[])",
+      "params": [
+        "[\"0x505796f5bc290269d2522cf19135ad7aa60dfd77\"]",
+        "[{\"isPreMinted\":false,\"isAdjustable\":true,\"start\":1783353656,\"vestingDays\":1,\"sAllocation\":\"5492496050190\",\"sUnlocked\":\"5492496050190\",\"vested\":0}]"
+      ]
+    },
+    {
+      "order": 2,
+      "description": "Move pool 23 start time into the past so the 5,492,496.05 ZKP allocation becomes immediately releasable",
+      "to": "0xb476104aa9D1f30180a01987FB09b1e96dDCF14B",
+      "value": "0",
+      "data": "0xdb66bbd10000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000006a1b09b80000000000000000000000000000000000000000000000000000000000000001",
+      "method": "updatePoolTime(uint256,uint32,uint16)",
+      "params": [
+        "23",
+        "1780156856",
+        "1"
+      ]
+    },
+    {
+      "order": 3,
+      "description": "Release 392,496.05 ZKP from pool 23 to the DAO multisig — used to top up the Polygon Vault for the claim-window APY shortfall",
+      "to": "0xb476104aa9D1f30180a01987FB09b1e96dDCF14B",
+      "value": "0",
+      "data": "0x2a7d7bc50000000000000000000000000000000000000000000000000000000000000017000000000000000000000000505796f5bc290269d2522cf19135ad7aa60dfd7700000000000000000000000000000000000000000000531d40e6629b3806e000",
+      "method": "releaseTo(uint256,address,uint256)",
+      "params": [
+        "23",
+        "0x505796f5bc290269d2522cf19135ad7aa60dfd77",
+        "392496050190000000000000"
+      ]
+    },
+    {
+      "order": 4,
+      "description": "Release 5,100,000 ZKP from pool 23 to the Base deployer wallet — will be manually bridged to Base outside this proposal",
+      "to": "0xb476104aa9D1f30180a01987FB09b1e96dDCF14B",
+      "value": "0",
+      "data": "0x2a7d7bc50000000000000000000000000000000000000000000000000000000000000017000000000000000000000000ee3c1ddbcb795ff2fa12330149dea0369bf037420000000000000000000000000000000000000000000437f78dd1e1ef1b800000",
+      "method": "releaseTo(uint256,address,uint256)",
+      "params": [
+        "23",
+        "0xeE3c1dDBCB795ff2fA12330149DEA0369bF03742",
+        "5100000000000000000000000"
+      ]
+    },
+    {
+      "order": 5,
+      "description": "Approve the Polygon PoS bridge ERC-20 predicate to spend 392,496.05 ZKP from the DAO multisig",
+      "to": "0x909E34d3f6124C324ac83DccA84b74398a6fa173",
+      "value": "0",
+      "data": "0x095ea7b300000000000000000000000040ec5b33f54e0e8a33a975908c5ba1c14e5bbbdf00000000000000000000000000000000000000000000531d40e6629b3806e000",
+      "method": "approve(address,uint256)",
+      "params": [
+        "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf",
+        "392496050190000000000000"
+      ]
+    },
+    {
+      "order": 6,
+      "description": "Bridge 392,496.05 ZKP through the Polygon PoS bridge with the Vault proxy on Polygon as the recipient",
+      "to": "0xA0c68C638235ee32657e8f720a23ceC1bFc77C77",
+      "value": "0",
+      "data": "0xe3dec8fb0000000000000000000000005e7fda6d9f5024c4ad1c780839987ab8c76486c9000000000000000000000000909e34d3f6124c324ac83dcca84b74398a6fa1730000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000531d40e6629b3806e000",
+      "method": "depositFor(address,address,bytes)",
+      "params": [
+        "0x5E7Fda6d9f5024C4ad1c780839987aB8c76486c9",
+        "0x909E34d3f6124C324ac83DccA84b74398a6fa173",
+        "0x00000000000000000000000000000000000000000000531d40e6629b3806e000"
+      ]
+    }
+  ]
+}

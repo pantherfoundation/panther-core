@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -12,14 +12,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ethers,
     } = hre;
 
-    const {abi} = await get('FeeMaster');
+    const {abi} = await get('FeeMaster_Implementation');
     const {address} = await get('FeeMaster_Proxy');
     const feeMaster = await ethers.getContractAt(abi, address);
 
     console.log('apprving vault by FeeMaster...');
 
     const tx = await feeMaster.approveVaultToTransferZkp({
-        gasPrice: GAS_PRICE,
+        gasPrice: await getGasPrice(hre),
     });
     const res = await tx.wait();
 

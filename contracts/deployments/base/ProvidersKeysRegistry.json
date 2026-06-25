@@ -1,0 +1,1130 @@
+{
+  "address": "0x93c2eB0DE3A195a6E14B8990A615fE27cC7028E2",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "self",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "keyringVersion",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ECDSAInvalidSignature",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "length",
+          "type": "uint256"
+        }
+      ],
+      "name": "ECDSAInvalidSignatureLength",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ECDSAInvalidSignatureS",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "newExpiry",
+          "type": "uint32"
+        }
+      ],
+      "name": "KeyExtended",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "packedPubKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        }
+      ],
+      "name": "KeyRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        }
+      ],
+      "name": "KeyRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum ProvidersKeysRegistry.STATUS",
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "numAllocKeys",
+          "type": "uint16"
+        }
+      ],
+      "name": "KeyringUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "tillTime",
+          "type": "uint32"
+        }
+      ],
+      "name": "TreeLockUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "KEYRING_VERSION",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "numAllocKeys",
+          "type": "uint16"
+        }
+      ],
+      "name": "addKeyring",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "newExpiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "extendKeyExpiry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "newExpiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "extendKeyExpiryWithSignature",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        }
+      ],
+      "name": "getKeyCommitment",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitment",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getProvidersKeysRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getStatistics",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "numKeyrings",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "totalNumRegisteredKeys",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "totalNumAllocatedKeys",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint32",
+          "name": "treeLockedTillTime",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "allocation",
+          "type": "uint16"
+        }
+      ],
+      "name": "increaseKeyringKeyAllocation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        }
+      ],
+      "name": "isAcceptablePubKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "keyringIds",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "keyrings",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "enum ProvidersKeysRegistry.STATUS",
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint16",
+          "name": "numKeys",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "numAllocKeys",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint32",
+          "name": "registrationBlock",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint24",
+          "name": "_unused",
+          "type": "uint24"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        }
+      ],
+      "name": "packPubKey",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        }
+      ],
+      "name": "reactivateKeyring",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "registerKey",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registerKeyWithSignature",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "revokeKey",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "keyIndex",
+          "type": "uint16"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct G1Point",
+          "name": "pubKey",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiry",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proofSiblings",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "revokeKeyWithSignature",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        }
+      ],
+      "name": "suspendKeyring",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "newOperator",
+          "type": "address"
+        }
+      ],
+      "name": "updateKeyringOperator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "keyringId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "newOperator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateKeyringOperatorWithSignature",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "lockPeriod",
+          "type": "uint32"
+        }
+      ],
+      "name": "updateTreeLock",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x1cea1f3bbdca0d95cb85daed756ea4854c31e6daadae3c241b7798df711eeede",
+  "receipt": {
+    "to": null,
+    "from": "0xb83A3094272B6425f89BB5590b48928e2374eE11",
+    "contractAddress": "0x93c2eB0DE3A195a6E14B8990A615fE27cC7028E2",
+    "transactionIndex": 388,
+    "gasUsed": "3257989",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x2e70b05d0122731623260d018ed0382fe0ca1e89a0935c40219eade6554bfb80",
+    "transactionHash": "0x1cea1f3bbdca0d95cb85daed756ea4854c31e6daadae3c241b7798df711eeede",
+    "logs": [],
+    "blockNumber": 47769431,
+    "cumulativeGasUsed": "60838546",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xD56a3B1073eACEb7947A5061D9E03554bD5e9B75",
+    1
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "634dc66e3e153862e9280c6aee6124d4",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"self\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"keyringVersion\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newExpiry\",\"type\":\"uint32\"}],\"name\":\"KeyExtended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"packedPubKey\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"}],\"name\":\"KeyRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"}],\"name\":\"KeyRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enum ProvidersKeysRegistry.STATUS\",\"name\":\"status\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"numAllocKeys\",\"type\":\"uint16\"}],\"name\":\"KeyringUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"tillTime\",\"type\":\"uint32\"}],\"name\":\"TreeLockUpdated\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"KEYRING_VERSION\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"numAllocKeys\",\"type\":\"uint16\"}],\"name\":\"addKeyring\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"newExpiry\",\"type\":\"uint32\"},{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"}],\"name\":\"extendKeyExpiry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"newExpiry\",\"type\":\"uint32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"extendKeyExpiryWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"}],\"name\":\"getKeyCommitment\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"commitment\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getProvidersKeysRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStatistics\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"numKeyrings\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"totalNumRegisteredKeys\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"totalNumAllocatedKeys\",\"type\":\"uint16\"},{\"internalType\":\"uint32\",\"name\":\"treeLockedTillTime\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"allocation\",\"type\":\"uint16\"}],\"name\":\"increaseKeyringKeyAllocation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"}],\"name\":\"isAcceptablePubKey\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"name\":\"keyringIds\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"name\":\"keyrings\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"enum ProvidersKeysRegistry.STATUS\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint16\",\"name\":\"numKeys\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"numAllocKeys\",\"type\":\"uint16\"},{\"internalType\":\"uint32\",\"name\":\"registrationBlock\",\"type\":\"uint32\"},{\"internalType\":\"uint24\",\"name\":\"_unused\",\"type\":\"uint24\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"}],\"name\":\"packPubKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"}],\"name\":\"reactivateKeyring\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"}],\"name\":\"registerKey\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"registerKeyWithSignature\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"}],\"name\":\"revokeKey\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"keyIndex\",\"type\":\"uint16\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"internalType\":\"struct G1Point\",\"name\":\"pubKey\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"expiry\",\"type\":\"uint32\"},{\"internalType\":\"bytes32[]\",\"name\":\"proofSiblings\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"revokeKeyWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"}],\"name\":\"suspendKeyring\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"internalType\":\"address\",\"name\":\"newOperator\",\"type\":\"address\"}],\"name\":\"updateKeyringOperator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"keyringId\",\"type\":\"uint16\"},{\"internalType\":\"address\",\"name\":\"newOperator\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateKeyringOperatorWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"lockPeriod\",\"type\":\"uint32\"}],\"name\":\"updateTreeLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Pantherprotocol Contributors\",\"details\":\"Public keys are points in the BabyJubjub elliptic curve. The contract does not check, however, if the key is a valid curve point. Since the off-chain computation of the tree updates proved by the SNARK will replace the on-chain computation in the next version, the \\\"incremental tree\\\" algorithm is not applied (\\\"incremental tree\\\" is easier for operators since `proofSiblings` unneeded as input params on tree leafs insertions/updates).\",\"errors\":{\"ECDSAInvalidSignature()\":[{\"details\":\"The signature derives the `address(0)`.\"}],\"ECDSAInvalidSignatureLength(uint256)\":[{\"details\":\"The signature has an invalid length.\"}],\"ECDSAInvalidSignatureS(bytes32)\":[{\"details\":\"The signature has an S value that is in the upper half order.\"}]},\"kind\":\"dev\",\"methods\":{\"isAcceptablePubKey((uint256,uint256))\":{\"details\":\"The pub key must be a point in the subgroup (excluding the identity) of Baby Jubjub curve points in the twisted Edwards form.\"},\"revokeKey(uint16,uint16,(uint256,uint256),uint32,bytes32[])\":{\"details\":\"It sets the `expiry` to 0, which is an indicator of a revoked key.\"}},\"stateVariables\":{\"_currentRoot\":{\"details\":\"Root of the merkle tree with registered keys\"},\"_numKeyrings\":{\"details\":\"Number of keyrings added (created) so far\"},\"_totalNumAllocatedKeys\":{\"details\":\"Number of leafs reserved for public keys so far\"},\"_totalNumRegisteredKeys\":{\"details\":\"Number of public keys registered so far\"},\"_treeLockedTillTime\":{\"details\":\"(UNIX) time till when operators can't register/revoke/extend keysOwner may temporally disable the tree changes by operators to avoid the \\\"race condition\\\" (if multiple parties try to update simultaneously)\"}},\"title\":\"ProvidersKeys\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"isAcceptablePubKey((uint256,uint256))\":{\"notice\":\"Returns true if the pubKey is acceptable. Off-chain call (gas cost is high) advised to precede pubKey registration.\"},\"keyringIds(uint16)\":{\"notice\":\"Mapping from key index to keyring ID\"},\"keyrings(uint16)\":{\"notice\":\"Mapping from keyring ID to Keyring data\"},\"packPubKey((uint256,uint256))\":{\"notice\":\"It returns the pubKey in the packed form for the given pubKey.\"},\"revokeKey(uint16,uint16,(uint256,uint256),uint32,bytes32[])\":{\"notice\":\"Revoke registered key. Either the operator or the owner may call.\"}},\"notice\":\"It registers public keys of providers, such as KYC/KYT attesters, zone operators, data escrow (or \\\"data safe\\\") operators. Each public key is stored as a leaf of a binary merkle tree. Every time the tree is updated, this contract calls `PantherStaticTree` smart contract to notify on update of the tree root. The contract owner allocates leafs (\\\"keyring\\\") to a provider and authorizes an address that may register provider's keys. This way a provider gets the \\\"keyring\\\" where the provider may put that many keys as the owner allocated.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol\":\"ProvidersKeysRegistry\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/common/ECDSA.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.1.0) (utils/cryptography/ECDSA.sol)\\n// solhint-disable no-inline-assembly\\npragma solidity ^0.8.19;\\n\\n/**\\n * @dev Elliptic Curve Digital Signature Algorithm (ECDSA) operations.\\n *\\n * These functions can be used to verify that a message was signed by the holder\\n * of the private keys of a given address.\\n *\\n * The code borrowed from openzeppelin-contracts.\\n */\\nlibrary ECDSA {\\n    enum RecoverError {\\n        NoError,\\n        InvalidSignature,\\n        InvalidSignatureLength,\\n        InvalidSignatureS\\n    }\\n\\n    /**\\n     * @dev The signature derives the `address(0)`.\\n     */\\n    error ECDSAInvalidSignature();\\n\\n    /**\\n     * @dev The signature has an invalid length.\\n     */\\n    error ECDSAInvalidSignatureLength(uint256 length);\\n\\n    /**\\n     * @dev The signature has an S value that is in the upper half order.\\n     */\\n    error ECDSAInvalidSignatureS(bytes32 s);\\n\\n    /**\\n     * @dev Returns the address that signed a hashed message (`hash`) with `signature` or an error. This will not\\n     * return address(0) without also returning an error description. Errors are documented using an enum (error type)\\n     * and a bytes32 providing additional information about the error.\\n     *\\n     * If no error is returned, then the address can be used for verification purposes.\\n     *\\n     * The `ecrecover` EVM precompile allows for malleable (non-unique) signatures:\\n     * this function rejects them by requiring the `s` value to be in the lower\\n     * half order, and the `v` value to be either 27 or 28.\\n     *\\n     * IMPORTANT: `hash` _must_ be the result of a hash operation for the\\n     * verification to be secure: it is possible to craft signatures that\\n     * recover to arbitrary addresses for non-hashed data. A safe way to ensure\\n     * this is by receiving a hash of the original message (which may otherwise\\n     * be too long), and then calling {MessageHashUtils-toEthSignedMessageHash} on it.\\n     *\\n     * Documentation for signature generation:\\n     * - with https://web3js.readthedocs.io/en/v1.3.4/web3-eth-accounts.html#sign[Web3.js]\\n     * - with https://docs.ethers.io/v5/api/signer/#Signer-signMessage[ethers]\\n     */\\n    function tryRecover(\\n        bytes32 hash,\\n        bytes memory signature\\n    )\\n        internal\\n        pure\\n        returns (address recovered, RecoverError err, bytes32 errArg)\\n    {\\n        if (signature.length == 65) {\\n            bytes32 r;\\n            bytes32 s;\\n            uint8 v;\\n            // ecrecover takes the signature parameters, and the only way to get them\\n            // currently is to use assembly.\\n            assembly (\\\"memory-safe\\\") {\\n                r := mload(add(signature, 0x20))\\n                s := mload(add(signature, 0x40))\\n                v := byte(0, mload(add(signature, 0x60)))\\n            }\\n            return tryRecover(hash, v, r, s);\\n        } else {\\n            return (\\n                address(0),\\n                RecoverError.InvalidSignatureLength,\\n                bytes32(signature.length)\\n            );\\n        }\\n    }\\n\\n    /**\\n     * @dev Returns the address that signed a hashed message (`hash`) with\\n     * `signature`. This address can then be used for verification purposes.\\n     *\\n     * The `ecrecover` EVM precompile allows for malleable (non-unique) signatures:\\n     * this function rejects them by requiring the `s` value to be in the lower\\n     * half order, and the `v` value to be either 27 or 28.\\n     *\\n     * IMPORTANT: `hash` _must_ be the result of a hash operation for the\\n     * verification to be secure: it is possible to craft signatures that\\n     * recover to arbitrary addresses for non-hashed data. A safe way to ensure\\n     * this is by receiving a hash of the original message (which may otherwise\\n     * be too long), and then calling {MessageHashUtils-toEthSignedMessageHash} on it.\\n     */\\n    function recover(\\n        bytes32 hash,\\n        bytes memory signature\\n    ) internal pure returns (address) {\\n        (address recovered, RecoverError error, bytes32 errorArg) = tryRecover(\\n            hash,\\n            signature\\n        );\\n        _throwError(error, errorArg);\\n        return recovered;\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-tryRecover} that receives the `r` and `vs` short-signature fields separately.\\n     *\\n     * See https://eips.ethereum.org/EIPS/eip-2098[ERC-2098 short signatures]\\n     */\\n    function tryRecover(\\n        bytes32 hash,\\n        bytes32 r,\\n        bytes32 vs\\n    )\\n        internal\\n        pure\\n        returns (address recovered, RecoverError err, bytes32 errArg)\\n    {\\n        unchecked {\\n            bytes32 s = vs &\\n                bytes32(\\n                    0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\\n                );\\n            // We do not check for an overflow here since the shift operation results in 0 or 1.\\n            uint8 v = uint8((uint256(vs) >> 255) + 27);\\n            return tryRecover(hash, v, r, s);\\n        }\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-recover} that receives the `r and `vs` short-signature fields separately.\\n     */\\n    function recover(\\n        bytes32 hash,\\n        bytes32 r,\\n        bytes32 vs\\n    ) internal pure returns (address) {\\n        (address recovered, RecoverError error, bytes32 errorArg) = tryRecover(\\n            hash,\\n            r,\\n            vs\\n        );\\n        _throwError(error, errorArg);\\n        return recovered;\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-tryRecover} that receives the `v`,\\n     * `r` and `s` signature fields separately.\\n     */\\n    function tryRecover(\\n        bytes32 hash,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    )\\n        internal\\n        pure\\n        returns (address recovered, RecoverError err, bytes32 errArg)\\n    {\\n        // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature\\n        // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines\\n        // the valid range for s in (301): 0 < s < secp256k1n \\u00f7 2 + 1, and for v in (302): v \\u2208 {27, 28}. Most\\n        // signatures from current libraries generate a unique signature with an s-value in the lower half order.\\n        //\\n        // If your library generates malleable signatures, such as s-values in the upper range, calculate a new s-value\\n        // with 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - s1 and flip v from 27 to 28 or\\n        // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept\\n        // these malleable signatures as well.\\n        if (\\n            uint256(s) >\\n            0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0\\n        ) {\\n            return (address(0), RecoverError.InvalidSignatureS, s);\\n        }\\n\\n        // If the signature is valid (and not malleable), return the signer address\\n        address signer = ecrecover(hash, v, r, s);\\n        if (signer == address(0)) {\\n            return (address(0), RecoverError.InvalidSignature, bytes32(0));\\n        }\\n\\n        return (signer, RecoverError.NoError, bytes32(0));\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-recover} that receives the `v`,\\n     * `r` and `s` signature fields separately.\\n     */\\n    function recover(\\n        bytes32 hash,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal pure returns (address) {\\n        (address recovered, RecoverError error, bytes32 errorArg) = tryRecover(\\n            hash,\\n            v,\\n            r,\\n            s\\n        );\\n        _throwError(error, errorArg);\\n        return recovered;\\n    }\\n\\n    /**\\n     * @dev Optionally reverts with the corresponding custom error according to the `error` argument provided.\\n     */\\n    function _throwError(RecoverError error, bytes32 errorArg) private pure {\\n        if (error == RecoverError.NoError) {\\n            return; // no error: do nothing\\n        } else if (error == RecoverError.InvalidSignature) {\\n            revert ECDSAInvalidSignature();\\n        } else if (error == RecoverError.InvalidSignatureLength) {\\n            revert ECDSAInvalidSignatureLength(uint256(errorArg));\\n        } else if (error == RecoverError.InvalidSignatureS) {\\n            revert ECDSAInvalidSignatureS(errorArg);\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xe1bb0af714d6bbeb78e7b12892b772912623c5e528193c5e987aa7a248a0a822\",\"license\":\"MIT\"},\"contracts/common/EIP712SignatureVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport \\\"./ECDSA.sol\\\";\\n\\nabstract contract EIP712SignatureVerifier {\\n    using ECDSA for bytes32;\\n\\n    bytes private constant EIP191_VERSION = \\\"\\\\x19\\\\x01\\\";\\n\\n    string internal constant EIP712_NAME = \\\"Panther Protocol\\\";\\n    string internal constant EIP712_VERSION = \\\"1\\\";\\n\\n    // keccak256(bytes(\\\"PANTHER_EIP712_DOMAIN_SALT\\\"));\\n    bytes32 internal constant EIP712_SALT =\\n        0x44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b;\\n\\n    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)\\\"\\n            )\\n        );\\n\\n    function getDomainSeperator() internal view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    EIP712_DOMAIN_TYPEHASH,\\n                    keccak256(bytes(EIP712_NAME)),\\n                    keccak256(bytes(EIP712_VERSION)),\\n                    block.chainid,\\n                    address(this),\\n                    EIP712_SALT\\n                )\\n            );\\n    }\\n\\n    function recover(\\n        bytes32 hash,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal pure returns (address signer) {\\n        signer = hash.recover(v, r, s);\\n    }\\n\\n    function toTypedDataHash(\\n        bytes32 structHash\\n    ) internal view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encodePacked(\\n                    EIP191_VERSION,\\n                    getDomainSeperator(),\\n                    structHash\\n                )\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0xe3444eec3a66263785d3f75b7b48afc2bb388e85f78c5d7d18f43a81a8ac4821\",\"license\":\"GPL-3.0-only\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\\nstruct SaltedLockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The salt to use w/ CREATE2\\n    bytes32 salt;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint256 extAmount;\\n}\\n\",\"keccak256\":\"0x362bba813750a52d698bc1b97a8d588875aaefea15ac889c8dafbd07c54a3fea\",\"license\":\"MIT\"},\"contracts/common/UtilsLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.16;\\n\\nlibrary UtilsLib {\\n    function safe8(uint256 n) internal pure returns (uint8) {\\n        require(n < 2 ** 8, \\\"UNSAFE24\\\");\\n        return uint8(n);\\n    }\\n\\n    function safe24(uint256 n) internal pure returns (uint24) {\\n        require(n < 2 ** 24, \\\"UNSAFE24\\\");\\n        return uint24(n);\\n    }\\n\\n    function safe32(uint256 n) internal pure returns (uint32) {\\n        require(n < 2 ** 32, \\\"UNSAFE32\\\");\\n        return uint32(n);\\n    }\\n\\n    function safe40(uint256 n) internal pure returns (uint40) {\\n        require(n < 2 ** 40, \\\"UNSAFE40\\\");\\n        return uint40(n);\\n    }\\n\\n    function safe64(uint256 n) internal pure returns (uint64) {\\n        require(n < 2 ** 64, \\\"UNSAFE64\\\");\\n        return uint64(n);\\n    }\\n\\n    function safe96(uint256 n) internal pure returns (uint96) {\\n        require(n < 2 ** 96, \\\"UNSAFE96\\\");\\n        return uint96(n);\\n    }\\n\\n    function safe128(uint256 n) internal pure returns (uint128) {\\n        require(n < 2 ** 128, \\\"UNSAFE128\\\");\\n        return uint128(n);\\n    }\\n\\n    function safe160(uint256 n) internal pure returns (uint160) {\\n        require(n < 2 ** 160, \\\"UNSAFE160\\\");\\n        return uint160(n);\\n    }\\n\\n    function safe168(uint256 n) internal pure returns (uint168) {\\n        require(n < 2 ** 168, \\\"UNSAFE168\\\");\\n        return uint168(n);\\n    }\\n\\n    function safeScaleDownBy1e12(uint256 n) internal pure returns (uint256) {\\n        require(n >= 1e12, \\\"UNSAFE12\\\");\\n        return n / 1e12;\\n    }\\n\\n    function scaleDownBy1e12(uint256 n) internal pure returns (uint256) {\\n        return n / 1e12;\\n    }\\n\\n    function scaleUpBy1e12(uint256 n) internal pure returns (uint256) {\\n        return n * 1e12;\\n    }\\n\\n    function safe32TimeNow() internal view returns (uint32) {\\n        uint256 t = block.timestamp;\\n        require(t < 2 ** 32, \\\"UNSAFE32TIME\\\");\\n        return uint32(t);\\n    }\\n\\n    function safe32BlockNow() internal view returns (uint32) {\\n        uint256 b = block.number;\\n        require(b < 2 ** 32, \\\"UNSAFE32BLOCK\\\");\\n        return uint32(b);\\n    }\\n\\n    function revertZeroAddress(address account) internal pure {\\n        require(account != address(0), \\\"UNEXPECTED_ZERO_ADDRESS\\\");\\n    }\\n\\n    function safeAddress(uint256 n) internal pure returns (address _address) {\\n        _address = address(safe160(n));\\n    }\\n}\\n\",\"keccak256\":\"0x3012078b73b166da56ba17b3e9802df0758fce98a823248315822a60f0cbac23\",\"license\":\"MIT\"},\"contracts/common/crypto/BabyJubJub.sol\":{\"content\":\"// SPDX-License-Identifier: GPL\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// Implementer name - yondonfu\\n// Link to the implementation - https://github.com/yondonfu/sol-baby-jubjub/blob/master/contracts/CurveBabyJubJub.sol\\npragma solidity ^0.8.16;\\nimport \\\"../Types.sol\\\";\\nimport { FIELD_SIZE } from \\\"./SnarkConstants.sol\\\";\\n\\nstring constant ERR_NOT_IN_FIELD = \\\"BJJ:E01\\\";\\nstring constant ERR_NOT_IN_CURVE = \\\"BJJ:E02\\\";\\nstring constant ERR_IDENTITY_UNEXPECTED = \\\"BJJ:E03\\\";\\n\\nlibrary BabyJubJub {\\n    // slither-disable too-many-digits\\n\\n    // Curve parameters (twisted Edwards form)\\n    // E: A * x^2 + y^2 = 1 + D * x^2 * y^2\\n    uint256 private constant A = 168700;\\n    uint256 private constant D = 168696;\\n    // Field prime\\n    uint256 internal constant Q = FIELD_SIZE;\\n\\n    // @dev Base point generates the subgroup of points P of Baby Jubjub satisfying l * P = O.\\n    // That is, it generates the set of points of order l and origin O.\\n    uint256 internal constant BASE8_X =\\n        5299619240641551281634865583518297030282874472190772894086521144482721001553;\\n    uint256 internal constant BASE8_Y =\\n        16950150798460657717958625567821834550301663161624707787222815936182638968203;\\n\\n    // @dev Suborder (order of the subgroup)\\n    uint256 internal constant L =\\n        2736030358979909402780800718157159386076813972158567259200215660948447373041;\\n\\n    // pm1d2 = (SNARK_FIELD - 1) >> 1 // same as `negative_one / 2`\\n    uint256 private constant PM1D2 =\\n        10944121435919637611123202872628637544274182200208017171849102093287904247808;\\n\\n    // slither-enable too-many-digits\\n\\n    /**\\n     * @dev Returns the given point in the \\\"packed\\\" form\\n     * For compatibility with circomlibjs (v.0.8) it packs (the sign of) X rather than Y\\n     * (either of the two coordinates may be \\\"packed\\\" for a twisted Edwards curve).\\n     */\\n    function pointPack(\\n        G1Point memory point\\n    ) internal pure returns (bytes32 _packed) {\\n        _packed = bytes32(point.y);\\n\\n        if (point.x > PM1D2) {\\n            _packed = bytes32(\\n                point.y |\\n                    0x8000000000000000000000000000000000000000000000000000000000000000\\n            );\\n        }\\n    }\\n\\n    /**\\n     * @dev Returns true if the given point is in the Baby Jubjub curve\\n     */\\n    function isInCurve(G1Point memory point) internal pure returns (bool) {\\n        require(point.x < Q && point.y < Q, ERR_NOT_IN_FIELD);\\n\\n        // A * x^2 + y^2 = 1 + D * x^2 * y^2\\n        uint256 x2 = mulmod(point.x, point.x, Q);\\n        uint256 ax2 = mulmod(A, x2, Q);\\n        uint256 y2 = mulmod(point.y, point.y, Q);\\n        uint256 left = addmod(ax2, y2, Q);\\n\\n        uint256 x2y2 = mulmod(x2, y2, Q);\\n        uint256 dx2y2 = mulmod(D, x2y2, Q);\\n        uint256 right = addmod(1, dx2y2, Q);\\n\\n        return left == right;\\n    }\\n\\n    /**\\n     * @dev Returns true if the point is the identity of the group of Baby Jubjub points\\n     */\\n    function isIdentity(G1Point memory point) internal pure returns (bool) {\\n        return (point.x == 0) && (point.y == 1);\\n    }\\n\\n    /**\\n     * @dev Reverts if the point is either the identity or not in the Baby Jubjub subgroup\\n     */\\n    function requirePointInCurveExclIdentity(\\n        G1Point memory point\\n    ) internal pure {\\n        require(!isIdentity(point), ERR_IDENTITY_UNEXPECTED);\\n        require(isInCurve(point), ERR_NOT_IN_CURVE);\\n    }\\n\\n    /**\\n     * @dev Returns true if the given point is in the Baby Jubjub subgroup\\n     * (beware of high gas costs)\\n     */\\n    function isInSubgroup(G1Point memory point) internal view returns (bool) {\\n        if (isInCurve(point)) {\\n            G1Point memory res = mulPointEscalar(point, L);\\n            return isIdentity(res);\\n        }\\n\\n        return false;\\n    }\\n\\n    function mulPointEscalar(\\n        G1Point memory point,\\n        uint256 scalar\\n    ) internal view returns (G1Point memory r) {\\n        r.x = 0;\\n        r.y = 1;\\n\\n        uint256 rem = scalar;\\n        G1Point memory exp = point;\\n\\n        while (rem != uint256(0)) {\\n            if ((rem & 1) == 1) {\\n                r = pointAdd(r, exp);\\n            }\\n            exp = pointAdd(exp, exp);\\n            rem = rem >> 1;\\n        }\\n        r.x = r.x % Q;\\n        r.y = r.y % Q;\\n\\n        return r;\\n    }\\n\\n    /**\\n     * @dev Add 2 points on the Baby Jubjub curve\\n     * Formulae for adding 2 points on a twisted Edwards curve:\\n     * x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)\\n     * y3 = (y1y2 - ax1x2) / (1 - dx1x2y1y2)\\n     */\\n    function pointAdd(\\n        G1Point memory g1,\\n        G1Point memory g2\\n    ) internal view returns (G1Point memory) {\\n        uint256 x3 = 0;\\n        uint256 y3 = 0;\\n        if (g1.x == 0 && g1.y == 0) {\\n            return G1Point(x3, y3);\\n        }\\n\\n        if (g2.x == 0 && g1.y == 0) {\\n            return G1Point(x3, y3);\\n        }\\n\\n        uint256 x1x2 = mulmod(g1.x, g2.x, Q);\\n        uint256 y1y2 = mulmod(g1.y, g2.y, Q);\\n        uint256 dx1x2y1y2 = mulmod(D, mulmod(x1x2, y1y2, Q), Q);\\n        uint256 x3Num = addmod(mulmod(g1.x, g2.y, Q), mulmod(g1.y, g2.x, Q), Q);\\n        uint256 y3Num = submod(y1y2, mulmod(A, x1x2, Q), Q);\\n\\n        x3 = mulmod(x3Num, inverse(addmod(1, dx1x2y1y2, Q)), Q);\\n        y3 = mulmod(y3Num, inverse(submod(1, dx1x2y1y2, Q)), Q);\\n        return G1Point(x3, y3);\\n    }\\n\\n    /**\\n     * @dev Perform modular subtraction\\n     */\\n    function submod(\\n        uint256 _a,\\n        uint256 _b,\\n        uint256 _mod\\n    ) private pure returns (uint256) {\\n        uint256 aNN = _a;\\n\\n        if (_a <= _b) {\\n            aNN += _mod;\\n        }\\n\\n        return addmod(aNN - _b, 0, _mod);\\n    }\\n\\n    /**\\n     * @dev Compute modular inverse of a number\\n     */\\n    function inverse(uint256 _a) private view returns (uint256) {\\n        // We can use Euler's theorem instead of the extended Euclidean algorithm\\n        // Since m = Q and Q is prime we have: a^-1 = a^(m - 2) (mod m)\\n        return expmod(_a, Q - 2, Q);\\n    }\\n\\n    /**\\n     * @dev Helper function to call the bigModExp precompile\\n     */\\n    function expmod(\\n        uint256 _b,\\n        uint256 _e,\\n        uint256 _m\\n    ) private view returns (uint256 o) {\\n        // solhint-disable no-inline-assembly\\n        // slither-disable-next-line assembly\\n        assembly {\\n            let memPtr := mload(0x40)\\n            mstore(memPtr, 0x20) // Length of base _b\\n            mstore(add(memPtr, 0x20), 0x20) // Length of exponent _e\\n            mstore(add(memPtr, 0x40), 0x20) // Length of modulus _m\\n            mstore(add(memPtr, 0x60), _b) // Base _b\\n            mstore(add(memPtr, 0x80), _e) // Exponent _e\\n            mstore(add(memPtr, 0xa0), _m) // Modulus _m\\n\\n            // The bigModExp precompile is at 0x05\\n            let success := staticcall(gas(), 0x05, memPtr, 0xc0, memPtr, 0x20)\\n            switch success\\n            case 0 {\\n                revert(0x0, 0x0)\\n            }\\n            default {\\n                o := mload(memPtr)\\n            }\\n        }\\n        // solhint-enable no-inline-assembly\\n    }\\n}\\n\",\"keccak256\":\"0x3d5ea96df7e999e0c2d712106a016189613f03de804aeba815e46006f3114c71\",\"license\":\"GPL\"},\"contracts/common/crypto/Poseidon.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// solhint-disable one-contract-per-file\\npragma solidity ^0.8.16;\\n\\n// This is a stub to keep solc happy; the actual code is generated\\n// using poseidon_gencontract.js from circomlibjs.\\n\\nlibrary PoseidonT3 {\\n    function poseidon(bytes32[2] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT4 {\\n    function poseidon(bytes32[3] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT5 {\\n    function poseidon(bytes32[4] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\\nlibrary PoseidonT6 {\\n    function poseidon(bytes32[5] memory input) external pure returns (bytes32) {\\n        require(input.length == 99, \\\"FAKE\\\"); // always reverts\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0x8abcb602c54fe2cd888b2e8c9f2352b1e79d857866d72194a78f2aa2cbac14d3\",\"license\":\"MIT\"},\"contracts/common/crypto/PoseidonHashers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.16;\\n\\nimport { FIELD_SIZE } from \\\"./SnarkConstants.sol\\\";\\nimport \\\"./Poseidon.sol\\\";\\n\\nlibrary PoseidonHashers {\\n    string private constant ERR_INPUT_NOT_IN_FIELD =\\n        \\\"PoseidonHasher: input not in field\\\";\\n\\n    function poseidonT3(\\n        bytes32[2] memory input\\n    ) internal pure returns (bytes32) {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE && uint256(input[1]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT3.poseidon(input);\\n    }\\n\\n    function poseidonT4(\\n        bytes32[3] memory input\\n    ) internal pure returns (bytes32) {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT4.poseidon(input);\\n    }\\n\\n    function poseidonT5(\\n        bytes32[4] memory input\\n    ) internal pure returns (bytes32) {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE &&\\n                uint256(input[3]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT5.poseidon(input);\\n    }\\n\\n    function poseidonT6(\\n        bytes32[5] memory input\\n    ) internal pure returns (bytes32) {\\n        require(\\n            uint256(input[0]) < FIELD_SIZE &&\\n                uint256(input[1]) < FIELD_SIZE &&\\n                uint256(input[2]) < FIELD_SIZE &&\\n                uint256(input[3]) < FIELD_SIZE &&\\n                uint256(input[4]) < FIELD_SIZE,\\n            ERR_INPUT_NOT_IN_FIELD\\n        );\\n        return PoseidonT6.poseidon(input);\\n    }\\n}\\n\",\"keccak256\":\"0x8ddb2aacf9a17070d2397d36723585f23a71c84a1d1df970ca33b1a9557f738d\",\"license\":\"MIT\"},\"contracts/common/crypto/SnarkConstants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.16;\\n\\n// @dev Order of alt_bn128 and the field prime of Baby Jubjub and Poseidon hash\\nuint256 constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;\\n\\n// @dev Field prime of alt_bn128\\nuint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;\\n\",\"keccak256\":\"0x907f783945bce635f8c6bd744d81a7ff3a8cff6b53939747d7fa7edbdffcda7e\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/diamond/interfaces/IDiamondCut.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// solhint-disable compiler-version\\npragma solidity ^0.8.0;\\n\\n/******************************************************************************\\\\\\n* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)\\n* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535\\n/******************************************************************************/\\n\\ninterface IDiamondCut {\\n    enum FacetCutAction {\\n        Add,\\n        Replace,\\n        Remove\\n    }\\n    // Add=0, Replace=1, Remove=2\\n\\n    struct FacetCut {\\n        address facetAddress;\\n        FacetCutAction action;\\n        bytes4[] functionSelectors;\\n    }\\n\\n    /// @notice Add/replace/remove any number of functions and optionally execute\\n    ///         a function with delegatecall\\n    /// @param _diamondCut Contains the facet addresses and function selectors\\n    /// @param _init The address of the contract or facet to execute _calldata\\n    /// @param _calldata A function call, including function selector and arguments\\n    ///                  _calldata is executed with delegatecall on _init\\n    function diamondCut(\\n        FacetCut[] calldata _diamondCut,\\n        address _init,\\n        bytes calldata _calldata\\n    ) external;\\n\\n    event DiamondCut(FacetCut[] _diamondCut, address _init, bytes _calldata);\\n}\\n\",\"keccak256\":\"0x99a090e6aef752b19f1dd2165fab90a3d9a34d2e0c18ac5d15168d96622e37d4\",\"license\":\"MIT\"},\"contracts/protocol/v1/diamond/libraries/LibDiamond.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// solhint-disable code-complexity\\n// solhint-disable compiler-version\\n// solhint-disable state-visibility\\n// solhint-disable no-inline-assembly\\n// solhint-disable avoid-low-level-calls\\npragma solidity ^0.8.0;\\n\\n/******************************************************************************\\\\\\n* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)\\n* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535\\n/******************************************************************************/\\nimport { IDiamondCut } from \\\"../interfaces/IDiamondCut.sol\\\";\\n\\n// Remember to add the loupe functions from DiamondLoupeFacet to the diamond.\\n// The loupe functions are required by the EIP2535 Diamonds standard\\n\\nerror InitializationFunctionReverted(\\n    address _initializationContractAddress,\\n    bytes _calldata\\n);\\n\\nlibrary LibDiamond {\\n    bytes32 constant DIAMOND_STORAGE_POSITION =\\n        keccak256(\\\"diamond.standard.diamond.storage\\\");\\n\\n    // keccak256(\\\"owner.position\\\");\\n    bytes32 constant OWNER_POSITION =\\n        0x727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44;\\n\\n    // keccak256(\\\"reentrancy.status.position\\\");\\n    bytes32 constant REENTRANCY_STATUS_POSITION =\\n        0xa2d689582372faaaa3b92103e3057ffde86663fa2f4d2f6c8f9da8a22702278d;\\n\\n    struct DiamondStorage {\\n        // maps function selectors to the facets that execute the functions.\\n        // and maps the selectors to their position in the selectorSlots array.\\n        // func selector => address facet, selector position\\n        mapping(bytes4 => bytes32) facets;\\n        // array of slots of function selectors.\\n        // each slot holds 8 function selectors.\\n        mapping(uint256 => bytes32) selectorSlots;\\n        // The number of function selectors in selectorSlots\\n        uint16 selectorCount;\\n        // Used to query if a contract implements an interface.\\n        // Used to implement ERC-165.\\n        mapping(bytes4 => bool) supportedInterfaces;\\n    }\\n\\n    function diamondStorage()\\n        internal\\n        pure\\n        returns (DiamondStorage storage ds)\\n    {\\n        bytes32 position = DIAMOND_STORAGE_POSITION;\\n        assembly {\\n            ds.slot := position\\n        }\\n    }\\n\\n    function reentrancyStatus()\\n        internal\\n        view\\n        returns (uint256 _reentrancyStatus)\\n    {\\n        bytes32 position = REENTRANCY_STATUS_POSITION;\\n        assembly {\\n            _reentrancyStatus := sload(position)\\n        }\\n    }\\n\\n    function setReentrancyStatus(uint256 status) internal {\\n        assembly {\\n            sstore(REENTRANCY_STATUS_POSITION, status)\\n        }\\n    }\\n\\n    function owner() internal view returns (address _owner) {\\n        bytes32 position = OWNER_POSITION;\\n        assembly {\\n            _owner := sload(position)\\n        }\\n    }\\n\\n    event OwnershipUpdated(address owner);\\n\\n    function setContractOwner(address _owner) internal {\\n        assembly {\\n            sstore(OWNER_POSITION, _owner)\\n        }\\n        emit OwnershipUpdated(_owner);\\n    }\\n\\n    function enforceOwner() internal view {\\n        require(msg.sender == owner(), \\\"LibDiamond: Must be contract owner\\\");\\n    }\\n\\n    event DiamondCut(\\n        IDiamondCut.FacetCut[] _diamondCut,\\n        address _init,\\n        bytes _calldata\\n    );\\n\\n    bytes32 constant CLEAR_ADDRESS_MASK =\\n        bytes32(uint256(0xffffffffffffffffffffffff));\\n    bytes32 constant CLEAR_SELECTOR_MASK = bytes32(uint256(0xffffffff << 224));\\n\\n    // Internal function version of diamondCut\\n    // This code is almost the same as the external diamondCut,\\n    // except it is using 'Facet[] memory _diamondCut' instead of\\n    // 'Facet[] calldata _diamondCut'.\\n    // The code is duplicated to prevent copying calldata to memory which\\n    // causes an error for a two dimensional array.\\n    function diamondCut(\\n        IDiamondCut.FacetCut[] memory _diamondCut,\\n        address _init,\\n        bytes memory _calldata\\n    ) internal {\\n        DiamondStorage storage ds = diamondStorage();\\n        uint256 originalSelectorCount = ds.selectorCount;\\n        uint256 selectorCount = originalSelectorCount;\\n        bytes32 selectorSlot;\\n        // Check if last selector slot is not full\\n        // \\\"selectorCount & 7\\\" is a gas efficient modulo by eight \\\"selectorCount % 8\\\"\\n        if (selectorCount & 7 > 0) {\\n            // get last selectorSlot\\n            // \\\"selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"selectorSlot / 8\\\"\\n            selectorSlot = ds.selectorSlots[selectorCount >> 3];\\n        }\\n        // loop through diamond cut\\n        for (uint256 facetIndex; facetIndex < _diamondCut.length; ) {\\n            (selectorCount, selectorSlot) = addReplaceRemoveFacetSelectors(\\n                selectorCount,\\n                selectorSlot,\\n                _diamondCut[facetIndex].facetAddress,\\n                _diamondCut[facetIndex].action,\\n                _diamondCut[facetIndex].functionSelectors\\n            );\\n\\n            unchecked {\\n                facetIndex++;\\n            }\\n        }\\n        if (selectorCount != originalSelectorCount) {\\n            ds.selectorCount = uint16(selectorCount);\\n        }\\n        // If last selector slot is not full\\n        // \\\"selectorCount & 7\\\" is a gas efficient modulo by eight \\\"selectorCount % 8\\\"\\n        if (selectorCount & 7 > 0) {\\n            // \\\"selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"selectorSlot / 8\\\"\\n            ds.selectorSlots[selectorCount >> 3] = selectorSlot;\\n        }\\n        emit DiamondCut(_diamondCut, _init, _calldata);\\n        initializeDiamondCut(_init, _calldata);\\n    }\\n\\n    function addReplaceRemoveFacetSelectors(\\n        uint256 _selectorCount,\\n        bytes32 _selectorSlot,\\n        address _newFacetAddress,\\n        IDiamondCut.FacetCutAction _action,\\n        bytes4[] memory _selectors\\n    ) internal returns (uint256, bytes32) {\\n        DiamondStorage storage ds = diamondStorage();\\n        require(\\n            _selectors.length > 0,\\n            \\\"LibDiamondCut: No selectors in facet to cut\\\"\\n        );\\n        if (_action == IDiamondCut.FacetCutAction.Add) {\\n            enforceHasContractCode(\\n                _newFacetAddress,\\n                \\\"LibDiamondCut: Add facet has no code\\\"\\n            );\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                bytes4 selector = _selectors[selectorIndex];\\n                bytes32 oldFacet = ds.facets[selector];\\n                require(\\n                    address(bytes20(oldFacet)) == address(0),\\n                    \\\"LibDiamondCut: Can't add function that already exists\\\"\\n                );\\n                // add facet for selector\\n                ds.facets[selector] =\\n                    bytes20(_newFacetAddress) |\\n                    bytes32(_selectorCount);\\n                // \\\"_selectorCount & 7\\\" is a gas efficient modulo by eight \\\"_selectorCount % 8\\\"\\n                // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                uint256 selectorInSlotPosition = (_selectorCount & 7) << 5;\\n                // clear selector position in slot and add selector\\n                _selectorSlot =\\n                    (_selectorSlot &\\n                        ~(CLEAR_SELECTOR_MASK >> selectorInSlotPosition)) |\\n                    (bytes32(selector) >> selectorInSlotPosition);\\n                // if slot is full then write it to storage\\n                if (selectorInSlotPosition == 224) {\\n                    // \\\"_selectorSlot >> 3\\\" is a gas efficient division by 8 \\\"_selectorSlot / 8\\\"\\n                    ds.selectorSlots[_selectorCount >> 3] = _selectorSlot;\\n                    _selectorSlot = 0;\\n                }\\n                _selectorCount++;\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n        } else if (_action == IDiamondCut.FacetCutAction.Replace) {\\n            enforceHasContractCode(\\n                _newFacetAddress,\\n                \\\"LibDiamondCut: Replace facet has no code\\\"\\n            );\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                bytes4 selector = _selectors[selectorIndex];\\n                bytes32 oldFacet = ds.facets[selector];\\n                address oldFacetAddress = address(bytes20(oldFacet));\\n                // only useful if immutable functions exist\\n                require(\\n                    oldFacetAddress != address(this),\\n                    \\\"LibDiamondCut: Can't replace immutable function\\\"\\n                );\\n                require(\\n                    oldFacetAddress != _newFacetAddress,\\n                    \\\"LibDiamondCut: Can't replace function with same function\\\"\\n                );\\n                require(\\n                    oldFacetAddress != address(0),\\n                    \\\"LibDiamondCut: Can't replace function that doesn't exist\\\"\\n                );\\n                // replace old facet address\\n                ds.facets[selector] =\\n                    (oldFacet & CLEAR_ADDRESS_MASK) |\\n                    bytes20(_newFacetAddress);\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n        } else if (_action == IDiamondCut.FacetCutAction.Remove) {\\n            require(\\n                _newFacetAddress == address(0),\\n                \\\"LibDiamondCut: Remove facet address must be address(0)\\\"\\n            );\\n            // \\\"_selectorCount >> 3\\\" is a gas efficient division by 8 \\\"_selectorCount / 8\\\"\\n            uint256 selectorSlotCount = _selectorCount >> 3;\\n            // \\\"_selectorCount & 7\\\" is a gas efficient modulo by eight \\\"_selectorCount % 8\\\"\\n            uint256 selectorInSlotIndex = _selectorCount & 7;\\n            for (uint256 selectorIndex; selectorIndex < _selectors.length; ) {\\n                if (selectorInSlotIndex == 0) {\\n                    // get last selectorSlot\\n                    selectorSlotCount--;\\n                    _selectorSlot = ds.selectorSlots[selectorSlotCount];\\n                    selectorInSlotIndex = 7;\\n                } else {\\n                    selectorInSlotIndex--;\\n                }\\n                bytes4 lastSelector;\\n                uint256 oldSelectorsSlotCount;\\n                uint256 oldSelectorInSlotPosition;\\n                // adding a block here prevents stack too deep error\\n                {\\n                    bytes4 selector = _selectors[selectorIndex];\\n                    bytes32 oldFacet = ds.facets[selector];\\n                    require(\\n                        address(bytes20(oldFacet)) != address(0),\\n                        \\\"LibDiamondCut: Can't remove function that doesn't exist\\\"\\n                    );\\n                    // only useful if immutable functions exist\\n                    require(\\n                        address(bytes20(oldFacet)) != address(this),\\n                        \\\"LibDiamondCut: Can't remove immutable function\\\"\\n                    );\\n                    // replace selector with last selector in ds.facets\\n                    // gets the last selector\\n                    // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                    lastSelector = bytes4(\\n                        _selectorSlot << (selectorInSlotIndex << 5)\\n                    );\\n                    if (lastSelector != selector) {\\n                        // update last selector slot position info\\n                        ds.facets[lastSelector] =\\n                            (oldFacet & CLEAR_ADDRESS_MASK) |\\n                            bytes20(ds.facets[lastSelector]);\\n                    }\\n                    delete ds.facets[selector];\\n                    uint256 oldSelectorCount = uint16(uint256(oldFacet));\\n                    // \\\"oldSelectorCount >> 3\\\" is a gas efficient division by 8 \\\"oldSelectorCount / 8\\\"\\n                    oldSelectorsSlotCount = oldSelectorCount >> 3;\\n                    // \\\"oldSelectorCount & 7\\\" is a gas efficient modulo by eight \\\"oldSelectorCount % 8\\\"\\n                    // \\\" << 5 is the same as multiplying by 32 ( * 32)\\n                    oldSelectorInSlotPosition = (oldSelectorCount & 7) << 5;\\n                }\\n                if (oldSelectorsSlotCount != selectorSlotCount) {\\n                    bytes32 oldSelectorSlot = ds.selectorSlots[\\n                        oldSelectorsSlotCount\\n                    ];\\n                    // clears the selector we are deleting and puts the last selector in its place.\\n                    oldSelectorSlot =\\n                        (oldSelectorSlot &\\n                            ~(CLEAR_SELECTOR_MASK >>\\n                                oldSelectorInSlotPosition)) |\\n                        (bytes32(lastSelector) >> oldSelectorInSlotPosition);\\n                    // update storage with the modified slot\\n                    ds.selectorSlots[oldSelectorsSlotCount] = oldSelectorSlot;\\n                } else {\\n                    // clears the selector we are deleting and puts the last selector in its place.\\n                    _selectorSlot =\\n                        (_selectorSlot &\\n                            ~(CLEAR_SELECTOR_MASK >>\\n                                oldSelectorInSlotPosition)) |\\n                        (bytes32(lastSelector) >> oldSelectorInSlotPosition);\\n                }\\n                if (selectorInSlotIndex == 0) {\\n                    delete ds.selectorSlots[selectorSlotCount];\\n                    _selectorSlot = 0;\\n                }\\n\\n                unchecked {\\n                    selectorIndex++;\\n                }\\n            }\\n            _selectorCount = selectorSlotCount * 8 + selectorInSlotIndex;\\n        } else {\\n            revert(\\\"LibDiamondCut: Incorrect FacetCutAction\\\");\\n        }\\n        return (_selectorCount, _selectorSlot);\\n    }\\n\\n    function initializeDiamondCut(\\n        address _init,\\n        bytes memory _calldata\\n    ) internal {\\n        if (_init == address(0)) {\\n            return;\\n        }\\n        enforceHasContractCode(\\n            _init,\\n            \\\"LibDiamondCut: _init address has no code\\\"\\n        );\\n        (bool success, bytes memory error) = _init.delegatecall(_calldata);\\n        if (!success) {\\n            if (error.length > 0) {\\n                // bubble up error\\n                /// @solidity memory-safe-assembly\\n                assembly {\\n                    let returndata_size := mload(error)\\n                    revert(add(32, error), returndata_size)\\n                }\\n            } else {\\n                revert InitializationFunctionReverted(_init, _calldata);\\n            }\\n        }\\n    }\\n\\n    function enforceHasContractCode(\\n        address _contract,\\n        string memory _errorMessage\\n    ) internal view {\\n        uint256 contractSize;\\n        assembly {\\n            contractSize := extcodesize(_contract)\\n        }\\n        require(contractSize > 0, _errorMessage);\\n    }\\n}\\n\",\"keccak256\":\"0x8dfe204f060f2218bdec2e143d27fae7fe74abf7014e7efc517f522c936343b4\",\"license\":\"MIT\"},\"contracts/protocol/v1/diamond/utils/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport { LibDiamond } from \\\"../libraries/LibDiamond.sol\\\";\\n\\nabstract contract Ownable {\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() virtual {\\n        LibDiamond.enforceOwner();\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0x0e879cfa2366461f0de8f50c5949e19e38e935149a1839b137c2b80ebe80be4d\",\"license\":\"MIT\"},\"contracts/protocol/v1/trees/errMsgs/ProvidersKeysErrMsgs.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\n// string constant ERR_INIT_CONTRACT = \\\"PK:init\\\";\\n\\nstring constant ERR_INCORRECT_SIBLINGS_SIZE = \\\"PK:E02\\\";\\n\\nstring constant ERR_TREE_LOCK_ALREADY_UPDATED = \\\"PK:E05\\\";\\nstring constant ERR_TREE_IS_LOCKED = \\\"PK:E06\\\";\\n\\nstring constant ERR_INSUFFICIENT_ALLOCATION = \\\"PK:E10\\\";\\nstring constant ERR_TOO_HIGH_ALLOCATION = \\\"PK:E11\\\";\\n\\nstring constant ERR_KEYRING_ALREADY_ACTIVATED = \\\"PK:15\\\";\\nstring constant ERR_KEYRING_NOT_EXISTS = \\\"PK:E16\\\";\\nstring constant ERR_KEYRING_NOT_ACTIVATED = \\\"PK:E17\\\";\\n\\nstring constant ERR_UNAUTHORIZED_OPERATOR = \\\"PK:E20\\\";\\nstring constant ERR_ZERO_OPERATOR_ADDRESS = \\\"PK:E21\\\";\\nstring constant ERR_SAME_OPERATOR = \\\"PK:E22\\\";\\n\\nstring constant ERR_REVOKED_KEY = \\\"PK:E25\\\";\\nstring constant ERR_INVALID_KEY_EXPIRY = \\\"PK:E26\\\";\\nstring constant ERR_KEY_IS_NOT_IN_KEYRING = \\\"PK:E27\\\";\\n\",\"keccak256\":\"0x67ec1d58110373ba389613e187f317a66f54bce031cada8a97cd5684a2907fb5\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport \\\"../storage/AppStorage.sol\\\";\\nimport \\\"../storage/ProvidersKeysRegistryStorageGap.sol\\\";\\n\\nimport \\\"./staticTrees/ProvidersKeysRegistry/ProvidersKeysSignatureVerifier.sol\\\";\\nimport \\\"../errMsgs/ProvidersKeysErrMsgs.sol\\\";\\n\\nimport \\\"./staticTrees/StaticRootUpdater.sol\\\";\\n\\nimport \\\"../../diamond/utils/Ownable.sol\\\";\\nimport \\\"../utils/merkleTrees/BinaryUpdatableTree.sol\\\";\\nimport { PROVIDERS_KEYS_STATIC_LEAF_INDEX } from \\\"../utils/Constants.sol\\\";\\nimport { SIXTEEN_LEVELS, SIXTEEN_LEVEL_EMPTY_TREE_ROOT, ZERO_VALUE } from \\\"../utils/zeroTrees/Constants.sol\\\";\\n\\nimport \\\"../../../../common/UtilsLib.sol\\\";\\nimport \\\"../../../../common/crypto/BabyJubJub.sol\\\";\\nimport \\\"../../../../common/crypto/PoseidonHashers.sol\\\";\\n\\n/**\\n * @title ProvidersKeys\\n * @author Pantherprotocol Contributors\\n * @notice It registers public keys of providers, such as KYC/KYT attesters,\\n * zone operators, data escrow (or \\\"data safe\\\") operators.\\n * Each public key is stored as a leaf of a binary merkle tree. Every time the\\n * tree is updated, this contract calls `PantherStaticTree` smart contract to\\n * notify on update of the tree root.\\n * The contract owner allocates leafs (\\\"keyring\\\") to a provider and authorizes\\n * an address that may register provider's keys.\\n * This way a provider gets the \\\"keyring\\\" where the provider may put that many\\n * keys as the owner allocated.\\n * @dev Public keys are points in the BabyJubjub elliptic curve. The contract\\n * does not check, however, if the key is a valid curve point.\\n * Since the off-chain computation of the tree updates proved by the SNARK will\\n * replace the on-chain computation in the next version, the \\\"incremental tree\\\"\\n * algorithm is not applied (\\\"incremental tree\\\" is easier for operators since\\n * `proofSiblings` unneeded as input params on tree leafs insertions/updates).\\n */\\ncontract ProvidersKeysRegistry is\\n    AppStorage,\\n    ProvidersKeysRegistryStorageGap,\\n    ProvidersKeysSignatureVerifier,\\n    StaticRootUpdater,\\n    Ownable,\\n    BinaryUpdatableTree\\n{\\n    uint256 private constant KEYS_TREE_DEPTH = SIXTEEN_LEVELS;\\n    uint16 private constant MAX_KEYS = uint16(2 ** SIXTEEN_LEVELS - 1);\\n\\n    uint32 private constant REVOKED_KEY_EXPIRY = 0;\\n    uint256 private constant MAX_TREE_LOCK_PERIOD = 30 days;\\n\\n    /// @notice keyring status\\n    enum STATUS {\\n        UNDEFINED,\\n        ACTIVE,\\n        SUSPENDED\\n    }\\n\\n    /// @notice keyring parameters\\n    struct Keyring {\\n        address operator;\\n        STATUS status;\\n        uint16 numKeys;\\n        uint16 numAllocKeys;\\n        uint32 registrationBlock;\\n        uint24 _unused;\\n    }\\n\\n    /// @notice Mapping from keyring ID to Keyring data\\n    mapping(uint16 => Keyring) public keyrings;\\n\\n    /// @notice Mapping from key index to keyring ID\\n    mapping(uint16 => uint16) public keyringIds;\\n\\n    /// @dev Number of keyrings added (created) so far\\n    uint16 private _numKeyrings;\\n\\n    /// @dev Number of public keys registered so far\\n    uint16 private _totalNumRegisteredKeys;\\n\\n    /// @dev Number of leafs reserved for public keys so far\\n    uint16 private _totalNumAllocatedKeys;\\n\\n    /// @dev (UNIX) time till when operators can't register/revoke/extend keys\\n    /// @dev Owner may temporally disable the tree changes by operators to avoid\\n    /// the \\\"race condition\\\" (if multiple parties try to update simultaneously)\\n    uint32 private _treeLockedTillTime;\\n\\n    /// @dev Root of the merkle tree with registered keys\\n    bytes32 private _currentRoot;\\n\\n    event KeyRegistered(\\n        uint16 indexed keyringId,\\n        uint16 indexed keyIndex,\\n        bytes32 packedPubKey,\\n        uint32 expiry\\n    );\\n    event KeyExtended(\\n        uint16 indexed keyringId,\\n        uint16 indexed keyIndex,\\n        uint32 newExpiry\\n    );\\n    event KeyRevoked(uint16 indexed keyringId, uint16 indexed keyIndex);\\n\\n    event KeyringUpdated(\\n        uint16 indexed keyringId,\\n        address operator,\\n        STATUS status,\\n        uint16 numAllocKeys\\n    );\\n\\n    event TreeLockUpdated(uint32 tillTime);\\n\\n    constructor(\\n        address self,\\n        uint8 keyringVersion\\n    ) StaticRootUpdater(self) ProvidersKeysSignatureVerifier(keyringVersion) {}\\n\\n    modifier whenTreeUnlocked() {\\n        _requireTreeIsUnlocked();\\n        _;\\n    }\\n\\n    modifier keyInKeyring(uint16 keyIndex, uint16 keyringId) {\\n        require(keyringIds[keyIndex] == keyringId, ERR_KEY_IS_NOT_IN_KEYRING);\\n        _;\\n    }\\n\\n    modifier sanitizePubKey(G1Point memory pubKey) {\\n        // Ensure the pubKey is a Baby Jubjub curve point (subgroup isn't ensured -\\n        // consider calling `isAcceptablePubKey` off-chain before registration)\\n        BabyJubJub.requirePointInCurveExclIdentity(pubKey);\\n        _;\\n    }\\n\\n    function getStatistics()\\n        external\\n        view\\n        returns (\\n            uint16 numKeyrings,\\n            uint16 totalNumRegisteredKeys,\\n            uint16 totalNumAllocatedKeys,\\n            uint32 treeLockedTillTime\\n        )\\n    {\\n        numKeyrings = _numKeyrings;\\n        totalNumRegisteredKeys = _totalNumRegisteredKeys;\\n        totalNumAllocatedKeys = _totalNumAllocatedKeys;\\n        treeLockedTillTime = _treeLockedTillTime;\\n    }\\n\\n    function getProvidersKeysRoot() external view returns (bytes32) {\\n        return _currentRoot == bytes32(0) ? zeroRoot() : _currentRoot;\\n    }\\n\\n    /// @notice Returns true if the pubKey is acceptable.\\n    /// Off-chain call (gas cost is high) advised to precede pubKey registration.\\n    /// @dev The pub key must be a point in the subgroup (excluding the identity)\\n    /// of Baby Jubjub curve points in the twisted Edwards form.\\n    function isAcceptablePubKey(\\n        G1Point memory pubKey\\n    ) external view returns (bool) {\\n        return\\n            !BabyJubJub.isIdentity(pubKey) && BabyJubJub.isInSubgroup(pubKey);\\n    }\\n\\n    /// @notice It returns the pubKey in the packed form for the given pubKey.\\n    function packPubKey(G1Point memory pubKey) public pure returns (bytes32) {\\n        return BabyJubJub.pointPack(pubKey);\\n    }\\n\\n    function getKeyCommitment(\\n        G1Point memory pubKey,\\n        uint32 expiry\\n    ) public pure returns (bytes32 commitment) {\\n        // Next call reverts if the input is not in the SNARK field\\n        commitment = PoseidonHashers.poseidonT4(\\n            [bytes32(pubKey.x), bytes32(pubKey.y), bytes32(uint256(expiry))]\\n        );\\n    }\\n\\n    function registerKeyWithSignature(\\n        uint16 keyringId,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] memory proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) external returns (uint16 keyIndex) {\\n        address operator = recoverOperator(\\n            keyringId,\\n            pubKey,\\n            expiry,\\n            proofSiblings,\\n            v,\\n            r,\\n            s\\n        );\\n\\n        keyIndex = _registerKey(\\n            operator,\\n            keyringId,\\n            pubKey,\\n            expiry,\\n            proofSiblings\\n        );\\n    }\\n\\n    function registerKey(\\n        uint16 keyringId,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] memory proofSiblings\\n    ) external returns (uint16 keyIndex) {\\n        keyIndex = _registerKey(\\n            msg.sender,\\n            keyringId,\\n            pubKey,\\n            expiry,\\n            proofSiblings\\n        );\\n    }\\n\\n    function extendKeyExpiryWithSignature(\\n        uint16 keyIndex,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        uint32 newExpiry,\\n        bytes32[] memory proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) external {\\n        uint16 keyringId = keyringIds[keyIndex];\\n\\n        address operator = recoverOperator(\\n            keyIndex,\\n            pubKey,\\n            expiry,\\n            newExpiry,\\n            proofSiblings,\\n            v,\\n            r,\\n            s\\n        );\\n\\n        _getOperatorActiveKeyringOrRevert(keyringId, operator);\\n\\n        _extendKeyExpiry(\\n            pubKey,\\n            expiry,\\n            newExpiry,\\n            keyIndex,\\n            keyringId,\\n            proofSiblings\\n        );\\n    }\\n\\n    function extendKeyExpiry(\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        uint32 newExpiry,\\n        uint16 keyIndex,\\n        bytes32[] memory proofSiblings\\n    ) external {\\n        uint16 keyringId = keyringIds[keyIndex];\\n        _getOperatorActiveKeyringOrRevert(keyringId, msg.sender);\\n\\n        _extendKeyExpiry(\\n            pubKey,\\n            expiry,\\n            newExpiry,\\n            keyIndex,\\n            keyringId,\\n            proofSiblings\\n        );\\n    }\\n\\n    function updateKeyringOperatorWithSignature(\\n        uint16 keyringId,\\n        address newOperator,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) external {\\n        address currentoperator = recoverOperator(\\n            keyringId,\\n            newOperator,\\n            v,\\n            r,\\n            s\\n        );\\n\\n        _updateKeyringOperator(keyringId, currentoperator, newOperator);\\n    }\\n\\n    function updateKeyringOperator(\\n        uint16 keyringId,\\n        address newOperator\\n    ) external {\\n        _updateKeyringOperator(keyringId, msg.sender, newOperator);\\n    }\\n\\n    function revokeKeyWithSignature(\\n        uint16 keyringId,\\n        uint16 keyIndex,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] calldata proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) external {\\n        address operator = recoverOperator(\\n            keyringId,\\n            keyIndex,\\n            pubKey,\\n            expiry,\\n            proofSiblings,\\n            v,\\n            r,\\n            s\\n        );\\n\\n        _revokeKey(\\n            operator,\\n            keyringId,\\n            keyIndex,\\n            pubKey,\\n            expiry,\\n            proofSiblings\\n        );\\n    }\\n\\n    /// @notice Revoke registered key. Either the operator or the owner may call.\\n    /// @dev It sets the `expiry` to 0, which is an indicator of a revoked key.\\n    function revokeKey(\\n        uint16 keyringId,\\n        uint16 keyIndex,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] calldata proofSiblings\\n    ) external {\\n        _revokeKey(\\n            msg.sender,\\n            keyringId,\\n            keyIndex,\\n            pubKey,\\n            expiry,\\n            proofSiblings\\n        );\\n    }\\n\\n    /* ========== ONLY FOR OWNER FUNCTIONS ========== */\\n\\n    function addKeyring(\\n        address operator,\\n        uint16 numAllocKeys\\n    ) external onlyOwner {\\n        require(operator != address(0), ERR_ZERO_OPERATOR_ADDRESS);\\n\\n        uint16 numAllocatedKeys = _totalNumAllocatedKeys;\\n        numAllocatedKeys += numAllocKeys;\\n        require(MAX_KEYS >= numAllocatedKeys, ERR_TOO_HIGH_ALLOCATION);\\n\\n        uint16 keyringId = _getNextKeyringId();\\n        keyrings[keyringId] = Keyring({\\n            operator: operator,\\n            status: STATUS.ACTIVE,\\n            numKeys: 0,\\n            numAllocKeys: numAllocKeys,\\n            registrationBlock: UtilsLib.safe32BlockNow(),\\n            _unused: 0\\n        });\\n\\n        _numKeyrings = keyringId;\\n        _totalNumAllocatedKeys = numAllocatedKeys;\\n\\n        emit KeyringUpdated(keyringId, operator, STATUS.ACTIVE, numAllocKeys);\\n    }\\n\\n    function suspendKeyring(uint16 keyringId) external onlyOwner {\\n        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);\\n\\n        _totalNumAllocatedKeys -= _getUnusedKeyringAllocation(keyring);\\n\\n        keyrings[keyringId] = _suspendKeyring(keyring);\\n\\n        emit KeyringUpdated(\\n            keyringId,\\n            keyring.operator,\\n            keyring.status,\\n            keyring.numAllocKeys\\n        );\\n    }\\n\\n    function reactivateKeyring(uint16 keyringId) external onlyOwner {\\n        Keyring memory keyring = keyrings[keyringId];\\n        require(\\n            keyring.status == STATUS.SUSPENDED,\\n            ERR_KEYRING_ALREADY_ACTIVATED\\n        );\\n\\n        uint16 numAllocatedKeys = _totalNumAllocatedKeys;\\n        // Unused allocation before suspending. To be allocated again.\\n        uint16 keyringUnusedKeys = _getUnusedKeyringAllocation(keyring);\\n        numAllocatedKeys += keyringUnusedKeys;\\n\\n        // When there is not enough empty keys to give back to keyring\\n        if (numAllocatedKeys > MAX_KEYS) {\\n            keyringUnusedKeys =\\n                MAX_KEYS -\\n                (numAllocatedKeys - keyringUnusedKeys);\\n\\n            numAllocatedKeys = MAX_KEYS;\\n            keyring.numAllocKeys = keyring.numKeys + keyringUnusedKeys;\\n        }\\n\\n        keyring.status = STATUS.ACTIVE;\\n        keyrings[keyringId] = keyring;\\n        _totalNumAllocatedKeys = numAllocatedKeys;\\n\\n        emit KeyringUpdated(\\n            keyringId,\\n            keyring.operator,\\n            keyring.status,\\n            keyring.numAllocKeys\\n        );\\n    }\\n\\n    function increaseKeyringKeyAllocation(\\n        uint16 keyringId,\\n        uint16 allocation\\n    ) external onlyOwner {\\n        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);\\n        uint16 numAllocatedKeys = _totalNumAllocatedKeys;\\n        numAllocatedKeys += allocation;\\n        require(MAX_KEYS >= numAllocatedKeys, ERR_TOO_HIGH_ALLOCATION);\\n\\n        uint16 newKeyringAllocation = keyring.numAllocKeys + allocation;\\n\\n        keyrings[keyringId].numAllocKeys = newKeyringAllocation;\\n        _totalNumAllocatedKeys = numAllocatedKeys;\\n\\n        emit KeyringUpdated(\\n            keyringId,\\n            keyring.operator,\\n            keyring.status,\\n            keyring.numAllocKeys\\n        );\\n    }\\n\\n    function updateTreeLock(uint32 lockPeriod) external onlyOwner {\\n        require(\\n            lockPeriod <= MAX_TREE_LOCK_PERIOD,\\n            ERR_TREE_LOCK_ALREADY_UPDATED\\n        );\\n        uint32 timestamp = UtilsLib.safe32(_timeNow() + lockPeriod);\\n        _treeLockedTillTime = timestamp;\\n\\n        emit TreeLockUpdated(timestamp);\\n    }\\n\\n    /* ========== INTERNAL & PRIVATE FUNCTIONS ========== */\\n\\n    function zeroRoot() internal pure override returns (bytes32) {\\n        return SIXTEEN_LEVEL_EMPTY_TREE_ROOT;\\n    }\\n\\n    function hash(\\n        bytes32[2] memory input\\n    ) internal pure override returns (bytes32) {\\n        // Next call reverts if the input is not in the SNARK field\\n        return PoseidonHashers.poseidonT3(input);\\n    }\\n\\n    /// @notice Register a public key. Only the keyring operator may call.\\n    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.\\n    function _registerKey(\\n        address operator,\\n        uint16 keyringId,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] memory proofSiblings\\n    )\\n        private\\n        sanitizePubKey(pubKey)\\n        whenTreeUnlocked\\n        returns (uint16 keyIndex)\\n    {\\n        require(expiry > _timeNow(), ERR_INVALID_KEY_EXPIRY);\\n\\n        bytes32 keyPacked = _packPubKey(pubKey);\\n\\n        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(\\n            keyringId,\\n            operator\\n        );\\n\\n        require(\\n            keyring.numAllocKeys > keyring.numKeys,\\n            ERR_INSUFFICIENT_ALLOCATION\\n        );\\n\\n        bytes32 commitment = getKeyCommitment(pubKey, expiry);\\n\\n        keyIndex = _totalNumRegisteredKeys;\\n        keyringIds[keyIndex] = keyringId;\\n\\n        _updateProvidersKeysAndStaticTreeRoots(\\n            ZERO_VALUE,\\n            commitment,\\n            keyIndex,\\n            proofSiblings\\n        );\\n\\n        _totalNumRegisteredKeys = ++keyIndex;\\n\\n        keyring.numKeys++;\\n        keyrings[keyringId] = keyring;\\n\\n        emit KeyRegistered(keyringId, keyIndex, keyPacked, expiry);\\n    }\\n\\n    /// @notice Extend the key expiry time. Only the keyring operator may call.\\n    /// @dev Consider `isAcceptablePubKey` off-chain call before registration.\\n    function _extendKeyExpiry(\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        uint32 newExpiry,\\n        uint16 keyIndex,\\n        uint16 keyringId,\\n        bytes32[] memory proofSiblings\\n    ) private sanitizePubKey(pubKey) whenTreeUnlocked {\\n        require(\\n            newExpiry > _timeNow() && newExpiry > expiry,\\n            ERR_INVALID_KEY_EXPIRY\\n        );\\n\\n        bytes32 commitment = getKeyCommitment(pubKey, expiry);\\n        bytes32 newCommitment = getKeyCommitment(pubKey, newExpiry);\\n\\n        _updateProvidersKeysAndStaticTreeRoots(\\n            commitment,\\n            newCommitment,\\n            keyIndex,\\n            proofSiblings\\n        );\\n\\n        emit KeyExtended(keyringId, keyIndex, newExpiry);\\n    }\\n\\n    /// @notice Update keyring operator. Only the (current) operator may call.\\n    function _updateKeyringOperator(\\n        uint16 keyringId,\\n        address currentoperator,\\n        address newOperator\\n    ) private {\\n        require(newOperator != address(0), ERR_ZERO_OPERATOR_ADDRESS);\\n\\n        Keyring memory keyring = _getOperatorActiveKeyringOrRevert(\\n            keyringId,\\n            currentoperator\\n        );\\n        require(newOperator != currentoperator, ERR_SAME_OPERATOR);\\n\\n        keyring.operator = newOperator;\\n        keyrings[keyringId] = keyring;\\n\\n        emit KeyringUpdated(\\n            keyringId,\\n            keyring.operator,\\n            keyring.status,\\n            keyring.numAllocKeys\\n        );\\n    }\\n\\n    /// @notice Revoke registered key. Either the operator or the owner may call.\\n    /// @dev It sets the `expiry` to 0, which is an indicator of a revoked key.\\n    /// Consider `isAcceptablePubKey` off-chain call before registration.\\n    function _revokeKey(\\n        address operator,\\n        uint16 keyringId,\\n        uint16 keyIndex,\\n        G1Point memory pubKey,\\n        uint32 expiry,\\n        bytes32[] calldata proofSiblings\\n    ) private sanitizePubKey(pubKey) keyInKeyring(keyIndex, keyringId) {\\n        Keyring memory keyring = _getActiveKeyringOrRevert(keyringId);\\n\\n        if (keyring.operator == operator) {\\n            _requireTreeIsUnlocked();\\n        } else {\\n            LibDiamond.enforceOwner();\\n        }\\n\\n        bytes32 commitment = getKeyCommitment(pubKey, expiry);\\n\\n        bytes32 newCommitment = getKeyCommitment(pubKey, REVOKED_KEY_EXPIRY);\\n\\n        _updateProvidersKeysAndStaticTreeRoots(\\n            commitment,\\n            newCommitment,\\n            keyIndex,\\n            proofSiblings\\n        );\\n\\n        emit KeyRevoked(keyringId, keyIndex);\\n    }\\n\\n    function _getNextKeyringId() private view returns (uint16) {\\n        return _numKeyrings + 1;\\n    }\\n\\n    function _getActiveKeyringOrRevert(\\n        uint16 keyringId\\n    ) private view returns (Keyring memory keyring) {\\n        keyring = keyrings[keyringId];\\n\\n        require(keyring.operator != address(0), ERR_KEYRING_NOT_EXISTS);\\n        require(keyring.status == STATUS.ACTIVE, ERR_KEYRING_NOT_ACTIVATED);\\n    }\\n\\n    function _getOperatorActiveKeyringOrRevert(\\n        uint16 keyringId,\\n        address operator\\n    ) private view returns (Keyring memory keyring) {\\n        keyring = _getActiveKeyringOrRevert(keyringId);\\n        require(keyring.operator == operator, ERR_UNAUTHORIZED_OPERATOR);\\n    }\\n\\n    function _suspendKeyring(\\n        Keyring memory keyring\\n    ) private pure returns (Keyring memory) {\\n        keyring.status = STATUS.SUSPENDED;\\n        return keyring;\\n    }\\n\\n    function _getUnusedKeyringAllocation(\\n        Keyring memory keyring\\n    ) private pure returns (uint16) {\\n        return keyring.numAllocKeys - keyring.numKeys;\\n    }\\n\\n    function _updateProvidersKeysAndStaticTreeRoots(\\n        bytes32 leaf,\\n        bytes32 newLeaf,\\n        uint16 keyIndex,\\n        bytes32[] memory proofSiblings\\n    ) private {\\n        require(\\n            proofSiblings.length == KEYS_TREE_DEPTH,\\n            ERR_INCORRECT_SIBLINGS_SIZE\\n        );\\n\\n        bytes32 updatedRoot = update(\\n            _currentRoot,\\n            leaf,\\n            newLeaf,\\n            keyIndex,\\n            proofSiblings\\n        );\\n\\n        _currentRoot = updatedRoot;\\n\\n        _updateStaticRoot(updatedRoot, PROVIDERS_KEYS_STATIC_LEAF_INDEX);\\n    }\\n\\n    function _packPubKey(G1Point memory pubKey) private pure returns (bytes32) {\\n        return BabyJubJub.pointPack(pubKey);\\n    }\\n\\n    function _requireTreeIsUnlocked() private view {\\n        require(_timeNow() >= _treeLockedTillTime, ERR_TREE_IS_LOCKED);\\n    }\\n\\n    function _timeNow() private view returns (uint32) {\\n        // Time comparison accuracy is acceptable\\n        // slither-disable-next-line timestamp\\n        return UtilsLib.safe32TimeNow();\\n    }\\n}\\n\",\"keccak256\":\"0xfa234f27e6c254097ff9e6e9cb0ee30e4699ab6114340f7fd5a61e69f3dacee7\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/facets/staticTrees/ProvidersKeysRegistry/ProvidersKeysSignatureVerifier.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// solhint-disable max-line-length\\npragma solidity ^0.8.19;\\n\\nimport \\\"../../../../../../common/EIP712SignatureVerifier.sol\\\";\\nimport { G1Point } from \\\"../../../../../../common/Types.sol\\\";\\n\\nabstract contract ProvidersKeysSignatureVerifier is EIP712SignatureVerifier {\\n    bytes32 internal constant G1_POINT_TYPEHASH =\\n        keccak256(bytes(\\\"G1Point(uint256 x,uint256 y)\\\"));\\n\\n    bytes32 internal constant REGISTER_KEY_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"RegisterKey(uint16 keyringId,G1Point pubRootSpendingKey,uint32 expiryDate,bytes32[] proofSiblings,uint256 version)G1Point(uint256 x,uint256 y)\\\"\\n            )\\n        );\\n    bytes32 internal constant REVOKE_KEY_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"RevokeKey(uint16 keyringId,uint16 keyIndex,G1Point pubRootSpendingKey,uint32 expiryDate,bytes32[] proofSiblings,uint256 version)G1Point(uint256 x,uint256 y)\\\"\\n            )\\n        );\\n    bytes32 internal constant EXTEND_KEY_EXPIRY_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"ExtendKeyExpiry(uint16 keyIndex,G1Point pubRootSpendingKey,uint32 expiryDate,uint32 newExpiryDate,bytes32[] proofSiblings,uint256 version)G1Point(uint256 x,uint256 y)\\\"\\n            )\\n        );\\n    bytes32 internal constant UPDATE_KEY_OPERATOR_TYPEHASH =\\n        keccak256(\\n            bytes(\\n                \\\"UpdateKeyOperator(uint32 keyringId,address newOperator,uint256 version)\\\"\\n            )\\n        );\\n\\n    uint8 public immutable KEYRING_VERSION;\\n\\n    constructor(uint8 keyringVersion) {\\n        KEYRING_VERSION = keyringVersion;\\n    }\\n\\n    /// to be used in `registerKeyWithSignature()`\\n    function recoverOperator(\\n        uint16 _keyringId,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        bytes32[] memory proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal view returns (address) {\\n        bytes32 registerKeyDataHash = _getRegisterKeyDataHash(\\n            _keyringId,\\n            _pubRootSpendingKey,\\n            _expiryDate,\\n            proofSiblings\\n        );\\n\\n        bytes32 typedDataHash = toTypedDataHash(registerKeyDataHash);\\n\\n        return recover(typedDataHash, v, r, s);\\n    }\\n\\n    /// to be used in `revokeKeyWithSignature()`\\n    function recoverOperator(\\n        uint16 _keyringId,\\n        uint16 _keyIndex,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        bytes32[] memory proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal view returns (address) {\\n        bytes32 revokeKeyDataHash = _getRevokeKeyDataHash(\\n            _keyringId,\\n            _keyIndex,\\n            _pubRootSpendingKey,\\n            _expiryDate,\\n            proofSiblings\\n        );\\n\\n        bytes32 typedDataHash = toTypedDataHash(revokeKeyDataHash);\\n\\n        return recover(typedDataHash, v, r, s);\\n    }\\n\\n    /// to be used in `extendKeyExpiryWithSignature`\\n    function recoverOperator(\\n        uint16 _keyIndex,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        uint32 _newExpiryDate,\\n        bytes32[] memory proofSiblings,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal view returns (address) {\\n        bytes32 extendKeyExpiryDataHash = _getExtendKeyExpiryDataHash(\\n            _keyIndex,\\n            _pubRootSpendingKey,\\n            _expiryDate,\\n            _newExpiryDate,\\n            proofSiblings\\n        );\\n\\n        bytes32 typedDataHash = toTypedDataHash(extendKeyExpiryDataHash);\\n\\n        return recover(typedDataHash, v, r, s);\\n    }\\n\\n    /// to be used in `updateKeyringOperatorWithSignature`\\n    function recoverOperator(\\n        uint16 _keyringId,\\n        address _newOperator,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal view returns (address) {\\n        bytes32 updateKeyOperatorDataHash = _getUpdateKeyOperatorDataHash(\\n            _keyringId,\\n            _newOperator\\n        );\\n\\n        bytes32 typedDataHash = toTypedDataHash(updateKeyOperatorDataHash);\\n\\n        return recover(typedDataHash, v, r, s);\\n    }\\n\\n    function _getG1PointDataHash(\\n        G1Point memory _g1Point\\n    ) private pure returns (bytes32) {\\n        return keccak256(abi.encode(G1_POINT_TYPEHASH, _g1Point.x, _g1Point.y));\\n    }\\n\\n    function _getRegisterKeyDataHash(\\n        uint16 _keyringId,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        bytes32[] memory proofSiblings\\n    ) private view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    REGISTER_KEY_TYPEHASH,\\n                    _keyringId,\\n                    _getG1PointDataHash(_pubRootSpendingKey),\\n                    _expiryDate,\\n                    _getProofSiblingsHash(proofSiblings),\\n                    uint256(KEYRING_VERSION)\\n                )\\n            );\\n    }\\n\\n    function _getRevokeKeyDataHash(\\n        uint16 _keyringId,\\n        uint16 _keyIndex,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        bytes32[] memory proofSiblings\\n    ) private view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    REVOKE_KEY_TYPEHASH,\\n                    _keyringId,\\n                    _keyIndex,\\n                    _getG1PointDataHash(_pubRootSpendingKey),\\n                    _expiryDate,\\n                    _getProofSiblingsHash(proofSiblings),\\n                    uint256(KEYRING_VERSION)\\n                )\\n            );\\n    }\\n\\n    function _getExtendKeyExpiryDataHash(\\n        uint16 _keyIndex,\\n        G1Point memory _pubRootSpendingKey,\\n        uint32 _expiryDate,\\n        uint32 _newExpiryDate,\\n        bytes32[] memory proofSiblings\\n    ) private view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    EXTEND_KEY_EXPIRY_TYPEHASH,\\n                    _keyIndex,\\n                    _getG1PointDataHash(_pubRootSpendingKey),\\n                    _expiryDate,\\n                    _newExpiryDate,\\n                    _getProofSiblingsHash(proofSiblings),\\n                    uint256(KEYRING_VERSION)\\n                )\\n            );\\n    }\\n\\n    function _getUpdateKeyOperatorDataHash(\\n        uint16 _keyringId,\\n        address _newOperator\\n    ) private view returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    UPDATE_KEY_OPERATOR_TYPEHASH,\\n                    _keyringId,\\n                    _newOperator,\\n                    uint256(KEYRING_VERSION)\\n                )\\n            );\\n    }\\n\\n    function _getProofSiblingsHash(\\n        bytes32[] memory proofSiblings\\n    ) private pure returns (bytes32) {\\n        return keccak256(abi.encodePacked(proofSiblings));\\n    }\\n}\\n\",\"keccak256\":\"0x204858bca30bc11b2fa90f35b54578c5ba8cbb7bf0044470dd64d6f493b99d79\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/facets/staticTrees/StaticRootUpdater.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\nimport \\\"../../interfaces/IStaticTreeRootUpdater.sol\\\";\\n\\nabstract contract StaticRootUpdater {\\n    address private immutable SELF;\\n\\n    constructor(address self) {\\n        SELF = self;\\n    }\\n\\n    function _updateStaticRoot(bytes32 newRoot, uint256 leafIndex) internal {\\n        IStaticTreeRootUpdater(SELF).updateStaticRoot(newRoot, leafIndex);\\n    }\\n}\\n\",\"keccak256\":\"0xca13188ba5789d3d651723678ad98d338309c77f99a836f2363b0cc9e0978b9f\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/interfaces/IStaticTreeRootUpdater.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\ninterface IStaticTreeRootUpdater {\\n    function updateStaticRoot(bytes32 updatedLeaf, uint256 leafIndex) external;\\n}\\n\",\"keccak256\":\"0x2d0f4af247339aa1d0dd061fb1a59aa4540a9c869bcbe212696d87509219e138\",\"license\":\"MIT\"},\"contracts/protocol/v1/trees/storage/AppStorage.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport { APP_STORAGE_END_GAP } from \\\"./Constants.sol\\\";\\n\\nabstract contract AppStorage {\\n    bytes32 internal forestRoot;\\n\\n    bytes32 internal staticRoot;\\n\\n    bytes32[APP_STORAGE_END_GAP] private _endGap;\\n}\\n\",\"keccak256\":\"0x5ad7e0a61613ef7a8dfc91f7e2c520d2aba1d6532a4c5f7376db7131d7e1977e\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/storage/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nuint256 constant APP_STORAGE_END_GAP = 1e2;\\n\\nuint256 constant FOREST_TREE_START_GAP = 1e3;\\nuint256 constant STATIC_TREE_START_GAP = 3e3;\\nuint256 constant Z_ASSETS_START_GAP = 5e9;\\nuint256 constant BLACKLISTED_ZACCOUNTS_IDS_START_GAP = 7e3;\\nuint256 constant Z_NETWORKS_START_GAP = 9e3;\\nuint256 constant Z_ZONES_START_GAP = 11e3;\\nuint256 constant PROVIDERS_KEYS_START_GAP = 13e3;\\n\",\"keccak256\":\"0x95f22db2eecc2d324b4c8e6a12d64c441768b35577ad17cdd32abdc366852666\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/storage/ProvidersKeysRegistryStorageGap.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n\\npragma solidity ^0.8.19;\\n\\nimport { PROVIDERS_KEYS_START_GAP } from \\\"./Constants.sol\\\";\\n\\nabstract contract ProvidersKeysRegistryStorageGap {\\n    bytes32[PROVIDERS_KEYS_START_GAP] private _startGap;\\n}\\n\",\"keccak256\":\"0xeaf81ce34fd84cd1b8e1bd071b5848f34a136fd494ff261b1c557430ff14950a\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/utils/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\n// `PantherForest` tree leafs indices (leafs store specific merkle trees roots)\\nuint256 constant TAXI_TREE_FOREST_LEAF_INDEX = 0;\\nuint256 constant BUS_TREE_FOREST_LEAF_INDEX = 1;\\nuint256 constant FERRY_TREE_FOREST_LEAF_INDEX = 2;\\n\\n// `PantherStaticTree` leafs indices (leafs store specific merkle trees roots)\\nuint256 constant ZASSET_STATIC_LEAF_INDEX = 0;\\nuint256 constant BLACKLISTED_ZACCOUNT_STATIC_LEAF_INDEX = 1;\\nuint256 constant ZNETWORK_STATIC_LEAF_INDEX = 2;\\nuint256 constant ZZONE_STATIC_LEAF_INDEX = 3;\\nuint256 constant PROVIDERS_KEYS_STATIC_LEAF_INDEX = 4;\\n\",\"keccak256\":\"0xfd5e7676972b54e83823d10e5267095d07e62999dc473248198cb294a2c5101b\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/utils/merkleTrees/BinaryUpdatableTree.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\n// @notice The \\\"binary binary tree\\\" populated with zero leaf values\\n\\n/**\\n * @title BinaryIncrementalUpdatableMerkleTree\\n * @notice\\n * @dev\\n */\\nabstract contract BinaryUpdatableTree {\\n    /**\\n     * @dev Update an existing leaf\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param newLeaf New leaf.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return _newRoot The new root after updating the tree\\n     */\\n    function update(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        bytes32 newLeaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bytes32 _newRoot) {\\n        require(newLeaf != leaf, \\\"BIUT: New leaf cannot be equal the old one\\\");\\n        require(\\n            verify(curRoot, leaf, leafIndex, proofSiblings),\\n            \\\"BIUT: Leaf is not part of the tree\\\"\\n        );\\n\\n        _newRoot = newLeaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _newRoot = hash([_newRoot, proofSiblings[i]]);\\n            } else {\\n                _newRoot = hash([proofSiblings[i], _newRoot]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n    }\\n\\n    /**\\n     * @dev Verify if the path is correct and the leaf is part of the tree.\\n     * @param curRoot current merkle root.\\n     * @param leaf Leaf to be updated.\\n     * @param leafIndex leafIndex\\n     * @param proofSiblings Path of the proof of membership.\\n     * @return True or false.\\n     */\\n    function verify(\\n        bytes32 curRoot,\\n        bytes32 leaf,\\n        uint256 leafIndex,\\n        bytes32[] memory proofSiblings\\n    ) internal pure returns (bool) {\\n        // equal to 2**proofSiblings.length\\n        uint256 leavesNum = 1 << proofSiblings.length;\\n        require(leafIndex < leavesNum, \\\"BIUT: invalid leaf index\\\");\\n\\n        bytes32 _hash = leaf;\\n        uint256 proofPathIndice;\\n\\n        // using `proofSiblings[]` length as the tree dept\\n        for (uint256 i = 0; i < proofSiblings.length; ) {\\n            // getting the bit at position `i` and check if it's 0 or 1\\n            proofPathIndice = (leafIndex >> i) & 1;\\n\\n            if (proofPathIndice == 0) {\\n                _hash = hash([_hash, proofSiblings[i]]);\\n            } else {\\n                _hash = hash([proofSiblings[i], _hash]);\\n            }\\n\\n            unchecked {\\n                ++i;\\n            }\\n        }\\n\\n        return curRoot == 0 ? _hash == zeroRoot() : _hash == curRoot;\\n    }\\n\\n    function zeroRoot() internal pure virtual returns (bytes32);\\n\\n    function hash(\\n        bytes32[2] memory input\\n    ) internal pure virtual returns (bytes32);\\n}\\n\",\"keccak256\":\"0x14b568bfa7c53e4422e12a408c9e2cd444f6eb988ee15887bab83fc385ebef29\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v1/trees/utils/zeroTrees/Constants.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.19;\\n\\n/// @dev Leaf zero value (`keccak256(\\\"Pantherprotocol\\\")%FIELD_SIZE`)\\nbytes32 constant ZERO_VALUE = bytes32(\\n    uint256(0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d)\\n);\\n\\n// The roots of empty trees follow.\\n// An \\\"empty\\\" tree is a binary merkle tree of a given number of levels bellow\\n// the root (depth), fully populated with ZERO_VALUE leafs, with the `poseidon`\\n// hash function applied.\\n// (computed by `../../../../lib/binaryMerkleZerosContractGenerator.ts`)\\n\\nuint256 constant TWO_LEVELS = 2;\\n/// @dev Root of the binary merkle TWO_LEVELS tree with ZERO_VALUE leafs\\n// Level 0: ZERO_VALUE\\n// Level 1: 0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4\\nbytes32 constant TWO_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8)\\n);\\n\\nuint256 constant SIX_LEVELS = 6;\\n/// @dev Root of the binary merkle SIX_LEVELS tree with ZERO_VALUE leafs\\n// Level 0: ZERO_VALUE\\n// Level 1: 0x232fc5fea3994c77e07e1bab1ec362727b0f71f291c17c34891dd4faf1457bd4\\n// Level 2: 0x077851cf613fd96280795a3cabc89663f524b1b545a3b1c7c79130b0f7d251c8\\n// Level 3: 0x1d79fd0bc46f7ca934dbcd3386a06f03c43f497851b3815ee726e7f9b26e504c\\n// Level 4: 0x05c0c15753806f506f64c18bf07116542451822479c4a89305cd4eb7ee94c800\\n// Level 5: 0x2b56fd5e780ebebdacdd27e6464cf01aac089461a998814974a7504aabb2023f\\nbytes32 constant SIX_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69)\\n);\\n\\nuint256 constant EIGHT_LEVELS = 8;\\n/// @dev Root of the binary merkle EIGHT_LEVELS tree with ZERO_VALUE leafs\\n// Level 6: SIX_LEVEL_EMPTY_TREE_ROOT\\n// Level 7: 0x225624653ac89fe211c0c3d303142a4caf24eb09050be08c33af2e7a1e372a0f\\nbytes32 constant EIGHT_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x276c76358db8af465e2073e4b25d6b1d83f0b9b077f8bd694deefe917e2028d7)\\n);\\n\\nuint256 constant SIXTEEN_LEVELS = 16;\\n/// @dev Root of the binary merkle SIXTEEN_LEVELS tree with ZERO_VALUE leafs\\n// Level 8:  EIGHT_LEVEL_EMPTY_TREE_ROOT\\n// Level 9:  0x09df92f4ade78ea54b243914f93c2da33414c22328a73274b885f32aa9dea718\\n// Level 10: 0x1c78b565f2bfc03e230e0cf12ecc9613ab8221f607d6f6bc2a583ccd690ecc58\\n// Level 11: 0x2879d62c83d6a3af05c57a4aee11611a03edec5ff8860b07de77968f47ff1c5f\\n// Level 12: 0x28ad970560de01e93b613aabc930fcaf087114743909783e3770a1ed07c2cde6\\n// Level 13: 0x27ca60def9dd0603074444029cbcbeaa9dbe77668479ac1db738bb892d9f3b6d\\n// Level 14: 0x28e4c1e90bbfa69de93abf6cbdc7cd1c0753a128e83b2b3afe34e0471a13ff55\\n// Level 15: 0x1b89c44a9f153266ad5bf754d4b252c26acba7d21fc661b94dc0618c6a82f49c\\nbytes32 constant SIXTEEN_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9)\\n);\\n\\nuint256 constant TWENTY_LEVELS = 20;\\n/// @dev Root of the merkle binary TWENTY_LEVELS tree with ZERO_VALUE leafs\\n// Level 16: SIXTEEN_LEVEL_EMPTY_TREE_ROOT\\n// Level 17: 0x21fb04b171b68944c640020a3a464602ec8d02495c44f1e403d9be4a97128e49\\n// Level 18: 0x19151c748859974805eb30feac7a301266dec9f67e23e285fe750f86448a2af9\\n// Level 19: 0x18fb0b755218eaa809681eb87e45925faa9197507d368210d73b5836ebf139e4\\nbytes32 constant TWENTY_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x1e294375b42dfd97795e07e1fe8bd6cefcb16c3bbb71b30bed950f8965861244)\\n);\\n\\nuint256 constant TWENTY_SIX_LEVELS = 26;\\n/// @dev Root of the binary merkle TWENTY_SIX_LEVELS tree with ZERO_VALUE leafs\\n// Level 21: 0x0d3e4235db275d9bab0808dd9ade8789d46d0e1f1c9a99ce73fefca51dc92f4a\\n// Level 22: 0x075ab2ca945c4dc5ea40a9f1c66d5bf3c367cef1e04e73aa17c2bc747eb5fc87\\n// Level 23: 0x26f0f533a8ea2210001aeb8f8306c7c70656ba6afe145c6540bd4ed2c967a230\\n// Level 24: 0x24be7e64f680326e6e3621e5862d7b6b1f31e9e183a0bf5dd04e823be84e6af9\\n// Level 25: 0x212b13c9cbf421942ae3e3c62a3c072903c2a745a220cfb3c43cd520f55f44bf\\nbytes32 constant TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6)\\n);\\n\\nuint256 constant THIRTY_TWO_LEVELS = 32;\\n/// @dev Root of the binary merkle THIRTY_TWO_LEVELS tree with ZERO_VALUE leafs\\n// Level 26: TWENTY_SIX_LEVEL_EMPTY_TREE_ROOT\\n// Level 27: 0x038acf368a174e10c45a64161131c0f93faf2f045ff663acbef804eb5644aad7\\n// Level 28: 0x1b3ecbe4131d8d52d60b91ec8e13d5fc82235232bb43007d54cda6b50d932d6f\\n// Level 29: 0x1b0b9059f431d38a66c82317d9ed1b744c439f10193ae44bcf519fe6e1766b65\\n// Level 30: 0x240867e8bb31d6b8057f5ab067dc0bd1c4ba64a42258963ec45b7b4773ce5838\\n// Level 31: 0x2310e5b3543ea766ecaec53003d0e1b73f19a149409190d00561da7090a2c5cb\\nbytes32 constant THIRTY_TWO_LEVEL_EMPTY_TREE_ROOT = bytes32(\\n    uint256(0x24ab16594d418ca2e66ca284f56a4cb7039c6d8f8e0c3c8f362cf18b5afa19d0)\\n);\\n\",\"keccak256\":\"0xbdaf1619a9af90566e41256eeddb641a091d57fed9eb7305ad86c9329ed9d85e\",\"license\":\"GPL-3.0-only\"}},\"version\":1}",
+  "bytecode": "0x60c06040523480156200001157600080fd5b5060405162003ae538038062003ae583398101604081905262000034916200004c565b60ff166080526001600160a01b031660a0526200009b565b600080604083850312156200006057600080fd5b82516001600160a01b03811681146200007857600080fd5b602084015190925060ff811681146200009057600080fd5b809150509250929050565b60805160a051613a08620000dd60003960006127310152600081816103dd01528181611d4f01528181612006015281816120b901526121700152613a086000f3fe608060405234801561001057600080fd5b50600436106101775760003560e01c806377c51bc5116100d8578063b0c4c8261161008c578063e0e9ec9611610066578063e0e9ec96146103b2578063f019002e146103c5578063f52f1a82146103d857600080fd5b8063b0c4c82614610369578063ca40e5711461037c578063dd35c8131461038f57600080fd5b80637d42dcdc116100bd5780637d42dcdc1461033057806386cc50d4146103435780638d3ce6e21461035657600080fd5b806377c51bc5146102e5578063784e06131461031d57600080fd5b8063372d6b271161012f5780634e810c5e116101145780634e810c5e146102b75780635ae96922146102ca5780637368b71d146102d257600080fd5b8063372d6b27146101f057806337adf2001461023b57600080fd5b80631ee861ea116101605780631ee861ea146101b757806329702748146101ca57806330bd84c4146101dd57600080fd5b80631ddd23b51461017c5780631e24f89a146101a2575b600080fd5b61018f61018a366004612d96565b610411565b6040519081526020015b60405180910390f35b6101b56101b0366004612dc4565b610422565b005b6101b56101c5366004612e0e565b610571565b6101b56101d8366004612e38565b610580565b61018f6101eb366004612e67565b610744565b613330546040805161ffff80841682526201000084048116602083015264010000000084041691810191909152660100000000000090910463ffffffff166060820152608001610199565b6102a5610249366004612e38565b61332e602052600090815260409020546001600160a01b0381169060ff600160a01b8204169061ffff600160a81b8204811691600160b81b81049091169063ffffffff600160c81b8204169062ffffff600160e81b9091041686565b60405161019996959493929190612eca565b6101b56102c5366004612e38565b61077d565b61018f610aa4565b6101b56102e0366004612fc9565b610ae2565b61030a6102f3366004612e38565b61332f6020526000908152604090205461ffff1681565b60405161ffff9091168152602001610199565b6101b561032b36600461306f565b610b33565b61030a61033e3660046130c4565b610b57565b6101b56103513660046131a5565b610b85565b6101b5610364366004613251565b610bdd565b6101b56103773660046132d8565b610bec565b6101b561038a3660046132f3565b610cdb565b6103a261039d366004612d96565b610d0b565b6040519015158152602001610199565b6101b56103c0366004613374565b610d27565b61030a6103d3366004613390565b610f86565b6103ff7f000000000000000000000000000000000000000000000000000000000000000081565b60405160ff9091168152602001610199565b600061041c82610f9e565b92915050565b61042a610fde565b60006104358361106d565b61333054909150640100000000900461ffff166104528382613416565b905061ffff8116600161046760106002613515565b6104719190613521565b61ffff16101560405180604001604052806006815260200165504b3a45313160d01b815250906104bd5760405162461bcd60e51b81526004016104b49190613558565b60405180910390fd5b5060008383606001516104d09190613416565b61ffff868116600081815261332e6020908152604091829020805461ffff60b81b1916600160b81b87871602179055613330805465ffff00000000191664010000000095891695909502949094179093558651928701516060880151915194955091937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610562939092909161358b565b60405180910390a25050505050565b61057c823383611227565b5050565b610588610fde565b60006105938261106d565b905061059e81611412565b61333080546004906105bd908490640100000000900461ffff166135ba565b92506101000a81548161ffff021916908361ffff160217905550610615816040805160c08101825260008082526020808301829052928201819052606082018190526080820181905260a09091015260029082015290565b61ffff8316600090815261332e60209081526040909120825181546001600160a01b039091166001600160a01b031982168117835592840151919283916001600160a81b03191617600160a01b83600281111561067457610674612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff909216919091021790925583516020850151938501519151928616937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610738939061358b565b60405180910390a25050565b60408051606081018252835181526020808501519082015263ffffffff83169181019190915260009061077690611428565b9392505050565b610785610fde565b61ffff8116600090815261332e60209081526040808320815160c0810190925280546001600160a01b03811683529192909190830190600160a01b900460ff1660028111156107d6576107d6612e92565b60028111156107e7576107e7612e92565b8152905461ffff600160a81b820481166020840152600160b81b820416604083015263ffffffff600160c81b820416606083015262ffffff600160e81b90910416608090910152905060028160200151600281111561084857610848612e92565b146040518060400160405280600581526020017f504b3a31350000000000000000000000000000000000000000000000000000008152509061089d5760405162461bcd60e51b81526004016104b49190613558565b5061333054640100000000900461ffff1660006108b983611412565b90506108c58183613416565b915060016108d560106002613515565b6108df9190613521565b61ffff168261ffff161115610950576108f881836135ba565b600161090660106002613515565b6109109190613521565b61091a91906135ba565b9050600161092a60106002613515565b6109349190613521565b91508083604001516109469190613416565b61ffff1660608401525b6001602084810191825261ffff8616600090815261332e90915260409020845181546001600160a01b031981166001600160a01b03909216918217835592518693909183916001600160a81b03191617600160a01b8360028111156109b7576109b7612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff9092169190910217909255613330805465ffff0000000019166401000000008785160217905585516020870151938701519151928816937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610a96939061358b565b60405180910390a250505050565b6133315460009015610ab857506133315490565b507f0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c990565b905090565b61ffff808916600090815261332f602052604081205490911690610b0c8a8a8a8a8a8a8a8a611527565b9050610b188282611561565b50610b278989898d868b611612565b50505050505050505050565b6000610b428686868686611706565b9050610b4f868287611227565b505050505050565b600080610b698989898989898961173a565b9050610b78818a8a8a8a611772565b9998505050505050505050565b6000610bcc8a8a8a8a8a8a808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152508c92508b91508a9050611a32565b9050610b27818b8b8b8b8b8b611a42565b610b4f33878787878787611a42565b610bf4610fde565b60408051808201909152600681527f504b3a4530350000000000000000000000000000000000000000000000000000602082015262278d0063ffffffff83161115610c525760405162461bcd60e51b81526004016104b49190613558565b506000610c7682610c61611ba3565b610c6b91906135d5565b63ffffffff16611bad565b613330805469ffffffff0000000000001916660100000000000063ffffffff8416908102919091179091556040519081529091507f3f4b61ddd0cb058a723417fbd46a9d6454505d2130b61541fadb595a11ac2ffb9060200160405180910390a15050565b61ffff808316600090815261332f602052604090205416610cfc8133611561565b50610b4f868686868587611612565b6000610d1682611c07565b15801561041c575061041c82611c1f565b610d2f610fde565b604080518082019091526006815265504b3a45323160d01b60208201526001600160a01b038316610d735760405162461bcd60e51b81526004016104b49190613558565b5061333054640100000000900461ffff16610d8e8282613416565b905061ffff81166001610da360106002613515565b610dad9190613521565b61ffff16101560405180604001604052806006815260200165504b3a45313160d01b81525090610df05760405162461bcd60e51b81526004016104b49190613558565b506000610dfb611c6e565b6040805160c081019091526001600160a01b038616815290915060208101600181526000602082015261ffff85166040820152606001610e39611c84565b63ffffffff1681526000602091820181905261ffff8416815261332e825260409020825181546001600160a01b039091166001600160a01b031982168117835592840151919283916001600160a81b03191617600160a01b836002811115610ea357610ea3612e92565b021790555060408281015182546060850151608086015160a09096015162ffffff16600160e81b026001600160e81b0363ffffffff909716600160c81b02969096166001600160c81b0361ffff928316600160b81b0261ffff60b81b19958416600160a81b029590951663ffffffff60a81b19909416939093179390931791909116919091179390931790915561333080548584166401000000000265ffff0000ffff19909116938516938417179055517f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd490610a96908790600190889061358b565b6000610f953386868686611772565b95945050505050565b602081015181517f183227397098d014dc2822db40c0ac2e9419f4243cdcb848a1f0fac9f80000001015610fd957506020810151600160ff1b175b919050565b7f727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44546001600160a01b0316336001600160a01b03161461106b5760405162461bcd60e51b815260206004820152602260248201527f4c69624469616d6f6e643a204d75737420626520636f6e7472616374206f776e60448201526132b960f11b60648201526084016104b4565b565b6040805160c081018252600080825260208201819052918101829052606081018290526080810182905260a081019190915261ffff8216600090815261332e6020908152604091829020825160c0810190935280546001600160a01b03811684529091830190600160a01b900460ff1660028111156110ee576110ee612e92565b60028111156110ff576110ff612e92565b81529054600160a81b810461ffff908116602080850191909152600160b81b8304909116604080850191909152600160c81b830463ffffffff166060850152600160e81b90920462ffffff1660809093019290925282518151808301909252600682527f504b3a4531360000000000000000000000000000000000000000000000000000928201929092529192506001600160a01b03166111b35760405162461bcd60e51b81526004016104b49190613558565b506001816020015160028111156111cc576111cc612e92565b146040518060400160405280600681526020017f504b3a4531370000000000000000000000000000000000000000000000000000815250906112215760405162461bcd60e51b81526004016104b49190613558565b50919050565b604080518082019091526006815265504b3a45323160d01b60208201526001600160a01b03821661126b5760405162461bcd60e51b81526004016104b49190613558565b5060006112788484611561565b9050826001600160a01b0316826001600160a01b031614156040518060400160405280600681526020017f504b3a4532320000000000000000000000000000000000000000000000000000815250906112e45760405162461bcd60e51b81526004016104b49190613558565b506001600160a01b03808316825261ffff8516600090815261332e602090815260409091208351815493166001600160a01b03198416811782559184015184939192909183916001600160a81b031990911617600160a01b83600281111561134e5761134e612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff909216919091021790925583516020850151938501519151928816937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610a96939061358b565b60008160400151826060015161041c91906135ba565b805160009060008051602061393683398151915211801561145a57506020820151600080516020613936833981519152115b801561147757506040820151600080516020613936833981519152115b6040518060600160405280602281526020016137e060229139906114ae5760405162461bcd60e51b81526004016104b49190613558565b50604051635a53025d60e01b81527355256600717aabFDd96f1278aAD616a1433d624290635a53025d906114e6908590600401613608565b602060405180830381865af4158015611503573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061041c9190613639565b6000806115378a8a8a8a8a611cdb565b9050600061154482611d9a565b905061155281878787611def565b9b9a5050505050505050505050565b6040805160c081018252600080825260208201819052918101829052606081018290526080810182905260a081019190915261159c8361106d565b9050816001600160a01b031681600001516001600160a01b0316146040518060400160405280600681526020017f504b3a45323000000000000000000000000000000000000000000000000000008152509061160b5760405162461bcd60e51b81526004016104b49190613558565b5092915050565b8561161c81611dfd565b611624611eb9565b61162c611ba3565b63ffffffff168563ffffffff1611801561165157508563ffffffff168563ffffffff16115b6040518060400160405280600681526020016528259d22991b60d11b8152509061168e5760405162461bcd60e51b81526004016104b49190613558565b50600061169b8888610744565b905060006116a98988610744565b90506116b782828887611f34565b60405163ffffffff8816815261ffff80881691908716907f2e8a1e2259d5c5b7f833f1606c0ed806522ae73a2f195393c9c320b27ceb8e6f9060200160405180910390a3505050505050505050565b6000806117138787611fbe565b9050600061172082611d9a565b905061172e81878787611def565b98975050505050505050565b6000806117498989898961204e565b9050600061175682611d9a565b905061176481878787611def565b9a9950505050505050505050565b60008361177e81611dfd565b611786611eb9565b61178e611ba3565b63ffffffff168463ffffffff16116040518060400160405280600681526020016528259d22991b60d11b815250906117d95760405162461bcd60e51b81526004016104b49190613558565b5060006117e586610411565b905060006117f3888a611561565b9050806040015161ffff16816060015161ffff16116040518060400160405280600681526020017f504b3a45313000000000000000000000000000000000000000000000000000008152509061185c5760405162461bcd60e51b81526004016104b49190613558565b5060006118698888610744565b6133305462010000900461ffff908116600081815261332f60205260409020805461ffff1916928d1692909217909155955090506118c97f0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d828789611f34565b6118d285613652565b613330805463ffff000019166201000061ffff8416021790556040830180519196506118fd82613652565b61ffff9081169091528a16600090815261332e60209081526040909120845181546001600160a01b039091166001600160a01b031982168117835592860151869450919283916001600160a81b03191617600160a01b83600281111561196557611965612e92565b021790555060408281015182546060850151608086015160a09096015163ffffffff60a81b19909216600160a81b61ffff9485160261ffff60b81b191617600160b81b91841691909102176001600160c81b0316600160c81b63ffffffff968716026001600160e81b031617600160e81b62ffffff90921691909102179092558051868152928a16602084015287821692918c16917fd023f3fd00f69edbb18c7a332f9b04045ca59fa89be12e717fd5cb9dd611109c910160405180910390a35050505095945050505050565b6000806115378a8a8a8a8a612101565b83611a4c81611dfd565b61ffff808716600090815261332f6020908152604091829020548251808401909352600683527f504b3a45323700000000000000000000000000000000000000000000000000009183019190915288928a9291811690831614611ac25760405162461bcd60e51b81526004016104b49190613558565b506000611ace8a61106d565b90508a6001600160a01b031681600001516001600160a01b031603611afa57611af5611eb9565b611b02565b611b02610fde565b6000611b0e8989610744565b90506000611b1d8a6000610744565b9050611b5e82828d8b8b80806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250611f3492505050565b8a61ffff168c61ffff167f1f7bd889c5580ad23bedcc20017b3291b25eca68a14477192d52e896bd6439d460405160405180910390a350505050505050505050505050565b6000610add61219e565b60006401000000008210611c035760405162461bcd60e51b815260206004820152600860248201527f554e53414645333200000000000000000000000000000000000000000000000060448201526064016104b4565b5090565b805160009015801561041c5750506020015160011490565b6000611c2a826121f5565b15611c66576000611c5b837f060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1612332565b905061077681611c07565b506000919050565b61333054600090610add9061ffff166001613416565b6000436401000000008110610fd95760405162461bcd60e51b815260206004820152600d60248201527f554e534146453332424c4f434b0000000000000000000000000000000000000060448201526064016104b4565b60006040518060e0016040528060a6815260200161389060a691398051906020012086611d07876123c8565b8686611d1287612443565b60408051602081019790975261ffff90951694860194909452606085019290925263ffffffff90811660808501521660a083015260c082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660e0820152610100015b60405160208183030381529060405280519060200120905095945050505050565b600060405180604001604052806002815260200161190160f01b815250611dbf612456565b83604051602001611dd293929190613673565b604051602081830303815290604052805190602001209050919050565b6000610f9585858585612563565b611e0681611c07565b156040518060400160405280600781526020017f424a4a3a4530330000000000000000000000000000000000000000000000000081525090611e5b5760405162461bcd60e51b81526004016104b49190613558565b50611e65816121f5565b6040518060400160405280600781526020017f424a4a3a453032000000000000000000000000000000000000000000000000008152509061057c5760405162461bcd60e51b81526004016104b49190613558565b613330546601000000000000900463ffffffff16611ed5611ba3565b63ffffffff1610156040518060400160405280600681526020017f504b3a453036000000000000000000000000000000000000000000000000000081525090611f315760405162461bcd60e51b81526004016104b49190613558565b50565b60108151146040518060400160405280600681526020017f504b3a453032000000000000000000000000000000000000000000000000000081525090611f8d5760405162461bcd60e51b81526004016104b49190613558565b506000611fa46133315486868661ffff1686612591565b6133318190559050611fb7816004612714565b5050505050565b60006040518060800160405280604781526020016139b5604791398051602091820120604080519283019190915261ffff8516908201526001600160a01b03831660608201527f000000000000000000000000000000000000000000000000000000000000000060ff16608082015260a00160405160208183030381529060405280519060200120905092915050565b60006040518060c00160405280608e8152602001613802608e9139805190602001208561207a866123c8565b8561208486612443565b60408051602081019690965261ffff90941693850193909352606084019190915263ffffffff16608083015260a082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660c082015260e001604051602081830303815290604052805190602001209050949350505050565b60006040518060c00160405280609c8152602001613744609c913980519060200120868661212e876123c8565b8661213887612443565b60408051602081019790975261ffff95861690870152939092166060850152608084015263ffffffff1660a083015260c082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660e082015261010001611d79565b6000426401000000008110610fd95760405162461bcd60e51b815260206004820152600c60248201527f554e53414645333254494d45000000000000000000000000000000000000000060448201526064016104b4565b6000600080516020613936833981519152826000015110801561222957506000805160206139368339815191528260200151105b6040518060400160405280600781526020017f424a4a3a453031000000000000000000000000000000000000000000000000008152509061227d5760405162461bcd60e51b81526004016104b49190613558565b506000600080516020613936833981519152835180099050600060008051602061393683398151915282620292fc09905060006000805160206139368339815191526020860151800990506000600080516020613936833981519152828408905060006000805160206139368339815191528386099050600060008051602061393683398151915282620292f80990506000600080516020613936833981519152826001089390931498975050505050505050565b60408051808201909152600081526001602082015281835b81156123805781600116600103612368576123658382612791565b92505b6123728182612791565b9050600182901c915061234a565b825161239b90600080516020613936833981519152906136b0565b835260208301516123bb90600080516020613936833981519152906136b0565b6020840152505092915050565b604080518082018252601c81527f4731506f696e742875696e7432353620782c75696e743235362079290000000060209182015282518382015183517f5e467ea28730febcf86ceba969a4f64d5add168adffdaab21035f526cf46524793810193909352928201526060810191909152600090608001611dd2565b600081604051602001611dd291906136d2565b60006040518060800160405280605f8152602001613956605f91398051602091820120604080518082018252601081527f50616e746865722050726f746f636f6c00000000000000000000000000000000908401528051808201825260018152603160f81b908401528051928301919091527fbd6ac11eb0311bac3ff64366cc16db374956ada90d1e2aa6bb4faed25fc1d0cd908201527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a08201527f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b60c082015260e00160405160208183030381529060405280519060200120905090565b60008060008061257588888888612940565b9250925092506125858282612a0f565b50909695505050505050565b60008484036126085760405162461bcd60e51b815260206004820152602a60248201527f424955543a204e6577206c6561662063616e6e6f7420626520657175616c207460448201527f6865206f6c64206f6e650000000000000000000000000000000000000000000060648201526084016104b4565b61261486868585612ac8565b61266b5760405162461bcd60e51b815260206004820152602260248201527f424955543a204c656166206973206e6f742070617274206f6620746865207472604482015261656560f01b60648201526084016104b4565b50826000805b8351811015612709578085901c6001169150816000036126c8576126c160405180604001604052808581526020018684815181106126b1576126b16135f2565b6020026020010151815250612bd3565b9250612701565b6126fe60405180604001604052808684815181106126e8576126e86135f2565b6020026020010151815260200185815250612bd3565b92505b600101612671565b505095945050505050565b604051633ac1838560e21b815260048101839052602481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063eb060e1490604401600060405180830381600087803b15801561277d57600080fd5b505af1158015610b4f573d6000803e3d6000fd5b6040805180820190915260008082526020820152825160009081901580156127bb57506020850151155b156127d957604080518082019091529182526020820152905061041c565b83511580156127ea57506020850151155b1561280857604080518082019091529182526020820152905061041c565b600060008051602061393683398151915285518751099050600060008051602061393683398151915286602001518860200151099050600060008051602061393683398151915280838509620292f8099050600060008051602061393683398151915280895160208c01510960008051602061393683398151915260208b01518c510908905060006128bd8460008051602061393683398151915287620292fc09600080516020613936833981519152612bde565b90506000805160206139368339815191526128e960008051602061393683398151915285600108612c19565b8309965060008051602061393683398151915261291e612919600186600080516020613936833981519152612bde565b612c19565b8209604080518082019091529788526020880152509498975050505050505050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a084111561297b5750600091506003905082612a05565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa1580156129cf573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b0381166129fb57506000925060019150829050612a05565b9250600091508190505b9450945094915050565b6000826003811115612a2357612a23612e92565b03612a2c575050565b6001826003811115612a4057612a40612e92565b03612a5e5760405163f645eedf60e01b815260040160405180910390fd5b6002826003811115612a7257612a72612e92565b03612a935760405163fce698f760e01b8152600481018290526024016104b4565b6003826003811115612aa757612aa7612e92565b0361057c576040516335e2f38360e21b8152600481018290526024016104b4565b80516000906001901b808410612b205760405162461bcd60e51b815260206004820152601860248201527f424955543a20696e76616c6964206c65616620696e646578000000000000000060448201526064016104b4565b846000805b8551811015612b97578087901c600116915081600003612b6c57612b6560405180604001604052808581526020018884815181106126b1576126b16135f2565b9250612b8f565b612b8c60405180604001604052808884815181106126e8576126e86135f2565b92505b600101612b25565b508715612ba65787821461172e565b507f0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9149695505050505050565b600061041c82612c4c565b600083838111612bf557612bf28382613708565b90505b8280612c0357612c0361369a565b6000612c0f8684613521565b0895945050505050565b600061041c82612c386002600080516020613936833981519152613521565b600080516020613936833981519152612ced565b8051600090600080516020613936833981519152118015612c7e57506020820151600080516020613936833981519152115b6040518060600160405280602281526020016137e06022913990612cb55760405162461bcd60e51b81526004016104b49190613558565b5060405163014cf2b360e51b8152738600F4e2d82cB3f5AA03623998dB11A372972B399063299e5660906114e690859060040161371b565b600060405160208152602080820152602060408201528460608201528360808201528260a082015260208160c08360055afa80801561017757505051949350505050565b634e487b7160e01b600052604160045260246000fd5b600060408284031215612d5957600080fd5b6040516040810181811067ffffffffffffffff82111715612d7c57612d7c612d31565b604052823581526020928301359281019290925250919050565b600060408284031215612da857600080fd5b6107768383612d47565b803561ffff81168114610fd957600080fd5b60008060408385031215612dd757600080fd5b612de083612db2565b9150612dee60208401612db2565b90509250929050565b80356001600160a01b0381168114610fd957600080fd5b60008060408385031215612e2157600080fd5b612e2a83612db2565b9150612dee60208401612df7565b600060208284031215612e4a57600080fd5b61077682612db2565b803563ffffffff81168114610fd957600080fd5b60008060608385031215612e7a57600080fd5b612e848484612d47565b9150612dee60408401612e53565b634e487b7160e01b600052602160045260246000fd5b60038110612ec657634e487b7160e01b600052602160045260246000fd5b9052565b6001600160a01b038716815260c08101612ee76020830188612ea8565b61ffff808716604084015280861660608401525063ffffffff8416608083015262ffffff831660a0830152979650505050505050565b600082601f830112612f2e57600080fd5b8135602067ffffffffffffffff80831115612f4b57612f4b612d31565b8260051b604051601f19603f83011681018181108482111715612f7057612f70612d31565b604052938452858101830193838101925087851115612f8e57600080fd5b83870191505b84821015612fad57813583529183019190830190612f94565b979650505050505050565b803560ff81168114610fd957600080fd5b600080600080600080600080610120898b031215612fe657600080fd5b612fef89612db2565b9750612ffe8a60208b01612d47565b965061300c60608a01612e53565b955061301a60808a01612e53565b945060a089013567ffffffffffffffff81111561303657600080fd5b6130428b828c01612f1d565b94505061305160c08a01612fb8565b925060e0890135915061010089013590509295985092959890939650565b600080600080600060a0868803121561308757600080fd5b61309086612db2565b945061309e60208701612df7565b93506130ac60408701612fb8565b94979396509394606081013594506080013592915050565b6000806000806000806000610100888a0312156130e057600080fd5b6130e988612db2565b96506130f88960208a01612d47565b955061310660608901612e53565b9450608088013567ffffffffffffffff81111561312257600080fd5b61312e8a828b01612f1d565b94505061313d60a08901612fb8565b925060c0880135915060e0880135905092959891949750929550565b60008083601f84011261316b57600080fd5b50813567ffffffffffffffff81111561318357600080fd5b6020830191508360208260051b850101111561319e57600080fd5b9250929050565b60008060008060008060008060006101208a8c0312156131c457600080fd5b6131cd8a612db2565b98506131db60208b01612db2565b97506131ea8b60408c01612d47565b96506131f860808b01612e53565b955060a08a013567ffffffffffffffff81111561321457600080fd5b6132208c828d01613159565b9096509450613233905060c08b01612fb8565b925060e08a013591506101008a013590509295985092959850929598565b60008060008060008060c0878903121561326a57600080fd5b61327387612db2565b955061328160208801612db2565b94506132908860408901612d47565b935061329e60808801612e53565b925060a087013567ffffffffffffffff8111156132ba57600080fd5b6132c689828a01613159565b979a9699509497509295939492505050565b6000602082840312156132ea57600080fd5b61077682612e53565b600080600080600060c0868803121561330b57600080fd5b6133158787612d47565b945061332360408701612e53565b935061333160608701612e53565b925061333f60808701612db2565b915060a086013567ffffffffffffffff81111561335b57600080fd5b61336788828901612f1d565b9150509295509295909350565b6000806040838503121561338757600080fd5b612de083612df7565b60008060008060a085870312156133a657600080fd5b6133af85612db2565b93506133be8660208701612d47565b92506133cc60608601612e53565b9150608085013567ffffffffffffffff8111156133e857600080fd5b6133f487828801612f1d565b91505092959194509250565b634e487b7160e01b600052601160045260246000fd5b61ffff81811683821601908082111561160b5761160b613400565b600181815b8085111561346c57816000190482111561345257613452613400565b8085161561345f57918102915b93841c9390800290613436565b509250929050565b6000826134835750600161041c565b816134905750600061041c565b81600181146134a657600281146134b0576134cc565b600191505061041c565b60ff8411156134c1576134c1613400565b50506001821b61041c565b5060208310610133831016604e8410600b84101617156134ef575081810a61041c565b6134f98383613431565b806000190482111561350d5761350d613400565b029392505050565b60006107768383613474565b8181038181111561041c5761041c613400565b60005b8381101561354f578181015183820152602001613537565b50506000910152565b6020815260008251806020840152613577816040850160208701613534565b601f01601f19169190910160400192915050565b6001600160a01b0384168152606081016135a86020830185612ea8565b61ffff83166040830152949350505050565b61ffff82811682821603908082111561160b5761160b613400565b63ffffffff81811683821601908082111561160b5761160b613400565b634e487b7160e01b600052603260045260246000fd5b60608101818360005b6003811015613630578151835260209283019290910190600101613611565b50505092915050565b60006020828403121561364b57600080fd5b5051919050565b600061ffff80831681810361366957613669613400565b6001019392505050565b60008451613685818460208901613534565b91909101928352506020820152604001919050565b634e487b7160e01b600052601260045260246000fd5b6000826136cd57634e487b7160e01b600052601260045260246000fd5b500690565b815160009082906020808601845b838110156136fc578151855293820193908201906001016136e0565b50929695505050505050565b8082018082111561041c5761041c613400565b60408101818360005b600281101561363057815183526020928301929091019060010161372456fe5265766f6b654b65792875696e743136206b657972696e6749642c75696e743136206b6579496e6465782c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e74323536207929506f736569646f6e4861736865723a20696e707574206e6f7420696e206669656c6452656769737465724b65792875696e743136206b657972696e6749642c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e74323536207929457874656e644b65794578706972792875696e743136206b6579496e6465782c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c75696e743332206e6577457870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e7432353620792930644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001454950373132446f6d61696e28737472696e67206e616d652c737472696e672076657273696f6e2c75696e7432353620636861696e49642c6164647265737320766572696679696e67436f6e74726163742c627974657333322073616c74295570646174654b65794f70657261746f722875696e743332206b657972696e6749642c61646472657373206e65774f70657261746f722c75696e743235362076657273696f6e29a164736f6c6343000813000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101775760003560e01c806377c51bc5116100d8578063b0c4c8261161008c578063e0e9ec9611610066578063e0e9ec96146103b2578063f019002e146103c5578063f52f1a82146103d857600080fd5b8063b0c4c82614610369578063ca40e5711461037c578063dd35c8131461038f57600080fd5b80637d42dcdc116100bd5780637d42dcdc1461033057806386cc50d4146103435780638d3ce6e21461035657600080fd5b806377c51bc5146102e5578063784e06131461031d57600080fd5b8063372d6b271161012f5780634e810c5e116101145780634e810c5e146102b75780635ae96922146102ca5780637368b71d146102d257600080fd5b8063372d6b27146101f057806337adf2001461023b57600080fd5b80631ee861ea116101605780631ee861ea146101b757806329702748146101ca57806330bd84c4146101dd57600080fd5b80631ddd23b51461017c5780631e24f89a146101a2575b600080fd5b61018f61018a366004612d96565b610411565b6040519081526020015b60405180910390f35b6101b56101b0366004612dc4565b610422565b005b6101b56101c5366004612e0e565b610571565b6101b56101d8366004612e38565b610580565b61018f6101eb366004612e67565b610744565b613330546040805161ffff80841682526201000084048116602083015264010000000084041691810191909152660100000000000090910463ffffffff166060820152608001610199565b6102a5610249366004612e38565b61332e602052600090815260409020546001600160a01b0381169060ff600160a01b8204169061ffff600160a81b8204811691600160b81b81049091169063ffffffff600160c81b8204169062ffffff600160e81b9091041686565b60405161019996959493929190612eca565b6101b56102c5366004612e38565b61077d565b61018f610aa4565b6101b56102e0366004612fc9565b610ae2565b61030a6102f3366004612e38565b61332f6020526000908152604090205461ffff1681565b60405161ffff9091168152602001610199565b6101b561032b36600461306f565b610b33565b61030a61033e3660046130c4565b610b57565b6101b56103513660046131a5565b610b85565b6101b5610364366004613251565b610bdd565b6101b56103773660046132d8565b610bec565b6101b561038a3660046132f3565b610cdb565b6103a261039d366004612d96565b610d0b565b6040519015158152602001610199565b6101b56103c0366004613374565b610d27565b61030a6103d3366004613390565b610f86565b6103ff7f000000000000000000000000000000000000000000000000000000000000000081565b60405160ff9091168152602001610199565b600061041c82610f9e565b92915050565b61042a610fde565b60006104358361106d565b61333054909150640100000000900461ffff166104528382613416565b905061ffff8116600161046760106002613515565b6104719190613521565b61ffff16101560405180604001604052806006815260200165504b3a45313160d01b815250906104bd5760405162461bcd60e51b81526004016104b49190613558565b60405180910390fd5b5060008383606001516104d09190613416565b61ffff868116600081815261332e6020908152604091829020805461ffff60b81b1916600160b81b87871602179055613330805465ffff00000000191664010000000095891695909502949094179093558651928701516060880151915194955091937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610562939092909161358b565b60405180910390a25050505050565b61057c823383611227565b5050565b610588610fde565b60006105938261106d565b905061059e81611412565b61333080546004906105bd908490640100000000900461ffff166135ba565b92506101000a81548161ffff021916908361ffff160217905550610615816040805160c08101825260008082526020808301829052928201819052606082018190526080820181905260a09091015260029082015290565b61ffff8316600090815261332e60209081526040909120825181546001600160a01b039091166001600160a01b031982168117835592840151919283916001600160a81b03191617600160a01b83600281111561067457610674612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff909216919091021790925583516020850151938501519151928616937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610738939061358b565b60405180910390a25050565b60408051606081018252835181526020808501519082015263ffffffff83169181019190915260009061077690611428565b9392505050565b610785610fde565b61ffff8116600090815261332e60209081526040808320815160c0810190925280546001600160a01b03811683529192909190830190600160a01b900460ff1660028111156107d6576107d6612e92565b60028111156107e7576107e7612e92565b8152905461ffff600160a81b820481166020840152600160b81b820416604083015263ffffffff600160c81b820416606083015262ffffff600160e81b90910416608090910152905060028160200151600281111561084857610848612e92565b146040518060400160405280600581526020017f504b3a31350000000000000000000000000000000000000000000000000000008152509061089d5760405162461bcd60e51b81526004016104b49190613558565b5061333054640100000000900461ffff1660006108b983611412565b90506108c58183613416565b915060016108d560106002613515565b6108df9190613521565b61ffff168261ffff161115610950576108f881836135ba565b600161090660106002613515565b6109109190613521565b61091a91906135ba565b9050600161092a60106002613515565b6109349190613521565b91508083604001516109469190613416565b61ffff1660608401525b6001602084810191825261ffff8616600090815261332e90915260409020845181546001600160a01b031981166001600160a01b03909216918217835592518693909183916001600160a81b03191617600160a01b8360028111156109b7576109b7612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff9092169190910217909255613330805465ffff0000000019166401000000008785160217905585516020870151938701519151928816937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610a96939061358b565b60405180910390a250505050565b6133315460009015610ab857506133315490565b507f0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c990565b905090565b61ffff808916600090815261332f602052604081205490911690610b0c8a8a8a8a8a8a8a8a611527565b9050610b188282611561565b50610b278989898d868b611612565b50505050505050505050565b6000610b428686868686611706565b9050610b4f868287611227565b505050505050565b600080610b698989898989898961173a565b9050610b78818a8a8a8a611772565b9998505050505050505050565b6000610bcc8a8a8a8a8a8a808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152508c92508b91508a9050611a32565b9050610b27818b8b8b8b8b8b611a42565b610b4f33878787878787611a42565b610bf4610fde565b60408051808201909152600681527f504b3a4530350000000000000000000000000000000000000000000000000000602082015262278d0063ffffffff83161115610c525760405162461bcd60e51b81526004016104b49190613558565b506000610c7682610c61611ba3565b610c6b91906135d5565b63ffffffff16611bad565b613330805469ffffffff0000000000001916660100000000000063ffffffff8416908102919091179091556040519081529091507f3f4b61ddd0cb058a723417fbd46a9d6454505d2130b61541fadb595a11ac2ffb9060200160405180910390a15050565b61ffff808316600090815261332f602052604090205416610cfc8133611561565b50610b4f868686868587611612565b6000610d1682611c07565b15801561041c575061041c82611c1f565b610d2f610fde565b604080518082019091526006815265504b3a45323160d01b60208201526001600160a01b038316610d735760405162461bcd60e51b81526004016104b49190613558565b5061333054640100000000900461ffff16610d8e8282613416565b905061ffff81166001610da360106002613515565b610dad9190613521565b61ffff16101560405180604001604052806006815260200165504b3a45313160d01b81525090610df05760405162461bcd60e51b81526004016104b49190613558565b506000610dfb611c6e565b6040805160c081019091526001600160a01b038616815290915060208101600181526000602082015261ffff85166040820152606001610e39611c84565b63ffffffff1681526000602091820181905261ffff8416815261332e825260409020825181546001600160a01b039091166001600160a01b031982168117835592840151919283916001600160a81b03191617600160a01b836002811115610ea357610ea3612e92565b021790555060408281015182546060850151608086015160a09096015162ffffff16600160e81b026001600160e81b0363ffffffff909716600160c81b02969096166001600160c81b0361ffff928316600160b81b0261ffff60b81b19958416600160a81b029590951663ffffffff60a81b19909416939093179390931791909116919091179390931790915561333080548584166401000000000265ffff0000ffff19909116938516938417179055517f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd490610a96908790600190889061358b565b6000610f953386868686611772565b95945050505050565b602081015181517f183227397098d014dc2822db40c0ac2e9419f4243cdcb848a1f0fac9f80000001015610fd957506020810151600160ff1b175b919050565b7f727bf440e01434e77993b7e90f004fc30e73d97686694c4ace34badd87948d44546001600160a01b0316336001600160a01b03161461106b5760405162461bcd60e51b815260206004820152602260248201527f4c69624469616d6f6e643a204d75737420626520636f6e7472616374206f776e60448201526132b960f11b60648201526084016104b4565b565b6040805160c081018252600080825260208201819052918101829052606081018290526080810182905260a081019190915261ffff8216600090815261332e6020908152604091829020825160c0810190935280546001600160a01b03811684529091830190600160a01b900460ff1660028111156110ee576110ee612e92565b60028111156110ff576110ff612e92565b81529054600160a81b810461ffff908116602080850191909152600160b81b8304909116604080850191909152600160c81b830463ffffffff166060850152600160e81b90920462ffffff1660809093019290925282518151808301909252600682527f504b3a4531360000000000000000000000000000000000000000000000000000928201929092529192506001600160a01b03166111b35760405162461bcd60e51b81526004016104b49190613558565b506001816020015160028111156111cc576111cc612e92565b146040518060400160405280600681526020017f504b3a4531370000000000000000000000000000000000000000000000000000815250906112215760405162461bcd60e51b81526004016104b49190613558565b50919050565b604080518082019091526006815265504b3a45323160d01b60208201526001600160a01b03821661126b5760405162461bcd60e51b81526004016104b49190613558565b5060006112788484611561565b9050826001600160a01b0316826001600160a01b031614156040518060400160405280600681526020017f504b3a4532320000000000000000000000000000000000000000000000000000815250906112e45760405162461bcd60e51b81526004016104b49190613558565b506001600160a01b03808316825261ffff8516600090815261332e602090815260409091208351815493166001600160a01b03198416811782559184015184939192909183916001600160a81b031990911617600160a01b83600281111561134e5761134e612e92565b02179055506040828101518254606080860151608087015160a09097015163ffffffff60a81b19909316600160a81b61ffff9586160261ffff60b81b191617600160b81b91851691909102176001600160c81b0316600160c81b63ffffffff909716969096026001600160e81b031695909517600160e81b62ffffff909216919091021790925583516020850151938501519151928816937f9053b8f624a0e0ca15225d4b46057b62b6eb427e35d7d4a3644426f5d8552dd493610a96939061358b565b60008160400151826060015161041c91906135ba565b805160009060008051602061393683398151915211801561145a57506020820151600080516020613936833981519152115b801561147757506040820151600080516020613936833981519152115b6040518060600160405280602281526020016137e060229139906114ae5760405162461bcd60e51b81526004016104b49190613558565b50604051635a53025d60e01b815273__$142b15dc9e6a7e4f6651d954b276bd8af8$__90635a53025d906114e6908590600401613608565b602060405180830381865af4158015611503573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061041c9190613639565b6000806115378a8a8a8a8a611cdb565b9050600061154482611d9a565b905061155281878787611def565b9b9a5050505050505050505050565b6040805160c081018252600080825260208201819052918101829052606081018290526080810182905260a081019190915261159c8361106d565b9050816001600160a01b031681600001516001600160a01b0316146040518060400160405280600681526020017f504b3a45323000000000000000000000000000000000000000000000000000008152509061160b5760405162461bcd60e51b81526004016104b49190613558565b5092915050565b8561161c81611dfd565b611624611eb9565b61162c611ba3565b63ffffffff168563ffffffff1611801561165157508563ffffffff168563ffffffff16115b6040518060400160405280600681526020016528259d22991b60d11b8152509061168e5760405162461bcd60e51b81526004016104b49190613558565b50600061169b8888610744565b905060006116a98988610744565b90506116b782828887611f34565b60405163ffffffff8816815261ffff80881691908716907f2e8a1e2259d5c5b7f833f1606c0ed806522ae73a2f195393c9c320b27ceb8e6f9060200160405180910390a3505050505050505050565b6000806117138787611fbe565b9050600061172082611d9a565b905061172e81878787611def565b98975050505050505050565b6000806117498989898961204e565b9050600061175682611d9a565b905061176481878787611def565b9a9950505050505050505050565b60008361177e81611dfd565b611786611eb9565b61178e611ba3565b63ffffffff168463ffffffff16116040518060400160405280600681526020016528259d22991b60d11b815250906117d95760405162461bcd60e51b81526004016104b49190613558565b5060006117e586610411565b905060006117f3888a611561565b9050806040015161ffff16816060015161ffff16116040518060400160405280600681526020017f504b3a45313000000000000000000000000000000000000000000000000000008152509061185c5760405162461bcd60e51b81526004016104b49190613558565b5060006118698888610744565b6133305462010000900461ffff908116600081815261332f60205260409020805461ffff1916928d1692909217909155955090506118c97f0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d828789611f34565b6118d285613652565b613330805463ffff000019166201000061ffff8416021790556040830180519196506118fd82613652565b61ffff9081169091528a16600090815261332e60209081526040909120845181546001600160a01b039091166001600160a01b031982168117835592860151869450919283916001600160a81b03191617600160a01b83600281111561196557611965612e92565b021790555060408281015182546060850151608086015160a09096015163ffffffff60a81b19909216600160a81b61ffff9485160261ffff60b81b191617600160b81b91841691909102176001600160c81b0316600160c81b63ffffffff968716026001600160e81b031617600160e81b62ffffff90921691909102179092558051868152928a16602084015287821692918c16917fd023f3fd00f69edbb18c7a332f9b04045ca59fa89be12e717fd5cb9dd611109c910160405180910390a35050505095945050505050565b6000806115378a8a8a8a8a612101565b83611a4c81611dfd565b61ffff808716600090815261332f6020908152604091829020548251808401909352600683527f504b3a45323700000000000000000000000000000000000000000000000000009183019190915288928a9291811690831614611ac25760405162461bcd60e51b81526004016104b49190613558565b506000611ace8a61106d565b90508a6001600160a01b031681600001516001600160a01b031603611afa57611af5611eb9565b611b02565b611b02610fde565b6000611b0e8989610744565b90506000611b1d8a6000610744565b9050611b5e82828d8b8b80806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250611f3492505050565b8a61ffff168c61ffff167f1f7bd889c5580ad23bedcc20017b3291b25eca68a14477192d52e896bd6439d460405160405180910390a350505050505050505050505050565b6000610add61219e565b60006401000000008210611c035760405162461bcd60e51b815260206004820152600860248201527f554e53414645333200000000000000000000000000000000000000000000000060448201526064016104b4565b5090565b805160009015801561041c5750506020015160011490565b6000611c2a826121f5565b15611c66576000611c5b837f060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1612332565b905061077681611c07565b506000919050565b61333054600090610add9061ffff166001613416565b6000436401000000008110610fd95760405162461bcd60e51b815260206004820152600d60248201527f554e534146453332424c4f434b0000000000000000000000000000000000000060448201526064016104b4565b60006040518060e0016040528060a6815260200161389060a691398051906020012086611d07876123c8565b8686611d1287612443565b60408051602081019790975261ffff90951694860194909452606085019290925263ffffffff90811660808501521660a083015260c082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660e0820152610100015b60405160208183030381529060405280519060200120905095945050505050565b600060405180604001604052806002815260200161190160f01b815250611dbf612456565b83604051602001611dd293929190613673565b604051602081830303815290604052805190602001209050919050565b6000610f9585858585612563565b611e0681611c07565b156040518060400160405280600781526020017f424a4a3a4530330000000000000000000000000000000000000000000000000081525090611e5b5760405162461bcd60e51b81526004016104b49190613558565b50611e65816121f5565b6040518060400160405280600781526020017f424a4a3a453032000000000000000000000000000000000000000000000000008152509061057c5760405162461bcd60e51b81526004016104b49190613558565b613330546601000000000000900463ffffffff16611ed5611ba3565b63ffffffff1610156040518060400160405280600681526020017f504b3a453036000000000000000000000000000000000000000000000000000081525090611f315760405162461bcd60e51b81526004016104b49190613558565b50565b60108151146040518060400160405280600681526020017f504b3a453032000000000000000000000000000000000000000000000000000081525090611f8d5760405162461bcd60e51b81526004016104b49190613558565b506000611fa46133315486868661ffff1686612591565b6133318190559050611fb7816004612714565b5050505050565b60006040518060800160405280604781526020016139b5604791398051602091820120604080519283019190915261ffff8516908201526001600160a01b03831660608201527f000000000000000000000000000000000000000000000000000000000000000060ff16608082015260a00160405160208183030381529060405280519060200120905092915050565b60006040518060c00160405280608e8152602001613802608e9139805190602001208561207a866123c8565b8561208486612443565b60408051602081019690965261ffff90941693850193909352606084019190915263ffffffff16608083015260a082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660c082015260e001604051602081830303815290604052805190602001209050949350505050565b60006040518060c00160405280609c8152602001613744609c913980519060200120868661212e876123c8565b8661213887612443565b60408051602081019790975261ffff95861690870152939092166060850152608084015263ffffffff1660a083015260c082015260ff7f00000000000000000000000000000000000000000000000000000000000000001660e082015261010001611d79565b6000426401000000008110610fd95760405162461bcd60e51b815260206004820152600c60248201527f554e53414645333254494d45000000000000000000000000000000000000000060448201526064016104b4565b6000600080516020613936833981519152826000015110801561222957506000805160206139368339815191528260200151105b6040518060400160405280600781526020017f424a4a3a453031000000000000000000000000000000000000000000000000008152509061227d5760405162461bcd60e51b81526004016104b49190613558565b506000600080516020613936833981519152835180099050600060008051602061393683398151915282620292fc09905060006000805160206139368339815191526020860151800990506000600080516020613936833981519152828408905060006000805160206139368339815191528386099050600060008051602061393683398151915282620292f80990506000600080516020613936833981519152826001089390931498975050505050505050565b60408051808201909152600081526001602082015281835b81156123805781600116600103612368576123658382612791565b92505b6123728182612791565b9050600182901c915061234a565b825161239b90600080516020613936833981519152906136b0565b835260208301516123bb90600080516020613936833981519152906136b0565b6020840152505092915050565b604080518082018252601c81527f4731506f696e742875696e7432353620782c75696e743235362079290000000060209182015282518382015183517f5e467ea28730febcf86ceba969a4f64d5add168adffdaab21035f526cf46524793810193909352928201526060810191909152600090608001611dd2565b600081604051602001611dd291906136d2565b60006040518060800160405280605f8152602001613956605f91398051602091820120604080518082018252601081527f50616e746865722050726f746f636f6c00000000000000000000000000000000908401528051808201825260018152603160f81b908401528051928301919091527fbd6ac11eb0311bac3ff64366cc16db374956ada90d1e2aa6bb4faed25fc1d0cd908201527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a08201527f44b818e3e3a12ecf805989195d8f38e75517386006719e2dbb1443987a34db7b60c082015260e00160405160208183030381529060405280519060200120905090565b60008060008061257588888888612940565b9250925092506125858282612a0f565b50909695505050505050565b60008484036126085760405162461bcd60e51b815260206004820152602a60248201527f424955543a204e6577206c6561662063616e6e6f7420626520657175616c207460448201527f6865206f6c64206f6e650000000000000000000000000000000000000000000060648201526084016104b4565b61261486868585612ac8565b61266b5760405162461bcd60e51b815260206004820152602260248201527f424955543a204c656166206973206e6f742070617274206f6620746865207472604482015261656560f01b60648201526084016104b4565b50826000805b8351811015612709578085901c6001169150816000036126c8576126c160405180604001604052808581526020018684815181106126b1576126b16135f2565b6020026020010151815250612bd3565b9250612701565b6126fe60405180604001604052808684815181106126e8576126e86135f2565b6020026020010151815260200185815250612bd3565b92505b600101612671565b505095945050505050565b604051633ac1838560e21b815260048101839052602481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063eb060e1490604401600060405180830381600087803b15801561277d57600080fd5b505af1158015610b4f573d6000803e3d6000fd5b6040805180820190915260008082526020820152825160009081901580156127bb57506020850151155b156127d957604080518082019091529182526020820152905061041c565b83511580156127ea57506020850151155b1561280857604080518082019091529182526020820152905061041c565b600060008051602061393683398151915285518751099050600060008051602061393683398151915286602001518860200151099050600060008051602061393683398151915280838509620292f8099050600060008051602061393683398151915280895160208c01510960008051602061393683398151915260208b01518c510908905060006128bd8460008051602061393683398151915287620292fc09600080516020613936833981519152612bde565b90506000805160206139368339815191526128e960008051602061393683398151915285600108612c19565b8309965060008051602061393683398151915261291e612919600186600080516020613936833981519152612bde565b612c19565b8209604080518082019091529788526020880152509498975050505050505050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a084111561297b5750600091506003905082612a05565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa1580156129cf573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b0381166129fb57506000925060019150829050612a05565b9250600091508190505b9450945094915050565b6000826003811115612a2357612a23612e92565b03612a2c575050565b6001826003811115612a4057612a40612e92565b03612a5e5760405163f645eedf60e01b815260040160405180910390fd5b6002826003811115612a7257612a72612e92565b03612a935760405163fce698f760e01b8152600481018290526024016104b4565b6003826003811115612aa757612aa7612e92565b0361057c576040516335e2f38360e21b8152600481018290526024016104b4565b80516000906001901b808410612b205760405162461bcd60e51b815260206004820152601860248201527f424955543a20696e76616c6964206c65616620696e646578000000000000000060448201526064016104b4565b846000805b8551811015612b97578087901c600116915081600003612b6c57612b6560405180604001604052808581526020018884815181106126b1576126b16135f2565b9250612b8f565b612b8c60405180604001604052808884815181106126e8576126e86135f2565b92505b600101612b25565b508715612ba65787821461172e565b507f0a5e5ec37bd8f9a21a1c2192e7c37d86bf975d947c2b38598b00babe567191c9149695505050505050565b600061041c82612c4c565b600083838111612bf557612bf28382613708565b90505b8280612c0357612c0361369a565b6000612c0f8684613521565b0895945050505050565b600061041c82612c386002600080516020613936833981519152613521565b600080516020613936833981519152612ced565b8051600090600080516020613936833981519152118015612c7e57506020820151600080516020613936833981519152115b6040518060600160405280602281526020016137e06022913990612cb55760405162461bcd60e51b81526004016104b49190613558565b5060405163014cf2b360e51b815273__$c770a76000dc2b9dd458b6fd9d76028e5c$__9063299e5660906114e690859060040161371b565b600060405160208152602080820152602060408201528460608201528360808201528260a082015260208160c08360055afa80801561017757505051949350505050565b634e487b7160e01b600052604160045260246000fd5b600060408284031215612d5957600080fd5b6040516040810181811067ffffffffffffffff82111715612d7c57612d7c612d31565b604052823581526020928301359281019290925250919050565b600060408284031215612da857600080fd5b6107768383612d47565b803561ffff81168114610fd957600080fd5b60008060408385031215612dd757600080fd5b612de083612db2565b9150612dee60208401612db2565b90509250929050565b80356001600160a01b0381168114610fd957600080fd5b60008060408385031215612e2157600080fd5b612e2a83612db2565b9150612dee60208401612df7565b600060208284031215612e4a57600080fd5b61077682612db2565b803563ffffffff81168114610fd957600080fd5b60008060608385031215612e7a57600080fd5b612e848484612d47565b9150612dee60408401612e53565b634e487b7160e01b600052602160045260246000fd5b60038110612ec657634e487b7160e01b600052602160045260246000fd5b9052565b6001600160a01b038716815260c08101612ee76020830188612ea8565b61ffff808716604084015280861660608401525063ffffffff8416608083015262ffffff831660a0830152979650505050505050565b600082601f830112612f2e57600080fd5b8135602067ffffffffffffffff80831115612f4b57612f4b612d31565b8260051b604051601f19603f83011681018181108482111715612f7057612f70612d31565b604052938452858101830193838101925087851115612f8e57600080fd5b83870191505b84821015612fad57813583529183019190830190612f94565b979650505050505050565b803560ff81168114610fd957600080fd5b600080600080600080600080610120898b031215612fe657600080fd5b612fef89612db2565b9750612ffe8a60208b01612d47565b965061300c60608a01612e53565b955061301a60808a01612e53565b945060a089013567ffffffffffffffff81111561303657600080fd5b6130428b828c01612f1d565b94505061305160c08a01612fb8565b925060e0890135915061010089013590509295985092959890939650565b600080600080600060a0868803121561308757600080fd5b61309086612db2565b945061309e60208701612df7565b93506130ac60408701612fb8565b94979396509394606081013594506080013592915050565b6000806000806000806000610100888a0312156130e057600080fd5b6130e988612db2565b96506130f88960208a01612d47565b955061310660608901612e53565b9450608088013567ffffffffffffffff81111561312257600080fd5b61312e8a828b01612f1d565b94505061313d60a08901612fb8565b925060c0880135915060e0880135905092959891949750929550565b60008083601f84011261316b57600080fd5b50813567ffffffffffffffff81111561318357600080fd5b6020830191508360208260051b850101111561319e57600080fd5b9250929050565b60008060008060008060008060006101208a8c0312156131c457600080fd5b6131cd8a612db2565b98506131db60208b01612db2565b97506131ea8b60408c01612d47565b96506131f860808b01612e53565b955060a08a013567ffffffffffffffff81111561321457600080fd5b6132208c828d01613159565b9096509450613233905060c08b01612fb8565b925060e08a013591506101008a013590509295985092959850929598565b60008060008060008060c0878903121561326a57600080fd5b61327387612db2565b955061328160208801612db2565b94506132908860408901612d47565b935061329e60808801612e53565b925060a087013567ffffffffffffffff8111156132ba57600080fd5b6132c689828a01613159565b979a9699509497509295939492505050565b6000602082840312156132ea57600080fd5b61077682612e53565b600080600080600060c0868803121561330b57600080fd5b6133158787612d47565b945061332360408701612e53565b935061333160608701612e53565b925061333f60808701612db2565b915060a086013567ffffffffffffffff81111561335b57600080fd5b61336788828901612f1d565b9150509295509295909350565b6000806040838503121561338757600080fd5b612de083612df7565b60008060008060a085870312156133a657600080fd5b6133af85612db2565b93506133be8660208701612d47565b92506133cc60608601612e53565b9150608085013567ffffffffffffffff8111156133e857600080fd5b6133f487828801612f1d565b91505092959194509250565b634e487b7160e01b600052601160045260246000fd5b61ffff81811683821601908082111561160b5761160b613400565b600181815b8085111561346c57816000190482111561345257613452613400565b8085161561345f57918102915b93841c9390800290613436565b509250929050565b6000826134835750600161041c565b816134905750600061041c565b81600181146134a657600281146134b0576134cc565b600191505061041c565b60ff8411156134c1576134c1613400565b50506001821b61041c565b5060208310610133831016604e8410600b84101617156134ef575081810a61041c565b6134f98383613431565b806000190482111561350d5761350d613400565b029392505050565b60006107768383613474565b8181038181111561041c5761041c613400565b60005b8381101561354f578181015183820152602001613537565b50506000910152565b6020815260008251806020840152613577816040850160208701613534565b601f01601f19169190910160400192915050565b6001600160a01b0384168152606081016135a86020830185612ea8565b61ffff83166040830152949350505050565b61ffff82811682821603908082111561160b5761160b613400565b63ffffffff81811683821601908082111561160b5761160b613400565b634e487b7160e01b600052603260045260246000fd5b60608101818360005b6003811015613630578151835260209283019290910190600101613611565b50505092915050565b60006020828403121561364b57600080fd5b5051919050565b600061ffff80831681810361366957613669613400565b6001019392505050565b60008451613685818460208901613534565b91909101928352506020820152604001919050565b634e487b7160e01b600052601260045260246000fd5b6000826136cd57634e487b7160e01b600052601260045260246000fd5b500690565b815160009082906020808601845b838110156136fc578151855293820193908201906001016136e0565b50929695505050505050565b8082018082111561041c5761041c613400565b60408101818360005b600281101561363057815183526020928301929091019060010161372456fe5265766f6b654b65792875696e743136206b657972696e6749642c75696e743136206b6579496e6465782c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e74323536207929506f736569646f6e4861736865723a20696e707574206e6f7420696e206669656c6452656769737465724b65792875696e743136206b657972696e6749642c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e74323536207929457874656e644b65794578706972792875696e743136206b6579496e6465782c4731506f696e7420707562526f6f745370656e64696e674b65792c75696e74333220657870697279446174652c75696e743332206e6577457870697279446174652c627974657333325b5d2070726f6f665369626c696e67732c75696e743235362076657273696f6e294731506f696e742875696e7432353620782c75696e7432353620792930644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001454950373132446f6d61696e28737472696e67206e616d652c737472696e672076657273696f6e2c75696e7432353620636861696e49642c6164647265737320766572696679696e67436f6e74726163742c627974657333322073616c74295570646174654b65794f70657261746f722875696e743332206b657972696e6749642c61646472657373206e65774f70657261746f722c75696e743235362076657273696f6e29a164736f6c6343000813000a",
+  "libraries": {
+    "PoseidonT3": "0x8600F4e2d82cB3f5AA03623998dB11A372972B39",
+    "PoseidonT4": "0x55256600717aabFDd96f1278aAD616a1433d6242"
+  },
+  "devdoc": {
+    "author": "Pantherprotocol Contributors",
+    "details": "Public keys are points in the BabyJubjub elliptic curve. The contract does not check, however, if the key is a valid curve point. Since the off-chain computation of the tree updates proved by the SNARK will replace the on-chain computation in the next version, the \"incremental tree\" algorithm is not applied (\"incremental tree\" is easier for operators since `proofSiblings` unneeded as input params on tree leafs insertions/updates).",
+    "errors": {
+      "ECDSAInvalidSignature()": [
+        {
+          "details": "The signature derives the `address(0)`."
+        }
+      ],
+      "ECDSAInvalidSignatureLength(uint256)": [
+        {
+          "details": "The signature has an invalid length."
+        }
+      ],
+      "ECDSAInvalidSignatureS(bytes32)": [
+        {
+          "details": "The signature has an S value that is in the upper half order."
+        }
+      ]
+    },
+    "kind": "dev",
+    "methods": {
+      "isAcceptablePubKey((uint256,uint256))": {
+        "details": "The pub key must be a point in the subgroup (excluding the identity) of Baby Jubjub curve points in the twisted Edwards form."
+      },
+      "revokeKey(uint16,uint16,(uint256,uint256),uint32,bytes32[])": {
+        "details": "It sets the `expiry` to 0, which is an indicator of a revoked key."
+      }
+    },
+    "stateVariables": {
+      "_currentRoot": {
+        "details": "Root of the merkle tree with registered keys"
+      },
+      "_numKeyrings": {
+        "details": "Number of keyrings added (created) so far"
+      },
+      "_totalNumAllocatedKeys": {
+        "details": "Number of leafs reserved for public keys so far"
+      },
+      "_totalNumRegisteredKeys": {
+        "details": "Number of public keys registered so far"
+      },
+      "_treeLockedTillTime": {
+        "details": "(UNIX) time till when operators can't register/revoke/extend keysOwner may temporally disable the tree changes by operators to avoid the \"race condition\" (if multiple parties try to update simultaneously)"
+      }
+    },
+    "title": "ProvidersKeys",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "isAcceptablePubKey((uint256,uint256))": {
+        "notice": "Returns true if the pubKey is acceptable. Off-chain call (gas cost is high) advised to precede pubKey registration."
+      },
+      "keyringIds(uint16)": {
+        "notice": "Mapping from key index to keyring ID"
+      },
+      "keyrings(uint16)": {
+        "notice": "Mapping from keyring ID to Keyring data"
+      },
+      "packPubKey((uint256,uint256))": {
+        "notice": "It returns the pubKey in the packed form for the given pubKey."
+      },
+      "revokeKey(uint16,uint16,(uint256,uint256),uint32,bytes32[])": {
+        "notice": "Revoke registered key. Either the operator or the owner may call."
+      }
+    },
+    "notice": "It registers public keys of providers, such as KYC/KYT attesters, zone operators, data escrow (or \"data safe\") operators. Each public key is stored as a leaf of a binary merkle tree. Every time the tree is updated, this contract calls `PantherStaticTree` smart contract to notify on update of the tree root. The contract owner allocates leafs (\"keyring\") to a provider and authorizes an address that may register provider's keys. This way a provider gets the \"keyring\" where the provider may put that many keys as the owner allocated.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 46924,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "forestRoot",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bytes32"
+      },
+      {
+        "astId": 46926,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "staticRoot",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_bytes32"
+      },
+      {
+        "astId": 46930,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_endGap",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_array(t_bytes32)100_storage"
+      },
+      {
+        "astId": 46983,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_startGap",
+        "offset": 0,
+        "slot": "102",
+        "type": "t_array(t_bytes32)13000_storage"
+      },
+      {
+        "astId": 40962,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "keyrings",
+        "offset": 0,
+        "slot": "13102",
+        "type": "t_mapping(t_uint16,t_struct(Keyring)40956_storage)"
+      },
+      {
+        "astId": 40967,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "keyringIds",
+        "offset": 0,
+        "slot": "13103",
+        "type": "t_mapping(t_uint16,t_uint16)"
+      },
+      {
+        "astId": 40970,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_numKeyrings",
+        "offset": 0,
+        "slot": "13104",
+        "type": "t_uint16"
+      },
+      {
+        "astId": 40973,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_totalNumRegisteredKeys",
+        "offset": 2,
+        "slot": "13104",
+        "type": "t_uint16"
+      },
+      {
+        "astId": 40976,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_totalNumAllocatedKeys",
+        "offset": 4,
+        "slot": "13104",
+        "type": "t_uint16"
+      },
+      {
+        "astId": 40979,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_treeLockedTillTime",
+        "offset": 6,
+        "slot": "13104",
+        "type": "t_uint32"
+      },
+      {
+        "astId": 40982,
+        "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+        "label": "_currentRoot",
+        "offset": 0,
+        "slot": "13105",
+        "type": "t_bytes32"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_bytes32)100_storage": {
+        "base": "t_bytes32",
+        "encoding": "inplace",
+        "label": "bytes32[100]",
+        "numberOfBytes": "3200"
+      },
+      "t_array(t_bytes32)13000_storage": {
+        "base": "t_bytes32",
+        "encoding": "inplace",
+        "label": "bytes32[13000]",
+        "numberOfBytes": "416000"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_enum(STATUS)40942": {
+        "encoding": "inplace",
+        "label": "enum ProvidersKeysRegistry.STATUS",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_uint16,t_struct(Keyring)40956_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint16",
+        "label": "mapping(uint16 => struct ProvidersKeysRegistry.Keyring)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Keyring)40956_storage"
+      },
+      "t_mapping(t_uint16,t_uint16)": {
+        "encoding": "mapping",
+        "key": "t_uint16",
+        "label": "mapping(uint16 => uint16)",
+        "numberOfBytes": "32",
+        "value": "t_uint16"
+      },
+      "t_struct(Keyring)40956_storage": {
+        "encoding": "inplace",
+        "label": "struct ProvidersKeysRegistry.Keyring",
+        "members": [
+          {
+            "astId": 40944,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "operator",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 40947,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "status",
+            "offset": 20,
+            "slot": "0",
+            "type": "t_enum(STATUS)40942"
+          },
+          {
+            "astId": 40949,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "numKeys",
+            "offset": 21,
+            "slot": "0",
+            "type": "t_uint16"
+          },
+          {
+            "astId": 40951,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "numAllocKeys",
+            "offset": 23,
+            "slot": "0",
+            "type": "t_uint16"
+          },
+          {
+            "astId": 40953,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "registrationBlock",
+            "offset": 25,
+            "slot": "0",
+            "type": "t_uint32"
+          },
+          {
+            "astId": 40955,
+            "contract": "contracts/protocol/v1/trees/facets/ProvidersKeysRegistry.sol:ProvidersKeysRegistry",
+            "label": "_unused",
+            "offset": 29,
+            "slot": "0",
+            "type": "t_uint24"
+          }
+        ],
+        "numberOfBytes": "32"
+      },
+      "t_uint16": {
+        "encoding": "inplace",
+        "label": "uint16",
+        "numberOfBytes": "2"
+      },
+      "t_uint24": {
+        "encoding": "inplace",
+        "label": "uint24",
+        "numberOfBytes": "3"
+      },
+      "t_uint32": {
+        "encoding": "inplace",
+        "label": "uint32",
+        "numberOfBytes": "4"
+      }
+    }
+  }
+}

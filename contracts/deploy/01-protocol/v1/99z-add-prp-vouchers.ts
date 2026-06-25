@@ -5,7 +5,7 @@ import {BigNumber} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE} from './parameters';
+import {getGasPrice} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -70,7 +70,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             limit,
             amount,
             enabled,
-            {gasPrice: GAS_PRICE},
+            {gasPrice: await getGasPrice(hre)},
         );
         const res = await tx.wait();
         console.log(`${name} voucher terms updated`, res.transactionHash);

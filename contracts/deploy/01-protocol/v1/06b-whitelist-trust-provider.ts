@@ -4,7 +4,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-import {GAS_PRICE, COMPLIANCE_TREASURY} from './parameters';
+import {getGasPrice, COMPLIANCE_TREASURY} from './parameters';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {
@@ -34,7 +34,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const tx = await complianceTreasury.updateTrustProvider(
         desiredTrustProvider,
-        {gasPrice: GAS_PRICE},
+        {gasPrice: await getGasPrice(hre)},
     );
     const res = await tx.wait();
 

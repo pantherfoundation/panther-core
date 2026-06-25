@@ -1,9 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation
 
+import '@nomiclabs/hardhat-ethers';
 import {ethers} from 'ethers';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
-export const GAS_PRICE = 300e9; // Gas price in gwei
+// Percentage markup applied on top of the network gas price to reduce the
+// risk of transactions getting stuck (120 = +20%).
+export const GAS_PRICE_MARKUP_PCT = 120;
+
+// Reads the current gas price from the connected network and applies
+// GAS_PRICE_MARKUP_PCT as a safety buffer. Replaces the former fixed
+// GAS_PRICE constant so deploys adapt to live network conditions.
+export async function getGasPrice(
+    hre: HardhatRuntimeEnvironment,
+): Promise<ethers.BigNumber> {
+    const gasPrice = await hre.ethers.provider.getGasPrice();
+    return gasPrice.mul(GAS_PRICE_MARKUP_PCT).div(100);
+}
 export const NATIVE_ADDRESS = ethers.constants.AddressZero; // zero address for native token
 
 export const maxBlocktimeOffset = '600'; // 10 mins

@@ -1,0 +1,873 @@
+{
+  "address": "0x31f63DD9Dd1ba6A4b265A31686139Af7F1cdf923",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_zkpToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_nftToken",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "nftCount",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "firstNftId",
+          "type": "uint16"
+        }
+      ],
+      "name": "Claimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "tokenType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "extAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "extAmount",
+              "type": "uint96"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct LockData",
+          "name": "data",
+          "type": "tuple"
+        }
+      ],
+      "name": "Locked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountOrCount",
+          "type": "uint256"
+        }
+      ],
+      "name": "OwnerSwept",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "root",
+          "type": "bytes32"
+        }
+      ],
+      "name": "RootSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "tokenType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "extAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "extAmount",
+              "type": "uint96"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct LockData",
+          "name": "data",
+          "type": "tuple"
+        }
+      ],
+      "name": "Unlocked",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "CLAIM_WINDOW",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FIRST_NFT_ID",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LAST_NFT_ID",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "NFT_TOKEN",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "OWNER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ZKP_TOKEN",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "nftCount",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "claimNft",
+          "type": "bool"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimOpenedAt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "claimed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "isClaimOpen",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "nftCount",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "claimNft",
+          "type": "bool"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "isClaimable",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "tokenType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "extAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "extAmount",
+              "type": "uint96"
+            }
+          ],
+          "internalType": "struct LockData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "name": "lockAsset",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nextNftId",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nftsClaimed",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nftsRemaining",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "onERC1155Received",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "onERC721Received",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "ownerSweepErc20",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "ownerSweepNft",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "root",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_root",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setRoot",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "sweepUnlocksAt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "tokenType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "extAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "extAmount",
+              "type": "uint96"
+            }
+          ],
+          "internalType": "struct LockData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "name": "unlockAsset",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zkpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "nftCount",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "verifyClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x0fadf4684514ddd6b20055923d4cc8d76703f9f9c2ef1046e534b188e890e7b0",
+  "receipt": {
+    "to": null,
+    "from": "0xb83A3094272B6425f89BB5590b48928e2374eE11",
+    "contractAddress": "0x31f63DD9Dd1ba6A4b265A31686139Af7F1cdf923",
+    "transactionIndex": 123,
+    "gasUsed": "1376757",
+    "logsBloom": "0x00000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000c00000000000000000000200000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0xd79a73a45c6364c876673f9ee16706f2ad532f3178a56db6392a7e5a4186d41a",
+    "transactionHash": "0x0fadf4684514ddd6b20055923d4cc8d76703f9f9c2ef1046e534b188e890e7b0",
+    "logs": [
+      {
+        "transactionIndex": 123,
+        "blockNumber": 87223701,
+        "transactionHash": "0x0fadf4684514ddd6b20055923d4cc8d76703f9f9c2ef1046e534b188e890e7b0",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000b83a3094272b6425f89bb5590b48928e2374ee11",
+          "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000151a5938691c1c1000000000000000000000000000000000000000000000000ea2fc1e576f98f2600000000000000000000000000000000000000000013b047036610bad55484f5000000000000000000000000000000000000000000000000e8de1c51f067cd6500000000000000000000000000000000000000000013b04704b7b64e5be646b6",
+        "logIndex": 1460,
+        "blockHash": "0xd79a73a45c6364c876673f9ee16706f2ad532f3178a56db6392a7e5a4186d41a"
+      }
+    ],
+    "blockNumber": 87223701,
+    "cumulativeGasUsed": "44178724",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x208Fb9169BBec5915722e0AfF8B0eeEdaBf8a6f0",
+    "0x9A06Db14D639796B25A6ceC6A1bf614fd98815EC",
+    "0xE5da4955cBC480Eb9Bf9534def229F9D8339eE6d"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "e606e386146c423da856c234f6e25b45",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.16+commit.07a7930e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_zkpToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_nftToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"nftCount\",\"type\":\"uint16\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"firstNftId\",\"type\":\"uint16\"}],\"name\":\"Claimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"extAccount\",\"type\":\"address\"},{\"internalType\":\"uint96\",\"name\":\"extAmount\",\"type\":\"uint96\"}],\"indexed\":false,\"internalType\":\"struct LockData\",\"name\":\"data\",\"type\":\"tuple\"}],\"name\":\"Locked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amountOrCount\",\"type\":\"uint256\"}],\"name\":\"OwnerSwept\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"}],\"name\":\"RootSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"extAccount\",\"type\":\"address\"},{\"internalType\":\"uint96\",\"name\":\"extAmount\",\"type\":\"uint96\"}],\"indexed\":false,\"internalType\":\"struct LockData\",\"name\":\"data\",\"type\":\"tuple\"}],\"name\":\"Unlocked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"CLAIM_WINDOW\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FIRST_NFT_ID\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"LAST_NFT_ID\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"NFT_TOKEN\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OWNER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ZKP_TOKEN\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"nftCount\",\"type\":\"uint16\"},{\"internalType\":\"bool\",\"name\":\"claimNft\",\"type\":\"bool\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimOpenedAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"claimed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isClaimOpen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"nftCount\",\"type\":\"uint16\"},{\"internalType\":\"bool\",\"name\":\"claimNft\",\"type\":\"bool\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"isClaimable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"extAccount\",\"type\":\"address\"},{\"internalType\":\"uint96\",\"name\":\"extAmount\",\"type\":\"uint96\"}],\"internalType\":\"struct LockData\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"lockAsset\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextNftId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nftsClaimed\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nftsRemaining\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"ownerSweepErc20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"}],\"name\":\"ownerSweepNft\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"root\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_root\",\"type\":\"bytes32\"}],\"name\":\"setRoot\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sweepUnlocksAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"extAccount\",\"type\":\"address\"},{\"internalType\":\"uint96\",\"name\":\"extAmount\",\"type\":\"uint96\"}],\"internalType\":\"struct LockData\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"unlockAsset\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"zkpAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"nftCount\",\"type\":\"uint16\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"verifyClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"claim(uint256,uint16,bool,bytes32[])\":{\"params\":{\"claimNft\":\"If `false`, NFTs are NOT dispensed and the NFT cursor                  is NOT advanced. The caller still loses the chance to                  claim later (`claimed` flag is set). Useful for users                  who only want their ZKP and want to skip the gas of                  receiving NFTs.\",\"nftCount\":\"Number of PNFTs the caller is entitled to (committed                  in the Merkle leaf). Must match the leaf even if                  `claimNft == false`.\",\"proof\":\"Merkle proof for leaf                  `keccak256(bytes.concat(keccak256(abi.encode(                      msg.sender, zkpAmount, nftCount                  ))))`.\",\"zkpAmount\":\"Amount of ZKP to receive (in wei).\"}}},\"title\":\"VaultV0Frozen\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"CLAIM_WINDOW()\":{\"notice\":\"Time after `setRoot` during which only users can withdraw via `claim`. The owner sweep functions revert until this window has passed.\"},\"FIRST_NFT_ID()\":{\"notice\":\"First PNFT tokenId held by this Vault (inclusive). Verified on-chain: PNftToken's internal counter starts at 1, and `ownerOf(0)` reverts (\\\"invalid token ID\\\") at the time of deployment.\"},\"LAST_NFT_ID()\":{\"notice\":\"Last PNFT tokenId held by this Vault (inclusive). Verified on-chain: `NFT.balanceOf(vault) == 2000`, `ownerOf(2000) == vault`, and `ownerOf(2001)` reverts at the time of deployment.\"},\"NFT_TOKEN()\":{\"notice\":\"The ERC-721 token (PNFT) that funded the advanced-stake rewards.\"},\"OWNER()\":{\"notice\":\"The owner who has privileged rights\"},\"ZKP_TOKEN()\":{\"notice\":\"The ERC-20 token (PZKP) that funded the advanced-stake rewards.\"},\"claim(uint256,uint16,bool,bytes32[])\":{\"notice\":\"Claim the caller's entitlement.\"},\"claimOpenedAt()\":{\"notice\":\"Block timestamp at which `setRoot` was called. The owner sweep functions unlock at `claimOpenedAt + CLAIM_WINDOW`. Zero until `setRoot` is called.\"},\"claimed(address)\":{\"notice\":\"Per-address claim flag. A user can claim at most once.\"},\"isClaimOpen()\":{\"notice\":\"Whether claims are open (i.e. the Merkle root has been set).\"},\"isClaimable(address,uint256,uint16,bool,bytes32[])\":{\"notice\":\"Combined predicate the UI can hit in a single eth_call: would `claim(zkpAmount, nftCount, claimNft, proof)` from `user` currently succeed?\"},\"nextNftId()\":{\"notice\":\"The PNFT tokenId that the next claim would start at. The next claim of `n` NFTs receives ids `[nextNftId, nextNftId + n - 1]`.\"},\"nftsClaimed()\":{\"notice\":\"Total PNFTs dispensed so far. The next claim starts at `FIRST_NFT_ID + nftsClaimed`.\"},\"nftsRemaining()\":{\"notice\":\"Number of PNFTs still held by this Vault and not yet dispensed.\"},\"ownerSweepErc20(address,address,uint256)\":{\"notice\":\"Sweep an ERC-20 balance to `to`. Intended for residual ZKP that stays unclaimed after the 1-year claim window ends.\"},\"ownerSweepNft(address,uint256[])\":{\"notice\":\"Sweep a list of PNFT tokenIds to `to`. Used to recover NFTs that no one claimed after the 1-year claim window ends.\"},\"root()\":{\"notice\":\"Merkle root committing the (user, zkpAmount, nftCount) tuples. Settable exactly once by `OWNER`, in a follow-up proposal after this implementation is in place and the entitlement set is finalised.\"},\"setRoot(bytes32)\":{\"notice\":\"Commit the entitlement Merkle root. May only be called once. Records the timestamp so the owner sweep functions unlock exactly `CLAIM_WINDOW` later.\"},\"sweepUnlocksAt()\":{\"notice\":\"Unix timestamp at which the owner sweep functions unlock. Returns 0 if `setRoot` has not yet been called.\"},\"verifyClaim(address,uint256,uint16,bytes32[])\":{\"notice\":\"Verify the Merkle proof for the (`user`, `zkpAmount`, `nftCount`) tuple against the current root. Does NOT check the `claimed` flag.\"}},\"notice\":\"Frozen replacement implementation for the v0 Vault behind the existing Vault proxy on Polygon. Effects of upgrading the Vault proxy to this implementation:   - `lockAsset` and `unlockAsset` always revert, regardless of caller.     `PantherPoolV0.exit()` and `PantherPoolV0.generateDeposits()` therefore     revert too \\u2014 the v0 MASP path is permanently disabled.   - Rewards previously locked here (ZKP and PNFT) become claimable through     a Merkle-tree-based `claim` function, with eligibility computed off-chain     from the on-chain stake / reward / exit history and committed via a     single Merkle `root` set once by the new owner. Storage layout: the prior implementation had no storage of its own (only immutables in `ImmutableOwnable`). Variables added here therefore start at slot 0 with no collision risk. Do not reorder, remove, or insert into the storage variable list below without a coordinated migration.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocol/v0/VaultV0Frozen.sol\":\"VaultV0Frozen\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/utils/cryptography/MerkleProof.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.2) (utils/cryptography/MerkleProof.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev These functions deal with verification of Merkle Tree proofs.\\n *\\n * The tree and the proofs can be generated using our\\n * https://github.com/OpenZeppelin/merkle-tree[JavaScript library].\\n * You will find a quickstart guide in the readme.\\n *\\n * WARNING: You should avoid using leaf values that are 64 bytes long prior to\\n * hashing, or use a hash function other than keccak256 for hashing leaves.\\n * This is because the concatenation of a sorted pair of internal nodes in\\n * the merkle tree could be reinterpreted as a leaf value.\\n * OpenZeppelin's JavaScript library generates merkle trees that are safe\\n * against this attack out of the box.\\n */\\nlibrary MerkleProof {\\n    /**\\n     * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree\\n     * defined by `root`. For this, a `proof` must be provided, containing\\n     * sibling hashes on the branch from the leaf to the root of the tree. Each\\n     * pair of leaves and each pair of pre-images are assumed to be sorted.\\n     */\\n    function verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\\n        return processProof(proof, leaf) == root;\\n    }\\n\\n    /**\\n     * @dev Calldata version of {verify}\\n     *\\n     * _Available since v4.7._\\n     */\\n    function verifyCalldata(bytes32[] calldata proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\\n        return processProofCalldata(proof, leaf) == root;\\n    }\\n\\n    /**\\n     * @dev Returns the rebuilt hash obtained by traversing a Merkle tree up\\n     * from `leaf` using `proof`. A `proof` is valid if and only if the rebuilt\\n     * hash matches the root of the tree. When processing the proof, the pairs\\n     * of leafs & pre-images are assumed to be sorted.\\n     *\\n     * _Available since v4.4._\\n     */\\n    function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32) {\\n        bytes32 computedHash = leaf;\\n        for (uint256 i = 0; i < proof.length; i++) {\\n            computedHash = _hashPair(computedHash, proof[i]);\\n        }\\n        return computedHash;\\n    }\\n\\n    /**\\n     * @dev Calldata version of {processProof}\\n     *\\n     * _Available since v4.7._\\n     */\\n    function processProofCalldata(bytes32[] calldata proof, bytes32 leaf) internal pure returns (bytes32) {\\n        bytes32 computedHash = leaf;\\n        for (uint256 i = 0; i < proof.length; i++) {\\n            computedHash = _hashPair(computedHash, proof[i]);\\n        }\\n        return computedHash;\\n    }\\n\\n    /**\\n     * @dev Returns true if the `leaves` can be simultaneously proven to be a part of a merkle tree defined by\\n     * `root`, according to `proof` and `proofFlags` as described in {processMultiProof}.\\n     *\\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\\n     *\\n     * _Available since v4.7._\\n     */\\n    function multiProofVerify(\\n        bytes32[] memory proof,\\n        bool[] memory proofFlags,\\n        bytes32 root,\\n        bytes32[] memory leaves\\n    ) internal pure returns (bool) {\\n        return processMultiProof(proof, proofFlags, leaves) == root;\\n    }\\n\\n    /**\\n     * @dev Calldata version of {multiProofVerify}\\n     *\\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\\n     *\\n     * _Available since v4.7._\\n     */\\n    function multiProofVerifyCalldata(\\n        bytes32[] calldata proof,\\n        bool[] calldata proofFlags,\\n        bytes32 root,\\n        bytes32[] memory leaves\\n    ) internal pure returns (bool) {\\n        return processMultiProofCalldata(proof, proofFlags, leaves) == root;\\n    }\\n\\n    /**\\n     * @dev Returns the root of a tree reconstructed from `leaves` and sibling nodes in `proof`. The reconstruction\\n     * proceeds by incrementally reconstructing all inner nodes by combining a leaf/inner node with either another\\n     * leaf/inner node or a proof sibling node, depending on whether each `proofFlags` item is true or false\\n     * respectively.\\n     *\\n     * CAUTION: Not all merkle trees admit multiproofs. To use multiproofs, it is sufficient to ensure that: 1) the tree\\n     * is complete (but not necessarily perfect), 2) the leaves to be proven are in the opposite order they are in the\\n     * tree (i.e., as seen from right to left starting at the deepest layer and continuing at the next layer).\\n     *\\n     * _Available since v4.7._\\n     */\\n    function processMultiProof(\\n        bytes32[] memory proof,\\n        bool[] memory proofFlags,\\n        bytes32[] memory leaves\\n    ) internal pure returns (bytes32 merkleRoot) {\\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\\n        // the merkle tree.\\n        uint256 leavesLen = leaves.length;\\n        uint256 proofLen = proof.length;\\n        uint256 totalHashes = proofFlags.length;\\n\\n        // Check proof validity.\\n        require(leavesLen + proofLen - 1 == totalHashes, \\\"MerkleProof: invalid multiproof\\\");\\n\\n        // The xxxPos values are \\\"pointers\\\" to the next value to consume in each array. All accesses are done using\\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \\\"pop\\\".\\n        bytes32[] memory hashes = new bytes32[](totalHashes);\\n        uint256 leafPos = 0;\\n        uint256 hashPos = 0;\\n        uint256 proofPos = 0;\\n        // At each step, we compute the next hash using two values:\\n        // - a value from the \\\"main queue\\\". If not all leaves have been consumed, we get the next leaf, otherwise we\\n        //   get the next hash.\\n        // - depending on the flag, either another value from the \\\"main queue\\\" (merging branches) or an element from the\\n        //   `proof` array.\\n        for (uint256 i = 0; i < totalHashes; i++) {\\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\\n            bytes32 b = proofFlags[i]\\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\\n                : proof[proofPos++];\\n            hashes[i] = _hashPair(a, b);\\n        }\\n\\n        if (totalHashes > 0) {\\n            require(proofPos == proofLen, \\\"MerkleProof: invalid multiproof\\\");\\n            unchecked {\\n                return hashes[totalHashes - 1];\\n            }\\n        } else if (leavesLen > 0) {\\n            return leaves[0];\\n        } else {\\n            return proof[0];\\n        }\\n    }\\n\\n    /**\\n     * @dev Calldata version of {processMultiProof}.\\n     *\\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\\n     *\\n     * _Available since v4.7._\\n     */\\n    function processMultiProofCalldata(\\n        bytes32[] calldata proof,\\n        bool[] calldata proofFlags,\\n        bytes32[] memory leaves\\n    ) internal pure returns (bytes32 merkleRoot) {\\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\\n        // the merkle tree.\\n        uint256 leavesLen = leaves.length;\\n        uint256 proofLen = proof.length;\\n        uint256 totalHashes = proofFlags.length;\\n\\n        // Check proof validity.\\n        require(leavesLen + proofLen - 1 == totalHashes, \\\"MerkleProof: invalid multiproof\\\");\\n\\n        // The xxxPos values are \\\"pointers\\\" to the next value to consume in each array. All accesses are done using\\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \\\"pop\\\".\\n        bytes32[] memory hashes = new bytes32[](totalHashes);\\n        uint256 leafPos = 0;\\n        uint256 hashPos = 0;\\n        uint256 proofPos = 0;\\n        // At each step, we compute the next hash using two values:\\n        // - a value from the \\\"main queue\\\". If not all leaves have been consumed, we get the next leaf, otherwise we\\n        //   get the next hash.\\n        // - depending on the flag, either another value from the \\\"main queue\\\" (merging branches) or an element from the\\n        //   `proof` array.\\n        for (uint256 i = 0; i < totalHashes; i++) {\\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\\n            bytes32 b = proofFlags[i]\\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\\n                : proof[proofPos++];\\n            hashes[i] = _hashPair(a, b);\\n        }\\n\\n        if (totalHashes > 0) {\\n            require(proofPos == proofLen, \\\"MerkleProof: invalid multiproof\\\");\\n            unchecked {\\n                return hashes[totalHashes - 1];\\n            }\\n        } else if (leavesLen > 0) {\\n            return leaves[0];\\n        } else {\\n            return proof[0];\\n        }\\n    }\\n\\n    function _hashPair(bytes32 a, bytes32 b) private pure returns (bytes32) {\\n        return a < b ? _efficientHash(a, b) : _efficientHash(b, a);\\n    }\\n\\n    function _efficientHash(bytes32 a, bytes32 b) private pure returns (bytes32 value) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            mstore(0x00, a)\\n            mstore(0x20, b)\\n            value := keccak256(0x00, 0x40)\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xcf688741f79f4838d5301dcf72d0af9eff11bbab6ab0bb112ad144c7fb672dac\",\"license\":\"MIT\"},\"contracts/common/ImmutableOwnable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/// @title ImmutableOwnable\\nabstract contract ImmutableOwnable {\\n    /// @notice The owner who has privileged rights\\n    address public immutable OWNER;\\n\\n    /// @dev Throws if called by any account other than the {OWNER}.\\n    modifier onlyOwner() {\\n        require(OWNER == msg.sender, \\\"ImmOwn: unauthorized\\\");\\n        _;\\n    }\\n\\n    constructor(address _owner) {\\n        require(_owner != address(0), \\\"ImmOwn: zero owner address\\\");\\n        OWNER = _owner;\\n    }\\n}\\n\",\"keccak256\":\"0x7061d97b349f7c4344649a425e86e7628937d9fe15fc635663b45aaca8f698a7\",\"license\":\"MIT\"},\"contracts/common/NonReentrant.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\n/**\\n * @title NonReentrant\\n * @notice It provides reentrancy guard.\\n * The code borrowed from openzeppelin-contracts.\\n * Unlike original, this version requires neither `constructor` no `init` call.\\n */\\nabstract contract NonReentrant {\\n    uint256 private constant _NOT_ENTERED = 1;\\n    uint256 private constant _ENTERED = 2;\\n\\n    uint256 private _reentrancyStatus;\\n\\n    modifier nonReentrant() {\\n        // Being called right after deployment, when _reentrancyStatus is 0 ,\\n        // it does not revert (which is expected behaviour)\\n        require(_reentrancyStatus != _ENTERED, \\\"claimErc20: reentrant call\\\");\\n\\n        // Any calls to nonReentrant after this point will fail\\n        _reentrancyStatus = _ENTERED;\\n\\n        _;\\n\\n        // By storing the original value once again, a refund is triggered (see\\n        // https://eips.ethereum.org/EIPS/eip-2200)\\n        _reentrancyStatus = _NOT_ENTERED;\\n    }\\n}\\n\",\"keccak256\":\"0x59468c374913ef13a931b05c51097598cb913102981194ef115a8062f44745b4\",\"license\":\"MIT\"},\"contracts/common/OnERC1155Received.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.16;\\n\\n/// @dev Implementation of ERC1155:onERC1155Received interface\\nabstract contract OnERC1155Received {\\n    // It accepts all tokens\\n    function onERC1155Received(\\n        address /* operator */,\\n        address /* from */,\\n        uint256 /* id */,\\n        uint256 /* value */,\\n        bytes calldata /* data */\\n    ) external pure virtual returns (bytes4) {\\n        // bytes4(keccak256(\\\"onERC1155Received(address,address,uint256,uint256,bytes)\\\"))\\n        return 0xf23a6e61;\\n    }\\n}\\n\",\"keccak256\":\"0xb85d91d844b14d2166a29b73af3d6d50dc80626d13b7837461ea5aee241158ce\",\"license\":\"MIT\"},\"contracts/common/OnERC721Received.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.16;\\n\\n/// @dev Implementation of the ERC721TokenReceiver interface\\nabstract contract OnERC721Received {\\n    // It accepts all tokens\\n    function onERC721Received(\\n        address, // operator\\n        address, // from\\n        uint256, // tokenId\\n        bytes memory // data\\n    ) external virtual returns (bytes4) {\\n        // bytes4(keccak256(\\\"onERC721Received(address,address,uint256,bytes)\\\"))\\n        return 0x150b7a02;\\n    }\\n}\\n\",\"keccak256\":\"0x3c349bf89398e2289b21f8fd1dbfb679b8ceafaaadbda2b7c745491351626b4f\",\"license\":\"MIT\"},\"contracts/common/Types.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\n// slither-disable-next-line solc-version\\npragma solidity ^0.8.4;\\n\\nstruct G1Point {\\n    uint256 x;\\n    uint256 y;\\n}\\n\\n// Encoding of field elements is: X[0] * z + X[1]\\nstruct G2Point {\\n    uint256[2] x;\\n    uint256[2] y;\\n}\\n\\n// Verification key for SNARK\\nstruct VerifyingKey {\\n    G1Point alfa1;\\n    G2Point beta2;\\n    G2Point gamma2;\\n    G2Point delta2;\\n    G1Point[] ic;\\n}\\n\\nstruct SnarkProof {\\n    G1Point a;\\n    G2Point b;\\n    G1Point c;\\n}\\n\\nstruct ElGamalCiphertext {\\n    G1Point c1;\\n    G1Point c2;\\n}\\n\\n// For MASP V0 and V1\\nstruct ZAsset {\\n    // reserved (for networkId, tokenIdPolicy. etc..)\\n    uint64 _unused;\\n    // 0x00 by default\\n    uint8 version;\\n    // Refer to Constants.sol\\n    uint8 status;\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // 0x00 - no scaling\\n    uint8 scale;\\n    // token contract address\\n    address token;\\n}\\n\\nstruct LockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint96 extAmount;\\n}\\n\\nstruct SaltedLockData {\\n    // Refer to Constants.sol\\n    uint8 tokenType;\\n    // Token contract address\\n    address token;\\n    // For ERC-721, ERC-1155 tokens\\n    uint256 tokenId;\\n    // The salt to use w/ CREATE2\\n    bytes32 salt;\\n    // The account to transfer the token from/to (on `lock`/`unlock`)\\n    address extAccount;\\n    // The token amount to transfer to/from the Vault (on `lock`/`unlock`)\\n    uint256 extAmount;\\n}\\n\",\"keccak256\":\"0x362bba813750a52d698bc1b97a8d588875aaefea15ac889c8dafbd07c54a3fea\",\"license\":\"MIT\"},\"contracts/protocol/v0/VaultV0Frozen.sol\":{\"content\":\"// SPDX-License-Identifier: GPL-3.0-only\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity 0.8.16;\\n\\nimport \\\"@openzeppelin/contracts/utils/cryptography/MerkleProof.sol\\\";\\n\\nimport \\\"../../common/ImmutableOwnable.sol\\\";\\nimport \\\"../../common/NonReentrant.sol\\\";\\nimport \\\"../../common/OnERC721Received.sol\\\";\\nimport \\\"../../common/OnERC1155Received.sol\\\";\\nimport { LockData } from \\\"../../common/Types.sol\\\";\\nimport \\\"./interfaces/IVaultV0.sol\\\";\\n\\ninterface IErc20Min {\\n    function transfer(address to, uint256 amount) external returns (bool);\\n    function balanceOf(address account) external view returns (uint256);\\n}\\n\\ninterface IErc721Min {\\n    function transferFrom(address from, address to, uint256 tokenId) external;\\n    function ownerOf(uint256 tokenId) external view returns (address);\\n    function balanceOf(address owner) external view returns (uint256);\\n}\\n\\n/**\\n * @title VaultV0Frozen\\n * @notice Frozen replacement implementation for the v0 Vault behind\\n * the existing Vault proxy on Polygon.\\n *\\n * Effects of upgrading the Vault proxy to this implementation:\\n *   - `lockAsset` and `unlockAsset` always revert, regardless of caller.\\n *     `PantherPoolV0.exit()` and `PantherPoolV0.generateDeposits()` therefore\\n *     revert too \\u2014 the v0 MASP path is permanently disabled.\\n *   - Rewards previously locked here (ZKP and PNFT) become claimable through\\n *     a Merkle-tree-based `claim` function, with eligibility computed off-chain\\n *     from the on-chain stake / reward / exit history and committed via a\\n *     single Merkle `root` set once by the new owner.\\n *\\n * Storage layout: the prior implementation had no storage of its own (only\\n * immutables in `ImmutableOwnable`). Variables added here therefore start at\\n * slot 0 with no collision risk. Do not reorder, remove, or insert into the\\n * storage variable list below without a coordinated migration.\\n */\\ncontract VaultV0Frozen is\\n    ImmutableOwnable,\\n    NonReentrant,\\n    OnERC721Received,\\n    OnERC1155Received,\\n    IVaultV0\\n{\\n    // --- Immutables (live in implementation bytecode, not storage) ---\\n\\n    /// @notice The ERC-20 token (PZKP) that funded the advanced-stake rewards.\\n    address public immutable ZKP_TOKEN;\\n    /// @notice The ERC-721 token (PNFT) that funded the advanced-stake rewards.\\n    address public immutable NFT_TOKEN;\\n\\n    // --- Constants ---\\n\\n    /// @notice First PNFT tokenId held by this Vault (inclusive).\\n    /// Verified on-chain: PNftToken's internal counter starts at 1, and\\n    /// `ownerOf(0)` reverts (\\\"invalid token ID\\\") at the time of deployment.\\n    uint16 public constant FIRST_NFT_ID = 1;\\n    /// @notice Last PNFT tokenId held by this Vault (inclusive).\\n    /// Verified on-chain: `NFT.balanceOf(vault) == 2000`, `ownerOf(2000) == vault`,\\n    /// and `ownerOf(2001)` reverts at the time of deployment.\\n    uint16 public constant LAST_NFT_ID = 2000;\\n    /// @notice Time after `setRoot` during which only users can withdraw via\\n    /// `claim`. The owner sweep functions revert until this window has passed.\\n    uint256 public constant CLAIM_WINDOW = 365 days;\\n\\n    // --- Storage (slot 0 is _reentrancyStatus from NonReentrant) ---\\n\\n    /// @notice Merkle root committing the (user, zkpAmount, nftCount) tuples.\\n    /// Settable exactly once by `OWNER`, in a follow-up proposal after this\\n    /// implementation is in place and the entitlement set is finalised.\\n    bytes32 public root;\\n\\n    /// @notice Per-address claim flag. A user can claim at most once.\\n    mapping(address => bool) public claimed;\\n\\n    /// @notice Total PNFTs dispensed so far. The next claim starts at\\n    /// `FIRST_NFT_ID + nftsClaimed`.\\n    uint16 public nftsClaimed;\\n\\n    /// @notice Block timestamp at which `setRoot` was called. The owner sweep\\n    /// functions unlock at `claimOpenedAt + CLAIM_WINDOW`. Zero until\\n    /// `setRoot` is called.\\n    uint256 public claimOpenedAt;\\n\\n    // --- Events ---\\n\\n    event RootSet(bytes32 root);\\n    event Claimed(\\n        address indexed user,\\n        uint256 zkpAmount,\\n        uint16 nftCount,\\n        uint16 firstNftId\\n    );\\n    event OwnerSwept(\\n        address indexed token,\\n        address indexed to,\\n        uint256 amountOrCount\\n    );\\n\\n    constructor(\\n        address _owner,\\n        address _zkpToken,\\n        address _nftToken\\n    ) ImmutableOwnable(_owner) {\\n        require(\\n            _zkpToken != address(0) && _nftToken != address(0),\\n            \\\"VFrozen: zero token\\\"\\n        );\\n        ZKP_TOKEN = _zkpToken;\\n        NFT_TOKEN = _nftToken;\\n    }\\n\\n    // --- IVaultV0 surface: frozen ---\\n\\n    function lockAsset(LockData calldata) external pure override {\\n        revert(\\\"VFrozen: frozen\\\");\\n    }\\n\\n    function unlockAsset(LockData calldata) external pure override {\\n        revert(\\\"VFrozen: frozen\\\");\\n    }\\n\\n    // --- Claim path ---\\n\\n    /// @notice Commit the entitlement Merkle root. May only be called once.\\n    /// Records the timestamp so the owner sweep functions unlock exactly\\n    /// `CLAIM_WINDOW` later.\\n    function setRoot(bytes32 _root) external onlyOwner {\\n        require(root == bytes32(0), \\\"VFrozen: root set\\\");\\n        require(_root != bytes32(0), \\\"VFrozen: zero root\\\");\\n        root = _root;\\n        claimOpenedAt = block.timestamp;\\n        emit RootSet(_root);\\n    }\\n\\n    /// @notice Claim the caller's entitlement.\\n    /// @param zkpAmount Amount of ZKP to receive (in wei).\\n    /// @param nftCount  Number of PNFTs the caller is entitled to (committed\\n    ///                  in the Merkle leaf). Must match the leaf even if\\n    ///                  `claimNft == false`.\\n    /// @param claimNft  If `false`, NFTs are NOT dispensed and the NFT cursor\\n    ///                  is NOT advanced. The caller still loses the chance to\\n    ///                  claim later (`claimed` flag is set). Useful for users\\n    ///                  who only want their ZKP and want to skip the gas of\\n    ///                  receiving NFTs.\\n    /// @param proof     Merkle proof for leaf\\n    ///                  `keccak256(bytes.concat(keccak256(abi.encode(\\n    ///                      msg.sender, zkpAmount, nftCount\\n    ///                  ))))`.\\n    function claim(\\n        uint256 zkpAmount,\\n        uint16 nftCount,\\n        bool claimNft,\\n        bytes32[] calldata proof\\n    ) external nonReentrant {\\n        require(root != bytes32(0), \\\"VFrozen: not open\\\");\\n        require(!claimed[msg.sender], \\\"VFrozen: claimed\\\");\\n        uint16 nftsToTransfer = claimNft ? nftCount : 0;\\n        require(\\n            zkpAmount != 0 || nftsToTransfer != 0,\\n            \\\"VFrozen: empty claim\\\"\\n        );\\n\\n        bytes32 leaf = keccak256(\\n            bytes.concat(\\n                keccak256(abi.encode(msg.sender, zkpAmount, nftCount))\\n            )\\n        );\\n        require(\\n            MerkleProof.verify(proof, root, leaf),\\n            \\\"VFrozen: bad proof\\\"\\n        );\\n\\n        claimed[msg.sender] = true;\\n\\n        uint16 first = FIRST_NFT_ID + nftsClaimed;\\n        if (nftsToTransfer > 0) {\\n            uint16 newCount = nftsClaimed + nftsToTransfer;\\n            require(\\n                FIRST_NFT_ID + newCount - 1 <= LAST_NFT_ID,\\n                \\\"VFrozen: nft exhausted\\\"\\n            );\\n            nftsClaimed = newCount;\\n            // `transferFrom` (not `safeTransferFrom`) avoids reverting for\\n            // smart-contract recipients that don't implement IERC721Receiver.\\n            for (uint16 i = 0; i < nftsToTransfer; ++i) {\\n                IErc721Min(NFT_TOKEN).transferFrom(\\n                    address(this),\\n                    msg.sender,\\n                    uint256(first + i)\\n                );\\n            }\\n        }\\n\\n        if (zkpAmount > 0) {\\n            require(\\n                IErc20Min(ZKP_TOKEN).transfer(msg.sender, zkpAmount),\\n                \\\"VFrozen: zkp xfer failed\\\"\\n            );\\n        }\\n\\n        emit Claimed(msg.sender, zkpAmount, nftsToTransfer, first);\\n    }\\n\\n    // --- View helpers (read-only, for the claim UI) ---\\n\\n    /// @notice Whether claims are open (i.e. the Merkle root has been set).\\n    function isClaimOpen() external view returns (bool) {\\n        return root != bytes32(0);\\n    }\\n\\n    /// @notice Number of PNFTs still held by this Vault and not yet dispensed.\\n    function nftsRemaining() external view returns (uint16) {\\n        return (LAST_NFT_ID - FIRST_NFT_ID + 1) - nftsClaimed;\\n    }\\n\\n    /// @notice The PNFT tokenId that the next claim would start at. The next\\n    /// claim of `n` NFTs receives ids `[nextNftId, nextNftId + n - 1]`.\\n    function nextNftId() external view returns (uint16) {\\n        return FIRST_NFT_ID + nftsClaimed;\\n    }\\n\\n    /// @notice Verify the Merkle proof for the (`user`, `zkpAmount`, `nftCount`)\\n    /// tuple against the current root. Does NOT check the `claimed` flag.\\n    function verifyClaim(\\n        address user,\\n        uint256 zkpAmount,\\n        uint16 nftCount,\\n        bytes32[] calldata proof\\n    ) public view returns (bool) {\\n        if (root == bytes32(0)) return false;\\n        bytes32 leaf = keccak256(\\n            bytes.concat(\\n                keccak256(abi.encode(user, zkpAmount, nftCount))\\n            )\\n        );\\n        return MerkleProof.verify(proof, root, leaf);\\n    }\\n\\n    /// @notice Combined predicate the UI can hit in a single eth_call: would\\n    /// `claim(zkpAmount, nftCount, claimNft, proof)` from `user` currently\\n    /// succeed?\\n    function isClaimable(\\n        address user,\\n        uint256 zkpAmount,\\n        uint16 nftCount,\\n        bool claimNft,\\n        bytes32[] calldata proof\\n    ) external view returns (bool) {\\n        if (claimed[user]) return false;\\n        uint16 nftsToTransfer = claimNft ? nftCount : 0;\\n        if (zkpAmount == 0 && nftsToTransfer == 0) return false;\\n        if (nftsToTransfer > 0) {\\n            uint16 remaining =\\n                (LAST_NFT_ID - FIRST_NFT_ID + 1) - nftsClaimed;\\n            if (nftsToTransfer > remaining) return false;\\n        }\\n        return verifyClaim(user, zkpAmount, nftCount, proof);\\n    }\\n\\n    /// @notice Unix timestamp at which the owner sweep functions unlock.\\n    /// Returns 0 if `setRoot` has not yet been called.\\n    function sweepUnlocksAt() external view returns (uint256) {\\n        if (claimOpenedAt == 0) return 0;\\n        return claimOpenedAt + CLAIM_WINDOW;\\n    }\\n\\n    // --- Owner sweep (residuals after claim period) ---\\n\\n    /// @dev Allow sweeping only once `CLAIM_WINDOW` has elapsed since the\\n    /// claims were opened (via `setRoot`). If `setRoot` has not been called,\\n    /// sweep is permanently blocked \\u2014 funds remain with the contract until\\n    /// claims open.\\n    modifier afterClaimWindow() {\\n        require(claimOpenedAt != 0, \\\"VFrozen: claims not open\\\");\\n        // slither-disable-next-line timestamp\\n        require(\\n            block.timestamp >= claimOpenedAt + CLAIM_WINDOW,\\n            \\\"VFrozen: too early\\\"\\n        );\\n        _;\\n    }\\n\\n    /// @notice Sweep an ERC-20 balance to `to`. Intended for residual ZKP that\\n    /// stays unclaimed after the 1-year claim window ends.\\n    function ownerSweepErc20(\\n        address token,\\n        address to,\\n        uint256 amount\\n    ) external onlyOwner afterClaimWindow nonReentrant {\\n        require(to != address(0), \\\"VFrozen: zero to\\\");\\n        require(\\n            IErc20Min(token).transfer(to, amount),\\n            \\\"VFrozen: sweep failed\\\"\\n        );\\n        emit OwnerSwept(token, to, amount);\\n    }\\n\\n    /// @notice Sweep a list of PNFT tokenIds to `to`. Used to recover NFTs\\n    /// that no one claimed after the 1-year claim window ends.\\n    function ownerSweepNft(\\n        address to,\\n        uint256[] calldata tokenIds\\n    ) external onlyOwner afterClaimWindow nonReentrant {\\n        require(to != address(0), \\\"VFrozen: zero to\\\");\\n        for (uint256 i = 0; i < tokenIds.length; ++i) {\\n            IErc721Min(NFT_TOKEN).transferFrom(\\n                address(this),\\n                to,\\n                tokenIds[i]\\n            );\\n        }\\n        emit OwnerSwept(NFT_TOKEN, to, tokenIds.length);\\n    }\\n}\\n\",\"keccak256\":\"0xee391eb3c585ea762efe760aece6fc8bffcb94d9e5d37c8abe129fe5249371e3\",\"license\":\"GPL-3.0-only\"},\"contracts/protocol/v0/interfaces/IVaultV0.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// SPDX-FileCopyrightText: Copyright 2021-25 Panther Protocol Foundation\\npragma solidity ^0.8.16;\\n\\nimport { LockData } from \\\"../../../common/Types.sol\\\";\\n\\ninterface IVaultV0 {\\n    function lockAsset(LockData calldata data) external;\\n\\n    function unlockAsset(LockData memory data) external;\\n\\n    event Locked(LockData data);\\n    event Unlocked(LockData data);\\n}\\n\",\"keccak256\":\"0xfe782e903ffd29c661bb92123bff6a710cbd120128b8921e0bb82705447ae4d8\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e06040523480156200001157600080fd5b50604051620019ca380380620019ca83398101604081905262000034916200013c565b826001600160a01b038116620000915760405162461bcd60e51b815260206004820152601a60248201527f496d6d4f776e3a207a65726f206f776e6572206164647265737300000000000060448201526064015b60405180910390fd5b6001600160a01b03908116608052821615801590620000b857506001600160a01b03811615155b620001065760405162461bcd60e51b815260206004820152601360248201527f5646726f7a656e3a207a65726f20746f6b656e00000000000000000000000000604482015260640162000088565b6001600160a01b0391821660a0521660c0525062000186565b80516001600160a01b03811681146200013757600080fd5b919050565b6000806000606084860312156200015257600080fd5b6200015d846200011f565b92506200016d602085016200011f565b91506200017d604085016200011f565b90509250925092565b60805160a05160c0516117e3620001e760003960008181610232015281816106f601528181610ef60152610fc40152600081816102e301526107c80152600081816101a20152818161091201528181610d29015261102201526117e36000f3fe608060405234801561001057600080fd5b50600436106101985760003560e01c8063830caefa116100e3578063c884ef831161008c578063ebf0c71711610066578063ebf0c7171461037f578063f23a6e6114610388578063f6fedcab1461039b57600080fd5b8063c884ef8314610341578063da53469014610364578063dab5f3401461036c57600080fd5b80639fba64ce116100bd5780639fba64ce14610318578063a94c10ba14610320578063bdaa076c1461032e57600080fd5b8063830caefa146102de57806393f1da4f146103055780639f34fc801461030d57600080fd5b806324fd2652116101455780632caa4ae71161011f5780632caa4ae7146102b85780635bd3e6c0146102cb5780637441ba24146102cb57600080fd5b806324fd2652146102875780632652a3711461029d5780632c2670b0146102a557600080fd5b80631a32af02116101765780631a32af021461022d57806321a0e2081461025457806321d8b9531461027057600080fd5b8063117803e31461019d578063150b7a02146101e15780631977061f14610218575b600080fd5b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b6101ff6101ef36600461130f565b630a85bd0160e11b949350505050565b6040516001600160e01b031990911681526020016101d8565b61022b61022636600461145a565b6103ae565b005b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b61025d6107d081565b60405161ffff90911681526020016101d8565b61027960045481565b6040519081526020016101d8565b60015415155b60405190151581526020016101d8565b61025d6108df565b61022b6102b33660046114cb565b610910565b61028d6102c6366004611507565b610be8565b61022b6102d936600461153d565b610ca6565b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b61025d610cee565b6102796301e1338081565b610279610d03565b60035461025d9061ffff1681565b61022b61033c366004611555565b610d27565b61028d61034f3660046115a8565b60026020526000908152604090205460ff1681565b61025d600181565b61022b61037a3660046115c3565b611020565b61027960015481565b6101ff6103963660046115dc565b61116b565b61028d6103a9366004611682565b61117e565b6002600054036104055760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064015b60405180910390fd5b60026000556001546104595760405162461bcd60e51b815260206004820152601160248201527f5646726f7a656e3a206e6f74206f70656e00000000000000000000000000000060448201526064016103fc565b3360009081526002602052604090205460ff16156104b95760405162461bcd60e51b815260206004820152601060248201527f5646726f7a656e3a20636c61696d65640000000000000000000000000000000060448201526064016103fc565b6000836104c75760006104c9565b845b9050851515806104dc575061ffff811615155b6105285760405162461bcd60e51b815260206004820152601460248201527f5646726f7a656e3a20656d70747920636c61696d00000000000000000000000060448201526064016103fc565b6040805133602082015290810187905261ffff8616606082015260009060800160408051601f19818403018152828252805160209182012090830152016040516020818303038152906040528051906020012090506105be848480806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250506001549150849050611246565b61060a5760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a206261642070726f6f66000000000000000000000000000060448201526064016103fc565b336000908152600260205260408120805460ff1916600190811790915560035461063a9161ffff90911690611719565b905061ffff8316156107a65760035460009061065b90859061ffff16611719565b90506107d0600161066c8382611719565b610676919061173b565b61ffff1611156106c85760405162461bcd60e51b815260206004820152601660248201527f5646726f7a656e3a206e6674206578686175737465640000000000000000000060448201526064016103fc565b6003805461ffff191661ffff831617905560005b8461ffff168161ffff1610156107a3576001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000166323b872dd30336107278588611719565b6040516001600160e01b031960e086901b1681526001600160a01b03938416600482015292909116602483015261ffff166044820152606401600060405180830381600087803b15801561077a57600080fd5b505af115801561078e573d6000803e3d6000fd5b505050508061079c90611756565b90506106dc565b50505b87156108895760405163a9059cbb60e01b8152336004820152602481018990527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063a9059cbb906044016020604051808303816000875af1158015610819573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061083d9190611777565b6108895760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a207a6b702078666572206661696c6564000000000000000060448201526064016103fc565b6040805189815261ffff8581166020830152831681830152905133917fc56832d491a4763d04657b2cb93288ad2a9e3e96cad714615410db9af32b01d7919081900360600190a250506001600055505050505050565b60035460009061ffff166108f660016107d061173b565b610901906001611719565b61090b919061173b565b905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461097f5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b6004546000036109d15760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a20636c61696d73206e6f74206f70656e000000000000000060448201526064016103fc565b6301e133806004546109e39190611794565b421015610a325760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a20746f6f206561726c79000000000000000000000000000060448201526064016103fc565b600260005403610a845760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064016103fc565b60026000556001600160a01b038216610ad25760405162461bcd60e51b815260206004820152601060248201526f5646726f7a656e3a207a65726f20746f60801b60448201526064016103fc565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb906044016020604051808303816000875af1158015610b21573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b459190611777565b610b915760405162461bcd60e51b815260206004820152601560248201527f5646726f7a656e3a207377656570206661696c6564000000000000000000000060448201526064016103fc565b816001600160a01b0316836001600160a01b03167f3d96a9508b99e74d0f27d80064f61cf4b9974d8eb186dd805b8ccd52c53376ac83604051610bd691815260200190565b60405180910390a35050600160005550565b600154600090610bfa57506000610c9d565b604080516001600160a01b038816602082015290810186905261ffff8516606082015260009060800160408051601f1981840301815282825280516020918201209083015201604051602081830303815290604052805190602001209050610c99848480806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250506001549150849050611246565b9150505b95945050505050565b60405162461bcd60e51b815260206004820152600f60248201527f5646726f7a656e3a2066726f7a656e000000000000000000000000000000000060448201526064016103fc565b60035460009061090b9061ffff166001611719565b6000600454600003610d155750600090565b6301e1338060045461090b9190611794565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610d965760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b600454600003610de85760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a20636c61696d73206e6f74206f70656e000000000000000060448201526064016103fc565b6301e13380600454610dfa9190611794565b421015610e495760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a20746f6f206561726c79000000000000000000000000000060448201526064016103fc565b600260005403610e9b5760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064016103fc565b60026000556001600160a01b038316610ee95760405162461bcd60e51b815260206004820152601060248201526f5646726f7a656e3a207a65726f20746f60801b60448201526064016103fc565b60005b81811015610fb7577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03166323b872dd3086868686818110610f3757610f376117a7565b6040516001600160e01b031960e088901b1681526001600160a01b03958616600482015294909316602485015250602090910201356044820152606401600060405180830381600087803b158015610f8e57600080fd5b505af1158015610fa2573d6000803e3d6000fd5b5050505080610fb0906117bd565b9050610eec565b50826001600160a01b03167f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03167f3d96a9508b99e74d0f27d80064f61cf4b9974d8eb186dd805b8ccd52c53376ac84849050604051610bd691815260200190565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461108f5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b600154156110df5760405162461bcd60e51b815260206004820152601160248201527f5646726f7a656e3a20726f6f742073657400000000000000000000000000000060448201526064016103fc565b8061112c5760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a207a65726f20726f6f74000000000000000000000000000060448201526064016103fc565b6001819055426004556040518181527f2ae0bd135f5bcfc82b9dbffdabe76051e763c2ed1c7188197181a575aa0e55b39060200160405180910390a150565b63f23a6e6160e01b5b9695505050505050565b6001600160a01b03861660009081526002602052604081205460ff16156111a757506000611174565b6000846111b55760006111b7565b855b9050861580156111c9575061ffff8116155b156111d8576000915050611174565b61ffff81161561122d5760035460009061ffff166111f960016107d061173b565b611204906001611719565b61120e919061173b565b90508061ffff168261ffff16111561122b57600092505050611174565b505b61123a8888888787610be8565b98975050505050505050565b600082611253858461125c565b14949350505050565b600081815b84518110156112a15761128d82868381518110611280576112806117a7565b60200260200101516112ab565b915080611299816117bd565b915050611261565b5090505b92915050565b60008183106112c75760008281526020849052604090206112d6565b60008381526020839052604090205b9392505050565b80356001600160a01b03811681146112f457600080fd5b919050565b634e487b7160e01b600052604160045260246000fd5b6000806000806080858703121561132557600080fd5b61132e856112dd565b935061133c602086016112dd565b925060408501359150606085013567ffffffffffffffff8082111561136057600080fd5b818701915087601f83011261137457600080fd5b813581811115611386576113866112f9565b604051601f8201601f19908116603f011681019083821181831017156113ae576113ae6112f9565b816040528281528a60208487010111156113c757600080fd5b82602086016020830137600060208483010152809550505050505092959194509250565b803561ffff811681146112f457600080fd5b801515811461140b57600080fd5b50565b60008083601f84011261142057600080fd5b50813567ffffffffffffffff81111561143857600080fd5b6020830191508360208260051b850101111561145357600080fd5b9250929050565b60008060008060006080868803121561147257600080fd5b85359450611482602087016113eb565b93506040860135611492816113fd565b9250606086013567ffffffffffffffff8111156114ae57600080fd5b6114ba8882890161140e565b969995985093965092949392505050565b6000806000606084860312156114e057600080fd5b6114e9846112dd565b92506114f7602085016112dd565b9150604084013590509250925092565b60008060008060006080868803121561151f57600080fd5b611528866112dd565b945060208601359350611492604087016113eb565b600060a0828403121561154f57600080fd5b50919050565b60008060006040848603121561156a57600080fd5b611573846112dd565b9250602084013567ffffffffffffffff81111561158f57600080fd5b61159b8682870161140e565b9497909650939450505050565b6000602082840312156115ba57600080fd5b6112d6826112dd565b6000602082840312156115d557600080fd5b5035919050565b60008060008060008060a087890312156115f557600080fd5b6115fe876112dd565b955061160c602088016112dd565b94506040870135935060608701359250608087013567ffffffffffffffff8082111561163757600080fd5b818901915089601f83011261164b57600080fd5b81358181111561165a57600080fd5b8a602082850101111561166c57600080fd5b6020830194508093505050509295509295509295565b60008060008060008060a0878903121561169b57600080fd5b6116a4876112dd565b9550602087013594506116b9604088016113eb565b935060608701356116c9816113fd565b9250608087013567ffffffffffffffff8111156116e557600080fd5b6116f189828a0161140e565b979a9699509497509295939492505050565b634e487b7160e01b600052601160045260246000fd5b61ffff81811683821601908082111561173457611734611703565b5092915050565b61ffff82811682821603908082111561173457611734611703565b600061ffff80831681810361176d5761176d611703565b6001019392505050565b60006020828403121561178957600080fd5b81516112d6816113fd565b808201808211156112a5576112a5611703565b634e487b7160e01b600052603260045260246000fd5b6000600182016117cf576117cf611703565b506001019056fea164736f6c6343000810000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101985760003560e01c8063830caefa116100e3578063c884ef831161008c578063ebf0c71711610066578063ebf0c7171461037f578063f23a6e6114610388578063f6fedcab1461039b57600080fd5b8063c884ef8314610341578063da53469014610364578063dab5f3401461036c57600080fd5b80639fba64ce116100bd5780639fba64ce14610318578063a94c10ba14610320578063bdaa076c1461032e57600080fd5b8063830caefa146102de57806393f1da4f146103055780639f34fc801461030d57600080fd5b806324fd2652116101455780632caa4ae71161011f5780632caa4ae7146102b85780635bd3e6c0146102cb5780637441ba24146102cb57600080fd5b806324fd2652146102875780632652a3711461029d5780632c2670b0146102a557600080fd5b80631a32af02116101765780631a32af021461022d57806321a0e2081461025457806321d8b9531461027057600080fd5b8063117803e31461019d578063150b7a02146101e15780631977061f14610218575b600080fd5b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b6101ff6101ef36600461130f565b630a85bd0160e11b949350505050565b6040516001600160e01b031990911681526020016101d8565b61022b61022636600461145a565b6103ae565b005b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b61025d6107d081565b60405161ffff90911681526020016101d8565b61027960045481565b6040519081526020016101d8565b60015415155b60405190151581526020016101d8565b61025d6108df565b61022b6102b33660046114cb565b610910565b61028d6102c6366004611507565b610be8565b61022b6102d936600461153d565b610ca6565b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b61025d610cee565b6102796301e1338081565b610279610d03565b60035461025d9061ffff1681565b61022b61033c366004611555565b610d27565b61028d61034f3660046115a8565b60026020526000908152604090205460ff1681565b61025d600181565b61022b61037a3660046115c3565b611020565b61027960015481565b6101ff6103963660046115dc565b61116b565b61028d6103a9366004611682565b61117e565b6002600054036104055760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064015b60405180910390fd5b60026000556001546104595760405162461bcd60e51b815260206004820152601160248201527f5646726f7a656e3a206e6f74206f70656e00000000000000000000000000000060448201526064016103fc565b3360009081526002602052604090205460ff16156104b95760405162461bcd60e51b815260206004820152601060248201527f5646726f7a656e3a20636c61696d65640000000000000000000000000000000060448201526064016103fc565b6000836104c75760006104c9565b845b9050851515806104dc575061ffff811615155b6105285760405162461bcd60e51b815260206004820152601460248201527f5646726f7a656e3a20656d70747920636c61696d00000000000000000000000060448201526064016103fc565b6040805133602082015290810187905261ffff8616606082015260009060800160408051601f19818403018152828252805160209182012090830152016040516020818303038152906040528051906020012090506105be848480806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250506001549150849050611246565b61060a5760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a206261642070726f6f66000000000000000000000000000060448201526064016103fc565b336000908152600260205260408120805460ff1916600190811790915560035461063a9161ffff90911690611719565b905061ffff8316156107a65760035460009061065b90859061ffff16611719565b90506107d0600161066c8382611719565b610676919061173b565b61ffff1611156106c85760405162461bcd60e51b815260206004820152601660248201527f5646726f7a656e3a206e6674206578686175737465640000000000000000000060448201526064016103fc565b6003805461ffff191661ffff831617905560005b8461ffff168161ffff1610156107a3576001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000166323b872dd30336107278588611719565b6040516001600160e01b031960e086901b1681526001600160a01b03938416600482015292909116602483015261ffff166044820152606401600060405180830381600087803b15801561077a57600080fd5b505af115801561078e573d6000803e3d6000fd5b505050508061079c90611756565b90506106dc565b50505b87156108895760405163a9059cbb60e01b8152336004820152602481018990527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063a9059cbb906044016020604051808303816000875af1158015610819573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061083d9190611777565b6108895760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a207a6b702078666572206661696c6564000000000000000060448201526064016103fc565b6040805189815261ffff8581166020830152831681830152905133917fc56832d491a4763d04657b2cb93288ad2a9e3e96cad714615410db9af32b01d7919081900360600190a250506001600055505050505050565b60035460009061ffff166108f660016107d061173b565b610901906001611719565b61090b919061173b565b905090565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461097f5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b6004546000036109d15760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a20636c61696d73206e6f74206f70656e000000000000000060448201526064016103fc565b6301e133806004546109e39190611794565b421015610a325760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a20746f6f206561726c79000000000000000000000000000060448201526064016103fc565b600260005403610a845760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064016103fc565b60026000556001600160a01b038216610ad25760405162461bcd60e51b815260206004820152601060248201526f5646726f7a656e3a207a65726f20746f60801b60448201526064016103fc565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb906044016020604051808303816000875af1158015610b21573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b459190611777565b610b915760405162461bcd60e51b815260206004820152601560248201527f5646726f7a656e3a207377656570206661696c6564000000000000000000000060448201526064016103fc565b816001600160a01b0316836001600160a01b03167f3d96a9508b99e74d0f27d80064f61cf4b9974d8eb186dd805b8ccd52c53376ac83604051610bd691815260200190565b60405180910390a35050600160005550565b600154600090610bfa57506000610c9d565b604080516001600160a01b038816602082015290810186905261ffff8516606082015260009060800160408051601f1981840301815282825280516020918201209083015201604051602081830303815290604052805190602001209050610c99848480806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250506001549150849050611246565b9150505b95945050505050565b60405162461bcd60e51b815260206004820152600f60248201527f5646726f7a656e3a2066726f7a656e000000000000000000000000000000000060448201526064016103fc565b60035460009061090b9061ffff166001611719565b6000600454600003610d155750600090565b6301e1338060045461090b9190611794565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163314610d965760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b600454600003610de85760405162461bcd60e51b815260206004820152601860248201527f5646726f7a656e3a20636c61696d73206e6f74206f70656e000000000000000060448201526064016103fc565b6301e13380600454610dfa9190611794565b421015610e495760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a20746f6f206561726c79000000000000000000000000000060448201526064016103fc565b600260005403610e9b5760405162461bcd60e51b815260206004820152601a60248201527f636c61696d45726332303a207265656e7472616e742063616c6c00000000000060448201526064016103fc565b60026000556001600160a01b038316610ee95760405162461bcd60e51b815260206004820152601060248201526f5646726f7a656e3a207a65726f20746f60801b60448201526064016103fc565b60005b81811015610fb7577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03166323b872dd3086868686818110610f3757610f376117a7565b6040516001600160e01b031960e088901b1681526001600160a01b03958616600482015294909316602485015250602090910201356044820152606401600060405180830381600087803b158015610f8e57600080fd5b505af1158015610fa2573d6000803e3d6000fd5b5050505080610fb0906117bd565b9050610eec565b50826001600160a01b03167f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03167f3d96a9508b99e74d0f27d80064f61cf4b9974d8eb186dd805b8ccd52c53376ac84849050604051610bd691815260200190565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316331461108f5760405162461bcd60e51b8152602060048201526014602482015273125b5b53dddb8e881d5b985d5d1a1bdc9a5e995960621b60448201526064016103fc565b600154156110df5760405162461bcd60e51b815260206004820152601160248201527f5646726f7a656e3a20726f6f742073657400000000000000000000000000000060448201526064016103fc565b8061112c5760405162461bcd60e51b815260206004820152601260248201527f5646726f7a656e3a207a65726f20726f6f74000000000000000000000000000060448201526064016103fc565b6001819055426004556040518181527f2ae0bd135f5bcfc82b9dbffdabe76051e763c2ed1c7188197181a575aa0e55b39060200160405180910390a150565b63f23a6e6160e01b5b9695505050505050565b6001600160a01b03861660009081526002602052604081205460ff16156111a757506000611174565b6000846111b55760006111b7565b855b9050861580156111c9575061ffff8116155b156111d8576000915050611174565b61ffff81161561122d5760035460009061ffff166111f960016107d061173b565b611204906001611719565b61120e919061173b565b90508061ffff168261ffff16111561122b57600092505050611174565b505b61123a8888888787610be8565b98975050505050505050565b600082611253858461125c565b14949350505050565b600081815b84518110156112a15761128d82868381518110611280576112806117a7565b60200260200101516112ab565b915080611299816117bd565b915050611261565b5090505b92915050565b60008183106112c75760008281526020849052604090206112d6565b60008381526020839052604090205b9392505050565b80356001600160a01b03811681146112f457600080fd5b919050565b634e487b7160e01b600052604160045260246000fd5b6000806000806080858703121561132557600080fd5b61132e856112dd565b935061133c602086016112dd565b925060408501359150606085013567ffffffffffffffff8082111561136057600080fd5b818701915087601f83011261137457600080fd5b813581811115611386576113866112f9565b604051601f8201601f19908116603f011681019083821181831017156113ae576113ae6112f9565b816040528281528a60208487010111156113c757600080fd5b82602086016020830137600060208483010152809550505050505092959194509250565b803561ffff811681146112f457600080fd5b801515811461140b57600080fd5b50565b60008083601f84011261142057600080fd5b50813567ffffffffffffffff81111561143857600080fd5b6020830191508360208260051b850101111561145357600080fd5b9250929050565b60008060008060006080868803121561147257600080fd5b85359450611482602087016113eb565b93506040860135611492816113fd565b9250606086013567ffffffffffffffff8111156114ae57600080fd5b6114ba8882890161140e565b969995985093965092949392505050565b6000806000606084860312156114e057600080fd5b6114e9846112dd565b92506114f7602085016112dd565b9150604084013590509250925092565b60008060008060006080868803121561151f57600080fd5b611528866112dd565b945060208601359350611492604087016113eb565b600060a0828403121561154f57600080fd5b50919050565b60008060006040848603121561156a57600080fd5b611573846112dd565b9250602084013567ffffffffffffffff81111561158f57600080fd5b61159b8682870161140e565b9497909650939450505050565b6000602082840312156115ba57600080fd5b6112d6826112dd565b6000602082840312156115d557600080fd5b5035919050565b60008060008060008060a087890312156115f557600080fd5b6115fe876112dd565b955061160c602088016112dd565b94506040870135935060608701359250608087013567ffffffffffffffff8082111561163757600080fd5b818901915089601f83011261164b57600080fd5b81358181111561165a57600080fd5b8a602082850101111561166c57600080fd5b6020830194508093505050509295509295509295565b60008060008060008060a0878903121561169b57600080fd5b6116a4876112dd565b9550602087013594506116b9604088016113eb565b935060608701356116c9816113fd565b9250608087013567ffffffffffffffff8111156116e557600080fd5b6116f189828a0161140e565b979a9699509497509295939492505050565b634e487b7160e01b600052601160045260246000fd5b61ffff81811683821601908082111561173457611734611703565b5092915050565b61ffff82811682821603908082111561173457611734611703565b600061ffff80831681810361176d5761176d611703565b6001019392505050565b60006020828403121561178957600080fd5b81516112d6816113fd565b808201808211156112a5576112a5611703565b634e487b7160e01b600052603260045260246000fd5b6000600182016117cf576117cf611703565b506001019056fea164736f6c6343000810000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "claim(uint256,uint16,bool,bytes32[])": {
+        "params": {
+          "claimNft": "If `false`, NFTs are NOT dispensed and the NFT cursor                  is NOT advanced. The caller still loses the chance to                  claim later (`claimed` flag is set). Useful for users                  who only want their ZKP and want to skip the gas of                  receiving NFTs.",
+          "nftCount": "Number of PNFTs the caller is entitled to (committed                  in the Merkle leaf). Must match the leaf even if                  `claimNft == false`.",
+          "proof": "Merkle proof for leaf                  `keccak256(bytes.concat(keccak256(abi.encode(                      msg.sender, zkpAmount, nftCount                  ))))`.",
+          "zkpAmount": "Amount of ZKP to receive (in wei)."
+        }
+      }
+    },
+    "title": "VaultV0Frozen",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "CLAIM_WINDOW()": {
+        "notice": "Time after `setRoot` during which only users can withdraw via `claim`. The owner sweep functions revert until this window has passed."
+      },
+      "FIRST_NFT_ID()": {
+        "notice": "First PNFT tokenId held by this Vault (inclusive). Verified on-chain: PNftToken's internal counter starts at 1, and `ownerOf(0)` reverts (\"invalid token ID\") at the time of deployment."
+      },
+      "LAST_NFT_ID()": {
+        "notice": "Last PNFT tokenId held by this Vault (inclusive). Verified on-chain: `NFT.balanceOf(vault) == 2000`, `ownerOf(2000) == vault`, and `ownerOf(2001)` reverts at the time of deployment."
+      },
+      "NFT_TOKEN()": {
+        "notice": "The ERC-721 token (PNFT) that funded the advanced-stake rewards."
+      },
+      "OWNER()": {
+        "notice": "The owner who has privileged rights"
+      },
+      "ZKP_TOKEN()": {
+        "notice": "The ERC-20 token (PZKP) that funded the advanced-stake rewards."
+      },
+      "claim(uint256,uint16,bool,bytes32[])": {
+        "notice": "Claim the caller's entitlement."
+      },
+      "claimOpenedAt()": {
+        "notice": "Block timestamp at which `setRoot` was called. The owner sweep functions unlock at `claimOpenedAt + CLAIM_WINDOW`. Zero until `setRoot` is called."
+      },
+      "claimed(address)": {
+        "notice": "Per-address claim flag. A user can claim at most once."
+      },
+      "isClaimOpen()": {
+        "notice": "Whether claims are open (i.e. the Merkle root has been set)."
+      },
+      "isClaimable(address,uint256,uint16,bool,bytes32[])": {
+        "notice": "Combined predicate the UI can hit in a single eth_call: would `claim(zkpAmount, nftCount, claimNft, proof)` from `user` currently succeed?"
+      },
+      "nextNftId()": {
+        "notice": "The PNFT tokenId that the next claim would start at. The next claim of `n` NFTs receives ids `[nextNftId, nextNftId + n - 1]`."
+      },
+      "nftsClaimed()": {
+        "notice": "Total PNFTs dispensed so far. The next claim starts at `FIRST_NFT_ID + nftsClaimed`."
+      },
+      "nftsRemaining()": {
+        "notice": "Number of PNFTs still held by this Vault and not yet dispensed."
+      },
+      "ownerSweepErc20(address,address,uint256)": {
+        "notice": "Sweep an ERC-20 balance to `to`. Intended for residual ZKP that stays unclaimed after the 1-year claim window ends."
+      },
+      "ownerSweepNft(address,uint256[])": {
+        "notice": "Sweep a list of PNFT tokenIds to `to`. Used to recover NFTs that no one claimed after the 1-year claim window ends."
+      },
+      "root()": {
+        "notice": "Merkle root committing the (user, zkpAmount, nftCount) tuples. Settable exactly once by `OWNER`, in a follow-up proposal after this implementation is in place and the entitlement set is finalised."
+      },
+      "setRoot(bytes32)": {
+        "notice": "Commit the entitlement Merkle root. May only be called once. Records the timestamp so the owner sweep functions unlock exactly `CLAIM_WINDOW` later."
+      },
+      "sweepUnlocksAt()": {
+        "notice": "Unix timestamp at which the owner sweep functions unlock. Returns 0 if `setRoot` has not yet been called."
+      },
+      "verifyClaim(address,uint256,uint16,bytes32[])": {
+        "notice": "Verify the Merkle proof for the (`user`, `zkpAmount`, `nftCount`) tuple against the current root. Does NOT check the `claimed` flag."
+      }
+    },
+    "notice": "Frozen replacement implementation for the v0 Vault behind the existing Vault proxy on Polygon. Effects of upgrading the Vault proxy to this implementation:   - `lockAsset` and `unlockAsset` always revert, regardless of caller.     `PantherPoolV0.exit()` and `PantherPoolV0.generateDeposits()` therefore     revert too — the v0 MASP path is permanently disabled.   - Rewards previously locked here (ZKP and PNFT) become claimable through     a Merkle-tree-based `claim` function, with eligibility computed off-chain     from the on-chain stake / reward / exit history and committed via a     single Merkle `root` set once by the new owner. Storage layout: the prior implementation had no storage of its own (only immutables in `ImmutableOwnable`). Variables added here therefore start at slot 0 with no collision risk. Do not reorder, remove, or insert into the storage variable list below without a coordinated migration.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 578,
+        "contract": "contracts/protocol/v0/VaultV0Frozen.sol:VaultV0Frozen",
+        "label": "_reentrancyStatus",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 810,
+        "contract": "contracts/protocol/v0/VaultV0Frozen.sol:VaultV0Frozen",
+        "label": "root",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_bytes32"
+      },
+      {
+        "astId": 815,
+        "contract": "contracts/protocol/v0/VaultV0Frozen.sol:VaultV0Frozen",
+        "label": "claimed",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 818,
+        "contract": "contracts/protocol/v0/VaultV0Frozen.sol:VaultV0Frozen",
+        "label": "nftsClaimed",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint16"
+      },
+      {
+        "astId": 821,
+        "contract": "contracts/protocol/v0/VaultV0Frozen.sol:VaultV0Frozen",
+        "label": "claimOpenedAt",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_uint16": {
+        "encoding": "inplace",
+        "label": "uint16",
+        "numberOfBytes": "2"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
